@@ -1,0 +1,348 @@
+[
+  {
+    "name": "Frontalis R",
+    "stl": "FMA46759",
+    "color": 13395558,
+    "auMap": {
+      "AU1": 0.7,
+      "AU2": 0.7
+    }
+  },
+  {
+    "name": "Frontalis L",
+    "stl": "FMA46760",
+    "color": 13395558,
+    "auMap": {
+      "AU1": 0.7,
+      "AU2": 0.7
+    }
+  },
+  {
+    "name": "Orbic. Oculi Orb. R",
+    "stl": "FMA46782",
+    "color": 12277077,
+    "auMap": {
+      "AU6": 0.8
+    }
+  },
+  {
+    "name": "Orbic. Oculi Orb. L",
+    "stl": "FMA46783",
+    "color": 12277077,
+    "auMap": {
+      "AU6": 0.8
+    }
+  },
+  {
+    "name": "Orbic. Oculi Palp. R",
+    "stl": "FMA46785",
+    "color": 12277077,
+    "auMap": {
+      "AU6": 0.4,
+      "blink": 1.0
+    }
+  },
+  {
+    "name": "Orbic. Oculi Palp. L",
+    "stl": "FMA46786",
+    "color": 12277077,
+    "auMap": {
+      "AU6": 0.4,
+      "blink": 1.0
+    }
+  },
+  {
+    "name": "Corrugator Sup. R",
+    "stl": "FMA46796",
+    "color": 11158596,
+    "auMap": {
+      "AU4": 1.0
+    }
+  },
+  {
+    "name": "Corrugator Sup. L",
+    "stl": "FMA46797",
+    "color": 11158596,
+    "auMap": {
+      "AU4": 1.0
+    }
+  },
+  {
+    "name": "Procerus R",
+    "stl": "FMA55610",
+    "color": 11158596,
+    "auMap": {
+      "AU4": 0.5,
+      "AU9": 0.8
+    }
+  },
+  {
+    "name": "Procerus L",
+    "stl": "FMA55611",
+    "color": 11158596,
+    "auMap": {
+      "AU4": 0.5,
+      "AU9": 0.8
+    }
+  },
+  {
+    "name": "Nasalis R",
+    "stl": "FMA55606",
+    "color": 13391189,
+    "auMap": {
+      "AU9": 0.6
+    }
+  },
+  {
+    "name": "Nasalis L",
+    "stl": "FMA55607",
+    "color": 13391189,
+    "auMap": {
+      "AU9": 0.6
+    }
+  },
+  {
+    "name": "Depr. Septi Nasi R",
+    "stl": "FMA55608",
+    "color": 13391189,
+    "auMap": {
+      "AU9": 0.4,
+      "AU25": 0.3
+    }
+  },
+  {
+    "name": "Depr. Septi Nasi L",
+    "stl": "FMA55609",
+    "color": 13391189,
+    "auMap": {
+      "AU9": 0.4,
+      "AU25": 0.3
+    }
+  },
+  {
+    "name": "Zygomatic Maj. R",
+    "stl": "FMA46812",
+    "color": 12861504,
+    "auMap": {
+      "AU12": 1.0
+    }
+  },
+  {
+    "name": "Zygomatic Maj. L",
+    "stl": "FMA46813",
+    "color": 12861504,
+    "auMap": {
+      "AU12": 1.0
+    }
+  },
+  {
+    "name": "Zygomatic Min. R",
+    "stl": "FMA46814",
+    "color": 12861504,
+    "auMap": {
+      "AU12": 0.5,
+      "AU6": 0.3
+    }
+  },
+  {
+    "name": "Zygomatic Min. L",
+    "stl": "FMA46815",
+    "color": 12861504,
+    "auMap": {
+      "AU12": 0.5,
+      "AU6": 0.3
+    }
+  },
+  {
+    "name": "Lev. Labii Sup. R",
+    "stl": "FMA46806",
+    "color": 12073016,
+    "auMap": {
+      "AU9": 0.5,
+      "AU12": 0.3
+    }
+  },
+  {
+    "name": "Lev. Labii Sup. L",
+    "stl": "FMA46807",
+    "color": 12073016,
+    "auMap": {
+      "AU9": 0.5,
+      "AU12": 0.3
+    }
+  },
+  {
+    "name": "Lev. Labii Alae. R",
+    "stl": "FMA46803",
+    "color": 12073016,
+    "auMap": {
+      "AU9": 0.9
+    }
+  },
+  {
+    "name": "Lev. Labii Alae. L",
+    "stl": "FMA46804",
+    "color": 12073016,
+    "auMap": {
+      "AU9": 0.9
+    }
+  },
+  {
+    "name": "Lev. Anguli Oris R",
+    "stl": "FMA46823",
+    "color": 12073016,
+    "auMap": {
+      "AU12": 0.6
+    }
+  },
+  {
+    "name": "Lev. Anguli Oris L",
+    "stl": "FMA46824",
+    "color": 12073016,
+    "auMap": {
+      "AU12": 0.6
+    }
+  },
+  {
+    "name": "Orbicularis Oris",
+    "stl": "FMA46841",
+    "color": 13652048,
+    "auMap": {
+      "AU25": 0.7,
+      "AU20": 0.4,
+      "AU22": 0.8
+    }
+  },
+  {
+    "name": "Depr. Anguli Oris R",
+    "stl": "FMA46829",
+    "color": 10499381,
+    "auMap": {
+      "AU15": 1.0
+    }
+  },
+  {
+    "name": "Depr. Anguli Oris L",
+    "stl": "FMA46830",
+    "color": 10499381,
+    "auMap": {
+      "AU15": 1.0
+    }
+  },
+  {
+    "name": "Depr. Labii Inf. R",
+    "stl": "FMA46817",
+    "color": 10499381,
+    "auMap": {
+      "AU25": 0.5,
+      "AU26": 0.4
+    }
+  },
+  {
+    "name": "Depr. Labii Inf. L",
+    "stl": "FMA46818",
+    "color": 10499381,
+    "auMap": {
+      "AU25": 0.5,
+      "AU26": 0.4
+    }
+  },
+  {
+    "name": "Mentalis R",
+    "stl": "FMA46826",
+    "color": 13656160,
+    "auMap": {
+      "AU25": 0.4
+    }
+  },
+  {
+    "name": "Mentalis L",
+    "stl": "FMA46827",
+    "color": 13656160,
+    "auMap": {
+      "AU25": 0.4
+    }
+  },
+  {
+    "name": "Risorius R",
+    "stl": "FMA46839",
+    "color": 13652048,
+    "auMap": {
+      "AU20": 0.8
+    }
+  },
+  {
+    "name": "Risorius L",
+    "stl": "FMA46840",
+    "color": 13652048,
+    "auMap": {
+      "AU20": 0.8
+    }
+  },
+  {
+    "name": "Buccinator R",
+    "stl": "FMA46835",
+    "color": 12861504,
+    "auMap": {
+      "AU20": 0.3,
+      "AU6": 0.2
+    }
+  },
+  {
+    "name": "Buccinator L",
+    "stl": "FMA46836",
+    "color": 12861504,
+    "auMap": {
+      "AU20": 0.3,
+      "AU6": 0.2
+    }
+  },
+  {
+    "name": "Platysma R",
+    "stl": "FMA45739",
+    "color": 13656160,
+    "auMap": {
+      "AU20": 0.5
+    }
+  },
+  {
+    "name": "Platysma L",
+    "stl": "FMA45740",
+    "color": 13656160,
+    "auMap": {
+      "AU20": 0.5
+    }
+  },
+  {
+    "name": "Occipitalis R",
+    "stl": "FMA46761",
+    "color": 13395558,
+    "auMap": {
+      "AU4": 0.3
+    }
+  },
+  {
+    "name": "Occipitalis L",
+    "stl": "FMA46762",
+    "color": 13395558,
+    "auMap": {
+      "AU4": 0.3
+    }
+  },
+  {
+    "name": "Temporoparietalis R",
+    "stl": "FMA46763",
+    "color": 13395558,
+    "auMap": {
+      "AU6": 0.2
+    }
+  },
+  {
+    "name": "Temporoparietalis L",
+    "stl": "FMA46764",
+    "color": 13395558,
+    "auMap": {
+      "AU6": 0.2
+    }
+  }
+]

@@ -1,0 +1,326 @@
+[
+  {
+    "name": "Sternocleidomastoid R",
+    "stl": "FMA13408",
+    "color": 13127760,
+    "upperLevel": 0,
+    "lowerLevel": 10,
+    "headAttachFrac": 0.3,
+    "lowerAttach": "shoulder"
+  },
+  {
+    "name": "Sternocleidomastoid L",
+    "stl": "FMA13409",
+    "color": 13127760,
+    "upperLevel": 0,
+    "lowerLevel": 10,
+    "headAttachFrac": 0.3,
+    "lowerAttach": "shoulder"
+  },
+  {
+    "name": "Sternohyoid R",
+    "stl": "FMA13346",
+    "color": 12077128,
+    "upperLevel": 1,
+    "lowerLevel": 10,
+    "headAttachFrac": 0.15,
+    "lowerAttach": "shoulder"
+  },
+  {
+    "name": "Sternohyoid L",
+    "stl": "FMA13347",
+    "color": 12077128,
+    "upperLevel": 1,
+    "lowerLevel": 10,
+    "headAttachFrac": 0.15,
+    "lowerAttach": "shoulder"
+  },
+  {
+    "name": "Omohyoid R",
+    "stl": "FMA13348",
+    "color": 12077128,
+    "upperLevel": 1,
+    "lowerLevel": 10,
+    "headAttachFrac": 0.15,
+    "lowerAttach": "shoulder"
+  },
+  {
+    "name": "Omohyoid L",
+    "stl": "FMA13349",
+    "color": 12077128,
+    "upperLevel": 1,
+    "lowerLevel": 10,
+    "headAttachFrac": 0.15,
+    "lowerAttach": "shoulder"
+  },
+  {
+    "name": "Sternothyroid R",
+    "stl": "FMA13350",
+    "color": 12077128,
+    "upperLevel": 2,
+    "lowerLevel": 10,
+    "headAttachFrac": 0.1,
+    "lowerAttach": "shoulder"
+  },
+  {
+    "name": "Sternothyroid L",
+    "stl": "FMA13351",
+    "color": 12077128,
+    "upperLevel": 2,
+    "lowerLevel": 10,
+    "headAttachFrac": 0.1,
+    "lowerAttach": "shoulder"
+  },
+  {
+    "name": "Thyrohyoid R",
+    "stl": "FMA13352",
+    "color": 12077128,
+    "upperLevel": 1,
+    "lowerLevel": 3,
+    "headAttachFrac": 0.4
+  },
+  {
+    "name": "Thyrohyoid L",
+    "stl": "FMA13353",
+    "color": 12077128,
+    "upperLevel": 1,
+    "lowerLevel": 3,
+    "headAttachFrac": 0.4
+  },
+  {
+    "name": "Scalene Anterior R",
+    "stl": "FMA13392",
+    "color": 11028552,
+    "upperLevel": 2,
+    "lowerLevel": 8,
+    "headAttachFrac": 0.0,
+    "lowerAttach": "ribcage"
+  },
+  {
+    "name": "Scalene Anterior L",
+    "stl": "FMA13393",
+    "color": 11028552,
+    "upperLevel": 2,
+    "lowerLevel": 8,
+    "headAttachFrac": 0.0,
+    "lowerAttach": "ribcage"
+  },
+  {
+    "name": "Scalene Medius R",
+    "stl": "FMA13390",
+    "color": 11028552,
+    "upperLevel": 1,
+    "lowerLevel": 8,
+    "headAttachFrac": 0.0,
+    "lowerAttach": "ribcage"
+  },
+  {
+    "name": "Scalene Medius L",
+    "stl": "FMA13391",
+    "color": 11028552,
+    "upperLevel": 1,
+    "lowerLevel": 8,
+    "headAttachFrac": 0.0,
+    "lowerAttach": "ribcage"
+  },
+  {
+    "name": "Scalene Posterior R",
+    "stl": "FMA13388",
+    "color": 11028552,
+    "upperLevel": 3,
+    "lowerLevel": 9,
+    "headAttachFrac": 0.0,
+    "lowerAttach": "ribcage"
+  },
+  {
+    "name": "Scalene Posterior L",
+    "stl": "FMA13389",
+    "color": 11028552,
+    "upperLevel": 3,
+    "lowerLevel": 9,
+    "headAttachFrac": 0.0,
+    "lowerAttach": "ribcage"
+  },
+  {
+    "name": "Levator Scapulae R",
+    "stl": "FMA32540",
+    "color": 11554896,
+    "upperLevel": 0,
+    "lowerLevel": 10,
+    "headAttachFrac": 0.2,
+    "lowerAttach": "shoulder"
+  },
+  {
+    "name": "Levator Scapulae L",
+    "stl": "FMA32541",
+    "color": 11554896,
+    "upperLevel": 0,
+    "lowerLevel": 10,
+    "headAttachFrac": 0.2,
+    "lowerAttach": "shoulder"
+  },
+  {
+    "name": "Longus Colli Sup. Obl. R",
+    "stl": "FMA46283",
+    "color": 10044484,
+    "upperLevel": 0,
+    "lowerLevel": 4,
+    "headAttachFrac": 0.2
+  },
+  {
+    "name": "Longus Colli Sup. Obl. L",
+    "stl": "FMA46284",
+    "color": 10044484,
+    "upperLevel": 0,
+    "lowerLevel": 4,
+    "headAttachFrac": 0.2
+  },
+  {
+    "name": "Longus Colli Vert. R",
+    "stl": "FMA46285",
+    "color": 10044484,
+    "upperLevel": 1,
+    "lowerLevel": 9,
+    "headAttachFrac": 0.0,
+    "lowerAttach": "thoracic"
+  },
+  {
+    "name": "Longus Colli Vert. L",
+    "stl": "FMA46286",
+    "color": 10044484,
+    "upperLevel": 1,
+    "lowerLevel": 9,
+    "headAttachFrac": 0.0,
+    "lowerAttach": "thoracic"
+  },
+  {
+    "name": "Longus Colli Inf. Obl. R",
+    "stl": "FMA46287",
+    "color": 10044484,
+    "upperLevel": 4,
+    "lowerLevel": 9,
+    "headAttachFrac": 0.0,
+    "lowerAttach": "thoracic"
+  },
+  {
+    "name": "Longus Colli Inf. Obl. L",
+    "stl": "FMA46288",
+    "color": 10044484,
+    "upperLevel": 4,
+    "lowerLevel": 9,
+    "headAttachFrac": 0.0,
+    "lowerAttach": "thoracic"
+  },
+  {
+    "name": "Longus Capitis R",
+    "stl": "FMA46309",
+    "color": 10044484,
+    "upperLevel": 0,
+    "lowerLevel": 5,
+    "headAttachFrac": 0.3
+  },
+  {
+    "name": "Longus Capitis L",
+    "stl": "FMA46310",
+    "color": 10044484,
+    "upperLevel": 0,
+    "lowerLevel": 5,
+    "headAttachFrac": 0.3
+  },
+  {
+    "name": "Rectus Cap. Anterior R",
+    "stl": "FMA46313",
+    "color": 10044484,
+    "upperLevel": 0,
+    "lowerLevel": 1,
+    "headAttachFrac": 0.7
+  },
+  {
+    "name": "Rectus Cap. Anterior L",
+    "stl": "FMA46314",
+    "color": 10044484,
+    "upperLevel": 0,
+    "lowerLevel": 1,
+    "headAttachFrac": 0.7
+  },
+  {
+    "name": "Rectus Cap. Lateralis R",
+    "stl": "FMA46317",
+    "color": 10044484,
+    "upperLevel": 0,
+    "lowerLevel": 1,
+    "headAttachFrac": 0.7
+  },
+  {
+    "name": "Rectus Cap. Lateralis L",
+    "stl": "FMA46318",
+    "color": 10044484,
+    "upperLevel": 0,
+    "lowerLevel": 1,
+    "headAttachFrac": 0.7
+  },
+  {
+    "name": "Rectus Cap. Post. Maj. R",
+    "stl": "FMA32530",
+    "color": 8929344,
+    "upperLevel": 0,
+    "lowerLevel": 1,
+    "headAttachFrac": 0.7
+  },
+  {
+    "name": "Rectus Cap. Post. Maj. L",
+    "stl": "FMA32531",
+    "color": 8929344,
+    "upperLevel": 0,
+    "lowerLevel": 1,
+    "headAttachFrac": 0.7
+  },
+  {
+    "name": "Rectus Cap. Post. Min. R",
+    "stl": "FMA32532",
+    "color": 8929344,
+    "upperLevel": 0,
+    "lowerLevel": 0,
+    "headAttachFrac": 0.9
+  },
+  {
+    "name": "Rectus Cap. Post. Min. L",
+    "stl": "FMA32533",
+    "color": 8929344,
+    "upperLevel": 0,
+    "lowerLevel": 0,
+    "headAttachFrac": 0.9
+  },
+  {
+    "name": "Obliquus Cap. Sup. R",
+    "stl": "FMA32534",
+    "color": 8929344,
+    "upperLevel": 0,
+    "lowerLevel": 0,
+    "headAttachFrac": 0.8
+  },
+  {
+    "name": "Obliquus Cap. Sup. L",
+    "stl": "FMA32535",
+    "color": 8929344,
+    "upperLevel": 0,
+    "lowerLevel": 0,
+    "headAttachFrac": 0.8
+  },
+  {
+    "name": "Obliquus Cap. Inf. R",
+    "stl": "FMA32536",
+    "color": 8929344,
+    "upperLevel": 0,
+    "lowerLevel": 1,
+    "headAttachFrac": 0.6
+  },
+  {
+    "name": "Obliquus Cap. Inf. L",
+    "stl": "FMA32537",
+    "color": 8929344,
+    "upperLevel": 0,
+    "lowerLevel": 1,
+    "headAttachFrac": 0.6
+  }
+]

@@ -1,0 +1,407 @@
+[
+  {
+    "name": "Cerebellum",
+    "stl": "FMA67944",
+    "color": 14527146
+  },
+  {
+    "name": "Pons",
+    "stl": "FMA67943",
+    "color": 13413034
+  },
+  {
+    "name": "Medulla Oblongata",
+    "stl": "FMA62004",
+    "color": 13413034
+  },
+  {
+    "name": "Midbrain",
+    "stl": "FMA61993nsn",
+    "color": 13413034
+  },
+  {
+    "name": "Corpus Callosum",
+    "stl": "FMA86464",
+    "color": 15649996
+  },
+  {
+    "name": "Septum Pellucidum",
+    "stl": "FMA61844",
+    "color": 14531515
+  },
+  {
+    "name": "Ant. Commissure",
+    "stl": "FMA61961",
+    "color": 14531515
+  },
+  {
+    "name": "Commissure of Fornix",
+    "stl": "FMA61970",
+    "color": 14531515
+  },
+  {
+    "name": "Lamina Terminalis",
+    "stl": "FMA61975",
+    "color": 14531515
+  },
+  {
+    "name": "Post. Commissure",
+    "stl": "FMA62072",
+    "color": 14531515
+  },
+  {
+    "name": "Habenula",
+    "stl": "FMA62032",
+    "color": 13413034
+  },
+  {
+    "name": "Pineal Body",
+    "stl": "FMA62033",
+    "color": 12298905
+  },
+  {
+    "name": "Optic Chiasm",
+    "stl": "FMA62045",
+    "color": 15654348
+  },
+  {
+    "name": "Tuber Cinereum",
+    "stl": "FMA62327",
+    "color": 13413034
+  },
+  {
+    "name": "Mammillary Body",
+    "stl": "FMA74877",
+    "color": 13413034
+  },
+  {
+    "name": "Peduncle of Midbrain",
+    "stl": "FMA62394",
+    "color": 13413034
+  },
+  {
+    "name": "R Optic Tract",
+    "stl": "FMA62382",
+    "color": 15654348
+  },
+  {
+    "name": "L Optic Tract",
+    "stl": "FMA67936",
+    "color": 15654348
+  },
+  {
+    "name": "R Optic Nerve",
+    "stl": "FMA50875",
+    "color": 15654348
+  },
+  {
+    "name": "L Optic Nerve",
+    "stl": "FMA50878",
+    "color": 15654348
+  },
+  {
+    "name": "White Matter",
+    "stl": "FMA61822",
+    "color": 15654365
+  },
+  {
+    "name": "Hypothalamus",
+    "stl": "FMA62008nsn",
+    "color": 13413034
+  },
+  {
+    "name": "R Thalamus",
+    "stl": "FMA258714",
+    "color": 14531498
+  },
+  {
+    "name": "L Thalamus",
+    "stl": "FMA258716",
+    "color": 14531498
+  },
+  {
+    "name": "R Sup. Frontal Gyrus",
+    "stl": "FMA72653",
+    "color": 14527146
+  },
+  {
+    "name": "L Sup. Frontal Gyrus",
+    "stl": "FMA72654",
+    "color": 14527146
+  },
+  {
+    "name": "R Mid. Frontal Gyrus",
+    "stl": "FMA72655",
+    "color": 14527146
+  },
+  {
+    "name": "L Mid. Frontal Gyrus",
+    "stl": "FMA72656",
+    "color": 14527146
+  },
+  {
+    "name": "R Precentral Gyrus",
+    "stl": "FMA72661",
+    "color": 14527146
+  },
+  {
+    "name": "L Precentral Gyrus",
+    "stl": "FMA72662",
+    "color": 14527146
+  },
+  {
+    "name": "R Postcentral Gyrus",
+    "stl": "FMA72665",
+    "color": 13413034
+  },
+  {
+    "name": "L Postcentral Gyrus",
+    "stl": "FMA72666",
+    "color": 13413034
+  },
+  {
+    "name": "R Supramarginal Gyrus",
+    "stl": "FMA72667",
+    "color": 13413034
+  },
+  {
+    "name": "L Supramarginal Gyrus",
+    "stl": "FMA72668",
+    "color": 13413034
+  },
+  {
+    "name": "R Angular Gyrus",
+    "stl": "FMA72669",
+    "color": 13413034
+  },
+  {
+    "name": "L Angular Gyrus",
+    "stl": "FMA72670",
+    "color": 13413034
+  },
+  {
+    "name": "R Mid. Temporal Gyrus",
+    "stl": "FMA72685",
+    "color": 14531498
+  },
+  {
+    "name": "L Mid. Temporal Gyrus",
+    "stl": "FMA72686",
+    "color": 14531498
+  },
+  {
+    "name": "R Inf. Temporal Gyrus",
+    "stl": "FMA72687",
+    "color": 14531498
+  },
+  {
+    "name": "L Inf. Temporal Gyrus",
+    "stl": "FMA72688",
+    "color": 14531498
+  },
+  {
+    "name": "R Fusiform Gyrus",
+    "stl": "FMA72689",
+    "color": 13417369
+  },
+  {
+    "name": "L Fusiform Gyrus",
+    "stl": "FMA72690",
+    "color": 13417369
+  },
+  {
+    "name": "R Hippocampus",
+    "stl": "FMA72713",
+    "color": 12298888
+  },
+  {
+    "name": "L Hippocampus",
+    "stl": "FMA72714",
+    "color": 12298888
+  },
+  {
+    "name": "R Cingulate Gyrus",
+    "stl": "FMA72717",
+    "color": 14531515
+  },
+  {
+    "name": "L Cingulate Gyrus",
+    "stl": "FMA72718",
+    "color": 14531515
+  },
+  {
+    "name": "R Caudate Nucleus",
+    "stl": "FMA72826",
+    "color": 13413017
+  },
+  {
+    "name": "L Caudate Nucleus",
+    "stl": "FMA72827",
+    "color": 13413017
+  },
+  {
+    "name": "R Putamen",
+    "stl": "FMA72828",
+    "color": 12294536
+  },
+  {
+    "name": "L Putamen",
+    "stl": "FMA72829",
+    "color": 12294536
+  },
+  {
+    "name": "R Globus Pallidus",
+    "stl": "FMA72830",
+    "color": 12294536
+  },
+  {
+    "name": "L Globus Pallidus",
+    "stl": "FMA72831",
+    "color": 12294536
+  },
+  {
+    "name": "R Amygdala",
+    "stl": "FMA72832",
+    "color": 13413000
+  },
+  {
+    "name": "L Amygdala",
+    "stl": "FMA72833",
+    "color": 13413000
+  },
+  {
+    "name": "R Insula",
+    "stl": "FMA72977",
+    "color": 14531498
+  },
+  {
+    "name": "L Insula",
+    "stl": "FMA72978",
+    "color": 14531498
+  },
+  {
+    "name": "R Occipital Lobe",
+    "stl": "FMA72975",
+    "color": 13413034
+  },
+  {
+    "name": "L Occipital Lobe",
+    "stl": "FMA72976",
+    "color": 13413034
+  },
+  {
+    "name": "R Lat. Ventricle",
+    "stl": "FMA78449",
+    "color": 8956620
+  },
+  {
+    "name": "L Lat. Ventricle",
+    "stl": "FMA78450",
+    "color": 8956620
+  },
+  {
+    "name": "Third Ventricle",
+    "stl": "FMA78454",
+    "color": 8956620
+  },
+  {
+    "name": "Cerebral Aqueduct",
+    "stl": "FMA78467",
+    "color": 8956620
+  },
+  {
+    "name": "Fourth Ventricle",
+    "stl": "FMA78469",
+    "color": 8956620
+  },
+  {
+    "name": "R Parahippocampal",
+    "stl": "FMA72705",
+    "color": 13417369
+  },
+  {
+    "name": "L Parahippocampal",
+    "stl": "FMA72706",
+    "color": 13417369
+  },
+  {
+    "name": "R Fornix",
+    "stl": "FMA72924",
+    "color": 14535867
+  },
+  {
+    "name": "L Fornix",
+    "stl": "FMA72925",
+    "color": 14535867
+  },
+  {
+    "name": "R Ant. Sup. Temp.",
+    "stl": "FMA72800",
+    "color": 14531498
+  },
+  {
+    "name": "L Ant. Sup. Temp.",
+    "stl": "FMA72801",
+    "color": 14531498
+  },
+  {
+    "name": "R Post. Sup. Temp.",
+    "stl": "FMA72804",
+    "color": 14531498
+  },
+  {
+    "name": "L Post. Sup. Temp.",
+    "stl": "FMA72805",
+    "color": 14531498
+  },
+  {
+    "name": "Interpeduncular Fossa",
+    "stl": "FMA83740",
+    "color": 13413034
+  },
+  {
+    "name": "R Sup. Parietal Lob.",
+    "stl": "BP50",
+    "color": 14531515
+  },
+  {
+    "name": "L Sup. Parietal Lob.",
+    "stl": "BP49",
+    "color": 14531515
+  },
+  {
+    "name": "Orbital Gyri",
+    "stl": "BP51",
+    "color": 14527146
+  },
+  {
+    "name": "R Short Gyrus",
+    "stl": "FMA72701",
+    "color": 14531498
+  },
+  {
+    "name": "L Short Gyrus",
+    "stl": "FMA72702",
+    "color": 14531498
+  },
+  {
+    "name": "R Sup. Colliculus",
+    "stl": "FMA73422",
+    "color": 13413034
+  },
+  {
+    "name": "L Sup. Colliculus",
+    "stl": "FMA73423",
+    "color": 13413034
+  },
+  {
+    "name": "R Inf. Colliculus",
+    "stl": "FMA73434",
+    "color": 13413034
+  },
+  {
+    "name": "L Inf. Colliculus",
+    "stl": "FMA73435",
+    "color": 13413034
+  }
+]

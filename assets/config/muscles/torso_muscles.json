@@ -1,0 +1,157 @@
+[
+  {
+    "name": "Pect. Major Clav. R",
+    "stl": "FMA34690",
+    "color": 12607584
+  },
+  {
+    "name": "Pect. Major Clav. L",
+    "stl": "FMA34691",
+    "color": 12607584
+  },
+  {
+    "name": "Pect. Major Stern. R",
+    "stl": "FMA79979",
+    "color": 12607584
+  },
+  {
+    "name": "Pect. Major Stern. L",
+    "stl": "FMA79980",
+    "color": 12607584
+  },
+  {
+    "name": "Pect. Major Abd. R",
+    "stl": "FMA45874",
+    "color": 12607584
+  },
+  {
+    "name": "Pect. Major Abd. L",
+    "stl": "FMA45875",
+    "color": 12607584
+  },
+  {
+    "name": "Pect. Minor R",
+    "stl": "FMA13375",
+    "color": 12079184
+  },
+  {
+    "name": "Pect. Minor L",
+    "stl": "FMA13376",
+    "color": 12079184
+  },
+  {
+    "name": "Ext. Oblique R",
+    "stl": "FMA13336",
+    "color": 11552840
+  },
+  {
+    "name": "Ext. Oblique L",
+    "stl": "FMA13337",
+    "color": 11552840
+  },
+  {
+    "name": "Int. Oblique R",
+    "stl": "FMA13892",
+    "color": 11028552
+  },
+  {
+    "name": "Int. Oblique L",
+    "stl": "FMA13893",
+    "color": 11028552
+  },
+  {
+    "name": "Trans. Abdominis R",
+    "stl": "FMA22344",
+    "color": 10502208
+  },
+  {
+    "name": "Trans. Abdominis L",
+    "stl": "FMA22345",
+    "color": 10502208
+  },
+  {
+    "name": "Rectus Abdominis R",
+    "stl": "FMA13377",
+    "color": 12079184
+  },
+  {
+    "name": "Rectus Abdominis L",
+    "stl": "FMA13378",
+    "color": 12079184
+  },
+  {
+    "name": "Pyramidalis R",
+    "stl": "FMA22346",
+    "color": 10502208
+  },
+  {
+    "name": "Pyramidalis L",
+    "stl": "FMA22347",
+    "color": 10502208
+  },
+  {
+    "name": "Quadratus Lumb. R",
+    "stl": "FMA22348",
+    "color": 10044484
+  },
+  {
+    "name": "Quadratus Lumb. L",
+    "stl": "FMA22349",
+    "color": 10044484
+  },
+  {
+    "name": "Ext. Intercostal",
+    "stl": "FMA9756",
+    "color": 11552840
+  },
+  {
+    "name": "Int. Intercostal",
+    "stl": "FMA9757",
+    "color": 11028552
+  },
+  {
+    "name": "Innermost Intercostal",
+    "stl": "FMA9758",
+    "color": 10502208
+  },
+  {
+    "name": "Trans. Thoracis R",
+    "stl": "FMA9761",
+    "color": 10044484
+  },
+  {
+    "name": "Trans. Thoracis L",
+    "stl": "FMA9762",
+    "color": 10044484
+  },
+  {
+    "name": "Lev. Costarum Longi R",
+    "stl": "FMA74075",
+    "color": 8929344
+  },
+  {
+    "name": "Lev. Costarum Longi L",
+    "stl": "FMA74076",
+    "color": 8929344
+  },
+  {
+    "name": "Lev. Costarum Breves R",
+    "stl": "FMA74077",
+    "color": 8929344
+  },
+  {
+    "name": "Lev. Costarum Breves L",
+    "stl": "FMA74078",
+    "color": 8929344
+  },
+  {
+    "name": "Diaphragm",
+    "stl": "FMA13295",
+    "color": 13391189
+  },
+  {
+    "name": "Linea Alba",
+    "stl": "FMA11336",
+    "color": 13421772
+  }
+]

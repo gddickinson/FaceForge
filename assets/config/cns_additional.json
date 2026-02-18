@@ -1,0 +1,21 @@
+[
+  {"name": "R Internal Capsule Anterior Limb", "stl": "FMA72908", "category": "white_matter", "color": 15790320},
+  {"name": "L Internal Capsule Anterior Limb", "stl": "FMA72909", "category": "white_matter", "color": 15790320},
+  {"name": "R Stria Terminalis", "stl": "FMA72939", "category": "white_matter", "color": 15790320},
+  {"name": "L Stria Terminalis", "stl": "FMA72940", "category": "white_matter", "color": 15790320},
+  {"name": "R Lateral Geniculate Body", "stl": "FMA73303", "category": "thalamic", "color": 16764108},
+  {"name": "L Lateral Geniculate Body", "stl": "FMA73304", "category": "thalamic", "color": 16764108},
+  {"name": "R Medial Geniculate Body", "stl": "FMA73309", "category": "thalamic", "color": 16764108},
+  {"name": "L Medial Geniculate Body", "stl": "FMA73310", "category": "thalamic", "color": 16764108},
+  {"name": "R Stria Medullaris of Thalamus", "stl": "FMA73413", "category": "thalamic", "color": 16764108},
+  {"name": "L Stria Medullaris of Thalamus", "stl": "FMA73414", "category": "thalamic", "color": 16764108},
+  {"name": "R Brachium of Superior Colliculus", "stl": "FMA73461", "category": "brainstem", "color": 14540253},
+  {"name": "L Brachium of Superior Colliculus", "stl": "FMA73462", "category": "brainstem", "color": 14540253},
+  {"name": "R Brachium of Inferior Colliculus", "stl": "FMA73463", "category": "brainstem", "color": 14540253},
+  {"name": "L Brachium of Inferior Colliculus", "stl": "FMA73464", "category": "brainstem", "color": 14540253},
+  {"name": "R Choroid Plexus", "stl": "FMA274027", "category": "ventricular", "color": 13369395},
+  {"name": "L Choroid Plexus", "stl": "FMA274029", "category": "ventricular", "color": 13369395},
+  {"name": "Interventricular Foramen", "stl": "FMA75351", "category": "ventricular", "color": 11184810},
+  {"name": "Midbrain", "stl": "FMA61993nsn", "category": "brainstem", "color": 14540253},
+  {"name": "Hypothalamus", "stl": "FMA62008nsn", "category": "diencephalon", "color": 16764108}
+]

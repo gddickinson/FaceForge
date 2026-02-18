@@ -1,0 +1,82 @@
+[
+  {
+    "name": "Eyeball",
+    "stl": "FMA12513",
+    "type": "bilateral",
+    "category": "eyes",
+    "color": 15790320,
+    "opacity": 1.0,
+    "shininess": 20,
+    "animated": true
+  },
+  {
+    "name": "Ear",
+    "stl": "FMA52780",
+    "type": "bilateral",
+    "category": "ears",
+    "color": 13935988,
+    "opacity": 0.7,
+    "shininess": 15,
+    "animated": false
+  },
+  {
+    "name": "Nasal Cartilages",
+    "stl": "FMA71704",
+    "type": "single",
+    "category": "nose",
+    "color": 13150338,
+    "opacity": 0.7,
+    "shininess": 20,
+    "animated": true
+  },
+  {
+    "name": "Eyebrows",
+    "stl": "FMA71098",
+    "type": "single",
+    "category": "eyebrows",
+    "color": 3811360,
+    "opacity": 0.85,
+    "shininess": 5,
+    "animated": true
+  },
+  {
+    "name": "Right Nasal Bone",
+    "stl": "FMA53647",
+    "type": "single",
+    "category": "nose",
+    "color": 13935988,
+    "opacity": 0.6,
+    "shininess": 15,
+    "animated": false
+  },
+  {
+    "name": "Left Nasal Bone",
+    "stl": "FMA53648",
+    "type": "single",
+    "category": "nose",
+    "color": 13935988,
+    "opacity": 0.6,
+    "shininess": 15,
+    "animated": false
+  },
+  {
+    "name": "Hyoid Bone",
+    "stl": "FMA52749",
+    "type": "single",
+    "category": "throat",
+    "color": 12883306,
+    "opacity": 0.7,
+    "shininess": 20,
+    "animated": false
+  },
+  {
+    "name": "Thyroid Cartilage",
+    "stl": "FMA55099",
+    "type": "single",
+    "category": "throat",
+    "color": 13150338,
+    "opacity": 0.7,
+    "shininess": 20,
+    "animated": false
+  }
+]

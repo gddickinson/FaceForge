@@ -1,0 +1,102 @@
+[
+  {
+    "name": "Deltoid Clav. R",
+    "stl": "FMA34680",
+    "color": 12607584
+  },
+  {
+    "name": "Deltoid Clav. L",
+    "stl": "FMA34681",
+    "color": 12607584
+  },
+  {
+    "name": "Deltoid Acr. R",
+    "stl": "FMA34682",
+    "color": 12607584
+  },
+  {
+    "name": "Deltoid Acr. L",
+    "stl": "FMA34683",
+    "color": 12607584
+  },
+  {
+    "name": "Deltoid Spin. R",
+    "stl": "FMA34684",
+    "color": 12607584
+  },
+  {
+    "name": "Deltoid Spin. L",
+    "stl": "FMA34685",
+    "color": 12607584
+  },
+  {
+    "name": "Supraspinatus R",
+    "stl": "FMA32544",
+    "color": 11554896
+  },
+  {
+    "name": "Supraspinatus L",
+    "stl": "FMA32545",
+    "color": 11554896
+  },
+  {
+    "name": "Infraspinatus R",
+    "stl": "FMA32547",
+    "color": 11554896
+  },
+  {
+    "name": "Infraspinatus L",
+    "stl": "FMA32548",
+    "color": 11554896
+  },
+  {
+    "name": "Teres Major R",
+    "stl": "FMA32551",
+    "color": 11028552
+  },
+  {
+    "name": "Teres Major L",
+    "stl": "FMA32552",
+    "color": 11028552
+  },
+  {
+    "name": "Teres Minor R",
+    "stl": "FMA32553",
+    "color": 11028552
+  },
+  {
+    "name": "Teres Minor L",
+    "stl": "FMA32554",
+    "color": 11028552
+  },
+  {
+    "name": "Subscapularis R",
+    "stl": "FMA13414",
+    "color": 10502208
+  },
+  {
+    "name": "Subscapularis L",
+    "stl": "FMA13415",
+    "color": 10502208
+  },
+  {
+    "name": "Serratus Ant. R",
+    "stl": "FMA13398",
+    "color": 12077128
+  },
+  {
+    "name": "Serratus Ant. L",
+    "stl": "FMA13399",
+    "color": 12077128
+  },
+  {
+    "name": "Subclavius R",
+    "stl": "FMA13412",
+    "color": 11028552
+  },
+  {
+    "name": "Subclavius L",
+    "stl": "FMA13411",
+    "color": 11028552
+  }
+]

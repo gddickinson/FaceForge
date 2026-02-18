@@ -1,0 +1,302 @@
+[
+  {
+    "name": "Rectus Femoris R",
+    "stl": "FMA38928",
+    "color": 12607584
+  },
+  {
+    "name": "Rectus Femoris L",
+    "stl": "FMA38929",
+    "color": 12607584
+  },
+  {
+    "name": "Vastus Lat. R",
+    "stl": "FMA38930",
+    "color": 12079184
+  },
+  {
+    "name": "Vastus Lat. L",
+    "stl": "FMA38931",
+    "color": 12079184
+  },
+  {
+    "name": "Vastus Med. R",
+    "stl": "FMA38932",
+    "color": 12079184
+  },
+  {
+    "name": "Vastus Med. L",
+    "stl": "FMA38933",
+    "color": 12079184
+  },
+  {
+    "name": "Vastus Inter. R",
+    "stl": "FMA38934",
+    "color": 11552840
+  },
+  {
+    "name": "Vastus Inter. L",
+    "stl": "FMA38935",
+    "color": 11552840
+  },
+  {
+    "name": "Sartorius R",
+    "stl": "FMA22354",
+    "color": 11028552
+  },
+  {
+    "name": "Sartorius L",
+    "stl": "FMA22355",
+    "color": 11028552
+  },
+  {
+    "name": "Biceps Fem. Long R",
+    "stl": "FMA45888",
+    "color": 12079184
+  },
+  {
+    "name": "Biceps Fem. Long L",
+    "stl": "FMA45889",
+    "color": 12079184
+  },
+  {
+    "name": "Biceps Fem. Short R",
+    "stl": "FMA45891",
+    "color": 11552840
+  },
+  {
+    "name": "Biceps Fem. Short L",
+    "stl": "FMA45892",
+    "color": 11552840
+  },
+  {
+    "name": "Semitendinosus R",
+    "stl": "FMA22358",
+    "color": 11028552
+  },
+  {
+    "name": "Semitendinosus L",
+    "stl": "FMA22359",
+    "color": 11028552
+  },
+  {
+    "name": "Semimembranosus R",
+    "stl": "FMA22448",
+    "color": 11028552
+  },
+  {
+    "name": "Semimembranosus L",
+    "stl": "FMA22449",
+    "color": 11028552
+  },
+  {
+    "name": "Pectineus R",
+    "stl": "FMA22450",
+    "color": 10502208
+  },
+  {
+    "name": "Pectineus L",
+    "stl": "FMA22451",
+    "color": 10502208
+  },
+  {
+    "name": "Adductor Brevis R",
+    "stl": "FMA22452",
+    "color": 10044484
+  },
+  {
+    "name": "Adductor Brevis L",
+    "stl": "FMA22454",
+    "color": 10044484
+  },
+  {
+    "name": "Adductor Longus R",
+    "stl": "FMA22456",
+    "color": 10044484
+  },
+  {
+    "name": "Adductor Longus L",
+    "stl": "FMA22457",
+    "color": 10044484
+  },
+  {
+    "name": "Adductor Magnus R",
+    "stl": "FMA22459",
+    "color": 8929344
+  },
+  {
+    "name": "Adductor Magnus L",
+    "stl": "FMA22460",
+    "color": 8929344
+  },
+  {
+    "name": "Adductor Min. R",
+    "stl": "FMA43886",
+    "color": 8929344
+  },
+  {
+    "name": "Adductor Min. L",
+    "stl": "FMA43887",
+    "color": 8929344
+  },
+  {
+    "name": "Gracilis R",
+    "stl": "FMA43883",
+    "color": 10502208
+  },
+  {
+    "name": "Gracilis L",
+    "stl": "FMA43884",
+    "color": 10502208
+  },
+  {
+    "name": "Tibialis Ant. R",
+    "stl": "FMA22544",
+    "color": 11552840
+  },
+  {
+    "name": "Tibialis Ant. L",
+    "stl": "FMA22545",
+    "color": 11552840
+  },
+  {
+    "name": "Ext. Hall. Long. R",
+    "stl": "FMA22546",
+    "color": 11028552
+  },
+  {
+    "name": "Ext. Hall. Long. L",
+    "stl": "FMA22547",
+    "color": 11028552
+  },
+  {
+    "name": "Ext. Dig. Long. R",
+    "stl": "FMA22548",
+    "color": 11028552
+  },
+  {
+    "name": "Ext. Dig. Long. L",
+    "stl": "FMA22549",
+    "color": 11028552
+  },
+  {
+    "name": "Fibularis Tert. R",
+    "stl": "FMA22550",
+    "color": 10502208
+  },
+  {
+    "name": "Fibularis Tert. L",
+    "stl": "FMA22551",
+    "color": 10502208
+  },
+  {
+    "name": "Fibularis Long. R",
+    "stl": "FMA22552",
+    "color": 10502208
+  },
+  {
+    "name": "Fibularis Long. L",
+    "stl": "FMA22553",
+    "color": 10502208
+  },
+  {
+    "name": "Fibularis Brev. R",
+    "stl": "FMA22554",
+    "color": 10044484
+  },
+  {
+    "name": "Fibularis Brev. L",
+    "stl": "FMA22555",
+    "color": 10044484
+  },
+  {
+    "name": "Gastroc. Med. R",
+    "stl": "FMA45957",
+    "color": 12607584
+  },
+  {
+    "name": "Gastroc. Med. L",
+    "stl": "FMA45958",
+    "color": 12607584
+  },
+  {
+    "name": "Gastroc. Lat. R",
+    "stl": "FMA45960",
+    "color": 12079184
+  },
+  {
+    "name": "Gastroc. Lat. L",
+    "stl": "FMA45961",
+    "color": 12079184
+  },
+  {
+    "name": "Soleus R",
+    "stl": "FMA22558",
+    "color": 11552840
+  },
+  {
+    "name": "Soleus L",
+    "stl": "FMA22559",
+    "color": 11552840
+  },
+  {
+    "name": "Plantaris R",
+    "stl": "FMA22560",
+    "color": 11028552
+  },
+  {
+    "name": "Plantaris L",
+    "stl": "FMA22561",
+    "color": 11028552
+  },
+  {
+    "name": "Popliteus R",
+    "stl": "FMA22591",
+    "color": 10502208
+  },
+  {
+    "name": "Popliteus L",
+    "stl": "FMA22592",
+    "color": 10502208
+  },
+  {
+    "name": "Tibialis Post. R",
+    "stl": "FMA65018",
+    "color": 10044484
+  },
+  {
+    "name": "Tibialis Post. L",
+    "stl": "FMA65019",
+    "color": 10044484
+  },
+  {
+    "name": "Flex. Dig. Long. R",
+    "stl": "FMA65016",
+    "color": 8929344
+  },
+  {
+    "name": "Flex. Dig. Long. L",
+    "stl": "FMA65017",
+    "color": 8929344
+  },
+  {
+    "name": "Flex. Hall. Long. R",
+    "stl": "FMA65014",
+    "color": 8929344
+  },
+  {
+    "name": "Flex. Hall. Long. L",
+    "stl": "FMA65015",
+    "color": 8929344
+  },
+  {
+    "name": "Iliotibial Tract R",
+    "stl": "FMA58776",
+    "color": 13421772
+  },
+  {
+    "name": "Iliotibial Tract L",
+    "stl": "FMA58777",
+    "color": 13421772
+  }
+]

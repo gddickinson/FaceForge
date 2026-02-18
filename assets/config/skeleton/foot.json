@@ -1,0 +1,446 @@
+[
+  {
+    "name": "R Talus",
+    "stl": "FMA24482",
+    "side": "R",
+    "bone": "tarsal",
+    "color": 13151626
+  },
+  {
+    "name": "R Calcaneus",
+    "stl": "FMA24497",
+    "side": "R",
+    "bone": "tarsal",
+    "color": 13151626
+  },
+  {
+    "name": "R Navicular",
+    "stl": "FMA24500",
+    "side": "R",
+    "bone": "tarsal",
+    "color": 13151626
+  },
+  {
+    "name": "R Med. Cuneiform",
+    "stl": "FMA24521",
+    "side": "R",
+    "bone": "tarsal",
+    "color": 13151626
+  },
+  {
+    "name": "R Int. Cuneiform",
+    "stl": "FMA24523",
+    "side": "R",
+    "bone": "tarsal",
+    "color": 13151626
+  },
+  {
+    "name": "R Lat. Cuneiform",
+    "stl": "FMA24525",
+    "side": "R",
+    "bone": "tarsal",
+    "color": 13151626
+  },
+  {
+    "name": "R Cuboid",
+    "stl": "FMA24528",
+    "side": "R",
+    "bone": "tarsal",
+    "color": 13151626
+  },
+  {
+    "name": "L Talus",
+    "stl": "FMA24483",
+    "side": "L",
+    "bone": "tarsal",
+    "color": 13151626
+  },
+  {
+    "name": "L Calcaneus",
+    "stl": "FMA24498",
+    "side": "L",
+    "bone": "tarsal",
+    "color": 13151626
+  },
+  {
+    "name": "L Navicular",
+    "stl": "FMA24501",
+    "side": "L",
+    "bone": "tarsal",
+    "color": 13151626
+  },
+  {
+    "name": "L Med. Cuneiform",
+    "stl": "FMA24522",
+    "side": "L",
+    "bone": "tarsal",
+    "color": 13151626
+  },
+  {
+    "name": "L Int. Cuneiform",
+    "stl": "FMA24524",
+    "side": "L",
+    "bone": "tarsal",
+    "color": 13151626
+  },
+  {
+    "name": "L Lat. Cuneiform",
+    "stl": "FMA24526",
+    "side": "L",
+    "bone": "tarsal",
+    "color": 13151626
+  },
+  {
+    "name": "L Cuboid",
+    "stl": "FMA24529",
+    "side": "L",
+    "bone": "tarsal",
+    "color": 13151626
+  },
+  {
+    "name": "R 1st Metatarsal",
+    "stl": "FMA24507",
+    "side": "R",
+    "bone": "metatarsal",
+    "digit": 1,
+    "color": 13940886
+  },
+  {
+    "name": "R 2nd Metatarsal",
+    "stl": "FMA24509",
+    "side": "R",
+    "bone": "metatarsal",
+    "digit": 2,
+    "color": 13940886
+  },
+  {
+    "name": "R 3rd Metatarsal",
+    "stl": "FMA24511",
+    "side": "R",
+    "bone": "metatarsal",
+    "digit": 3,
+    "color": 13940886
+  },
+  {
+    "name": "R 4th Metatarsal",
+    "stl": "FMA24513",
+    "side": "R",
+    "bone": "metatarsal",
+    "digit": 4,
+    "color": 13940886
+  },
+  {
+    "name": "R 5th Metatarsal",
+    "stl": "FMA24515",
+    "side": "R",
+    "bone": "metatarsal",
+    "digit": 5,
+    "color": 13940886
+  },
+  {
+    "name": "L 1st Metatarsal",
+    "stl": "FMA24508",
+    "side": "L",
+    "bone": "metatarsal",
+    "digit": 1,
+    "color": 13940886
+  },
+  {
+    "name": "L 2nd Metatarsal",
+    "stl": "FMA24510",
+    "side": "L",
+    "bone": "metatarsal",
+    "digit": 2,
+    "color": 13940886
+  },
+  {
+    "name": "L 3rd Metatarsal",
+    "stl": "FMA24512",
+    "side": "L",
+    "bone": "metatarsal",
+    "digit": 3,
+    "color": 13940886
+  },
+  {
+    "name": "L 4th Metatarsal",
+    "stl": "FMA24514",
+    "side": "L",
+    "bone": "metatarsal",
+    "digit": 4,
+    "color": 13940886
+  },
+  {
+    "name": "L 5th Metatarsal",
+    "stl": "FMA24516",
+    "side": "L",
+    "bone": "metatarsal",
+    "digit": 5,
+    "color": 13940886
+  },
+  {
+    "name": "R Big Toe Prox.",
+    "stl": "FMA43253",
+    "side": "R",
+    "bone": "phalanx",
+    "digit": 1,
+    "seg": "prox",
+    "color": 13940886
+  },
+  {
+    "name": "R Big Toe Dist.",
+    "stl": "FMA32650",
+    "side": "R",
+    "bone": "phalanx",
+    "digit": 1,
+    "seg": "dist",
+    "color": 13940886
+  },
+  {
+    "name": "R 2nd Toe Prox.",
+    "stl": "FMA32634",
+    "side": "R",
+    "bone": "phalanx",
+    "digit": 2,
+    "seg": "prox",
+    "color": 13940886
+  },
+  {
+    "name": "R 2nd Toe Mid.",
+    "stl": "FMA32642",
+    "side": "R",
+    "bone": "phalanx",
+    "digit": 2,
+    "seg": "mid",
+    "color": 13940886
+  },
+  {
+    "name": "R 2nd Toe Dist.",
+    "stl": "FMA32652",
+    "side": "R",
+    "bone": "phalanx",
+    "digit": 2,
+    "seg": "dist",
+    "color": 13940886
+  },
+  {
+    "name": "R 3rd Toe Prox.",
+    "stl": "FMA32636",
+    "side": "R",
+    "bone": "phalanx",
+    "digit": 3,
+    "seg": "prox",
+    "color": 13940886
+  },
+  {
+    "name": "R 3rd Toe Mid.",
+    "stl": "FMA32644",
+    "side": "R",
+    "bone": "phalanx",
+    "digit": 3,
+    "seg": "mid",
+    "color": 13940886
+  },
+  {
+    "name": "R 3rd Toe Dist.",
+    "stl": "FMA32654",
+    "side": "R",
+    "bone": "phalanx",
+    "digit": 3,
+    "seg": "dist",
+    "color": 13940886
+  },
+  {
+    "name": "R 4th Toe Prox.",
+    "stl": "FMA32638",
+    "side": "R",
+    "bone": "phalanx",
+    "digit": 4,
+    "seg": "prox",
+    "color": 13940886
+  },
+  {
+    "name": "R 4th Toe Mid.",
+    "stl": "FMA32646",
+    "side": "R",
+    "bone": "phalanx",
+    "digit": 4,
+    "seg": "mid",
+    "color": 13940886
+  },
+  {
+    "name": "R 4th Toe Dist.",
+    "stl": "FMA32656",
+    "side": "R",
+    "bone": "phalanx",
+    "digit": 4,
+    "seg": "dist",
+    "color": 13940886
+  },
+  {
+    "name": "R 5th Toe Prox.",
+    "stl": "FMA32640",
+    "side": "R",
+    "bone": "phalanx",
+    "digit": 5,
+    "seg": "prox",
+    "color": 13940886
+  },
+  {
+    "name": "R 5th Toe Mid.",
+    "stl": "FMA230986",
+    "side": "R",
+    "bone": "phalanx",
+    "digit": 5,
+    "seg": "mid",
+    "color": 13940886
+  },
+  {
+    "name": "R 5th Toe Dist.",
+    "stl": "FMA32658",
+    "side": "R",
+    "bone": "phalanx",
+    "digit": 5,
+    "seg": "dist",
+    "color": 13940886
+  },
+  {
+    "name": "L Big Toe Prox.",
+    "stl": "FMA43254",
+    "side": "L",
+    "bone": "phalanx",
+    "digit": 1,
+    "seg": "prox",
+    "color": 13940886
+  },
+  {
+    "name": "L Big Toe Dist.",
+    "stl": "FMA32651",
+    "side": "L",
+    "bone": "phalanx",
+    "digit": 1,
+    "seg": "dist",
+    "color": 13940886
+  },
+  {
+    "name": "L 2nd Toe Prox.",
+    "stl": "FMA32635",
+    "side": "L",
+    "bone": "phalanx",
+    "digit": 2,
+    "seg": "prox",
+    "color": 13940886
+  },
+  {
+    "name": "L 2nd Toe Mid.",
+    "stl": "FMA32643",
+    "side": "L",
+    "bone": "phalanx",
+    "digit": 2,
+    "seg": "mid",
+    "color": 13940886
+  },
+  {
+    "name": "L 2nd Toe Dist.",
+    "stl": "FMA32653",
+    "side": "L",
+    "bone": "phalanx",
+    "digit": 2,
+    "seg": "dist",
+    "color": 13940886
+  },
+  {
+    "name": "L 3rd Toe Prox.",
+    "stl": "FMA32637",
+    "side": "L",
+    "bone": "phalanx",
+    "digit": 3,
+    "seg": "prox",
+    "color": 13940886
+  },
+  {
+    "name": "L 3rd Toe Mid.",
+    "stl": "FMA32645",
+    "side": "L",
+    "bone": "phalanx",
+    "digit": 3,
+    "seg": "mid",
+    "color": 13940886
+  },
+  {
+    "name": "L 3rd Toe Dist.",
+    "stl": "FMA32655",
+    "side": "L",
+    "bone": "phalanx",
+    "digit": 3,
+    "seg": "dist",
+    "color": 13940886
+  },
+  {
+    "name": "L 4th Toe Prox.",
+    "stl": "FMA32639",
+    "side": "L",
+    "bone": "phalanx",
+    "digit": 4,
+    "seg": "prox",
+    "color": 13940886
+  },
+  {
+    "name": "L 4th Toe Mid.",
+    "stl": "FMA32647",
+    "side": "L",
+    "bone": "phalanx",
+    "digit": 4,
+    "seg": "mid",
+    "color": 13940886
+  },
+  {
+    "name": "L 4th Toe Dist.",
+    "stl": "FMA32657",
+    "side": "L",
+    "bone": "phalanx",
+    "digit": 4,
+    "seg": "dist",
+    "color": 13940886
+  },
+  {
+    "name": "L 5th Toe Prox.",
+    "stl": "FMA32641",
+    "side": "L",
+    "bone": "phalanx",
+    "digit": 5,
+    "seg": "prox",
+    "color": 13940886
+  },
+  {
+    "name": "L 5th Toe Mid.",
+    "stl": "FMA230988",
+    "side": "L",
+    "bone": "phalanx",
+    "digit": 5,
+    "seg": "mid",
+    "color": 13940886
+  },
+  {
+    "name": "L 5th Toe Dist.",
+    "stl": "FMA32659",
+    "side": "L",
+    "bone": "phalanx",
+    "digit": 5,
+    "seg": "dist",
+    "color": 13940886
+  },
+  {
+    "name": "R Sesamoid",
+    "stl": "FMA45097",
+    "side": "R",
+    "bone": "sesamoid",
+    "color": 13151626
+  },
+  {
+    "name": "L Sesamoid",
+    "stl": "FMA45098",
+    "side": "L",
+    "bone": "sesamoid",
+    "color": 13151626
+  }
+]

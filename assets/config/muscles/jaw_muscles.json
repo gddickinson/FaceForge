@@ -1,0 +1,178 @@
+[
+  {
+    "name": "Masseter Sup. L",
+    "stl": "FMA49002",
+    "type": "closer",
+    "color": 12861504,
+    "jawAxis": "y",
+    "jawThresh": 0.45
+  },
+  {
+    "name": "Masseter Sup. R",
+    "stl": "FMA49001",
+    "type": "closer",
+    "color": 12861504,
+    "jawAxis": "y",
+    "jawThresh": 0.45
+  },
+  {
+    "name": "Masseter Deep L",
+    "stl": "FMA49005",
+    "type": "closer",
+    "color": 12073016,
+    "jawAxis": "y",
+    "jawThresh": 0.45
+  },
+  {
+    "name": "Masseter Deep R",
+    "stl": "FMA49004",
+    "type": "closer",
+    "color": 12073016,
+    "jawAxis": "y",
+    "jawThresh": 0.45
+  },
+  {
+    "name": "Temporalis L",
+    "stl": "FMA49008",
+    "type": "closer",
+    "color": 11550784,
+    "jawAxis": "y",
+    "jawThresh": 0.35
+  },
+  {
+    "name": "Temporalis R",
+    "stl": "FMA49007",
+    "type": "closer",
+    "color": 11550784,
+    "jawAxis": "y",
+    "jawThresh": 0.35
+  },
+  {
+    "name": "Med. Pterygoid L",
+    "stl": "FMA49013",
+    "type": "closer",
+    "color": 10499381,
+    "jawAxis": "y",
+    "jawThresh": 0.45
+  },
+  {
+    "name": "Med. Pterygoid R",
+    "stl": "FMA49012",
+    "type": "closer",
+    "color": 10499381,
+    "jawAxis": "y",
+    "jawThresh": 0.45
+  },
+  {
+    "name": "Lat. Pteryg. Upper L",
+    "stl": "FMA49025",
+    "type": "opener",
+    "color": 13652048,
+    "jawAxis": "y",
+    "jawThresh": 0.55
+  },
+  {
+    "name": "Lat. Pteryg. Upper R",
+    "stl": "FMA49024",
+    "type": "opener",
+    "color": 13652048,
+    "jawAxis": "y",
+    "jawThresh": 0.55
+  },
+  {
+    "name": "Lat. Pteryg. Lower L",
+    "stl": "FMA49023",
+    "type": "opener",
+    "color": 13652048,
+    "jawAxis": "y",
+    "jawThresh": 0.55
+  },
+  {
+    "name": "Lat. Pteryg. Lower R",
+    "stl": "FMA49022",
+    "type": "opener",
+    "color": 13652048,
+    "jawAxis": "y",
+    "jawThresh": 0.55
+  },
+  {
+    "name": "Digastric Ant. L",
+    "stl": "FMA46305",
+    "type": "opener",
+    "color": 13656160,
+    "jawAxis": "y",
+    "jawThresh": 0.5
+  },
+  {
+    "name": "Digastric Ant. R",
+    "stl": "FMA46304",
+    "type": "opener",
+    "color": 13656160,
+    "jawAxis": "y",
+    "jawThresh": 0.5
+  },
+  {
+    "name": "Digastric Post. L",
+    "stl": "FMA46307",
+    "type": "opener",
+    "color": 13656160,
+    "jawAxis": "y",
+    "jawThresh": 0.6
+  },
+  {
+    "name": "Digastric Post. R",
+    "stl": "FMA46306",
+    "type": "opener",
+    "color": 13656160,
+    "jawAxis": "y",
+    "jawThresh": 0.6
+  },
+  {
+    "name": "Stylohyoid R",
+    "stl": "FMA45826",
+    "type": "opener",
+    "color": 13660272,
+    "jawAxis": "y",
+    "jawThresh": 0.55
+  },
+  {
+    "name": "Stylohyoid L",
+    "stl": "FMA45827",
+    "type": "opener",
+    "color": 13660272,
+    "jawAxis": "y",
+    "jawThresh": 0.55
+  },
+  {
+    "name": "Mylohyoid R",
+    "stl": "FMA46321",
+    "type": "opener",
+    "color": 13660272,
+    "jawAxis": "y",
+    "jawThresh": 0.5
+  },
+  {
+    "name": "Mylohyoid L",
+    "stl": "FMA46322",
+    "type": "opener",
+    "color": 13660272,
+    "jawAxis": "y",
+    "jawThresh": 0.5
+  },
+  {
+    "name": "Geniohyoid R",
+    "stl": "FMA46326",
+    "type": "opener",
+    "color": 13660272,
+    "jawAxis": "y",
+    "jawThresh": 0.5
+  },
+  {
+    "name": "Geniohyoid L",
+    "stl": "FMA46327",
+    "type": "opener",
+    "color": 13660272,
+    "jawAxis": "y",
+    "jawThresh": 0.5
+  }
+]

@@ -1,0 +1,122 @@
+[
+  {
+    "name": "Psoas Major R",
+    "stl": "FMA22342",
+    "color": 12607584
+  },
+  {
+    "name": "Psoas Major L",
+    "stl": "FMA22343",
+    "color": 12607584
+  },
+  {
+    "name": "Iliacus R",
+    "stl": "FMA22322",
+    "color": 12079184
+  },
+  {
+    "name": "Iliacus L",
+    "stl": "FMA22323",
+    "color": 12079184
+  },
+  {
+    "name": "Gluteus Max. R",
+    "stl": "FMA22328",
+    "color": 12607584
+  },
+  {
+    "name": "Gluteus Max. L",
+    "stl": "FMA22329",
+    "color": 12607584
+  },
+  {
+    "name": "Gluteus Med. R",
+    "stl": "FMA22330",
+    "color": 12079184
+  },
+  {
+    "name": "Gluteus Med. L",
+    "stl": "FMA22331",
+    "color": 12079184
+  },
+  {
+    "name": "Gluteus Min. R",
+    "stl": "FMA22332",
+    "color": 11552840
+  },
+  {
+    "name": "Gluteus Min. L",
+    "stl": "FMA22333",
+    "color": 11552840
+  },
+  {
+    "name": "Piriformis R",
+    "stl": "FMA22340",
+    "color": 11028552
+  },
+  {
+    "name": "Piriformis L",
+    "stl": "FMA22341",
+    "color": 11028552
+  },
+  {
+    "name": "Obt. Internus R",
+    "stl": "FMA22324",
+    "color": 10502208
+  },
+  {
+    "name": "Obt. Internus L",
+    "stl": "FMA22325",
+    "color": 10502208
+  },
+  {
+    "name": "Obt. Externus R",
+    "stl": "FMA22326",
+    "color": 10502208
+  },
+  {
+    "name": "Obt. Externus L",
+    "stl": "FMA22327",
+    "color": 10502208
+  },
+  {
+    "name": "Gem. Superior R",
+    "stl": "FMA22334",
+    "color": 10044484
+  },
+  {
+    "name": "Gem. Superior L",
+    "stl": "FMA22335",
+    "color": 10044484
+  },
+  {
+    "name": "Gem. Inferior R",
+    "stl": "FMA22336",
+    "color": 10044484
+  },
+  {
+    "name": "Gem. Inferior L",
+    "stl": "FMA22337",
+    "color": 10044484
+  },
+  {
+    "name": "Quad. Femoris R",
+    "stl": "FMA22338",
+    "color": 10044484
+  },
+  {
+    "name": "Quad. Femoris L",
+    "stl": "FMA22339",
+    "color": 10044484
+  },
+  {
+    "name": "Tensor Fasc. Lat. R",
+    "stl": "FMA22425",
+    "color": 11552840
+  },
+  {
+    "name": "Tensor Fasc. Lat. L",
+    "stl": "FMA22426",
+    "color": 11552840
+  }
+]

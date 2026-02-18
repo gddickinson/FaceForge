@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools>=68.0", "setuptools-scm>=8.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "faceforge"
+version = "0.1.0"
+description = "FACS-based facial animation with full-body anatomy visualization"
+requires-python = ">=3.11"
+dependencies = [
+    "numpy>=1.24",
+    "PyOpenGL>=3.1.7",
+    "PySide6>=6.6",
+    "glfw>=2.6",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4",
+    "pytest-qt>=4.2",
+]
+tools = [
+    "scipy>=1.10",
+]
+
+[project.scripts]
+faceforge = "faceforge.app:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

@@ -1,0 +1,10 @@
+[
+  {"name": "Anterior Cardiac Veins", "stl": "FMA71567", "category": "veins", "color": 4474111},
+  {"name": "R Interventricular Septal Branches", "stl": "FMA71669", "category": "arteries", "color": 13369395},
+  {"name": "L Interventricular Septal Branches", "stl": "FMA71670", "category": "arteries", "color": 13369395},
+  {"name": "Posterior Veins of L Ventricle", "stl": "FMA76751", "category": "veins", "color": 4474111},
+  {"name": "R Posterolateral Branch", "stl": "FMA76994", "category": "arteries", "color": 13369395},
+  {"name": "Posterior Interventricular Branch", "stl": "FMA3840nsn", "category": "arteries", "color": 13369395},
+  {"name": "Anterior Interventricular Branch", "stl": "FMA3862nsn", "category": "arteries", "color": 13369395},
+  {"name": "Papillary Muscle of L Ventricle", "stl": "FMA9352nsn", "category": "muscle", "color": 12861504}
+]

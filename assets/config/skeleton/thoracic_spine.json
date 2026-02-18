@@ -1,0 +1,156 @@
+[
+  {
+    "name": "T2",
+    "stl": "FMA9187",
+    "type": "vertebra",
+    "level": 0,
+    "color": 13940886
+  },
+  {
+    "name": "T3",
+    "stl": "FMA9209",
+    "type": "vertebra",
+    "level": 1,
+    "color": 13940886
+  },
+  {
+    "name": "T4",
+    "stl": "FMA9248",
+    "type": "vertebra",
+    "level": 2,
+    "color": 13940886
+  },
+  {
+    "name": "T5",
+    "stl": "FMA9922",
+    "type": "vertebra",
+    "level": 3,
+    "color": 13940886
+  },
+  {
+    "name": "T6",
+    "stl": "FMA9945",
+    "type": "vertebra",
+    "level": 4,
+    "color": 13940886
+  },
+  {
+    "name": "T7",
+    "stl": "FMA9968",
+    "type": "vertebra",
+    "level": 5,
+    "color": 13940886
+  },
+  {
+    "name": "T8",
+    "stl": "FMA9991",
+    "type": "vertebra",
+    "level": 6,
+    "color": 13940886
+  },
+  {
+    "name": "T9",
+    "stl": "FMA10014",
+    "type": "vertebra",
+    "level": 7,
+    "color": 13940886
+  },
+  {
+    "name": "T10",
+    "stl": "FMA10037",
+    "type": "vertebra",
+    "level": 8,
+    "color": 13940886
+  },
+  {
+    "name": "T11",
+    "stl": "FMA10059",
+    "type": "vertebra",
+    "level": 9,
+    "color": 13940886
+  },
+  {
+    "name": "T12",
+    "stl": "FMA10081",
+    "type": "vertebra",
+    "level": 10,
+    "color": 13940886
+  },
+  {
+    "name": "T1-T2 Disc",
+    "stl": "FMA13495",
+    "type": "disc",
+    "level": 0,
+    "color": 8954040
+  },
+  {
+    "name": "T2-T3 Disc",
+    "stl": "FMA13500",
+    "type": "disc",
+    "level": 1,
+    "color": 8954040
+  },
+  {
+    "name": "T3-T4 Disc",
+    "stl": "FMA13501",
+    "type": "disc",
+    "level": 2,
+    "color": 8954040
+  },
+  {
+    "name": "T4-T5 Disc",
+    "stl": "FMA13502",
+    "type": "disc",
+    "level": 3,
+    "color": 8954040
+  },
+  {
+    "name": "T5-T6 Disc",
+    "stl": "FMA13503",
+    "type": "disc",
+    "level": 4,
+    "color": 8954040
+  },
+  {
+    "name": "T6-T7 Disc",
+    "stl": "FMA13504",
+    "type": "disc",
+    "level": 5,
+    "color": 8954040
+  },
+  {
+    "name": "T7-T8 Disc",
+    "stl": "FMA13505",
+    "type": "disc",
+    "level": 6,
+    "color": 8954040
+  },
+  {
+    "name": "T8-T9 Disc",
+    "stl": "FMA13506",
+    "type": "disc",
+    "level": 7,
+    "color": 8954040
+  },
+  {
+    "name": "T9-T10 Disc",
+    "stl": "FMA13507",
+    "type": "disc",
+    "level": 8,
+    "color": 8954040
+  },
+  {
+    "name": "T10-T11 Disc",
+    "stl": "FMA13508",
+    "type": "disc",
+    "level": 9,
+    "color": 8954040
+  },
+  {
+    "name": "T11-T12 Disc",
+    "stl": "FMA13509",
+    "type": "disc",
+    "level": 10,
+    "color": 8954040
+  }
+]

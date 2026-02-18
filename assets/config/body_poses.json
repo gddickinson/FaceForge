@@ -1,0 +1,81 @@
+{
+  "anatomical": {
+    "spineFlex": 0,
+    "spineLatBend": 0,
+    "spineRotation": 0,
+    "shoulderRAbduct": 0,
+    "shoulderRFlex": 0,
+    "shoulderLAbduct": 0,
+    "shoulderLFlex": 0,
+    "elbowRFlex": 0,
+    "elbowLFlex": 0,
+    "hipRFlex": 0,
+    "hipLFlex": 0,
+    "kneeRFlex": 0,
+    "kneeLFlex": 0,
+    "ankleRFlex": 0,
+    "ankleLFlex": 0
+  },
+  "relaxed": {
+    "spineFlex": 0.05,
+    "spineLatBend": 0,
+    "shoulderRAbduct": -0.1,
+    "shoulderRFlex": 0.05,
+    "shoulderLAbduct": -0.1,
+    "shoulderLFlex": 0.05,
+    "elbowRFlex": 0.15,
+    "elbowLFlex": 0.15,
+    "hipRFlex": 0.05,
+    "hipLFlex": 0.05,
+    "kneeRFlex": 0.05,
+    "kneeLFlex": 0.05
+  },
+  "walking": {
+    "spineFlex": 0.02,
+    "spineRotation": 0.05,
+    "shoulderRFlex": 0.15,
+    "shoulderLFlex": -0.15,
+    "elbowRFlex": 0.2,
+    "elbowLFlex": 0.1,
+    "hipRFlex": 0.2,
+    "hipLFlex": -0.1,
+    "kneeRFlex": 0.3,
+    "kneeLFlex": 0.05,
+    "ankleRFlex": -0.1,
+    "ankleLFlex": 0.05
+  },
+  "sitting": {
+    "spineFlex": 0.1,
+    "hipRFlex": 0.7,
+    "hipLFlex": 0.7,
+    "kneeRFlex": 0.7,
+    "kneeLFlex": 0.7,
+    "ankleRFlex": 0,
+    "ankleLFlex": 0,
+    "shoulderRAbduct": -0.05,
+    "shoulderLAbduct": -0.05,
+    "elbowRFlex": 0.3,
+    "elbowLFlex": 0.3
+  },
+  "reaching": {
+    "spineFlex": -0.05,
+    "shoulderRFlex": 0.8,
+    "shoulderRAbduct": 0.2,
+    "shoulderLFlex": 0.1,
+    "elbowRFlex": 0.1,
+    "elbowLFlex": 0.2
+  },
+  "crouching": {
+    "spineFlex": 0.3,
+    "hipRFlex": 0.8,
+    "hipLFlex": 0.8,
+    "kneeRFlex": 0.9,
+    "kneeLFlex": 0.9,
+    "ankleRFlex": 0.3,
+    "ankleLFlex": 0.3,
+    "shoulderRFlex": 0.1,
+    "shoulderLFlex": 0.1,
+    "elbowRFlex": 0.3,
+    "elbowLFlex": 0.3
+  }
+}

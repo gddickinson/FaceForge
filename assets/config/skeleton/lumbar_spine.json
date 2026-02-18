@@ -1,0 +1,79 @@
+[
+  {
+    "name": "L1",
+    "stl": "FMA13072",
+    "type": "vertebra",
+    "level": 0,
+    "color": 13940886
+  },
+  {
+    "name": "L2",
+    "stl": "FMA13073",
+    "type": "vertebra",
+    "level": 1,
+    "color": 13940886
+  },
+  {
+    "name": "L3",
+    "stl": "FMA13074",
+    "type": "vertebra",
+    "level": 2,
+    "color": 13940886
+  },
+  {
+    "name": "L4",
+    "stl": "FMA13075",
+    "type": "vertebra",
+    "level": 3,
+    "color": 13940886
+  },
+  {
+    "name": "L5",
+    "stl": "FMA13076",
+    "type": "vertebra",
+    "level": 4,
+    "color": 13940886
+  },
+  {
+    "name": "Sacrum",
+    "stl": "FMA16202",
+    "type": "vertebra",
+    "level": 5,
+    "color": 13414536
+  },
+  {
+    "name": "T12-L1 Disc",
+    "stl": "FMA16033",
+    "type": "disc",
+    "level": 0,
+    "color": 8954040
+  },
+  {
+    "name": "L1-L2 Disc",
+    "stl": "FMA16034",
+    "type": "disc",
+    "level": 1,
+    "color": 8954040
+  },
+  {
+    "name": "L2-L3 Disc",
+    "stl": "FMA16035",
+    "type": "disc",
+    "level": 2,
+    "color": 8954040
+  },
+  {
+    "name": "L3-L4 Disc",
+    "stl": "FMA16036",
+    "type": "disc",
+    "level": 3,
+    "color": 8954040
+  },
+  {
+    "name": "L4-L5 Disc",
+    "stl": "FMA16037",
+    "type": "disc",
+    "level": 4,
+    "color": 8954040
+  }
+]

@@ -1,0 +1,446 @@
+[
+  {
+    "name": "R Scaphoid",
+    "stl": "FMA24435",
+    "side": "R",
+    "bone": "carpal",
+    "color": 13151626
+  },
+  {
+    "name": "R Lunate",
+    "stl": "FMA24437",
+    "side": "R",
+    "bone": "carpal",
+    "color": 13151626
+  },
+  {
+    "name": "R Triquetral",
+    "stl": "FMA24439",
+    "side": "R",
+    "bone": "carpal",
+    "color": 13151626
+  },
+  {
+    "name": "R Pisiform",
+    "stl": "FMA24441",
+    "side": "R",
+    "bone": "carpal",
+    "color": 13151626
+  },
+  {
+    "name": "R Trapezium",
+    "stl": "FMA24443",
+    "side": "R",
+    "bone": "carpal",
+    "color": 13151626
+  },
+  {
+    "name": "R Trapezoid",
+    "stl": "FMA23725",
+    "side": "R",
+    "bone": "carpal",
+    "color": 13151626
+  },
+  {
+    "name": "R Capitate",
+    "stl": "FMA24446",
+    "side": "R",
+    "bone": "carpal",
+    "color": 13151626
+  },
+  {
+    "name": "R Hamate",
+    "stl": "FMA24448",
+    "side": "R",
+    "bone": "carpal",
+    "color": 13151626
+  },
+  {
+    "name": "L Scaphoid",
+    "stl": "FMA24436",
+    "side": "L",
+    "bone": "carpal",
+    "color": 13151626
+  },
+  {
+    "name": "L Lunate",
+    "stl": "FMA24438",
+    "side": "L",
+    "bone": "carpal",
+    "color": 13151626
+  },
+  {
+    "name": "L Triquetral",
+    "stl": "FMA24440",
+    "side": "L",
+    "bone": "carpal",
+    "color": 13151626
+  },
+  {
+    "name": "L Pisiform",
+    "stl": "FMA24442",
+    "side": "L",
+    "bone": "carpal",
+    "color": 13151626
+  },
+  {
+    "name": "L Trapezium",
+    "stl": "FMA24444",
+    "side": "L",
+    "bone": "carpal",
+    "color": 13151626
+  },
+  {
+    "name": "L Trapezoid",
+    "stl": "FMA24445",
+    "side": "L",
+    "bone": "carpal",
+    "color": 13151626
+  },
+  {
+    "name": "L Capitate",
+    "stl": "FMA24447",
+    "side": "L",
+    "bone": "carpal",
+    "color": 13151626
+  },
+  {
+    "name": "L Hamate",
+    "stl": "FMA24449",
+    "side": "L",
+    "bone": "carpal",
+    "color": 13151626
+  },
+  {
+    "name": "R 1st Metacarpal",
+    "stl": "FMA24464",
+    "side": "R",
+    "bone": "metacarpal",
+    "digit": 1,
+    "color": 13940886
+  },
+  {
+    "name": "R 2nd Metacarpal",
+    "stl": "FMA24466",
+    "side": "R",
+    "bone": "metacarpal",
+    "digit": 2,
+    "color": 13940886
+  },
+  {
+    "name": "R 3rd Metacarpal",
+    "stl": "FMA24468",
+    "side": "R",
+    "bone": "metacarpal",
+    "digit": 3,
+    "color": 13940886
+  },
+  {
+    "name": "R 4th Metacarpal",
+    "stl": "FMA24470",
+    "side": "R",
+    "bone": "metacarpal",
+    "digit": 4,
+    "color": 13940886
+  },
+  {
+    "name": "R 5th Metacarpal",
+    "stl": "FMA24472",
+    "side": "R",
+    "bone": "metacarpal",
+    "digit": 5,
+    "color": 13940886
+  },
+  {
+    "name": "L 1st Metacarpal",
+    "stl": "FMA24465",
+    "side": "L",
+    "bone": "metacarpal",
+    "digit": 1,
+    "color": 13940886
+  },
+  {
+    "name": "L 2nd Metacarpal",
+    "stl": "FMA24467",
+    "side": "L",
+    "bone": "metacarpal",
+    "digit": 2,
+    "color": 13940886
+  },
+  {
+    "name": "L 3rd Metacarpal",
+    "stl": "FMA24469",
+    "side": "L",
+    "bone": "metacarpal",
+    "digit": 3,
+    "color": 13940886
+  },
+  {
+    "name": "L 4th Metacarpal",
+    "stl": "FMA24471",
+    "side": "L",
+    "bone": "metacarpal",
+    "digit": 4,
+    "color": 13940886
+  },
+  {
+    "name": "L 5th Metacarpal",
+    "stl": "FMA24473",
+    "side": "L",
+    "bone": "metacarpal",
+    "digit": 5,
+    "color": 13940886
+  },
+  {
+    "name": "R Thumb Prox.",
+    "stl": "FMA24450",
+    "side": "R",
+    "bone": "phalanx",
+    "digit": 1,
+    "seg": "prox",
+    "color": 13940886
+  },
+  {
+    "name": "R Thumb Dist.",
+    "stl": "FMA24459",
+    "side": "R",
+    "bone": "phalanx",
+    "digit": 1,
+    "seg": "dist",
+    "color": 13940886
+  },
+  {
+    "name": "R Index Prox.",
+    "stl": "FMA24451",
+    "side": "R",
+    "bone": "phalanx",
+    "digit": 2,
+    "seg": "prox",
+    "color": 13940886
+  },
+  {
+    "name": "R Index Mid.",
+    "stl": "FMA24455",
+    "side": "R",
+    "bone": "phalanx",
+    "digit": 2,
+    "seg": "mid",
+    "color": 13940886
+  },
+  {
+    "name": "R Index Dist.",
+    "stl": "FMA24460",
+    "side": "R",
+    "bone": "phalanx",
+    "digit": 2,
+    "seg": "dist",
+    "color": 13940886
+  },
+  {
+    "name": "R Middle Prox.",
+    "stl": "FMA24452",
+    "side": "R",
+    "bone": "phalanx",
+    "digit": 3,
+    "seg": "prox",
+    "color": 13940886
+  },
+  {
+    "name": "R Middle Mid.",
+    "stl": "FMA24456",
+    "side": "R",
+    "bone": "phalanx",
+    "digit": 3,
+    "seg": "mid",
+    "color": 13940886
+  },
+  {
+    "name": "R Middle Dist.",
+    "stl": "FMA24461",
+    "side": "R",
+    "bone": "phalanx",
+    "digit": 3,
+    "seg": "dist",
+    "color": 13940886
+  },
+  {
+    "name": "R Ring Prox.",
+    "stl": "FMA24453",
+    "side": "R",
+    "bone": "phalanx",
+    "digit": 4,
+    "seg": "prox",
+    "color": 13940886
+  },
+  {
+    "name": "R Ring Mid.",
+    "stl": "FMA24457",
+    "side": "R",
+    "bone": "phalanx",
+    "digit": 4,
+    "seg": "mid",
+    "color": 13940886
+  },
+  {
+    "name": "R Ring Dist.",
+    "stl": "FMA24462",
+    "side": "R",
+    "bone": "phalanx",
+    "digit": 4,
+    "seg": "dist",
+    "color": 13940886
+  },
+  {
+    "name": "R Little Prox.",
+    "stl": "FMA24454",
+    "side": "R",
+    "bone": "phalanx",
+    "digit": 5,
+    "seg": "prox",
+    "color": 13940886
+  },
+  {
+    "name": "R Little Mid.",
+    "stl": "FMA24458",
+    "side": "R",
+    "bone": "phalanx",
+    "digit": 5,
+    "seg": "mid",
+    "color": 13940886
+  },
+  {
+    "name": "R Little Dist.",
+    "stl": "FMA24463",
+    "side": "R",
+    "bone": "phalanx",
+    "digit": 5,
+    "seg": "dist",
+    "color": 13940886
+  },
+  {
+    "name": "L Thumb Prox.",
+    "stl": "FMA65470",
+    "side": "L",
+    "bone": "phalanx",
+    "digit": 1,
+    "seg": "prox",
+    "color": 13940886
+  },
+  {
+    "name": "L Thumb Dist.",
+    "stl": "FMA23951",
+    "side": "L",
+    "bone": "phalanx",
+    "digit": 1,
+    "seg": "dist",
+    "color": 13940886
+  },
+  {
+    "name": "L Index Prox.",
+    "stl": "FMA71915",
+    "side": "L",
+    "bone": "phalanx",
+    "digit": 2,
+    "seg": "prox",
+    "color": 13940886
+  },
+  {
+    "name": "L Index Mid.",
+    "stl": "FMA23938",
+    "side": "L",
+    "bone": "phalanx",
+    "digit": 2,
+    "seg": "mid",
+    "color": 13940886
+  },
+  {
+    "name": "L Index Dist.",
+    "stl": "FMA23953",
+    "side": "L",
+    "bone": "phalanx",
+    "digit": 2,
+    "seg": "dist",
+    "color": 13940886
+  },
+  {
+    "name": "L Middle Prox.",
+    "stl": "FMA71908",
+    "side": "L",
+    "bone": "phalanx",
+    "digit": 3,
+    "seg": "prox",
+    "color": 13940886
+  },
+  {
+    "name": "L Middle Mid.",
+    "stl": "FMA23940",
+    "side": "L",
+    "bone": "phalanx",
+    "digit": 3,
+    "seg": "mid",
+    "color": 13940886
+  },
+  {
+    "name": "L Middle Dist.",
+    "stl": "FMA23955",
+    "side": "L",
+    "bone": "phalanx",
+    "digit": 3,
+    "seg": "dist",
+    "color": 13940886
+  },
+  {
+    "name": "L Ring Prox.",
+    "stl": "FMA71916",
+    "side": "L",
+    "bone": "phalanx",
+    "digit": 4,
+    "seg": "prox",
+    "color": 13940886
+  },
+  {
+    "name": "L Ring Mid.",
+    "stl": "FMA23942",
+    "side": "L",
+    "bone": "phalanx",
+    "digit": 4,
+    "seg": "mid",
+    "color": 13940886
+  },
+  {
+    "name": "L Ring Dist.",
+    "stl": "FMA23957",
+    "side": "L",
+    "bone": "phalanx",
+    "digit": 4,
+    "seg": "dist",
+    "color": 13940886
+  },
+  {
+    "name": "L Little Prox.",
+    "stl": "FMA66791",
+    "side": "L",
+    "bone": "phalanx",
+    "digit": 5,
+    "seg": "prox",
+    "color": 13940886
+  },
+  {
+    "name": "L Little Mid.",
+    "stl": "FMA23944",
+    "side": "L",
+    "bone": "phalanx",
+    "digit": 5,
+    "seg": "mid",
+    "color": 13940886
+  },
+  {
+    "name": "L Little Dist.",
+    "stl": "FMA23959",
+    "side": "L",
+    "bone": "phalanx",
+    "digit": 5,
+    "seg": "dist",
+    "color": 13940886
+  }
+]

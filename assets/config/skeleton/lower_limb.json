@@ -1,0 +1,58 @@
+[
+  {
+    "name": "Right Femur",
+    "stl": "FMA24474",
+    "side": "R",
+    "bone": "femur",
+    "color": 13940886
+  },
+  {
+    "name": "Left Femur",
+    "stl": "FMA24475",
+    "side": "L",
+    "bone": "femur",
+    "color": 13940886
+  },
+  {
+    "name": "Right Patella",
+    "stl": "FMA24486",
+    "side": "R",
+    "bone": "patella",
+    "color": 13940886
+  },
+  {
+    "name": "Left Patella",
+    "stl": "FMA24487",
+    "side": "L",
+    "bone": "patella",
+    "color": 13940886
+  },
+  {
+    "name": "Right Tibia",
+    "stl": "FMA24477",
+    "side": "R",
+    "bone": "tibia",
+    "color": 13940886
+  },
+  {
+    "name": "Left Tibia",
+    "stl": "FMA24478",
+    "side": "L",
+    "bone": "tibia",
+    "color": 13940886
+  },
+  {
+    "name": "Right Fibula",
+    "stl": "FMA24480",
+    "side": "R",
+    "bone": "fibula",
+    "color": 13940886
+  },
+  {
+    "name": "Left Fibula",
+    "stl": "FMA24481",
+    "side": "L",
+    "bone": "fibula",
+    "color": 13940886
+  }
+]

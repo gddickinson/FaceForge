@@ -1,0 +1,2 @@
+[console_scripts]
+faceforge = faceforge.app:main

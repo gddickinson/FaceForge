@@ -1,0 +1,12 @@
+[
+  {"name": "R Pubococcygeus", "stl": "FMA45854", "category": "levator_ani", "color": 13395558},
+  {"name": "L Pubococcygeus", "stl": "FMA45855", "category": "levator_ani", "color": 13395558},
+  {"name": "R Puborectalis", "stl": "FMA45856", "category": "levator_ani", "color": 12861504},
+  {"name": "L Puborectalis", "stl": "FMA45857", "category": "levator_ani", "color": 12861504},
+  {"name": "R Iliococcygeus", "stl": "FMA45858", "category": "levator_ani", "color": 12073016},
+  {"name": "L Iliococcygeus", "stl": "FMA45859", "category": "levator_ani", "color": 12073016},
+  {"name": "Tendinous Arch of Levator Ani", "stl": "FMA46442", "category": "levator_ani", "color": 11550784},
+  {"name": "R Coccygeus", "stl": "FMA46443", "category": "coccygeus", "color": 13652048},
+  {"name": "L Coccygeus", "stl": "FMA46444", "category": "coccygeus", "color": 13652048},
+  {"name": "External Anal Sphincter", "stl": "FMA21930", "category": "sphincter", "color": 13656160}
+]

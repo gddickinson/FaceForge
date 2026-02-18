@@ -1,0 +1,308 @@
+[
+  {
+    "name": "Trachea",
+    "stl": "FMA7394",
+    "category": "respiratory",
+    "color": 13404296
+  },
+  {
+    "name": "Bronchus",
+    "stl": "FMA7409",
+    "category": "respiratory",
+    "color": 13404296
+  },
+  {
+    "name": "R Lung Upper Lobe",
+    "stl": "FMA7333",
+    "category": "respiratory",
+    "color": 14524576
+  },
+  {
+    "name": "R Lung Lower Lobe",
+    "stl": "FMA7337",
+    "category": "respiratory",
+    "color": 14524576
+  },
+  {
+    "name": "R Lung Middle Lobe",
+    "stl": "FMA7383",
+    "category": "respiratory",
+    "color": 14524576
+  },
+  {
+    "name": "L Lung Upper Lobe",
+    "stl": "FMA7370",
+    "category": "respiratory",
+    "color": 14524576
+  },
+  {
+    "name": "L Lung Lower Lobe",
+    "stl": "FMA7371",
+    "category": "respiratory",
+    "color": 14524576
+  },
+  {
+    "name": "Heart Wall",
+    "stl": "FMA7274",
+    "category": "cardiac",
+    "color": 13386820
+  },
+  {
+    "name": "Tricuspid Valve",
+    "stl": "FMA7234",
+    "category": "cardiac",
+    "color": 14509670
+  },
+  {
+    "name": "Mitral Valve",
+    "stl": "FMA7235",
+    "category": "cardiac",
+    "color": 14509670
+  },
+  {
+    "name": "Pulmonary Valve",
+    "stl": "FMA7246",
+    "category": "cardiac",
+    "color": 14509670
+  },
+  {
+    "name": "R Vent. Ant. Pap.",
+    "stl": "FMA7260",
+    "category": "cardiac",
+    "color": 12272708
+  },
+  {
+    "name": "R Vent. Post. Pap.",
+    "stl": "FMA7261",
+    "category": "cardiac",
+    "color": 12272708
+  },
+  {
+    "name": "R Vent. Sept. Pap.",
+    "stl": "FMA7262",
+    "category": "cardiac",
+    "color": 12272708
+  },
+  {
+    "name": "L Vent. Post. Pap.",
+    "stl": "FMA7266",
+    "category": "cardiac",
+    "color": 12272708
+  },
+  {
+    "name": "Esophagus",
+    "stl": "FMA7131",
+    "category": "digestive",
+    "color": 14527112
+  },
+  {
+    "name": "Stomach",
+    "stl": "FMA7148",
+    "category": "digestive",
+    "color": 14527112
+  },
+  {
+    "name": "Duodenum",
+    "stl": "FMA7206",
+    "category": "digestive",
+    "color": 14527112
+  },
+  {
+    "name": "Jejunum",
+    "stl": "FMA7207",
+    "category": "digestive",
+    "color": 13408631
+  },
+  {
+    "name": "Ileum",
+    "stl": "FMA7208",
+    "category": "digestive",
+    "color": 13408631
+  },
+  {
+    "name": "Colon",
+    "stl": "FMA14543nsn",
+    "category": "digestive",
+    "color": 12290150
+  },
+  {
+    "name": "Rectum",
+    "stl": "FMA14544",
+    "category": "digestive",
+    "color": 12290150
+  },
+  {
+    "name": "Appendix",
+    "stl": "FMA14542",
+    "category": "digestive",
+    "color": 13404279
+  },
+  {
+    "name": "Liver",
+    "stl": "FMA7197",
+    "category": "digestive",
+    "color": 8930372
+  },
+  {
+    "name": "Gallbladder",
+    "stl": "FMA7202",
+    "category": "digestive",
+    "color": 4491332
+  },
+  {
+    "name": "Pancreas",
+    "stl": "FMA7198nsn",
+    "category": "digestive",
+    "color": 13412966
+  },
+  {
+    "name": "Pancreatic Duct",
+    "stl": "FMA10419",
+    "category": "digestive",
+    "color": 13412966
+  },
+  {
+    "name": "Spleen",
+    "stl": "FMA7196",
+    "category": "digestive",
+    "color": 8930406
+  },
+  {
+    "name": "Right Kidney",
+    "stl": "FMA7204",
+    "category": "urinary",
+    "color": 8930372
+  },
+  {
+    "name": "Left Kidney",
+    "stl": "FMA7205",
+    "category": "urinary",
+    "color": 8930372
+  },
+  {
+    "name": "Right Ureter",
+    "stl": "FMA15571",
+    "category": "urinary",
+    "color": 13413000
+  },
+  {
+    "name": "Left Ureter",
+    "stl": "FMA15572",
+    "category": "urinary",
+    "color": 13413000
+  },
+  {
+    "name": "Urinary Bladder",
+    "stl": "FMA15900",
+    "category": "urinary",
+    "color": 13412932
+  },
+  {
+    "name": "Urethra",
+    "stl": "FMA19667",
+    "category": "urinary",
+    "color": 13413000
+  },
+  {
+    "name": "Right Testis",
+    "stl": "FMA7211",
+    "category": "reproductive",
+    "color": 13417386
+  },
+  {
+    "name": "Left Testis",
+    "stl": "FMA7212",
+    "category": "reproductive",
+    "color": 13417386
+  },
+  {
+    "name": "Right Epididymis",
+    "stl": "FMA18256",
+    "category": "reproductive",
+    "color": 12298905
+  },
+  {
+    "name": "Left Epididymis",
+    "stl": "FMA18257",
+    "category": "reproductive",
+    "color": 12298905
+  },
+  {
+    "name": "R Deferent Duct",
+    "stl": "FMA19235",
+    "category": "reproductive",
+    "color": 13417386
+  },
+  {
+    "name": "L Deferent Duct",
+    "stl": "FMA19236",
+    "category": "reproductive",
+    "color": 13417386
+  },
+  {
+    "name": "R Seminal Vesicle",
+    "stl": "FMA19387",
+    "category": "reproductive",
+    "color": 12298905
+  },
+  {
+    "name": "L Seminal Vesicle",
+    "stl": "FMA19388",
+    "category": "reproductive",
+    "color": 12298905
+  },
+  {
+    "name": "Prostate",
+    "stl": "FMA9600",
+    "category": "reproductive",
+    "color": 13417386
+  },
+  {
+    "name": "Glans Penis",
+    "stl": "FMA18247",
+    "category": "reproductive",
+    "color": 14531498
+  },
+  {
+    "name": "Corpus Spongiosum",
+    "stl": "FMA19617nsn",
+    "category": "reproductive",
+    "color": 13404296
+  },
+  {
+    "name": "Corpus Cavernosum",
+    "stl": "FMA19618",
+    "category": "reproductive",
+    "color": 13404296
+  },
+  {
+    "name": "Pituitary Gland",
+    "stl": "FMA13889",
+    "category": "endocrine",
+    "color": 14527180
+  },
+  {
+    "name": "R Adrenal Gland",
+    "stl": "FMA15629",
+    "category": "endocrine",
+    "color": 13413000
+  },
+  {
+    "name": "L Adrenal Gland",
+    "stl": "FMA15630",
+    "category": "endocrine",
+    "color": 13413000
+  },
+  {
+    "name": "R Thymus Lobe",
+    "stl": "FMA71194",
+    "category": "endocrine",
+    "color": 14531532
+  },
+  {
+    "name": "L Thymus Lobe",
+    "stl": "FMA71195",
+    "category": "endocrine",
+    "color": 14531532
+  }
+]

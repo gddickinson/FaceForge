@@ -1,0 +1,296 @@
+[
+  {
+    "name": "Ascending Aorta",
+    "stl": "FMA3736",
+    "type": "artery",
+    "color": 13382451
+  },
+  {
+    "name": "Arch of Aorta",
+    "stl": "FMA3768",
+    "type": "artery",
+    "color": 13382451
+  },
+  {
+    "name": "Descending Aorta",
+    "stl": "FMA3784",
+    "type": "artery",
+    "color": 13382451
+  },
+  {
+    "name": "Brachiocephalic",
+    "stl": "FMA3932nsn",
+    "type": "artery",
+    "color": 14500932
+  },
+  {
+    "name": "R Common Carotid",
+    "stl": "FMA3941",
+    "type": "artery",
+    "color": 14500932
+  },
+  {
+    "name": "L Common Carotid",
+    "stl": "FMA4058",
+    "type": "artery",
+    "color": 14500932
+  },
+  {
+    "name": "R Subclavian Art.",
+    "stl": "FMA3953",
+    "type": "artery",
+    "color": 14500932
+  },
+  {
+    "name": "L Subclavian Art.",
+    "stl": "FMA4694",
+    "type": "artery",
+    "color": 14500932
+  },
+  {
+    "name": "Celiac Art.",
+    "stl": "FMA50737",
+    "type": "artery",
+    "color": 13382451
+  },
+  {
+    "name": "Sup. Mesenteric Art.",
+    "stl": "FMA14749",
+    "type": "artery",
+    "color": 13382451
+  },
+  {
+    "name": "Inf. Mesenteric Art.",
+    "stl": "FMA14750",
+    "type": "artery",
+    "color": 13382451
+  },
+  {
+    "name": "R Renal Art.",
+    "stl": "FMA14752",
+    "type": "artery",
+    "color": 14500932
+  },
+  {
+    "name": "L Renal Art.",
+    "stl": "FMA14753",
+    "type": "artery",
+    "color": 14500932
+  },
+  {
+    "name": "R Common Iliac Art.",
+    "stl": "FMA14765",
+    "type": "artery",
+    "color": 14500932
+  },
+  {
+    "name": "L Common Iliac Art.",
+    "stl": "FMA14766",
+    "type": "artery",
+    "color": 14500932
+  },
+  {
+    "name": "L Gastric Art.",
+    "stl": "FMA14768",
+    "type": "artery",
+    "color": 13382451
+  },
+  {
+    "name": "Common Hepatic Art.",
+    "stl": "FMA14771",
+    "type": "artery",
+    "color": 13382451
+  },
+  {
+    "name": "Splenic Art.",
+    "stl": "FMA14773",
+    "type": "artery",
+    "color": 13382451
+  },
+  {
+    "name": "R Ext. Iliac Art.",
+    "stl": "FMA18806",
+    "type": "artery",
+    "color": 14500932
+  },
+  {
+    "name": "L Ext. Iliac Art.",
+    "stl": "FMA18807",
+    "type": "artery",
+    "color": 14500932
+  },
+  {
+    "name": "R Int. Iliac Art.",
+    "stl": "FMA18809",
+    "type": "artery",
+    "color": 14500932
+  },
+  {
+    "name": "L Int. Iliac Art.",
+    "stl": "FMA18810",
+    "type": "artery",
+    "color": 14500932
+  },
+  {
+    "name": "Pulmonary Art.",
+    "stl": "FMA66326",
+    "type": "artery",
+    "color": 4474060
+  },
+  {
+    "name": "R Coronary Art.",
+    "stl": "FMA3802",
+    "type": "artery",
+    "color": 14500932
+  },
+  {
+    "name": "R Marginal Art.",
+    "stl": "FMA3818",
+    "type": "artery",
+    "color": 14500932
+  },
+  {
+    "name": "Circumflex Art.",
+    "stl": "FMA3895",
+    "type": "artery",
+    "color": 14500932
+  },
+  {
+    "name": "L Coronary Stem",
+    "stl": "FMA4685",
+    "type": "artery",
+    "color": 14500932
+  },
+  {
+    "name": "Inf. Vena Cava",
+    "stl": "FMA10951",
+    "type": "vein",
+    "color": 4474026
+  },
+  {
+    "name": "Sup. Vena Cava",
+    "stl": "FMA4720",
+    "type": "vein",
+    "color": 4474026
+  },
+  {
+    "name": "R Brachioceph. V.",
+    "stl": "FMA4751",
+    "type": "vein",
+    "color": 5592507
+  },
+  {
+    "name": "L Brachioceph. V.",
+    "stl": "FMA4761",
+    "type": "vein",
+    "color": 5592507
+  },
+  {
+    "name": "R Int. Jugular V.",
+    "stl": "FMA4754",
+    "type": "vein",
+    "color": 5592507
+  },
+  {
+    "name": "L Int. Jugular V.",
+    "stl": "FMA4762",
+    "type": "vein",
+    "color": 5592507
+  },
+  {
+    "name": "R Subclavian V.",
+    "stl": "FMA4755",
+    "type": "vein",
+    "color": 5592507
+  },
+  {
+    "name": "L Subclavian V.",
+    "stl": "FMA4763",
+    "type": "vein",
+    "color": 5592507
+  },
+  {
+    "name": "Splenic V.",
+    "stl": "FMA14331",
+    "type": "vein",
+    "color": 4474026
+  },
+  {
+    "name": "Sup. Mesenteric V.",
+    "stl": "FMA14332",
+    "type": "vein",
+    "color": 4474026
+  },
+  {
+    "name": "R Renal V.",
+    "stl": "FMA14335",
+    "type": "vein",
+    "color": 5592507
+  },
+  {
+    "name": "L Renal V.",
+    "stl": "FMA14336",
+    "type": "vein",
+    "color": 5592507
+  },
+  {
+    "name": "R Common Iliac V.",
+    "stl": "FMA21387",
+    "type": "vein",
+    "color": 5592507
+  },
+  {
+    "name": "L Common Iliac V.",
+    "stl": "FMA21388",
+    "type": "vein",
+    "color": 5592507
+  },
+  {
+    "name": "R Ext. Iliac V.",
+    "stl": "FMA18885",
+    "type": "vein",
+    "color": 5592507
+  },
+  {
+    "name": "L Ext. Iliac V.",
+    "stl": "FMA18886",
+    "type": "vein",
+    "color": 5592507
+  },
+  {
+    "name": "R Int. Iliac V.",
+    "stl": "FMA18887",
+    "type": "vein",
+    "color": 5592507
+  },
+  {
+    "name": "L Int. Iliac V.",
+    "stl": "FMA18888",
+    "type": "vein",
+    "color": 5592507
+  },
+  {
+    "name": "Pulmonary V.",
+    "stl": "FMA66643",
+    "type": "vein",
+    "color": 13386820
+  },
+  {
+    "name": "Coronary Sinus",
+    "stl": "FMA4706",
+    "type": "vein",
+    "color": 4474026
+  },
+  {
+    "name": "Great Cardiac V.",
+    "stl": "FMA4707",
+    "type": "vein",
+    "color": 4474026
+  },
+  {
+    "name": "Middle Cardiac V.",
+    "stl": "FMA4713",
+    "type": "vein",
+    "color": 4474026
+  }
+]

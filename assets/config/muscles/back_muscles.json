@@ -1,0 +1,374 @@
+[
+  {
+    "name": "Asc. Trapezius R",
+    "stl": "FMA33581",
+    "color": 12607584
+  },
+  {
+    "name": "Asc. Trapezius L",
+    "stl": "FMA33583",
+    "color": 12607584
+  },
+  {
+    "name": "Trans. Trapezius R",
+    "stl": "FMA33584",
+    "color": 12607584
+  },
+  {
+    "name": "Trans. Trapezius L",
+    "stl": "FMA33585",
+    "color": 12607584
+  },
+  {
+    "name": "Desc. Trapezius R",
+    "stl": "FMA33586",
+    "color": 12607584,
+    "headFollow": {
+      "upperFrac": 0.7,
+      "lowerFrac": 0.03
+    }
+  },
+  {
+    "name": "Desc. Trapezius L",
+    "stl": "FMA33587",
+    "color": 12607584,
+    "headFollow": {
+      "upperFrac": 0.7,
+      "lowerFrac": 0.03
+    }
+  },
+  {
+    "name": "Latissimus Dorsi R",
+    "stl": "FMA13358",
+    "color": 12079184
+  },
+  {
+    "name": "Latissimus Dorsi L",
+    "stl": "FMA13359",
+    "color": 12079184
+  },
+  {
+    "name": "Rhomboid Major R",
+    "stl": "FMA13381",
+    "color": 11028552
+  },
+  {
+    "name": "Rhomboid Major L",
+    "stl": "FMA13382",
+    "color": 11028552
+  },
+  {
+    "name": "Rhomboid Minor R",
+    "stl": "FMA13383",
+    "color": 11028552
+  },
+  {
+    "name": "Rhomboid Minor L",
+    "stl": "FMA13384",
+    "color": 11028552
+  },
+  {
+    "name": "Serratus Post. Sup. R",
+    "stl": "FMA13403",
+    "color": 10502208
+  },
+  {
+    "name": "Serratus Post. Sup. L",
+    "stl": "FMA13404",
+    "color": 10502208
+  },
+  {
+    "name": "Serratus Post. Inf. R",
+    "stl": "FMA13405",
+    "color": 10502208
+  },
+  {
+    "name": "Serratus Post. Inf. L",
+    "stl": "FMA13406",
+    "color": 10502208
+  },
+  {
+    "name": "Splenius Capitis R",
+    "stl": "FMA22728",
+    "color": 11552840,
+    "headFollow": {
+      "upperFrac": 0.85,
+      "lowerFrac": 0.12
+    }
+  },
+  {
+    "name": "Splenius Capitis L",
+    "stl": "FMA22729",
+    "color": 11552840,
+    "headFollow": {
+      "upperFrac": 0.85,
+      "lowerFrac": 0.12
+    }
+  },
+  {
+    "name": "Splenius Cervicis R",
+    "stl": "FMA22726",
+    "color": 11552840,
+    "headFollow": {
+      "upperFrac": 0.55,
+      "lowerFrac": 0.06
+    }
+  },
+  {
+    "name": "Splenius Cervicis L",
+    "stl": "FMA22727",
+    "color": 11552840,
+    "headFollow": {
+      "upperFrac": 0.55,
+      "lowerFrac": 0.06
+    }
+  },
+  {
+    "name": "Iliocostalis Lumb. R",
+    "stl": "FMA22740",
+    "color": 10044484
+  },
+  {
+    "name": "Iliocostalis Lumb. L",
+    "stl": "FMA22741",
+    "color": 10044484
+  },
+  {
+    "name": "Iliocostalis Thor. R",
+    "stl": "FMA22742",
+    "color": 10044484
+  },
+  {
+    "name": "Iliocostalis Thor. L",
+    "stl": "FMA22743",
+    "color": 10044484
+  },
+  {
+    "name": "Iliocostalis Cerv. R",
+    "stl": "FMA22744",
+    "color": 10044484,
+    "headFollow": {
+      "upperFrac": 0.4,
+      "lowerFrac": 0.06
+    }
+  },
+  {
+    "name": "Iliocostalis Cerv. L",
+    "stl": "FMA22745",
+    "color": 10044484,
+    "headFollow": {
+      "upperFrac": 0.4,
+      "lowerFrac": 0.06
+    }
+  },
+  {
+    "name": "Longissimus Thor. R",
+    "stl": "FMA22751",
+    "color": 10044484
+  },
+  {
+    "name": "Longissimus Thor. L",
+    "stl": "FMA22753",
+    "color": 10044484
+  },
+  {
+    "name": "Longissimus Cap. R",
+    "stl": "FMA22754",
+    "color": 10044484,
+    "headFollow": {
+      "upperFrac": 0.8,
+      "lowerFrac": 0.09
+    }
+  },
+  {
+    "name": "Longissimus Cap. L",
+    "stl": "FMA22756",
+    "color": 10044484,
+    "headFollow": {
+      "upperFrac": 0.8,
+      "lowerFrac": 0.09
+    }
+  },
+  {
+    "name": "Longissimus Cerv. R",
+    "stl": "FMA22757",
+    "color": 10044484,
+    "headFollow": {
+      "upperFrac": 0.45,
+      "lowerFrac": 0.06
+    }
+  },
+  {
+    "name": "Longissimus Cerv. L",
+    "stl": "FMA22758",
+    "color": 10044484,
+    "headFollow": {
+      "upperFrac": 0.45,
+      "lowerFrac": 0.06
+    }
+  },
+  {
+    "name": "Spinalis Thor. R",
+    "stl": "FMA22779",
+    "color": 8929344
+  },
+  {
+    "name": "Spinalis Thor. L",
+    "stl": "FMA22780",
+    "color": 8929344
+  },
+  {
+    "name": "Spinalis Cerv. R",
+    "stl": "FMA22781",
+    "color": 8929344,
+    "headFollow": {
+      "upperFrac": 0.45,
+      "lowerFrac": 0.06
+    }
+  },
+  {
+    "name": "Spinalis Cerv. L",
+    "stl": "FMA22782",
+    "color": 8929344,
+    "headFollow": {
+      "upperFrac": 0.45,
+      "lowerFrac": 0.06
+    }
+  },
+  {
+    "name": "Semispinalis Thor. R",
+    "stl": "FMA22872",
+    "color": 8929344
+  },
+  {
+    "name": "Semispinalis Thor. L",
+    "stl": "FMA22873",
+    "color": 8929344
+  },
+  {
+    "name": "Semispinalis Cerv. R",
+    "stl": "FMA22874",
+    "color": 8929344,
+    "headFollow": {
+      "upperFrac": 0.5,
+      "lowerFrac": 0.06
+    }
+  },
+  {
+    "name": "Semispinalis Cerv. L",
+    "stl": "FMA22875",
+    "color": 8929344,
+    "headFollow": {
+      "upperFrac": 0.5,
+      "lowerFrac": 0.06
+    }
+  },
+  {
+    "name": "Semispinalis Cap. R",
+    "stl": "FMA22876",
+    "color": 8929344,
+    "headFollow": {
+      "upperFrac": 0.85,
+      "lowerFrac": 0.09
+    }
+  },
+  {
+    "name": "Semispinalis Cap. L",
+    "stl": "FMA22877",
+    "color": 8929344,
+    "headFollow": {
+      "upperFrac": 0.85,
+      "lowerFrac": 0.09
+    }
+  },
+  {
+    "name": "Multifidus R",
+    "stl": "FMA22878",
+    "color": 8405056
+  },
+  {
+    "name": "Multifidus L",
+    "stl": "FMA22879",
+    "color": 8405056
+  },
+  {
+    "name": "Thoracic Rotator",
+    "stl": "FMA23083",
+    "color": 8405056
+  },
+  {
+    "name": "Lumbar Rotator R",
+    "stl": "FMA23089",
+    "color": 8405056
+  },
+  {
+    "name": "Lumbar Rotator L",
+    "stl": "FMA23090",
+    "color": 8405056
+  },
+  {
+    "name": "Cervical Rotator R",
+    "stl": "FMA81752",
+    "color": 8405056,
+    "headFollow": {
+      "upperFrac": 0.5,
+      "lowerFrac": 0.1
+    }
+  },
+  {
+    "name": "Cervical Rotator L",
+    "stl": "FMA81753",
+    "color": 8405056,
+    "headFollow": {
+      "upperFrac": 0.5,
+      "lowerFrac": 0.1
+    }
+  },
+  {
+    "name": "Interspinales Lumb.",
+    "stl": "FMA71307",
+    "color": 7878712
+  },
+  {
+    "name": "Interspinales Thor.",
+    "stl": "FMA71308",
+    "color": 7878712
+  },
+  {
+    "name": "Interspinales Cerv.",
+    "stl": "FMA71309",
+    "color": 7878712,
+    "headFollow": {
+      "upperFrac": 0.5,
+      "lowerFrac": 0.1
+    }
+  },
+  {
+    "name": "Ant. Cerv. Intertrans.",
+    "stl": "FMA71442",
+    "color": 7878712,
+    "headFollow": {
+      "upperFrac": 0.5,
+      "lowerFrac": 0.1
+    }
+  },
+  {
+    "name": "Post. Cerv. Intertrans.",
+    "stl": "FMA71443",
+    "color": 7878712,
+    "headFollow": {
+      "upperFrac": 0.5,
+      "lowerFrac": 0.1
+    }
+  },
+  {
+    "name": "Lat. Lumb. Intertrans.",
+    "stl": "FMA71444",
+    "color": 7878712
+  },
+  {
+    "name": "Med. Lumb. Intertrans.",
+    "stl": "FMA76775",
+    "color": 7878712
+  }
+]

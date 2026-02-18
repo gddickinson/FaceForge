@@ -1,0 +1,125 @@
+[
+  {
+    "name": "Frontal Bone",
+    "stl": "FMA52734",
+    "group": "cranium",
+    "color": 13935988
+  },
+  {
+    "name": "R Parietal Bone",
+    "stl": "FMA52788",
+    "group": "cranium",
+    "color": 13935988
+  },
+  {
+    "name": "L Parietal Bone",
+    "stl": "FMA52789",
+    "group": "cranium",
+    "color": 13935988
+  },
+  {
+    "name": "Occipital Bone",
+    "stl": "FMA52735",
+    "group": "cranium",
+    "color": 13935988
+  },
+  {
+    "name": "R Temporal Bone",
+    "stl": "FMA52738",
+    "group": "cranium",
+    "color": 13935988,
+    "tmj_reference": true
+  },
+  {
+    "name": "L Temporal Bone",
+    "stl": "FMA52739",
+    "group": "cranium",
+    "color": 13935988,
+    "tmj_reference": true
+  },
+  {
+    "name": "Sphenoid Bone",
+    "stl": "FMA52736",
+    "group": "cranium",
+    "color": 13935988
+  },
+  {
+    "name": "Ethmoid",
+    "stl": "FMA52740",
+    "group": "cranium",
+    "color": 13935988
+  },
+  {
+    "name": "R Zygomatic Bone",
+    "stl": "FMA52892",
+    "group": "facial",
+    "color": 13082218
+  },
+  {
+    "name": "L Zygomatic Bone",
+    "stl": "FMA52893",
+    "group": "facial",
+    "color": 13082218
+  },
+  {
+    "name": "R Maxilla",
+    "stl": "FMA53649",
+    "group": "facial",
+    "color": 13082218
+  },
+  {
+    "name": "L Maxilla",
+    "stl": "FMA53650",
+    "group": "facial",
+    "color": 13082218
+  },
+  {
+    "name": "R Lacrimal Bone",
+    "stl": "FMA53645",
+    "group": "facial",
+    "color": 13082218
+  },
+  {
+    "name": "L Lacrimal Bone",
+    "stl": "FMA53646",
+    "group": "facial",
+    "color": 13082218
+  },
+  {
+    "name": "R Palatine Bone",
+    "stl": "FMA53655",
+    "group": "facial",
+    "color": 13082218
+  },
+  {
+    "name": "L Palatine Bone",
+    "stl": "FMA53656",
+    "group": "facial",
+    "color": 13082218
+  },
+  {
+    "name": "Vomer",
+    "stl": "FMA9710",
+    "group": "facial",
+    "color": 13082218
+  },
+  {
+    "name": "R Inferior Nasal Concha",
+    "stl": "FMA54737",
+    "group": "facial",
+    "color": 13082218
+  },
+  {
+    "name": "L Inferior Nasal Concha",
+    "stl": "FMA54738",
+    "group": "facial",
+    "color": 13082218
+  },
+  {
+    "name": "Mandible",
+    "stl": "FMA52748",
+    "group": "jaw",
+    "color": 13082218,
+    "jaw_attached": true
+  }
+]

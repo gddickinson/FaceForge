@@ -1,0 +1,316 @@
+[
+  {
+    "name": "Right 1st Rib",
+    "stl": "FMA7857",
+    "side": "R",
+    "ribNum": 1,
+    "color": 13940886
+  },
+  {
+    "name": "Right 2nd Rib",
+    "stl": "FMA7882",
+    "side": "R",
+    "ribNum": 2,
+    "color": 13940886
+  },
+  {
+    "name": "Right 3rd Rib",
+    "stl": "FMA7909",
+    "side": "R",
+    "ribNum": 3,
+    "color": 13940886
+  },
+  {
+    "name": "Right 4th Rib",
+    "stl": "FMA7957",
+    "side": "R",
+    "ribNum": 4,
+    "color": 13940886
+  },
+  {
+    "name": "Right 5th Rib",
+    "stl": "FMA8066",
+    "side": "R",
+    "ribNum": 5,
+    "color": 13940886
+  },
+  {
+    "name": "Right 6th Rib",
+    "stl": "FMA8175",
+    "side": "R",
+    "ribNum": 6,
+    "color": 13940886
+  },
+  {
+    "name": "Right 7th Rib",
+    "stl": "FMA8229",
+    "side": "R",
+    "ribNum": 7,
+    "color": 13940886
+  },
+  {
+    "name": "Right 8th Rib",
+    "stl": "FMA8283",
+    "side": "R",
+    "ribNum": 8,
+    "color": 13940886
+  },
+  {
+    "name": "Right 9th Rib",
+    "stl": "FMA8364",
+    "side": "R",
+    "ribNum": 9,
+    "color": 13940886
+  },
+  {
+    "name": "Right 10th Rib",
+    "stl": "FMA8445",
+    "side": "R",
+    "ribNum": 10,
+    "color": 13940886
+  },
+  {
+    "name": "Right 11th Rib",
+    "stl": "FMA8531",
+    "side": "R",
+    "ribNum": 11,
+    "color": 13940886
+  },
+  {
+    "name": "Right 12th Rib",
+    "stl": "FMA8533",
+    "side": "R",
+    "ribNum": 12,
+    "color": 13940886
+  },
+  {
+    "name": "Left 1st Rib",
+    "stl": "FMA7987",
+    "side": "L",
+    "ribNum": 1,
+    "color": 13940886
+  },
+  {
+    "name": "Left 2nd Rib",
+    "stl": "FMA8012",
+    "side": "L",
+    "ribNum": 2,
+    "color": 13940886
+  },
+  {
+    "name": "Left 3rd Rib",
+    "stl": "FMA8039",
+    "side": "L",
+    "ribNum": 3,
+    "color": 13940886
+  },
+  {
+    "name": "Left 4th Rib",
+    "stl": "FMA8148",
+    "side": "L",
+    "ribNum": 4,
+    "color": 13940886
+  },
+  {
+    "name": "Left 5th Rib",
+    "stl": "FMA8093",
+    "side": "L",
+    "ribNum": 5,
+    "color": 13940886
+  },
+  {
+    "name": "Left 6th Rib",
+    "stl": "FMA8202",
+    "side": "L",
+    "ribNum": 6,
+    "color": 13940886
+  },
+  {
+    "name": "Left 7th Rib",
+    "stl": "FMA8256",
+    "side": "L",
+    "ribNum": 7,
+    "color": 13940886
+  },
+  {
+    "name": "Left 8th Rib",
+    "stl": "FMA8310",
+    "side": "L",
+    "ribNum": 8,
+    "color": 13940886
+  },
+  {
+    "name": "Left 9th Rib",
+    "stl": "FMA8391",
+    "side": "L",
+    "ribNum": 9,
+    "color": 13940886
+  },
+  {
+    "name": "Left 10th Rib",
+    "stl": "FMA8472",
+    "side": "L",
+    "ribNum": 10,
+    "color": 13940886
+  },
+  {
+    "name": "Left 11th Rib",
+    "stl": "FMA8532",
+    "side": "L",
+    "ribNum": 11,
+    "color": 13940886
+  },
+  {
+    "name": "Left 12th Rib",
+    "stl": "FMA8534",
+    "side": "L",
+    "ribNum": 12,
+    "color": 13940886
+  },
+  {
+    "name": "R 1st Costal Cart.",
+    "stl": "FMA7875",
+    "side": "R",
+    "ribNum": 1,
+    "type": "cartilage",
+    "color": 8954040
+  },
+  {
+    "name": "R 2nd Costal Cart.",
+    "stl": "FMA7886",
+    "side": "R",
+    "ribNum": 2,
+    "type": "cartilage",
+    "color": 8954040
+  },
+  {
+    "name": "R 3rd Costal Cart.",
+    "stl": "FMA7913",
+    "side": "R",
+    "ribNum": 3,
+    "type": "cartilage",
+    "color": 8954040
+  },
+  {
+    "name": "R 4th Costal Cart.",
+    "stl": "FMA7976",
+    "side": "R",
+    "ribNum": 4,
+    "type": "cartilage",
+    "color": 8954040
+  },
+  {
+    "name": "R 5th Costal Cart.",
+    "stl": "FMA8070",
+    "side": "R",
+    "ribNum": 5,
+    "type": "cartilage",
+    "color": 8954040
+  },
+  {
+    "name": "R 6th Costal Cart.",
+    "stl": "FMA8194",
+    "side": "R",
+    "ribNum": 6,
+    "type": "cartilage",
+    "color": 8954040
+  },
+  {
+    "name": "R 7th Costal Cart.",
+    "stl": "FMA8248",
+    "side": "R",
+    "ribNum": 7,
+    "type": "cartilage",
+    "color": 8954040
+  },
+  {
+    "name": "L 1st Costal Cart.",
+    "stl": "FMA8005",
+    "side": "L",
+    "ribNum": 1,
+    "type": "cartilage",
+    "color": 8954040
+  },
+  {
+    "name": "L 2nd Costal Cart.",
+    "stl": "FMA8031",
+    "side": "L",
+    "ribNum": 2,
+    "type": "cartilage",
+    "color": 8954040
+  },
+  {
+    "name": "L 3rd Costal Cart.",
+    "stl": "FMA8058",
+    "side": "L",
+    "ribNum": 3,
+    "type": "cartilage",
+    "color": 8954040
+  },
+  {
+    "name": "L 4th Costal Cart.",
+    "stl": "FMA8167",
+    "side": "L",
+    "ribNum": 4,
+    "type": "cartilage",
+    "color": 8954040
+  },
+  {
+    "name": "L 5th Costal Cart.",
+    "stl": "FMA8112",
+    "side": "L",
+    "ribNum": 5,
+    "type": "cartilage",
+    "color": 8954040
+  },
+  {
+    "name": "L 6th Costal Cart.",
+    "stl": "FMA8221",
+    "side": "L",
+    "ribNum": 6,
+    "type": "cartilage",
+    "color": 8954040
+  },
+  {
+    "name": "L 7th Costal Cart.",
+    "stl": "FMA8275",
+    "side": "L",
+    "ribNum": 7,
+    "type": "cartilage",
+    "color": 8954040
+  },
+  {
+    "name": "R Costal Cart. (lower)",
+    "stl": "BP28",
+    "side": "R",
+    "ribNum": 0,
+    "type": "cartilage",
+    "color": 8954040
+  },
+  {
+    "name": "L Costal Cart. (lower)",
+    "stl": "BP24",
+    "side": "L",
+    "ribNum": 0,
+    "type": "cartilage",
+    "color": 8954040
+  },
+  {
+    "name": "Manubrium",
+    "stl": "FMA7486",
+    "type": "sternum",
+    "color": 13940886
+  },
+  {
+    "name": "Body of Sternum",
+    "stl": "FMA7487",
+    "type": "sternum",
+    "color": 13940886
+  },
+  {
+    "name": "Xiphoid Process",
+    "stl": "FMA7488",
+    "type": "sternum",
+    "color": 13940886
+  }
+]

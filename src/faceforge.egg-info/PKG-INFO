@@ -1,0 +1,12 @@
+Metadata-Version: 2.4
+Name: faceforge
+Version: 0.1.0
+Summary: FACS-based facial animation with full-body anatomy visualization
+Requires-Python: >=3.11
+Requires-Dist: numpy>=1.24
+Requires-Dist: PyOpenGL>=3.1.7
+Requires-Dist: PySide6>=6.6
+Requires-Dist: glfw>=2.6
+Provides-Extra: dev
+Requires-Dist: pytest>=7.4; extra == "dev"
+Requires-Dist: pytest-qt>=4.2; extra == "dev"

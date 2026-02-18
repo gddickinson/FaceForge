@@ -1,0 +1,72 @@
+[
+  {
+    "name": "Right Clavicle",
+    "stl": "FMA13322",
+    "side": "R",
+    "bone": "clavicle",
+    "color": 13940886
+  },
+  {
+    "name": "Left Clavicle",
+    "stl": "FMA13323",
+    "side": "L",
+    "bone": "clavicle",
+    "color": 13940886
+  },
+  {
+    "name": "Right Scapula",
+    "stl": "FMA13395",
+    "side": "R",
+    "bone": "scapula",
+    "color": 13940886
+  },
+  {
+    "name": "Left Scapula",
+    "stl": "FMA13396",
+    "side": "L",
+    "bone": "scapula",
+    "color": 13940886
+  },
+  {
+    "name": "Right Humerus",
+    "stl": "FMA23130",
+    "side": "R",
+    "bone": "humerus",
+    "color": 13940886
+  },
+  {
+    "name": "Left Humerus",
+    "stl": "FMA23131",
+    "side": "L",
+    "bone": "humerus",
+    "color": 13940886
+  },
+  {
+    "name": "Right Radius",
+    "stl": "FMA23464",
+    "side": "R",
+    "bone": "radius",
+    "color": 13940886
+  },
+  {
+    "name": "Left Radius",
+    "stl": "FMA23465",
+    "side": "L",
+    "bone": "radius",
+    "color": 13940886
+  },
+  {
+    "name": "Right Ulna",
+    "stl": "FMA23467",
+    "side": "R",
+    "bone": "ulna",
+    "color": 13940886
+  },
+  {
+    "name": "Left Ulna",
+    "stl": "FMA23468",
+    "side": "L",
+    "bone": "ulna",
+    "color": 13940886
+  }
+]

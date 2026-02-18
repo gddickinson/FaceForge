@@ -1,0 +1,50 @@
+[
+  {
+    "id": "AU1",
+    "name": "Inner Brow Raise"
+  },
+  {
+    "id": "AU2",
+    "name": "Outer Brow Raise"
+  },
+  {
+    "id": "AU4",
+    "name": "Brow Lower"
+  },
+  {
+    "id": "AU5",
+    "name": "Upper Lid Raise"
+  },
+  {
+    "id": "AU6",
+    "name": "Cheek Raise"
+  },
+  {
+    "id": "AU9",
+    "name": "Nose Wrinkle"
+  },
+  {
+    "id": "AU12",
+    "name": "Lip Corner Pull"
+  },
+  {
+    "id": "AU15",
+    "name": "Lip Corner Drop"
+  },
+  {
+    "id": "AU20",
+    "name": "Lip Stretch"
+  },
+  {
+    "id": "AU22",
+    "name": "Lip Funneler"
+  },
+  {
+    "id": "AU25",
+    "name": "Lips Part"
+  },
+  {
+    "id": "AU26",
+    "name": "Jaw Drop"
+  }
+]

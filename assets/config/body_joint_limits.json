@@ -1,0 +1,33 @@
+{
+  "limits": {
+    "spine_flex":       {"min": -1.0, "max": 1.0},
+    "spine_lat_bend":   {"min": -1.0, "max": 1.0},
+    "spine_rotation":   {"min": -1.0, "max": 1.0},
+
+    "shoulder_{s}_flex":    {"min": -1.0, "max": 1.0},
+    "shoulder_{s}_abduct":  {"min": -0.2, "max": 1.0},
+    "shoulder_{s}_rotate":  {"min": -1.0, "max": 1.0},
+
+    "elbow_{s}_flex":       {"min": 0.0, "max": 1.0},
+
+    "forearm_{s}_rotate":   {"min": -1.0, "max": 1.0},
+
+    "wrist_{s}_flex":       {"min": -1.0, "max": 1.0},
+    "wrist_{s}_deviate":    {"min": -1.0, "max": 1.0},
+
+    "hip_{s}_flex":         {"min": -0.3, "max": 1.0},
+    "hip_{s}_abduct":       {"min": -0.5, "max": 1.0},
+    "hip_{s}_rotate":       {"min": -1.0, "max": 1.0},
+
+    "knee_{s}_flex":        {"min": 0.0, "max": 1.0},
+
+    "ankle_{s}_flex":       {"min": -1.0, "max": 1.0},
+    "ankle_{s}_invert":     {"min": -1.0, "max": 1.0},
+
+    "finger_curl_{s}":     {"min": -0.2, "max": 1.0},
+    "finger_spread_{s}":   {"min": -0.3, "max": 1.0},
+    "thumb_op_{s}":        {"min": 0.0, "max": 1.0},
+    "toe_curl_{s}":        {"min": -0.5, "max": 1.0},
+    "toe_spread_{s}":      {"min": -0.3, "max": 1.0}
+  }
+}

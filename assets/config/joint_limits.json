@@ -1,0 +1,61 @@
+{
+  "joint_limits": {
+    "cervical": [
+      {
+        "yaw": 50,
+        "pitch": 25,
+        "roll": 20
+      },
+      {
+        "yaw": 40,
+        "pitch": 20,
+        "roll": 5
+      },
+      {
+        "yaw": 12,
+        "pitch": 12,
+        "roll": 8
+      },
+      {
+        "yaw": 12,
+        "pitch": 12,
+        "roll": 8
+      },
+      {
+        "yaw": 10,
+        "pitch": 10,
+        "roll": 6
+      },
+      {
+        "yaw": 8,
+        "pitch": 8,
+        "roll": 5
+      },
+      {
+        "yaw": 6,
+        "pitch": 6,
+        "roll": 4
+      },
+      {
+        "yaw": 0,
+        "pitch": 0,
+        "roll": 0
+      }
+    ],
+    "headTotal": {
+      "yaw": 80,
+      "pitch": 60,
+      "roll": 40
+    },
+    "thoracicMax": {
+      "yaw": 6,
+      "pitch": 4,
+      "roll": 3
+    }
+  },
+  "muscle_limits": {
+    "maxStretchRatio": 1.4,
+    "minCompressRatio": 0.7,
+    "stiffness": 0.85
+  }
+}
