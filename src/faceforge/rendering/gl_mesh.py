@@ -54,11 +54,13 @@ class GLMesh:
         self._vao: int = 0
         self._vbo_pos: int = 0
         self._vbo_norm: int = 0
+        self._vbo_color: int = 0
         self._ebo: int = 0
 
         self._vertex_count: int = geometry.vertex_count
         self._index_count: int = 0
         self._has_indices: bool = geometry.has_indices
+        self._has_colors: bool = False
         self._uploaded: bool = False
 
     # ------------------------------------------------------------------
@@ -133,6 +135,34 @@ class GLMesh:
         glBufferSubData(GL_ARRAY_BUFFER, 0, data.nbytes, data)
         glBindBuffer(GL_ARRAY_BUFFER, 0)
 
+    def upload_colors(self, colors: np.ndarray) -> None:
+        """Create color VBO at attribute location 2 and upload data."""
+        if not self._uploaded:
+            return
+        data = colors.astype(np.float32)
+        self._vbo_color = glGenBuffers(1)
+        glBindVertexArray(self._vao)
+        glBindBuffer(GL_ARRAY_BUFFER, self._vbo_color)
+        glBufferData(GL_ARRAY_BUFFER, data.nbytes, data, GL_DYNAMIC_DRAW)
+        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, None)
+        glEnableVertexAttribArray(2)
+        glBindVertexArray(0)
+        glBindBuffer(GL_ARRAY_BUFFER, 0)
+        self._has_colors = True
+
+    def update_colors(self, colors: np.ndarray) -> None:
+        """Stream new color data into the existing color VBO."""
+        if not self._uploaded or not self._has_colors:
+            return
+        data = colors.astype(np.float32)
+        glBindBuffer(GL_ARRAY_BUFFER, self._vbo_color)
+        glBufferSubData(GL_ARRAY_BUFFER, 0, data.nbytes, data)
+        glBindBuffer(GL_ARRAY_BUFFER, 0)
+
+    @property
+    def has_colors(self) -> bool:
+        return self._has_colors
+
     # ------------------------------------------------------------------
     # Drawing
     # ------------------------------------------------------------------
@@ -166,6 +196,10 @@ class GLMesh:
         if self._ebo:
             glDeleteBuffers(1, [self._ebo])
             self._ebo = 0
+        if self._vbo_color:
+            glDeleteBuffers(1, [self._vbo_color])
+            self._vbo_color = 0
+            self._has_colors = False
         if self._vbo_norm:
             glDeleteBuffers(1, [self._vbo_norm])
             self._vbo_norm = 0

@@ -17,11 +17,14 @@ class BufferGeometry:
     positions: Nx3 flat array (x,y,z per vertex)
     normals: Nx3 flat array
     indices: triangle index array (uint32), optional for non-indexed geometry
+    vertex_colors: optional Nx3 float32 per-vertex RGB (0..1)
     """
     positions: NDArray[np.float32]
     normals: NDArray[np.float32]
     indices: Optional[NDArray[np.uint32]] = None
     vertex_count: int = 0
+    vertex_colors: Optional[NDArray[np.float32]] = None
+    colors_dirty: bool = False
 
     def __post_init__(self):
         if self.vertex_count == 0:

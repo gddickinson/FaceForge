@@ -54,6 +54,10 @@ class EventType(Enum):
     # Scene
     SCENE_READY = auto()
 
+    # Debug visualization
+    DEBUG_VIZ_CHANGED = auto()
+    SELECTION_CHANGED = auto()
+
 
 class EventBus:
     """Simple publish/subscribe event system."""

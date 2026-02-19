@@ -115,12 +115,19 @@ class SoftTissueSkinning:
     PROXIMAL_PENALTY_FACTOR = 3.0   # penalty per unit of vertical overshoot
     PROXIMAL_HARD_CUTOFF = 12.0     # above this: exclude chain entirely
 
+    # Geodesic mesh segmentation: uses mesh-edge distances to separate limbs
+    # from torso at narrow bridges (armpit, groin) instead of relying on
+    # Euclidean distance which is deceptively short when bone segments pass
+    # through the torso interior.
+    GEODESIC_BLEND = 0.1   # Euclidean weight in hybrid distance (10% Euclidean)
+    SEED_RADIUS = 5.0      # max Euclidean dist from bone segment to seed vertex
+
     def __init__(self):
         self.joints: list[SkinJoint] = []
         self.bindings: list[SkinBinding] = []
         self.chain_count: int = 0
         self._dirty: bool = True
-        self._last_signature: str = ""
+        self._last_signature: tuple = ()
 
         # Registration-time filter constants (tunable for optimization).
         # Defaults match the original hard-coded values.
@@ -198,6 +205,7 @@ class SoftTissueSkinning:
         allowed_chains: set[int] | None = None,
         spatial_limit: float | None = None,
         chain_z_margin: float | None = None,
+        use_geodesic: bool = True,
     ) -> None:
         """Assign each vertex to nearest bone segment with blend weights.
 
@@ -223,6 +231,11 @@ class SoftTissueSkinning:
             Preferred over spatial_limit for full-body skin meshes.
             The spine chain (chain 0) is never Z-filtered because it spans
             the full vertical range.
+        use_geodesic : bool
+            When True, uses geodesic (mesh-edge) distances for chain
+            assignment instead of pure Euclidean.  This naturally separates
+            limbs from the torso at narrow bridges (armpit, groin).
+            Defaults to True.  Disable for muscles or debugging.
         """
         if not self.joints or mesh.rest_positions is None:
             return
@@ -270,6 +283,41 @@ class SoftTissueSkinning:
         diff = p_exp - closest                                    # (V, S, 3)
         dists = np.sqrt(np.sum(diff * diff, axis=2))              # (V, S)
 
+        # ── Geodesic mesh segmentation ──
+        # Replace pure Euclidean dists with hybrid geodesic+Euclidean to
+        # correctly separate limbs from torso at narrow mesh bridges.
+        _precomputed_edges: np.ndarray | None = None
+        # Keep Euclidean dists for spatial-limit proximity checks
+        # (geodesic should affect chain RANKING, not chain ELIGIBILITY).
+        dists_euclidean = dists
+        if use_geodesic and not is_muscle and mesh.geometry.indices is not None:
+            edge_result = self._extract_mesh_edges(mesh)
+            if edge_result is not None:
+                mesh_edges, mesh_edge_lengths = edge_result
+                _precomputed_edges = mesh_edges
+                dists_euclidean = dists.copy()
+                geo_chain = self._geodesic_chain_dists(
+                    positions.astype(np.float64),
+                    mesh_edges, mesh_edge_lengths,
+                    seg_starts_arr, seg_ends_arr, seg_chain_arr,
+                )
+                # Build hybrid: geodesic for chain separation + Euclidean for
+                # segment refinement within a chain.
+                # Vertices in disconnected mesh components have inf geodesic
+                # distance (Dijkstra can't reach them from any seed) — fall
+                # back to pure Euclidean for those vertices.
+                unique_chains_geo = np.unique(seg_chain_arr)
+                chain_to_idx = {int(c): i for i, c in enumerate(unique_chains_geo)}
+                for si in range(len(seg_chain_arr)):
+                    ci = chain_to_idx[int(seg_chain_arr[si])]
+                    geo_col = geo_chain[:, ci]
+                    reachable = np.isfinite(geo_col)
+                    dists[reachable, si] = (
+                        geo_col[reachable]
+                        + self.GEODESIC_BLEND * dists_euclidean[reachable, si]
+                    )
+                    # Unreachable vertices keep their Euclidean distances
+
         # ── Spatial limit: mask out chains whose bone segments are too far ──
         # Uses the already-computed segment distances (not joint distances)
         # because long bone segments (e.g. hip→knee) may have a closest
@@ -309,8 +357,11 @@ class SoftTissueSkinning:
                     chain_limit = min(spatial_limit, max(_MIN_SPATIAL, extent * _SPATIAL_FACTOR))
                 else:
                     chain_limit = spatial_limit
-                # Min distance from each vertex to any segment in this chain
-                min_seg_dist = dists[:, chain_seg_mask].min(axis=1)  # (V,)
+                # Min Euclidean distance from each vertex to any segment in
+                # this chain.  Use Euclidean (not geodesic) so that physical
+                # proximity determines chain eligibility — geodesic only
+                # affects the ranking among eligible chains.
+                min_seg_dist = dists_euclidean[:, chain_seg_mask].min(axis=1)  # (V,)
                 too_far = min_seg_dist > chain_limit
                 if np.any(too_far):
                     dists[np.ix_(too_far, chain_seg_mask)] = np.inf
@@ -649,7 +700,7 @@ class SoftTissueSkinning:
             base_color=mesh.material.color,
             rest_y_span=rest_y_span,
         )
-        self._build_neighbor_data(binding)
+        self._build_neighbor_data(binding, precomputed_edges=_precomputed_edges)
         self.bindings.append(binding)
 
     # Number of Laplacian smoothing iterations for boundary weights.
@@ -775,7 +826,183 @@ class SoftTissueSkinning:
 
         weights[:] = w.astype(np.float32)
 
-    def _build_neighbor_data(self, binding: SkinBinding) -> None:
+    @staticmethod
+    def _extract_mesh_edges(
+        mesh: MeshInstance,
+    ) -> tuple[np.ndarray, np.ndarray] | None:
+        """Extract unique undirected edges and their lengths from a mesh.
+
+        Returns ``(unique_edges, edge_lengths)`` where *unique_edges* is
+        ``(E, 2)`` vertex-index pairs and *edge_lengths* is ``(E,)``, or
+        ``None`` if the mesh has no index buffer.
+        """
+        indices = mesh.geometry.indices
+        if indices is None or len(indices) < 3:
+            return None
+        if mesh.rest_positions is None:
+            return None
+
+        rest = mesh.rest_positions.reshape(-1, 3).astype(np.float64)
+
+        tri = indices.reshape(-1, 3)
+        e01 = np.column_stack([tri[:, 0], tri[:, 1]])
+        e12 = np.column_stack([tri[:, 1], tri[:, 2]])
+        e20 = np.column_stack([tri[:, 2], tri[:, 0]])
+        all_edges = np.concatenate([e01, e12, e20], axis=0)  # (3T, 2)
+
+        sorted_edges = np.sort(all_edges, axis=1)
+        unique_edges = np.unique(sorted_edges, axis=0)  # (E, 2)
+
+        diff = rest[unique_edges[:, 1]] - rest[unique_edges[:, 0]]
+        edge_lengths = np.sqrt(np.sum(diff * diff, axis=1))  # (E,)
+
+        return unique_edges, edge_lengths
+
+    def _geodesic_chain_dists(
+        self,
+        positions: np.ndarray,
+        edges: np.ndarray,
+        edge_lengths: np.ndarray,
+        seg_starts: np.ndarray,
+        seg_ends: np.ndarray,
+        seg_chain_arr: np.ndarray,
+    ) -> np.ndarray:
+        """Compute geodesic (mesh-edge) distance from each vertex to each chain.
+
+        For each chain, seed vertices are those within ``SEED_RADIUS`` of any
+        bone segment in that chain.  The seed distance is the Euclidean
+        distance to the nearest point on the segment.  A virtual super-source
+        is connected to all seeds with edge weights equal to their seed
+        distances, and a single-source Dijkstra gives the shortest surface
+        path from any bone in the chain to every mesh vertex.
+
+        Parameters
+        ----------
+        positions : (V, 3) array
+        edges : (E, 2) array of unique undirected edge vertex pairs
+        edge_lengths : (E,) array of edge lengths
+        seg_starts, seg_ends : (S, 3) arrays of bone segment endpoints
+        seg_chain_arr : (S,) chain ID per segment
+
+        Returns
+        -------
+        (V, C) array of geodesic distances, where C = number of unique chains.
+        """
+        V = len(positions)
+        unique_chains = np.unique(seg_chain_arr)
+        C = len(unique_chains)
+        chain_to_idx = {int(c): i for i, c in enumerate(unique_chains)}
+
+        # Try scipy for fast C-implemented Dijkstra
+        try:
+            from scipy.sparse import csr_matrix
+            from scipy.sparse.csgraph import dijkstra as sp_dijkstra
+            _has_scipy = True
+        except ImportError:
+            _has_scipy = False
+
+        # Base mesh edges (both directions) — used for both scipy and heapq
+        base_row = np.concatenate([edges[:, 0], edges[:, 1]])
+        base_col = np.concatenate([edges[:, 1], edges[:, 0]])
+        base_data = np.concatenate([edge_lengths, edge_lengths])
+
+        # Build adjacency list for heapq fallback (only if needed)
+        adj: list[list[tuple[int, float]]] | None = None
+        if not _has_scipy:
+            adj = [[] for _ in range(V)]
+            for i in range(len(edges)):
+                u, v = int(edges[i, 0]), int(edges[i, 1])
+                w = float(edge_lengths[i])
+                adj[u].append((v, w))
+                adj[v].append((u, w))
+
+        result = np.full((V, C), np.inf, dtype=np.float64)
+
+        for chain_id in unique_chains:
+            ci = chain_to_idx[int(chain_id)]
+            chain_mask = seg_chain_arr == chain_id
+            chain_seg_starts = seg_starts[chain_mask]  # (Sc, 3)
+            chain_seg_ends = seg_ends[chain_mask]      # (Sc, 3)
+
+            # Find seed vertices: those within SEED_RADIUS of any segment
+            ab = chain_seg_ends - chain_seg_starts  # (Sc, 3)
+            ab_len_sq = np.sum(ab * ab, axis=1)     # (Sc,)
+
+            p_exp = positions[:, np.newaxis, :]  # (V, 1, 3)
+            ap = p_exp - chain_seg_starts[np.newaxis, :, :]
+            t = np.sum(ap * ab[np.newaxis, :, :], axis=2) / np.maximum(ab_len_sq[np.newaxis, :], 1e-10)
+            t = np.clip(t, 0.0, 1.0)
+            closest = chain_seg_starts[np.newaxis, :, :] + t[:, :, np.newaxis] * ab[np.newaxis, :, :]
+            diff = p_exp - closest
+            seg_dists = np.sqrt(np.sum(diff * diff, axis=2))  # (V, Sc)
+            min_seg_dist = seg_dists.min(axis=1)  # (V,)
+
+            seed_mask = min_seg_dist <= self.SEED_RADIUS
+            seed_indices = np.where(seed_mask)[0]
+            seed_dists = min_seg_dist[seed_mask]
+
+            if len(seed_indices) == 0:
+                # Fallback: closest vertex to each segment endpoint
+                fallback_list: list[int] = []
+                for seg_start, seg_end in zip(chain_seg_starts, chain_seg_ends):
+                    for pt in [seg_start, seg_end]:
+                        d = np.linalg.norm(positions - pt[np.newaxis, :], axis=1)
+                        fallback_list.append(int(np.argmin(d)))
+                seed_indices = np.unique(fallback_list).astype(np.intp)
+                seed_dists = min_seg_dist[seed_indices]
+
+            if _has_scipy:
+                # Virtual super-source approach: add node V connected to all
+                # seeds with edge weight = seed Euclidean distance.  One
+                # Dijkstra from the super-source gives multi-source distances.
+                super_src = V  # virtual node index
+                seed_row = np.full(len(seed_indices), super_src, dtype=np.intp)
+                seed_col = seed_indices.astype(np.intp)
+
+                # Bidirectional edges to super-source
+                row = np.concatenate([base_row, seed_row, seed_col])
+                col = np.concatenate([base_col, seed_col, seed_row])
+                data = np.concatenate([base_data, seed_dists, seed_dists])
+
+                graph = csr_matrix(
+                    (data, (row, col)), shape=(V + 1, V + 1),
+                )
+                dists_from_super = sp_dijkstra(
+                    graph, directed=False, indices=super_src,
+                )  # (V+1,)
+                result[:, ci] = dists_from_super[:V]
+            else:
+                # Python heapq multi-source Dijkstra
+                import heapq
+                assert adj is not None
+                dist = np.full(V, np.inf, dtype=np.float64)
+                heap: list[tuple[float, int]] = []
+                for si_idx in range(len(seed_indices)):
+                    sv = int(seed_indices[si_idx])
+                    sd = float(seed_dists[si_idx])
+                    if sd < dist[sv]:
+                        dist[sv] = sd
+                        heapq.heappush(heap, (sd, sv))
+
+                while heap:
+                    d_u, u = heapq.heappop(heap)
+                    if d_u > dist[u]:
+                        continue
+                    for v_nb, w_nb in adj[u]:
+                        d_new = d_u + w_nb
+                        if d_new < dist[v_nb]:
+                            dist[v_nb] = d_new
+                            heapq.heappush(heap, (d_new, v_nb))
+
+                result[:, ci] = dist
+
+        return result
+
+    def _build_neighbor_data(
+        self,
+        binding: SkinBinding,
+        precomputed_edges: np.ndarray | None = None,
+    ) -> None:
         """Build mesh adjacency and rest-pose neighbor distances for clamping.
 
         Extracts unique edges from the triangle index buffer, then computes
@@ -783,27 +1010,26 @@ class SoftTissueSkinning:
         This baseline is used per-frame to detect vertices that have been
         stretched anomalously far from their neighbors (e.g. by arm chains
         pulling hip vertices) and clamp them back.
+
+        Parameters
+        ----------
+        precomputed_edges : (E, 2) ndarray or None
+            If provided, skip edge extraction and use these edges directly.
         """
         mesh = binding.mesh
-        indices = mesh.geometry.indices
-        if indices is None or len(indices) < 3:
-            return
         if mesh.rest_positions is None:
             return
 
         rest = mesh.rest_positions.reshape(-1, 3).astype(np.float64)
         V = len(rest)
 
-        # Extract unique edges from triangle index buffer
-        tri = indices.reshape(-1, 3)
-        e01 = np.column_stack([tri[:, 0], tri[:, 1]])
-        e12 = np.column_stack([tri[:, 1], tri[:, 2]])
-        e20 = np.column_stack([tri[:, 2], tri[:, 0]])
-        all_edges = np.concatenate([e01, e12, e20], axis=0)  # (3T, 2)
-
-        # Make undirected: sort each edge so smaller index first, then unique
-        sorted_edges = np.sort(all_edges, axis=1)
-        unique_edges = np.unique(sorted_edges, axis=0)  # (E, 2)
+        if precomputed_edges is not None:
+            unique_edges = precomputed_edges
+        else:
+            result = self._extract_mesh_edges(mesh)
+            if result is None:
+                return
+            unique_edges = result[0]
 
         # Compute neighbor counts
         neighbor_counts = np.zeros(V, dtype=np.int32)
@@ -893,8 +1119,11 @@ class SoftTissueSkinning:
         counts = binding.neighbor_counts
         rest_dist = binding.rest_neighbor_dist
 
-        # Compute current neighbor average positions
-        neighbor_sum = np.zeros((V, 3), dtype=np.float64)
+        # Compute current neighbor average positions (reuse buffer)
+        if not hasattr(binding, '_neighbor_sum_buf') or binding._neighbor_sum_buf is None or len(binding._neighbor_sum_buf) != V:
+            binding._neighbor_sum_buf = np.zeros((V, 3), dtype=np.float64)
+        neighbor_sum = binding._neighbor_sum_buf
+        neighbor_sum[:] = 0.0
         np.add.at(neighbor_sum, edges[:, 0], current[edges[:, 1]])
         np.add.at(neighbor_sum, edges[:, 1], current[edges[:, 0]])
 
@@ -914,15 +1143,16 @@ class SoftTissueSkinning:
         # Per-vertex threshold: interior vertices get tight clamping to
         # catch mis-binding spikes; chain-boundary vertices get a relaxed
         # threshold to allow natural stretch at arm↔torso transitions etc.
-        #   boundary_blend = 1.0 (all same chain)  → threshold = MAX
-        #   boundary_blend = 0.0 (all diff chains)  → threshold = MAX * (1 + RELAX)
-        bb = binding.boundary_blend
-        if bb is not None:
-            per_vert_max = self.MAX_NEIGHBOR_STRETCH * (
-                1.0 + (1.0 - bb) * self.BOUNDARY_RELAX_FACTOR
-            )
-        else:
-            per_vert_max = np.full(V, self.MAX_NEIGHBOR_STRETCH)
+        # Cached since boundary_blend only changes on reassignment, not per frame.
+        if not hasattr(binding, '_per_vert_max') or binding._per_vert_max is None or len(binding._per_vert_max) != V:
+            bb = binding.boundary_blend
+            if bb is not None:
+                binding._per_vert_max = self.MAX_NEIGHBOR_STRETCH * (
+                    1.0 + (1.0 - bb) * self.BOUNDARY_RELAX_FACTOR
+                )
+            else:
+                binding._per_vert_max = np.full(V, self.MAX_NEIGHBOR_STRETCH)
+        per_vert_max = binding._per_vert_max
 
         # Find outliers.  Skip vertices with very small rest_neighbor_dist
         # (< 0.05) — these sit at the centroid of their neighborhood and any
@@ -970,38 +1200,47 @@ class SoftTissueSkinning:
 
         mesh = binding.mesh
         positions = mesh.geometry.positions.reshape(-1, 3)
-        rest = mesh.rest_positions.reshape(-1, 3).astype(np.float64)
-        V = len(rest)
+        V = len(positions)
+
+        # Cache rest_pos float64 and smooth_alpha (never change)
+        if not hasattr(binding, '_rest_f64') or binding._rest_f64 is None:
+            binding._rest_f64 = mesh.rest_positions.reshape(-1, 3).astype(np.float64)
+        rest = binding._rest_f64
 
         # Only smooth vertices with smooth_zone > small threshold
-        active = sz > 0.01
+        if not hasattr(binding, '_smooth_active') or binding._smooth_active is None:
+            binding._smooth_active = sz > 0.01
+            binding._smooth_mask = binding._smooth_active & (counts > 0)
+            binding._smooth_alpha = (sz * self.BOUNDARY_SMOOTH_STRENGTH)[binding._smooth_mask, np.newaxis]
+        active = binding._smooth_active
         if not np.any(active):
             return
 
         has_neighbors = counts > 0
+        mask = binding._smooth_mask
+        a = binding._smooth_alpha
+
         # Work on displacements, not absolute positions
         disp = positions.astype(np.float64) - rest
 
+        # Reuse pre-allocated buffer for disp_sum across passes
+        if not hasattr(binding, '_disp_sum_buf') or binding._disp_sum_buf is None or len(binding._disp_sum_buf) != V:
+            binding._disp_sum_buf = np.zeros((V, 3), dtype=np.float64)
+        disp_sum = binding._disp_sum_buf
+
         for _pass in range(self.BOUNDARY_SMOOTH_PASSES):
-            # Compute neighbor average displacement
-            disp_sum = np.zeros((V, 3), dtype=np.float64)
+            disp_sum[:] = 0.0
             np.add.at(disp_sum, edges[:, 0], disp[edges[:, 1]])
             np.add.at(disp_sum, edges[:, 1], disp[edges[:, 0]])
-            disp_avg = np.zeros_like(disp_sum)
-            disp_avg[has_neighbors] = (
-                disp_sum[has_neighbors] / counts[has_neighbors, np.newaxis]
-            )
+            # In-place divide for neighbor average (only where has_neighbors)
+            disp_sum[has_neighbors] /= counts[has_neighbors, np.newaxis]
 
-            # Blend displacement toward neighbor average, weighted by
-            # smooth_zone (0=interior/no smoothing, 1=boundary/full smoothing)
-            alpha = sz * self.BOUNDARY_SMOOTH_STRENGTH  # (V,)
-            mask = active & has_neighbors
-            a = alpha[mask, np.newaxis]  # (N, 1)
-            disp[mask] = (1.0 - a) * disp[mask] + a * disp_avg[mask]
+            # Blend displacement toward neighbor average
+            disp[mask] = (1.0 - a) * disp[mask] + a * disp_sum[mask]
 
         # Write smoothed positions back
-        new_pos = rest + disp
-        positions[:] = new_pos.astype(positions.dtype)
+        disp += rest
+        positions[:] = disp.astype(positions.dtype)
 
     def update(self, body_state: BodyState) -> None:
         """Per-frame delta-matrix transform for all registered meshes.
@@ -1044,15 +1283,20 @@ class SoftTissueSkinning:
             if mesh.rest_positions is None:
                 continue
 
-            rest_pos = mesh.rest_positions.reshape(-1, 3).astype(np.float64)
+            # Cache rest positions as float64 (never changes, avoids per-frame copy)
+            if not hasattr(binding, '_rest_f64') or binding._rest_f64 is None:
+                binding._rest_f64 = mesh.rest_positions.reshape(-1, 3).astype(np.float64)
+            rest_pos = binding._rest_f64
             V = len(rest_pos)
             ji = binding.joint_indices   # (V,)
             si = binding.secondary_indices  # (V,)
             w = binding.weights          # (V,)
 
-            # Homogeneous positions: (V, 4)
-            ones = np.ones((V, 1), dtype=np.float64)
-            pos_h = np.concatenate([rest_pos, ones], axis=1)
+            # Homogeneous positions: (V, 4) — cached to avoid per-frame allocation
+            if not hasattr(binding, '_pos_h') or binding._pos_h is None:
+                ones = np.ones((V, 1), dtype=np.float64)
+                binding._pos_h = np.concatenate([rest_pos, ones], axis=1)
+            pos_h = binding._pos_h
 
             # Primary transform: delta[ji] @ pos for each vertex
             d_pri = delta_stack[ji]
@@ -1130,13 +1374,10 @@ class SoftTissueSkinning:
                 # Transform: rotate rest position then translate
                 new_blend_pos = batch_quat_rotate(q_r_blend, rest_pos[blend_idx]) + t_vec
 
-                # Assemble: non-blended use primary, blended use DQS
-                new_pos = result_pri.copy()
-                new_pos[blend_idx] = new_blend_pos
-            else:
-                new_pos = result_pri
+                # Assemble: write DQS results into primary (already a fresh array)
+                result_pri[blend_idx] = new_blend_pos
 
-            mesh.geometry.positions = new_pos.ravel().astype(np.float32)
+            mesh.geometry.positions = result_pri.ravel().astype(np.float32)
 
             # Neighbor-stretch clamping: snap back vertices that are
             # anomalously far from their mesh neighbors (mis-binding safety net).
@@ -1154,25 +1395,27 @@ class SoftTissueSkinning:
                     if self._apply_neighbor_clamp(binding) == 0:
                         break
 
-            # Normals
-            rest_nrm = mesh.rest_normals.reshape(-1, 3).astype(np.float64) if mesh.rest_normals is not None else None
+            # Normals — cache rest normals as float64
+            if not hasattr(binding, '_rest_nrm_f64'):
+                binding._rest_nrm_f64 = (
+                    mesh.rest_normals.reshape(-1, 3).astype(np.float64)
+                    if mesh.rest_normals is not None else None
+                )
+            rest_nrm = binding._rest_nrm_f64
             if rest_nrm is not None:
                 # Primary normals via rotation matrix
                 rot_pri = delta_stack[ji, :3, :3]  # (V, 3, 3)
                 nrm_pri = np.einsum('vij,vj->vi', rot_pri, rest_nrm)
 
                 if blend_idx is not None and q_r_blend is not None:
-                    # Blended normals: use DQS rotation quaternion
+                    # Blended normals: write into nrm_pri (already a fresh array)
                     nrm_blend = batch_quat_rotate(q_r_blend, rest_nrm[blend_idx])
-                    new_nrm = nrm_pri.copy()
-                    new_nrm[blend_idx] = nrm_blend
-                else:
-                    new_nrm = nrm_pri
+                    nrm_pri[blend_idx] = nrm_blend
 
-                lengths = np.linalg.norm(new_nrm, axis=1, keepdims=True)
+                lengths = np.linalg.norm(nrm_pri, axis=1, keepdims=True)
                 lengths = np.maximum(lengths, 1e-10)
-                new_nrm /= lengths
-                mesh.geometry.normals = new_nrm.ravel().astype(np.float32)
+                nrm_pri /= lengths
+                mesh.geometry.normals = nrm_pri.ravel().astype(np.float32)
 
             mesh.needs_update = True
 
@@ -1209,26 +1452,35 @@ class SoftTissueSkinning:
 
         binding.mesh.material.color = (float(color[0]), float(color[1]), float(color[2]))
 
-    def _compute_signature(self, state: BodyState) -> str:
-        """Compute a state signature for early-exit optimization."""
-        # Include all joint-affecting body state keys + breathing (affects rib pivots)
-        vals = [
-            state.spine_flex, state.spine_lat_bend, state.spine_rotation,
-            state.shoulder_r_abduct, state.shoulder_r_flex, state.shoulder_r_rotate,
-            state.shoulder_l_abduct, state.shoulder_l_flex, state.shoulder_l_rotate,
-            state.elbow_r_flex, state.elbow_l_flex,
-            state.forearm_r_rotate, state.forearm_l_rotate,
-            state.wrist_r_flex, state.wrist_r_deviate,
-            state.wrist_l_flex, state.wrist_l_deviate,
-            state.hip_r_flex, state.hip_r_abduct, state.hip_r_rotate,
-            state.hip_l_flex, state.hip_l_abduct, state.hip_l_rotate,
-            state.knee_r_flex, state.knee_l_flex,
-            state.ankle_r_flex, state.ankle_r_invert,
-            state.ankle_l_flex, state.ankle_l_invert,
-            state.breath_phase_body, state.breath_depth,
-            state.finger_curl_r, state.finger_spread_r, state.thumb_op_r,
-            state.finger_curl_l, state.finger_spread_l, state.thumb_op_l,
-            state.toe_curl_r, state.toe_spread_r,
-            state.toe_curl_l, state.toe_spread_l,
-        ]
-        return "|".join(f"{v:.4f}" for v in vals)
+    def _compute_signature(self, state: BodyState) -> tuple:
+        """Compute a state signature for early-exit optimization.
+
+        Returns a tuple of rounded floats — fast equality check, no string
+        formatting overhead.
+        """
+        return (
+            round(state.spine_flex, 4), round(state.spine_lat_bend, 4),
+            round(state.spine_rotation, 4),
+            round(state.shoulder_r_abduct, 4), round(state.shoulder_r_flex, 4),
+            round(state.shoulder_r_rotate, 4),
+            round(state.shoulder_l_abduct, 4), round(state.shoulder_l_flex, 4),
+            round(state.shoulder_l_rotate, 4),
+            round(state.elbow_r_flex, 4), round(state.elbow_l_flex, 4),
+            round(state.forearm_r_rotate, 4), round(state.forearm_l_rotate, 4),
+            round(state.wrist_r_flex, 4), round(state.wrist_r_deviate, 4),
+            round(state.wrist_l_flex, 4), round(state.wrist_l_deviate, 4),
+            round(state.hip_r_flex, 4), round(state.hip_r_abduct, 4),
+            round(state.hip_r_rotate, 4),
+            round(state.hip_l_flex, 4), round(state.hip_l_abduct, 4),
+            round(state.hip_l_rotate, 4),
+            round(state.knee_r_flex, 4), round(state.knee_l_flex, 4),
+            round(state.ankle_r_flex, 4), round(state.ankle_r_invert, 4),
+            round(state.ankle_l_flex, 4), round(state.ankle_l_invert, 4),
+            round(state.breath_phase_body, 4), round(state.breath_depth, 4),
+            round(state.finger_curl_r, 4), round(state.finger_spread_r, 4),
+            round(state.thumb_op_r, 4),
+            round(state.finger_curl_l, 4), round(state.finger_spread_l, 4),
+            round(state.thumb_op_l, 4),
+            round(state.toe_curl_r, 4), round(state.toe_spread_r, 4),
+            round(state.toe_curl_l, 4), round(state.toe_spread_l, 4),
+        )

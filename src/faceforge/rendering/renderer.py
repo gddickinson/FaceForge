@@ -213,6 +213,15 @@ class GLRenderer:
             gl_mesh.update_normals(mesh.geometry.normals)
             mesh.needs_update = False
 
+        # Stream vertex colors if dirty
+        geom = mesh.geometry
+        if geom.vertex_colors is not None and geom.colors_dirty:
+            if gl_mesh.has_colors:
+                gl_mesh.update_colors(geom.vertex_colors)
+            else:
+                gl_mesh.upload_colors(geom.vertex_colors)
+            geom.colors_dirty = False
+
         return gl_mesh
 
     def _draw_mesh(

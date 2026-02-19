@@ -1137,6 +1137,164 @@ def main():
 
         window.control_panel.debug_tab.set_diagnostic_callback(_run_skinning_diagnostic)
 
+        # ── Stretch/chain visualization + selection + reassignment ──
+        from faceforge.body.stretch_viz import StretchVisualizer
+        from faceforge.body.chain_reassignment import ChainReassigner
+        from faceforge.body.chain_overrides import (
+            save_overrides, load_overrides, apply_overrides,
+            collect_modified_overrides,
+        )
+        from faceforge.rendering.selection_tool import SelectionTool
+
+        stretch_viz = StretchVisualizer(skinning)
+        reassigner = ChainReassigner(skinning)
+        selection_tool = SelectionTool(skinning)
+        gl_widget.selection_tool = selection_tool
+
+        # Track which vertices have been modified for override saving
+        _modified_vertices: dict[int, set[int]] = {}
+
+        # Populate chain names in debug tab
+        chain_names: list[str] = []
+        seen_chains: set[int] = set()
+        for ji, joint in enumerate(skinning.joints):
+            if joint.chain_id not in seen_chains:
+                seen_chains.add(joint.chain_id)
+                # Derive friendly name from first joint in chain
+                name = joint.name.rsplit("_", 1)[0] if "_" in joint.name else joint.name
+                chain_names.append(f"{joint.chain_id}: {name}")
+        window.control_panel.debug_tab.set_chain_names(chain_names)
+
+        # Map chain name back to chain ID
+        def _chain_name_to_id(name: str) -> int:
+            try:
+                return int(name.split(":")[0])
+            except (ValueError, IndexError):
+                return 0
+
+        # Wire visualization toggles
+        debug_tab = window.control_panel.debug_tab
+
+        def _on_stretch_viz(enabled):
+            stretch_viz.stretch_enabled = enabled
+            if not enabled:
+                stretch_viz.chain_enabled = False
+
+        def _on_chain_viz(enabled):
+            stretch_viz.chain_enabled = enabled
+            if not enabled:
+                stretch_viz.stretch_enabled = False
+
+        debug_tab.stretch_viz_toggled.connect(_on_stretch_viz)
+        debug_tab.chain_viz_toggled.connect(_on_chain_viz)
+
+        # Wire selection tool
+        def _on_selection_mode(enabled):
+            selection_tool.active = enabled
+
+        def _on_selection_changed():
+            count = selection_tool.selection.total_count
+            debug_tab.update_selection_count(count)
+
+        selection_tool.on_selection_changed = _on_selection_changed
+        debug_tab.selection_mode_toggled.connect(_on_selection_mode)
+
+        def _on_clear_selection():
+            selection_tool.selection.clear()
+            _on_selection_changed()
+
+        debug_tab.clear_selection_clicked.connect(_on_clear_selection)
+
+        # Wire reassignment
+        def _on_reassign(chain_name_str):
+            chain_id = _chain_name_to_id(chain_name_str)
+            total = 0
+            for bi, vis in selection_tool.selection.get_flat_indices():
+                count = reassigner.reassign(bi, vis, chain_id)
+                total += count
+                # Track modified vertices
+                if bi not in _modified_vertices:
+                    _modified_vertices[bi] = set()
+                _modified_vertices[bi].update(vis)
+            if total > 0:
+                stretch_viz.invalidate_chain_cache()
+                debug_tab.set_undo_enabled(reassigner.can_undo)
+                print(f"[FaceForge] Reassigned {total} vertices to chain {chain_id}")
+
+        debug_tab.reassign_clicked.connect(_on_reassign)
+
+        # Wire undo
+        def _on_undo():
+            if reassigner.undo():
+                stretch_viz.invalidate_chain_cache()
+                debug_tab.set_undo_enabled(reassigner.can_undo)
+                print("[FaceForge] Undo reassignment")
+
+        debug_tab.undo_clicked.connect(_on_undo)
+
+        # Wire override save/load
+        def _on_save_overrides():
+            overrides = collect_modified_overrides(skinning, _modified_vertices)
+            if overrides:
+                path = save_overrides(skinning, overrides)
+                count = sum(len(v) for v in overrides.values())
+                debug_tab.set_override_count(count)
+                print(f"[FaceForge] Saved {count} overrides to {path}")
+            else:
+                print("[FaceForge] No modified vertices to save")
+
+        def _on_load_overrides():
+            overrides = load_overrides()
+            if overrides:
+                count = apply_overrides(skinning, overrides)
+                debug_tab.set_override_count(count)
+                stretch_viz.invalidate_chain_cache()
+                print(f"[FaceForge] Loaded and applied {count} overrides")
+            else:
+                print("[FaceForge] No overrides file found")
+
+        debug_tab.save_overrides_clicked.connect(_on_save_overrides)
+        debug_tab.load_overrides_clicked.connect(_on_load_overrides)
+
+        # Load overrides on startup (if file exists).
+        # Skin meshes load asynchronously via STL batches, so we retry
+        # periodically until bindings exist and overrides apply successfully.
+        startup_overrides = load_overrides()
+        if startup_overrides:
+            _override_retry_timer = QTimer()
+            _override_retry_timer.setInterval(2000)  # check every 2s
+            _override_attempts = [0]
+
+            def _apply_startup_overrides():
+                _override_attempts[0] += 1
+                if skinning.bindings:
+                    count = apply_overrides(skinning, startup_overrides)
+                    if count > 0:
+                        debug_tab.set_override_count(count)
+                        stretch_viz.invalidate_chain_cache()
+                        # Force skinning recompute on next frame
+                        skinning._last_signature = ()
+                        print(f"[FaceForge] Auto-loaded {count} overrides on startup")
+                        _override_retry_timer.stop()
+                        return
+                # Give up after 30 attempts (60 seconds)
+                if _override_attempts[0] >= 30:
+                    print("[FaceForge] Warning: overrides file found but no matching bindings after 60s")
+                    _override_retry_timer.stop()
+
+            _override_retry_timer.timeout.connect(_apply_startup_overrides)
+            _override_retry_timer.start()
+
+        # Hook stretch viz update into simulation
+        _original_soft_tissue_update = skinning.update
+
+        def _skinning_update_with_viz(body_state):
+            _original_soft_tissue_update(body_state)
+            if stretch_viz.stretch_enabled or stretch_viz.chain_enabled:
+                stretch_viz.update()
+
+        skinning.update = _skinning_update_with_viz
+
         # Wire eye tracking cursor from GL widget
         def on_mouse_move_for_tracking(x, y):
             w = gl_widget.width()

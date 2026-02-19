@@ -25,6 +25,7 @@ class Material:
     visible: bool = True
     depth_write: bool = True
     wireframe_color: tuple[float, float, float] | None = None
+    vertex_colors_active: bool = False
 
     @staticmethod
     def from_hex(color_int: int, **kwargs) -> "Material":

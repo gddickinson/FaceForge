@@ -2,6 +2,7 @@
 
 in vec3 vNormal;
 in vec3 vViewPos;
+in vec3 vVertexColor;
 
 uniform vec3 uColor;
 uniform float uOpacity;

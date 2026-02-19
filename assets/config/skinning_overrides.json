@@ -1,0 +1,4603 @@
+{
+  "version": 1,
+  "mesh_overrides": {
+    "Skin": {
+      "61440": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "61441": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "61442": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "61443": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "61444": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "61445": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "61446": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "61447": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "61448": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "61449": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 12,
+        "weight": 0.15340225398540497
+      },
+      "61450": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 12,
+        "weight": 0.32509368658065796
+      },
+      "67601": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "67602": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 14,
+        "weight": 0.9865939021110535
+      },
+      "735284": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "735285": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 14,
+        "weight": 0.23935256898403168
+      },
+      "737338": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "737339": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "737340": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "65604": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "65605": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "65606": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "65607": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "65608": {
+        "chain_id": 0,
+        "joint": 12,
+        "secondary": 12,
+        "weight": 1.0
+      },
+      "65609": {
+        "chain_id": 0,
+        "joint": 12,
+        "secondary": 13,
+        "weight": 0.9596834778785706
+      },
+      "65610": {
+        "chain_id": 0,
+        "joint": 12,
+        "secondary": 12,
+        "weight": 1.0
+      },
+      "65611": {
+        "chain_id": 0,
+        "joint": 12,
+        "secondary": 12,
+        "weight": 1.0
+      },
+      "65612": {
+        "chain_id": 0,
+        "joint": 12,
+        "secondary": 12,
+        "weight": 1.0
+      },
+      "65613": {
+        "chain_id": 0,
+        "joint": 12,
+        "secondary": 12,
+        "weight": 1.0
+      },
+      "65614": {
+        "chain_id": 0,
+        "joint": 12,
+        "secondary": 11,
+        "weight": 0.7004941701889038
+      },
+      "65615": {
+        "chain_id": 0,
+        "joint": 12,
+        "secondary": 12,
+        "weight": 1.0
+      },
+      "67680": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "67682": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "731259": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "731260": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "731261": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.05382343754172325
+      },
+      "731262": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.9555264711380005
+      },
+      "731263": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "731264": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "731265": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "730691": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "731266": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "731267": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "731268": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "731269": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "730692": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "65744": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "65745": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "65746": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "65747": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "65748": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "65749": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.0
+      },
+      "65750": {
+        "chain_id": 0,
+        "joint": 12,
+        "secondary": 13,
+        "weight": 0.5635668039321899
+      },
+      "65751": {
+        "chain_id": 0,
+        "joint": 12,
+        "secondary": 13,
+        "weight": 0.47646111249923706
+      },
+      "65752": {
+        "chain_id": 0,
+        "joint": 12,
+        "secondary": 12,
+        "weight": 1.0
+      },
+      "65753": {
+        "chain_id": 0,
+        "joint": 12,
+        "secondary": 12,
+        "weight": 1.0
+      },
+      "65754": {
+        "chain_id": 0,
+        "joint": 12,
+        "secondary": 12,
+        "weight": 1.0
+      },
+      "61661": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.9086328744888306
+      },
+      "61662": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.2450350522994995
+      },
+      "61663": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.0
+      },
+      "61664": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.15930761396884918
+      },
+      "61665": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.7689216732978821
+      },
+      "61666": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "61667": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.9987539649009705
+      },
+      "61668": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.5361548066139221
+      },
+      "61669": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.0
+      },
+      "61670": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "61671": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "61672": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "61673": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "61674": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "61675": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "61676": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "61677": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 12,
+        "weight": 0.6222306489944458
+      },
+      "738854": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "738855": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "735487": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "735488": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "735489": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "735490": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "735491": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "735492": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "735493": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 14,
+        "weight": 0.6306533217430115
+      },
+      "735494": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "735495": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 14,
+        "weight": 0.4468826651573181
+      },
+      "727315": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "71956": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "71957": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "71958": {
+        "chain_id": 0,
+        "joint": 12,
+        "secondary": 12,
+        "weight": 1.0
+      },
+      "71959": {
+        "chain_id": 0,
+        "joint": 12,
+        "secondary": 12,
+        "weight": 1.0
+      },
+      "71960": {
+        "chain_id": 0,
+        "joint": 12,
+        "secondary": 12,
+        "weight": 1.0
+      },
+      "727316": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "727317": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "737560": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 16,
+        "weight": 0.8144118785858154
+      },
+      "737561": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 16,
+        "weight": 0.9381080865859985
+      },
+      "737564": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "737565": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "737566": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "737567": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "730574": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "61129": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.5491860508918762
+      },
+      "61130": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "61131": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.5421934723854065
+      },
+      "61132": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.0
+      },
+      "61133": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "732443": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "730571": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 14,
+        "weight": 0.08111023157835007
+      },
+      "66836": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.98749840259552
+      },
+      "730572": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "737700": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "737701": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 16,
+        "weight": 0.7790783643722534
+      },
+      "737702": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "737703": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "737704": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "738890": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "738892": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "66845": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "727493": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "735685": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "735686": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "735687": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "725453": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "725454": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "65999": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "66000": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "66001": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 13,
+        "weight": 0.8489289283752441
+      },
+      "66002": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.0
+      },
+      "66003": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.0
+      },
+      "66004": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.0
+      },
+      "66005": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.0
+      },
+      "66006": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "66007": {
+        "chain_id": 0,
+        "joint": 12,
+        "secondary": 13,
+        "weight": 0.83267742395401
+      },
+      "66008": {
+        "chain_id": 0,
+        "joint": 12,
+        "secondary": 12,
+        "weight": 1.0
+      },
+      "66009": {
+        "chain_id": 0,
+        "joint": 12,
+        "secondary": 12,
+        "weight": 1.0
+      },
+      "66010": {
+        "chain_id": 0,
+        "joint": 12,
+        "secondary": 12,
+        "weight": 1.0
+      },
+      "66850": {
+        "chain_id": 0,
+        "joint": 12,
+        "secondary": 12,
+        "weight": 1.0
+      },
+      "725460": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "725461": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "725462": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "725519": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "725520": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "725521": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.8210529685020447
+      },
+      "62003": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "62004": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.4291737973690033
+      },
+      "62005": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.7635473012924194
+      },
+      "62006": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "62007": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "62008": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "62009": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "62010": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "62011": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "62012": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "62013": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "62014": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "58322": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "58323": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 14,
+        "weight": 0.33034759759902954
+      },
+      "731707": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.7132035493850708
+      },
+      "731708": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "58324": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "731709": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.7840006351470947
+      },
+      "731710": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "725588": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "725589": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.0
+      },
+      "725590": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.0
+      },
+      "725591": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.0
+      },
+      "725592": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.0
+      },
+      "725593": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.9029854536056519
+      },
+      "725594": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "725595": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "725596": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "725597": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "725598": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "725599": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "735857": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "72306": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "72307": {
+        "chain_id": 0,
+        "joint": 12,
+        "secondary": 12,
+        "weight": 1.0
+      },
+      "72308": {
+        "chain_id": 0,
+        "joint": 12,
+        "secondary": 12,
+        "weight": 1.0
+      },
+      "735858": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "735859": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "735860": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "735861": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "735862": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "57983": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "57998": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "57999": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "58000": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 14,
+        "weight": 0.7493506073951721
+      },
+      "58001": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "58002": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "60060": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "58015": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "58016": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "58017": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "58018": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "58019": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 14,
+        "weight": 0.39019834995269775
+      },
+      "58020": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 14,
+        "weight": 0.8807926774024963
+      },
+      "58021": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 14,
+        "weight": 0.21606044471263885
+      },
+      "58022": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "60064": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "60065": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "60067": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "60069": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "60070": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "60071": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "60073": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "735911": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "735912": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "725688": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "725689": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.7359151244163513
+      },
+      "725690": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "725691": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "725692": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "725693": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "725694": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 13,
+        "weight": 0.3579025864601135
+      },
+      "725695": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "725696": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.0
+      },
+      "725697": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.0
+      },
+      "60098": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "58051": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 14,
+        "weight": 0.6544170379638672
+      },
+      "58052": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 14,
+        "weight": 0.31845346093177795
+      },
+      "58053": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 14,
+        "weight": 0.034319788217544556
+      },
+      "58054": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 14,
+        "weight": 0.4731634259223938
+      },
+      "58055": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "58056": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "58057": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "58058": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "58059": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "58060": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "60108": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.1322258710861206
+      },
+      "60101": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "60102": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "60103": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "60104": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "60105": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "60106": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "60107": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "66258": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "56022": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "66259": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "66260": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "66261": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 13,
+        "weight": 0.013090533204376698
+      },
+      "66262": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 13,
+        "weight": 0.4322044551372528
+      },
+      "66263": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 13,
+        "weight": 0.9880025386810303
+      },
+      "66264": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.0
+      },
+      "66265": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.3011348247528076
+      },
+      "66266": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 13,
+        "weight": 0.6840419173240662
+      },
+      "66267": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.9723618626594543
+      },
+      "66268": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "66269": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "66270": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "66271": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "66272": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "66273": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "66274": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 12,
+        "weight": 0.712550938129425
+      },
+      "66275": {
+        "chain_id": 0,
+        "joint": 12,
+        "secondary": 12,
+        "weight": 1.0
+      },
+      "66276": {
+        "chain_id": 0,
+        "joint": 12,
+        "secondary": 12,
+        "weight": 1.0
+      },
+      "56047": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "56048": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "56049": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "56050": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "56051": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "56052": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "56053": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "56054": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "60151": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "60152": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "60153": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "60154": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.6774768829345703
+      },
+      "60155": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.30555376410484314
+      },
+      "60156": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "56076": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "56077": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "56078": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "56079": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "56080": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "56081": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "56086": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "56087": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "56088": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "56089": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "56090": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "56091": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "56092": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "56093": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "62240": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.3624798059463501
+      },
+      "62241": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 14,
+        "weight": 0.8687074184417725
+      },
+      "62242": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "62243": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "62244": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "730578": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "64302": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "64310": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.0
+      },
+      "64311": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.0
+      },
+      "60224": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "60225": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "60226": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "60227": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "60228": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.9933472275733948
+      },
+      "64320": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.9796758890151978
+      },
+      "58184": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "58185": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "58186": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "58187": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "58188": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "56171": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "56172": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "56173": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "56174": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "62317": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "56192": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "56193": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "66546": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "725895": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "725896": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "725897": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "725898": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "725899": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "725900": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "725901": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 13,
+        "weight": 0.8285230398178101
+      },
+      "725902": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.0
+      },
+      "725903": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.0
+      },
+      "725904": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.0
+      },
+      "725905": {
+        "chain_id": 0,
+        "joint": 12,
+        "secondary": 13,
+        "weight": 0.0
+      },
+      "66533": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "66534": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "66535": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "66536": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "64460": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "64461": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "64464": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.0
+      },
+      "64465": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 13,
+        "weight": 0.37569519877433777
+      },
+      "64466": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.0
+      },
+      "58321": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "64468": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.0
+      },
+      "64469": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.0
+      },
+      "64470": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.0
+      },
+      "64471": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.0
+      },
+      "64472": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.0
+      },
+      "64473": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.0
+      },
+      "64474": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.0
+      },
+      "64475": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.0
+      },
+      "64476": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.0
+      },
+      "64477": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.0
+      },
+      "58325": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 14,
+        "weight": 0.2652686536312103
+      },
+      "56280": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "56281": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "56282": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "56283": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "64478": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.0
+      },
+      "64479": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.0
+      },
+      "64480": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.028438711538910866
+      },
+      "64481": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.5774853229522705
+      },
+      "64482": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.11876261979341507
+      },
+      "64483": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "64484": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "64485": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "64486": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "64487": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "64488": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "64489": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "64491": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "64494": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 12,
+        "weight": 0.4157073199748993
+      },
+      "64495": {
+        "chain_id": 0,
+        "joint": 12,
+        "secondary": 13,
+        "weight": 0.0
+      },
+      "66537": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 13,
+        "weight": 0.933394193649292
+      },
+      "66538": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.0
+      },
+      "66539": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.5947144031524658
+      },
+      "66540": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "66541": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "66542": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "66543": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "66544": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "66545": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "62459": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 14,
+        "weight": 0.5001397132873535
+      },
+      "66547": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "66548": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "66549": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "66550": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "66551": {
+        "chain_id": 0,
+        "joint": 12,
+        "secondary": 13,
+        "weight": 0.9656457901000977
+      },
+      "66552": {
+        "chain_id": 0,
+        "joint": 12,
+        "secondary": 12,
+        "weight": 1.0
+      },
+      "66553": {
+        "chain_id": 0,
+        "joint": 12,
+        "secondary": 12,
+        "weight": 1.0
+      },
+      "72698": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "72699": {
+        "chain_id": 0,
+        "joint": 12,
+        "secondary": 12,
+        "weight": 1.0
+      },
+      "72700": {
+        "chain_id": 0,
+        "joint": 12,
+        "secondary": 12,
+        "weight": 1.0
+      },
+      "72701": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "72702": {
+        "chain_id": 0,
+        "joint": 12,
+        "secondary": 12,
+        "weight": 1.0
+      },
+      "732169": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "732170": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "58380": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "58381": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 14,
+        "weight": 0.4903365969657898
+      },
+      "58382": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 14,
+        "weight": 0.9224412441253662
+      },
+      "58383": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 14,
+        "weight": 0.47630777955055237
+      },
+      "58384": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 14,
+        "weight": 0.08923248201608658
+      },
+      "58385": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "58386": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "719931": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "56402": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "56403": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "56404": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "62573": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "62574": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "62575": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "62577": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "62578": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "62579": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 14,
+        "weight": 0.6597716212272644
+      },
+      "58504": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "58505": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "58506": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "58507": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 14,
+        "weight": 0.23956255614757538
+      },
+      "58508": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 14,
+        "weight": 0.6873759627342224
+      },
+      "60577": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.188456192612648
+      },
+      "60578": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "60579": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "720038": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 13,
+        "weight": 0.07591382414102554
+      },
+      "72695": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "72696": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 13,
+        "weight": 0.2683311104774475
+      },
+      "734674": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "72697": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "734675": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "62686": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "735798": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "735799": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "64745": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "64746": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 13,
+        "weight": 0.7462605834007263
+      },
+      "64747": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "64748": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.0
+      },
+      "64749": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.0
+      },
+      "64750": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "64751": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 12,
+        "weight": 0.992243230342865
+      },
+      "64752": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 12,
+        "weight": 0.7138585448265076
+      },
+      "64753": {
+        "chain_id": 0,
+        "joint": 12,
+        "secondary": 12,
+        "weight": 1.0
+      },
+      "735800": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "735801": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "64756": {
+        "chain_id": 0,
+        "joint": 12,
+        "secondary": 12,
+        "weight": 1.0
+      },
+      "735802": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "726263": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "726264": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "726265": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "726266": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "726267": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "70908": {
+        "chain_id": 0,
+        "joint": 12,
+        "secondary": 11,
+        "weight": 0.5665755867958069
+      },
+      "726268": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "726269": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "726270": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 13,
+        "weight": 0.7029419541358948
+      },
+      "726271": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "735803": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "735804": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "58636": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 14,
+        "weight": 0.8458907604217529
+      },
+      "58637": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 14,
+        "weight": 0.4526787996292114
+      },
+      "58638": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 14,
+        "weight": 0.7267720103263855
+      },
+      "58639": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 14,
+        "weight": 0.11836536228656769
+      },
+      "58640": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 14,
+        "weight": 0.28084516525268555
+      },
+      "58641": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "58642": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "66830": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.8992299437522888
+      },
+      "66831": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "66832": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "66833": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 13,
+        "weight": 0.05786936730146408
+      },
+      "66834": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "66835": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.04351988062262535
+      },
+      "54553": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "54554": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "54555": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "54556": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "54557": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "66837": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "66838": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "66839": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "66840": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "66841": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "66842": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "66843": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "66844": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "60099": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "66846": {
+        "chain_id": 0,
+        "joint": 12,
+        "secondary": 13,
+        "weight": 0.9081201553344727
+      },
+      "66847": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "66848": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "66849": {
+        "chain_id": 0,
+        "joint": 12,
+        "secondary": 12,
+        "weight": 1.0
+      },
+      "60100": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "66851": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "720172": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.6823475956916809
+      },
+      "720174": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 13,
+        "weight": 0.6539084315299988
+      },
+      "54624": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 16,
+        "weight": 0.6912425756454468
+      },
+      "54625": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 16,
+        "weight": 0.2524715065956116
+      },
+      "73069": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "73072": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "73076": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.1873030662536621
+      },
+      "73077": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.5023747086524963
+      },
+      "73078": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.7540568113327026
+      },
+      "73079": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.2496999353170395
+      },
+      "73080": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 13,
+        "weight": 0.4025503695011139
+      },
+      "73081": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "54650": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 16,
+        "weight": 0.9244105219841003
+      },
+      "54651": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "73082": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "73083": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "73084": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "73085": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "73086": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "73087": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "73088": {
+        "chain_id": 0,
+        "joint": 12,
+        "secondary": 12,
+        "weight": 1.0
+      },
+      "56731": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 16,
+        "weight": 0.9173346161842346
+      },
+      "56732": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "56733": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "56734": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "56735": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "54707": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 16,
+        "weight": 0.26378291845321655
+      },
+      "54708": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "734647": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "734648": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "734649": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "734650": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "734651": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "730564": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "730565": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "58823": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "58824": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "58825": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 14,
+        "weight": 0.8790389895439148
+      },
+      "58826": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 14,
+        "weight": 0.3748265206813812
+      },
+      "730567": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 14,
+        "weight": 0.311103492975235
+      },
+      "730568": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 14,
+        "weight": 0.992752194404602
+      },
+      "60877": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.7923713326454163
+      },
+      "60878": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "60879": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "60880": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.5736336708068848
+      },
+      "60881": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "60882": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "60883": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "60884": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.4412670433521271
+      },
+      "60885": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "60886": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "60887": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "60888": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "60889": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "60890": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "60891": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "60892": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "60893": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 12,
+        "weight": 0.8430823683738708
+      },
+      "734689": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "730594": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "730595": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 14,
+        "weight": 0.4697328507900238
+      },
+      "730596": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "730597": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 14,
+        "weight": 0.23581485450267792
+      },
+      "730598": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "730599": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 14,
+        "weight": 0.6913158297538757
+      },
+      "730600": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "730601": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "730602": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "730603": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "730604": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "730605": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "730606": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "730607": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "730608": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "730609": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "730610": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "730611": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "734699": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "734700": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "734701": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "734722": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "734723": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 14,
+        "weight": 0.5142183899879456
+      },
+      "734724": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "734725": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "730634": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "730635": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "730636": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "730637": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "730638": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "730639": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "730640": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "730569": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "730570": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "738851": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "73253": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 13,
+        "weight": 0.27703869342803955
+      },
+      "73254": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.5225052237510681
+      },
+      "73255": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 13,
+        "weight": 0.4964617192745209
+      },
+      "65064": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.0
+      },
+      "65065": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.0
+      },
+      "65066": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.003386130789294839
+      },
+      "65067": {
+        "chain_id": 0,
+        "joint": 12,
+        "secondary": 13,
+        "weight": 0.0
+      },
+      "65068": {
+        "chain_id": 0,
+        "joint": 12,
+        "secondary": 13,
+        "weight": 0.718579888343811
+      },
+      "65069": {
+        "chain_id": 0,
+        "joint": 12,
+        "secondary": 12,
+        "weight": 1.0
+      },
+      "73257": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "73258": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.8165439367294312
+      },
+      "73259": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.774348795413971
+      },
+      "73260": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "73261": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "73263": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.8792648315429688
+      },
+      "73264": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "73265": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "73266": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.6901652812957764
+      },
+      "73267": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.9842427372932434
+      },
+      "73268": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "73269": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "73274": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "58939": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "58940": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "56893": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 16,
+        "weight": 0.8723450899124146
+      },
+      "58941": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "56895": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "58942": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "58943": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "58944": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "730575": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "730576": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "730577": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "730689": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "730690": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "67144": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 14,
+        "weight": 0.4542860984802246
+      },
+      "67145": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "67146": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 13,
+        "weight": 0.043488483875989914
+      },
+      "67147": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.10541483014822006
+      },
+      "67148": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.48261186480522156
+      },
+      "67149": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.29318952560424805
+      },
+      "67150": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.7129888534545898
+      },
+      "67151": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "67152": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "67153": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "67154": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "67155": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "67156": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "730579": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "738894": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "738908": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "725698": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 13,
+        "weight": 0.47142472863197327
+      },
+      "725699": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.0
+      },
+      "725700": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "725701": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "725702": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "58999": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "59000": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "59001": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "59002": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "59003": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "59004": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "59005": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "59006": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "59007": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "725703": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "725704": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "725705": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "734855": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "734856": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 14,
+        "weight": 0.7992107272148132
+      },
+      "725706": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "725707": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 12,
+        "weight": 0.6806780695915222
+      },
+      "726671": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "726672": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "726673": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "726674": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "725708": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "726675": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "736972": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "725709": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 12,
+        "weight": 0.3421865403652191
+      },
+      "725710": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 12,
+        "weight": 0.13310961425304413
+      },
+      "730782": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "730783": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "730784": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "730785": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.0
+      },
+      "725711": {
+        "chain_id": 0,
+        "joint": 12,
+        "secondary": 13,
+        "weight": 0.0
+      },
+      "730786": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.6901520490646362
+      },
+      "730787": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "730788": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "730789": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "730790": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "730791": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "736973": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "734669": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "736945": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "736946": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "734694": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 14,
+        "weight": 0.5523403882980347
+      },
+      "734670": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "734671": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "734672": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "734673": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "59080": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "59081": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "59082": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "59083": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "59084": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "59085": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "59086": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "59087": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "61134": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "61135": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "61136": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "61137": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "61138": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "61139": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "61140": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "61141": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 12,
+        "weight": 0.48754340410232544
+      },
+      "736989": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "736990": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "736991": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "736992": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "737000": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "737001": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "735088": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 14,
+        "weight": 0.41557249426841736
+      },
+      "727764": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "734690": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "734691": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "734692": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 14,
+        "weight": 0.843427836894989
+      },
+      "737063": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "737064": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "734693": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 14,
+        "weight": 0.9495987892150879
+      },
+      "65322": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "65323": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "65324": {
+        "chain_id": 0,
+        "joint": 12,
+        "secondary": 13,
+        "weight": 0.3447912335395813
+      },
+      "65325": {
+        "chain_id": 0,
+        "joint": 12,
+        "secondary": 12,
+        "weight": 1.0
+      },
+      "65326": {
+        "chain_id": 0,
+        "joint": 12,
+        "secondary": 13,
+        "weight": 0.5296008586883545
+      },
+      "65327": {
+        "chain_id": 0,
+        "joint": 12,
+        "secondary": 13,
+        "weight": 0.7691272497177124
+      },
+      "65328": {
+        "chain_id": 0,
+        "joint": 12,
+        "secondary": 12,
+        "weight": 1.0
+      },
+      "65329": {
+        "chain_id": 0,
+        "joint": 12,
+        "secondary": 12,
+        "weight": 1.0
+      },
+      "65330": {
+        "chain_id": 0,
+        "joint": 12,
+        "secondary": 12,
+        "weight": 1.0
+      },
+      "65331": {
+        "chain_id": 0,
+        "joint": 12,
+        "secondary": 12,
+        "weight": 1.0
+      },
+      "65332": {
+        "chain_id": 0,
+        "joint": 12,
+        "secondary": 12,
+        "weight": 1.0
+      },
+      "65333": {
+        "chain_id": 0,
+        "joint": 12,
+        "secondary": 12,
+        "weight": 1.0
+      },
+      "65334": {
+        "chain_id": 0,
+        "joint": 12,
+        "secondary": 12,
+        "weight": 1.0
+      },
+      "71477": {
+        "chain_id": 0,
+        "joint": 12,
+        "secondary": 12,
+        "weight": 1.0
+      },
+      "734695": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "734696": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "735027": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "735028": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 14,
+        "weight": 0.9029724597930908
+      },
+      "735029": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 14,
+        "weight": 0.38921695947647095
+      },
+      "734697": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "735030": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 14,
+        "weight": 0.6021742224693298
+      },
+      "737082": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "737083": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "734698": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.0
+      },
+      "737109": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "737110": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "737111": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "737112": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "737113": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "735084": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "735085": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "67438": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "735086": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "735087": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 14,
+        "weight": 0.890068531036377
+      },
+      "67441": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "67442": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.817605197429657
+      },
+      "67443": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "67444": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "730996": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 15,
+        "weight": 0.6231486201286316
+      },
+      "730997": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.0
+      },
+      "730998": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 13,
+        "weight": 0.41854992508888245
+      },
+      "730999": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.0
+      },
+      "731000": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.43536490201950073
+      },
+      "731001": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "731002": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 14,
+        "weight": 0.5168380737304688
+      },
+      "731003": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "731004": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "731005": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "731006": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "731007": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "731008": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 12,
+        "weight": 0.6188552379608154
+      },
+      "731009": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "731010": {
+        "chain_id": 0,
+        "joint": 13,
+        "secondary": 13,
+        "weight": 1.0
+      },
+      "737177": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "737178": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "737179": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "727022": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "727023": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "727024": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "727025": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "733176": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "733177": {
+        "chain_id": 0,
+        "joint": 15,
+        "secondary": 15,
+        "weight": 1.0
+      },
+      "61438": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      },
+      "61439": {
+        "chain_id": 0,
+        "joint": 14,
+        "secondary": 14,
+        "weight": 1.0
+      }
+    }
+  }
+}

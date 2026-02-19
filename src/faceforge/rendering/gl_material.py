@@ -31,6 +31,7 @@ def apply_material(shader: ShaderProgram, material: Material) -> None:
     shader.set_uniform_vec3("uColor", material.color)
     shader.set_uniform_float("uOpacity", material.opacity)
     shader.set_uniform_float("uShininess", material.shininess)
+    shader.set_uniform_int("uUseVertexColor", 1 if material.vertex_colors_active else 0)
 
     # --- Transparency / blending -----------------------------------------
     if material.render_mode == RenderMode.OPAQUE:
