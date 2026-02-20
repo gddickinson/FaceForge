@@ -409,9 +409,9 @@ def main():
         "back_muscles":     ["spine", "ribs"],
         "torso_muscles":    ["spine", "ribs"],
         "shoulder_muscles": ["spine", "arm"],
-        "arm_muscles":      ["spine", "arm", "forearm", "hand"],
+        "arm_muscles":      ["spine", "arm", "hand"],
         "hip_muscles":      ["spine", "leg"],
-        "leg_muscles":      ["spine", "leg", "lower_leg", "foot"],
+        "leg_muscles":      ["spine", "leg", "foot"],
     }
 
     # Per-muscle chain overrides — keyed by muscle name.
@@ -474,7 +474,7 @@ def main():
 
         resolved: list[str] = []
         for cn in chain_names:
-            if cn in ("arm", "leg", "forearm", "lower_leg"):
+            if cn in ("arm", "leg"):
                 if side is not None:
                     resolved.append(f"{cn}_{side}")
                 else:
@@ -536,10 +536,11 @@ def main():
                             fascia_regions=fascia_regions,
                         )
 
-                # Remove digit/limb cross-chain blending for arm and leg muscles.
-                # Digit chain joints inherit all limb transforms via scene graph
-                # (digit pivots are children of wrist/ankle), so blending with the
-                # limb chain double-counts the parent contribution.
+                # Remove digit/limb cross-chain blending for arm and leg
+                # muscles.  Digit chain joints inherit all limb transforms
+                # via scene graph (digit pivots are children of wrist/ankle),
+                # so blending with a limb chain double-counts the parent
+                # contribution.
                 if layer in ("arm_muscles", "leg_muscles"):
                     digit_cids: set[int] = set()
                     prefix = "hand" if layer == "arm_muscles" else "foot"
@@ -736,7 +737,7 @@ def main():
             # Register with soft tissue skinning — digit chains ONLY.
             # Digit chain joints inherit wrist/elbow/shoulder transforms via
             # parent pivots, so digit chain deltas already include all arm
-            # movement.  Excluding arm/forearm chains prevents the extrapolated
+            # movement.  Excluding the arm chain prevents the extrapolated
             # wrist segment from competing with digit joints in the palm area.
             if simulation.soft_tissue is not None:
                 hand_chains: set[int] = set()
@@ -780,7 +781,7 @@ def main():
             # Register with soft tissue skinning — digit chains ONLY.
             # Digit chain joints inherit ankle/knee/hip transforms via parent
             # pivots, so digit chain deltas already include all leg movement.
-            # Excluding leg/lower_leg chains prevents the extrapolated ankle
+            # Excluding the leg chain prevents the extrapolated ankle
             # segment from competing with digit joints in the foot area.
             if simulation.soft_tissue is not None:
                 foot_chains: set[int] = set()
@@ -1143,49 +1144,29 @@ def main():
             skin_chain_ids["spine"] = len(joint_chains)
             joint_chains.append(spine_chain)
 
-        # Limb chains (split into upper/lower per limb)
+        # Limb chains (single 3-joint chain per limb — no shared-joint duplication)
         if pipeline.joint_setup is not None:
             jp = pipeline.joint_setup.pivots
             for side in ("R", "L"):
-                # Upper arm chain: shoulder → elbow
-                upper_arm: list[tuple[str, SceneNode]] = []
-                for jn in ("shoulder", "elbow"):
+                # Arm chain: shoulder → elbow → wrist
+                arm_chain: list[tuple[str, SceneNode]] = []
+                for jn in ("shoulder", "elbow", "wrist"):
                     node = jp.get(f"{jn}_{side}")
                     if node is not None:
-                        upper_arm.append((f"{jn}_{side}", node))
-                if upper_arm:
+                        arm_chain.append((f"{jn}_{side}", node))
+                if arm_chain:
                     skin_chain_ids[f"arm_{side}"] = len(joint_chains)
-                    joint_chains.append(upper_arm)
+                    joint_chains.append(arm_chain)
 
-                # Forearm chain: elbow → wrist
-                forearm: list[tuple[str, SceneNode]] = []
-                for jn in ("elbow", "wrist"):
+                # Leg chain: hip → knee → ankle
+                leg_chain: list[tuple[str, SceneNode]] = []
+                for jn in ("hip", "knee", "ankle"):
                     node = jp.get(f"{jn}_{side}")
                     if node is not None:
-                        forearm.append((f"{jn}_{side}", node))
-                if forearm:
-                    skin_chain_ids[f"forearm_{side}"] = len(joint_chains)
-                    joint_chains.append(forearm)
-
-                # Upper leg chain: hip → knee
-                upper_leg: list[tuple[str, SceneNode]] = []
-                for jn in ("hip", "knee"):
-                    node = jp.get(f"{jn}_{side}")
-                    if node is not None:
-                        upper_leg.append((f"{jn}_{side}", node))
-                if upper_leg:
+                        leg_chain.append((f"{jn}_{side}", node))
+                if leg_chain:
                     skin_chain_ids[f"leg_{side}"] = len(joint_chains)
-                    joint_chains.append(upper_leg)
-
-                # Lower leg chain: knee → ankle
-                lower_leg: list[tuple[str, SceneNode]] = []
-                for jn in ("knee", "ankle"):
-                    node = jp.get(f"{jn}_{side}")
-                    if node is not None:
-                        lower_leg.append((f"{jn}_{side}", node))
-                if lower_leg:
-                    skin_chain_ids[f"lower_leg_{side}"] = len(joint_chains)
-                    joint_chains.append(lower_leg)
+                    joint_chains.append(leg_chain)
 
         # Digit chains (one chain per digit per side)
         n_hand_chains = 0

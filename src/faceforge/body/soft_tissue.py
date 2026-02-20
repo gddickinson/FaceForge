@@ -50,6 +50,9 @@ class SkinBinding:
     # Per-muscle head-follow configuration (Layer 1)
     head_follow_config: Optional[dict] = None  # {"upperFrac": float, "lowerFrac": float}
     muscle_name: Optional[str] = None  # for debug/lookup
+    # Set True for muscles spanning into digit chains — these skip neighbor
+    # clamping so finger curl tendons can move freely.
+    skip_neighbor_clamp: bool = False
 
 
 class SoftTissueSkinning:
@@ -719,9 +722,8 @@ class SoftTissueSkinning:
 
         Digit chain joints inherit all parent transforms (wrist, elbow,
         shoulder) via the scene graph hierarchy.  Cross-chain blending
-        between a digit chain and the forearm/arm chain double-counts
-        the parent contribution, making the vertex only partially follow
-        finger curl.
+        between a digit chain and a limb chain double-counts the parent
+        contribution, making the vertex only partially follow finger curl.
 
         This snaps any muscle vertex whose primary and secondary chains
         straddle the child/parent boundary to 100% primary weight.
@@ -729,7 +731,7 @@ class SoftTissueSkinning:
         Parameters
         ----------
         child_chain_ids : set of int
-            Chain IDs of child chains (e.g. hand digit chains, foot digit
+            Chain IDs of child chains (hand digit chains, foot digit
             chains) that inherit parent transforms via scene graph.
         """
         if not child_chain_ids:
@@ -763,6 +765,14 @@ class SoftTissueSkinning:
                 snap_idx = b_idx[mismatch]
                 binding.weights[snap_idx] = 1.0
                 binding.secondary_indices[snap_idx] = binding.joint_indices[snap_idx]
+
+            # If this binding has ANY child-chain vertices, mark it to skip
+            # neighbor-stretch clamping.  Muscles spanning into digit chains
+            # (e.g. FDP, FDS with tendons) need free movement; clamping would
+            # pull digit-bound vertices back toward the forearm.
+            all_cids = all_chain_ids[binding.joint_indices]
+            if np.any(is_child[all_cids]):
+                binding.skip_neighbor_clamp = True
 
     def reassign_orphan_vertices(self, child_chain_ids: set[int]) -> int:
         """Reassign non-digit muscle vertices that should follow digit chains.
@@ -1463,6 +1473,57 @@ class SoftTissueSkinning:
         disp += rest
         positions[:] = disp.astype(positions.dtype)
 
+    # ── Bone-follow correction for muscle blended vertices ──
+    #
+    # DQS blending of two joint transforms produces an arc between joints.
+    # For muscles along long bones (biceps on humerus, quads on femur),
+    # vertices should stay close to the bone axis, not arc away from it.
+    #
+    # The primary-only transform (delta[primary] @ vertex) IS the bone-
+    # following position — it keeps the vertex at its rest offset from
+    # the bone, rotated with the bone.  DQS blends this with the secondary
+    # transform, creating the arc.
+    #
+    # This correction blends between the primary-only result (bone-following)
+    # and the DQS result.  Mid-bone vertices mostly use the primary transform
+    # (staying on the bone), while vertices near the secondary joint use DQS
+    # for a smooth transition at the joint boundary.
+
+    def _apply_bone_follow(
+        self,
+        binding: SkinBinding,
+        blend_idx: np.ndarray,
+        result_pri: np.ndarray,
+        pri_only: np.ndarray,
+        dqs_result: np.ndarray,
+    ) -> None:
+        """Blend DQS toward primary-only transform for muscle blended vertices.
+
+        Parameters
+        ----------
+        binding : SkinBinding
+        blend_idx : indices of blended vertices
+        result_pri : output positions array (modified in-place)
+        pri_only : primary-only transform results for blended vertices (B, 3)
+        dqs_result : DQS blend results for blended vertices (B, 3)
+        """
+        if not binding.is_muscle or len(blend_idx) == 0:
+            return
+
+        w = binding.weights[blend_idx]  # 1.0 = fully primary, 0.0 = fully secondary
+
+        # Bone-follow strength: ramps from 0 near secondary joint (w ≈ 0)
+        # to 1.0 for mid-bone and primary-adjacent vertices (w > 0.5).
+        # This keeps muscles hugging the bone while allowing smooth transition
+        # at joint boundaries.
+        #   w=0.0 → strength=0.0 (pure DQS for joint transition)
+        #   w=0.3 → strength=0.6 (mostly bone-following)
+        #   w=0.5+ → strength=1.0 (fully bone-following)
+        strength = np.clip((w - 0.0) / 0.5, 0.0, 1.0)  # (B,)
+        s = strength[:, np.newaxis]  # (B, 1)
+
+        result_pri[blend_idx] = s * pri_only + (1.0 - s) * dqs_result
+
     def update(self, body_state: BodyState) -> None:
         """Per-frame delta-matrix transform for all registered meshes.
 
@@ -1595,19 +1656,31 @@ class SoftTissueSkinning:
                 # Transform: rotate rest position then translate
                 new_blend_pos = batch_quat_rotate(q_r_blend, rest_pos[blend_idx]) + t_vec
 
+                # Save primary-only results for bone-follow correction
+                # (before DQS overwrites them).
+                pri_only_saved = result_pri[blend_idx].copy() if binding.is_muscle else None
+
                 # Assemble: write DQS results into primary (already a fresh array)
                 result_pri[blend_idx] = new_blend_pos
+
+                # Bone-follow correction: blend DQS arc toward primary-only
+                # (bone-hugging) positions for muscle blended vertices.
+                if binding.is_muscle and pri_only_saved is not None:
+                    self._apply_bone_follow(
+                        binding, blend_idx, result_pri,
+                        pri_only_saved, new_blend_pos,
+                    )
 
             mesh.geometry.positions = result_pri.ravel().astype(np.float32)
 
             # Neighbor-stretch clamping: snap back vertices that are
             # anomalously far from their mesh neighbors (mis-binding safety net).
             # Multiple passes catch cascading shifts from clamped neighbors.
-            # Muscles skip this — they span multiple joints (e.g. forearm to
-            # fingertips) and the cross-chain stretch is intentional.  Muscles
-            # have their own Layer 2-4 correction (bone pinning, stretch clamp,
-            # collision) which handle positioning correctly.
-            if not binding.is_muscle:
+            # Bindings flagged skip_neighbor_clamp (muscles with digit-chain
+            # vertices) skip this — they span into child chains and clamping
+            # would pull digit-bound vertices back toward the parent limb.
+            # All other muscles still get clamped to prevent sagging.
+            if not binding.skip_neighbor_clamp:
                 for _clamp_pass in range(self.CLAMP_PASSES):
                     if self._apply_neighbor_clamp(binding) == 0:
                         break
@@ -1630,7 +1703,7 @@ class SoftTissueSkinning:
             # Boundary displacement smoothing: reduce seams at chain transitions.
             # Runs after clamping, then a final clamp pass catches any new
             # stretch introduced by the smoothing.
-            if not binding.is_muscle:
+            if not binding.skip_neighbor_clamp:
                 self._smooth_boundary_displacements(binding)
                 for _post_pass in range(3):
                     if self._apply_neighbor_clamp(binding) == 0:

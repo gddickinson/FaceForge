@@ -8,3 +8,11 @@
 /src/faceforge/core/__pycache__
 /tools/__pycache__
 *.pyc
+.DS_Store
+assets/.DS_Store
+results/.DS_Store
+src/.DS_Store
+src/faceforge/.DS_Store
+/src/faceforge/body/__pycache__
+/tools/__pycache__
+tests/.DS_Store
