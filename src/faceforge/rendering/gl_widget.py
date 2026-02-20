@@ -322,8 +322,11 @@ class GLViewport(QOpenGLWidget):
             return
 
         self.orbit_controls.on_mouse_move(pos.x(), pos.y())
-        # Feed mouse position to eye tracking
-        if self.mouse_move_callback is not None:
+        # Feed mouse position to eye tracking — but NOT during orbit/pan drags
+        # (otherwise the eyes follow the cursor while the user is trying to
+        # move the camera, which makes the head appear to "follow" the camera)
+        if (self.mouse_move_callback is not None
+                and self.orbit_controls._active_button is None):
             self.mouse_move_callback(pos.x(), pos.y())
         self.update()  # request repaint
         event.accept()

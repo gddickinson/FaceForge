@@ -233,6 +233,13 @@ class NeckConstraintSolver:
         ]
         constraint_state.total_excess = total_excess
 
+        # Smooth total_excess to prevent oscillation / jitter.
+        # The smoothed value changes slowly (20% toward raw per frame),
+        # preventing the soft-clamp in head rotation from flip-flopping.
+        DAMPING = 0.2
+        prev = constraint_state.smoothed_total_excess
+        constraint_state.smoothed_total_excess = prev + (total_excess - prev) * DAMPING
+
         # Dynamic thoracic compensation
         if vertebrae_pivots is not None and total_excess > SOFT_CLAMP_THRESHOLD:
             self._apply_thoracic_compensation(

@@ -27,9 +27,10 @@ from faceforge.coordination.scene_builder import SceneBuilder
 from faceforge.coordination.visibility import VisibilityManager
 from faceforge.core.config_loader import load_config, load_muscle_config
 from faceforge.core.events import EventBus
+from faceforge.core.math_utils import Quat, quat_identity
 from faceforge.core.mesh import MeshInstance
 from faceforge.core.scene_graph import Scene, SceneNode
-from faceforge.core.state import BodyState
+from faceforge.core.state import BodyState, FaceState, ConstraintState
 from faceforge.loaders.asset_manager import AssetManager
 
 logger = logging.getLogger(__name__)
@@ -41,9 +42,9 @@ _MUSCLE_CHAIN_MAP: dict[str, list[str]] = {
     "back_muscles":     ["spine", "ribs"],
     "torso_muscles":    ["spine", "ribs"],
     "shoulder_muscles": ["spine", "arm"],
-    "arm_muscles":      ["spine", "arm"],
+    "arm_muscles":      ["spine", "arm", "forearm", "hand"],
     "hip_muscles":      ["spine", "leg"],
-    "leg_muscles":      ["spine", "leg"],
+    "leg_muscles":      ["spine", "leg", "lower_leg", "foot"],
 }
 
 _MUSCLE_CHAIN_OVERRIDES: dict[str, list[str]] = {}
@@ -97,7 +98,10 @@ class HeadlessScene:
     skeleton: Optional[SkeletonBuilder]
     assets: AssetManager
     body_state: BodyState = field(default_factory=BodyState)
+    face_state: FaceState = field(default_factory=FaceState)
+    constraint_state: ConstraintState = field(default_factory=ConstraintState)
     _loaded_layers: set[str] = field(default_factory=set)
+    _head_quat: Quat = field(default_factory=quat_identity)
 
 
 def load_headless_scene() -> HeadlessScene:
@@ -165,27 +169,49 @@ def load_headless_scene() -> HeadlessScene:
         chain_ids["spine"] = len(joint_chains)
         joint_chains.append(spine_chain)
 
-    # Limb chains
+    # Limb chains (split into upper/lower per limb)
     if pipeline.joint_setup is not None:
         jp = pipeline.joint_setup.pivots
         for side in ("R", "L"):
-            arm_chain: list[tuple[str, SceneNode]] = []
-            for jn in ("shoulder", "elbow", "wrist"):
+            # Upper arm chain: shoulder → elbow
+            upper_arm: list[tuple[str, SceneNode]] = []
+            for jn in ("shoulder", "elbow"):
                 node = jp.get(f"{jn}_{side}")
                 if node is not None:
-                    arm_chain.append((f"{jn}_{side}", node))
-            if arm_chain:
+                    upper_arm.append((f"{jn}_{side}", node))
+            if upper_arm:
                 chain_ids[f"arm_{side}"] = len(joint_chains)
-                joint_chains.append(arm_chain)
+                joint_chains.append(upper_arm)
 
-            leg_chain: list[tuple[str, SceneNode]] = []
-            for jn in ("hip", "knee", "ankle"):
+            # Forearm chain: elbow → wrist
+            forearm: list[tuple[str, SceneNode]] = []
+            for jn in ("elbow", "wrist"):
                 node = jp.get(f"{jn}_{side}")
                 if node is not None:
-                    leg_chain.append((f"{jn}_{side}", node))
-            if leg_chain:
+                    forearm.append((f"{jn}_{side}", node))
+            if forearm:
+                chain_ids[f"forearm_{side}"] = len(joint_chains)
+                joint_chains.append(forearm)
+
+            # Upper leg chain: hip → knee
+            upper_leg: list[tuple[str, SceneNode]] = []
+            for jn in ("hip", "knee"):
+                node = jp.get(f"{jn}_{side}")
+                if node is not None:
+                    upper_leg.append((f"{jn}_{side}", node))
+            if upper_leg:
                 chain_ids[f"leg_{side}"] = len(joint_chains)
-                joint_chains.append(leg_chain)
+                joint_chains.append(upper_leg)
+
+            # Lower leg chain: knee → ankle
+            lower_leg: list[tuple[str, SceneNode]] = []
+            for jn in ("knee", "ankle"):
+                node = jp.get(f"{jn}_{side}")
+                if node is not None:
+                    lower_leg.append((f"{jn}_{side}", node))
+            if lower_leg:
+                chain_ids[f"lower_leg_{side}"] = len(joint_chains)
+                joint_chains.append(lower_leg)
 
     # Digit chains
     if pipeline.joint_setup is not None:
@@ -261,12 +287,18 @@ def _resolve_sided_chains(
 
     resolved: list[str] = []
     for cn in chain_names:
-        if cn in ("arm", "leg"):
+        if cn in ("arm", "leg", "forearm", "lower_leg"):
             if side is not None:
                 resolved.append(f"{cn}_{side}")
             else:
                 resolved.append(f"{cn}_R")
                 resolved.append(f"{cn}_L")
+        elif cn in ("hand", "foot"):
+            # Expand to all 5 digit chains per side
+            sides = [side] if side is not None else ["R", "L"]
+            for s in sides:
+                for digit in range(1, 6):
+                    resolved.append(f"{cn}_{s}_{digit}")
         else:
             resolved.append(cn)
     return _resolve_chain_set(resolved, chain_ids)
@@ -382,6 +414,19 @@ def register_layer(
             ac = _resolve_sided_chains(chain_names, muscle_name, chain_ids)
             skinning.register_skin_mesh(mesh, is_muscle=True, allowed_chains=ac)
 
+        # Remove digit/limb cross-chain blending for arm and leg muscles
+        if layer_name in ("arm_muscles", "leg_muscles"):
+            digit_cids: set[int] = set()
+            prefix = "hand" if layer_name == "arm_muscles" else "foot"
+            for side in ("R", "L"):
+                for digit in range(1, 6):
+                    cid = chain_ids.get(f"{prefix}_{side}_{digit}")
+                    if cid is not None:
+                        digit_cids.add(cid)
+            if digit_cids:
+                skinning.snap_hierarchy_blends(digit_cids)
+                skinning.reassign_orphan_vertices(digit_cids)
+
     elif layer_type == "organ":
         spine_id = chain_ids.get("spine")
         ac = {spine_id} if spine_id is not None else None
@@ -424,6 +469,206 @@ def apply_pose(hs: HeadlessScene, body_state: BodyState) -> None:
     hs.skinning.update(body_state)
 
 
+def apply_head_rotation(hs: HeadlessScene, face_state: FaceState) -> Quat:
+    """Apply head rotation and update neck muscles.
+
+    Parameters
+    ----------
+    hs : HeadlessScene
+        The headless scene.
+    face_state : FaceState
+        Face state with ``head_yaw``, ``head_pitch``, ``head_roll``.
+
+    Returns
+    -------
+    Quat
+        The computed head rotation quaternion.
+    """
+    hs.face_state = face_state
+    pipeline = hs.pipeline
+    head_rot = pipeline.head_rotation
+
+    if head_rot is None:
+        logger.warning("Head rotation system not loaded")
+        return quat_identity()
+
+    skull_group = hs.named_nodes.get("skullGroup")
+    face_group = hs.named_nodes.get("faceGroup")
+    if skull_group is None or face_group is None:
+        logger.warning("Missing skull/face group nodes")
+        return quat_identity()
+
+    head_q = head_rot.apply(
+        face_state,
+        skull_group,
+        face_group,
+        pipeline.vertebrae_pivots or None,
+        hs.constraint_state,
+        brain_group=hs.named_nodes.get("brainGroup"),
+        stl_muscle_group=hs.named_nodes.get("stlMuscleGroup"),
+        expr_muscle_group=hs.named_nodes.get("exprMuscleGroup"),
+        face_feature_group=hs.named_nodes.get("faceFeatureGroup"),
+    )
+    hs._head_quat = head_q
+
+    # Update neck muscles
+    if pipeline.neck_muscles is not None:
+        pipeline.neck_muscles.update(head_q, face_state=face_state, body_state=hs.body_state)
+
+    # Platysma correction (after head rotation)
+    if pipeline.platysma is not None and pipeline.platysma.registered:
+        plat_bone_cur = None
+        plat_bone_rest = None
+        if pipeline.bone_anchors is not None:
+            plat_bone_cur = pipeline.bone_anchors.get_muscle_anchor_current(
+                "Platysma", ["Right Clavicle", "Left Clavicle"],
+            )
+            plat_bone_rest = pipeline.bone_anchors.get_muscle_anchor(
+                "Platysma", ["Right Clavicle", "Left Clavicle"],
+            )
+        pipeline.platysma.update(
+            head_q,
+            bone_anchor_current=plat_bone_cur,
+            bone_anchor_rest=plat_bone_rest,
+        )
+
+    # Update neck constraints
+    if pipeline.neck_constraints is not None:
+        pipeline.neck_constraints.solve(
+            hs.constraint_state,
+            pipeline.neck_muscles.muscle_data if pipeline.neck_muscles else [],
+            head_q,
+        )
+
+    # Apply head rotation to skin meshes
+    _apply_head_to_skin_bindings(hs, head_q)
+
+    hs.scene.update()
+    return head_q
+
+
+def _apply_head_to_skin_bindings(hs: HeadlessScene, head_q: Quat) -> None:
+    """Apply head rotation to all skin bindings' mesh vertices."""
+    head_rot = hs.pipeline.head_rotation
+    if head_rot is None:
+        return
+    for binding in hs.skinning.bindings:
+        mesh = binding.mesh
+        if mesh.rest_positions is None:
+            continue
+        head_rot.apply_to_skin(
+            mesh.geometry.positions,
+            mesh.rest_positions,
+            head_q,
+        )
+        mesh.needs_update = True
+
+
+def apply_full_pose(
+    hs: HeadlessScene,
+    body_state: BodyState,
+    face_state: FaceState,
+) -> Quat:
+    """Apply combined body pose and head rotation in correct order.
+
+    Order:
+    1. Body constraints (clamp)
+    2. Body animation (spine, limbs, breathing)
+    3. Head rotation (skull, face, brain, +3 groups)
+    4. Neck muscles (uses head quaternion + body state)
+    5. Neck constraints
+    6. Soft tissue skinning
+    7. Scene graph update
+
+    Parameters
+    ----------
+    hs : HeadlessScene
+        The headless scene.
+    body_state : BodyState
+        The desired body pose.
+    face_state : FaceState
+        Face state with head rotation values.
+
+    Returns
+    -------
+    Quat
+        The computed head rotation quaternion.
+    """
+    hs.body_state = body_state
+    hs.face_state = face_state
+    pipeline = hs.pipeline
+
+    # 1. Clamp to joint limits
+    hs.body_constraints.clamp(body_state)
+
+    # 2. Body animation (spine, limbs, breathing)
+    if hs.body_animation is not None:
+        hs.body_animation.apply(body_state, dt=0.016)
+
+    # 3. Head rotation
+    head_rot = pipeline.head_rotation
+    head_q = quat_identity()
+    skull_group = hs.named_nodes.get("skullGroup")
+    face_group = hs.named_nodes.get("faceGroup")
+
+    if head_rot is not None and skull_group is not None:
+        head_q = head_rot.apply(
+            face_state,
+            skull_group,
+            face_group,
+            pipeline.vertebrae_pivots or None,
+            hs.constraint_state,
+            brain_group=hs.named_nodes.get("brainGroup"),
+            stl_muscle_group=hs.named_nodes.get("stlMuscleGroup"),
+            expr_muscle_group=hs.named_nodes.get("exprMuscleGroup"),
+            face_feature_group=hs.named_nodes.get("faceFeatureGroup"),
+        )
+    hs._head_quat = head_q
+
+    # 4. Neck muscles
+    if pipeline.neck_muscles is not None:
+        pipeline.neck_muscles.update(head_q, face_state=face_state, body_state=body_state)
+
+    # 4.5. Platysma correction (after head rotation + body animation)
+    if pipeline.platysma is not None and pipeline.platysma.registered:
+        plat_bone_cur = None
+        plat_bone_rest = None
+        if pipeline.bone_anchors is not None:
+            plat_bone_cur = pipeline.bone_anchors.get_muscle_anchor_current(
+                "Platysma", ["Right Clavicle", "Left Clavicle"],
+            )
+            plat_bone_rest = pipeline.bone_anchors.get_muscle_anchor(
+                "Platysma", ["Right Clavicle", "Left Clavicle"],
+            )
+        pipeline.platysma.update(
+            head_q,
+            bone_anchor_current=plat_bone_cur,
+            bone_anchor_rest=plat_bone_rest,
+        )
+
+    # 5. Neck constraints
+    if pipeline.neck_constraints is not None:
+        pipeline.neck_constraints.solve(
+            hs.constraint_state,
+            pipeline.neck_muscles.muscle_data if pipeline.neck_muscles else [],
+            head_q,
+        )
+
+    # 6. Scene graph update (before skinning, so world matrices are current)
+    hs.scene.update()
+
+    # 7. Soft tissue skinning
+    hs.skinning._last_signature = ""
+    hs.skinning.update(body_state)
+
+    # 8. Apply head rotation to skin meshes
+    head_rot = pipeline.head_rotation
+    if head_rot is not None:
+        _apply_head_to_skin_bindings(hs, head_q)
+
+    return head_q
+
+
 def reset_skinning(hs: HeadlessScene) -> None:
     """Clear bindings, restore mesh rest positions, rebuild joints.
 
@@ -442,6 +687,14 @@ def reset_skinning(hs: HeadlessScene) -> None:
     # Clear bindings
     hs.skinning.bindings.clear()
     hs.skinning._last_signature = ""
+
+    # Reset head rotation to identity
+    if hs.pipeline.head_rotation is not None:
+        hs.pipeline.head_rotation.reset()
+    if hs.pipeline.neck_muscles is not None:
+        hs.pipeline.neck_muscles.reset()
+    hs.face_state = FaceState()
+    hs._head_quat = quat_identity()
 
     # Reset body state to anatomical rest BEFORE rebuilding joints.
     # Without this, build_skin_joints snapshots the current (posed) joint

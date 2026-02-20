@@ -214,8 +214,14 @@ class JawMuscleSystem:
 
         # Vectorized: normalized position along muscle extent
         t = (axis_vals - vmin) / extent
-        if axis_idx == 1:
-            t = 1.0 - t  # Y axis: lower Y = closer to jaw
+        muscle_type = defn.get("type", "closer")
+        if axis_idx == 1 and muscle_type == "closer":
+            # Closers: lower Y = closer to jaw insertion → higher weight
+            t = 1.0 - t
+        elif axis_idx == 1 and muscle_type == "opener":
+            # Openers (suprahyoids etc): upper Y = mandible attachment → higher weight
+            # t already has high values at top (mandible end), keep as-is
+            pass
         # Weight ramps from 0 at threshold to 1 past it
         mask = t > thresh
         weights[mask] = np.clip((t[mask] - thresh) / (1.0 - thresh), 0.0, 1.0)

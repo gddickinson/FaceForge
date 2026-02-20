@@ -76,14 +76,28 @@ class BodyAnimationSystem:
         # Apply breathing to ribs
         self._apply_breathing(state)
 
+    # Thoracic/lumbar share of total spine motion
+    _THORACIC_SHARE = 0.4
+    _LUMBAR_SHARE = 0.6
+
     def _apply_spine(self, state: BodyState) -> None:
         """Distribute spine flex/bend/rotation across vertebral pivots.
 
         JS convention: rotation.set(X=flex, Y=rotation, Z=latBend)
+        Total rotation is split: 40% thoracic, 60% lumbar (anatomical ratio).
         """
         flex_rad = state.spine_flex * deg_to_rad(45.0)
         bend_rad = state.spine_lat_bend * deg_to_rad(30.0)
         rot_rad = state.spine_rotation * deg_to_rad(30.0)
+
+        # Split total angle between thoracic and lumbar regions
+        flex_thoracic = flex_rad * self._THORACIC_SHARE
+        bend_thoracic = bend_rad * self._THORACIC_SHARE
+        rot_thoracic = rot_rad * self._THORACIC_SHARE
+
+        flex_lumbar = flex_rad * self._LUMBAR_SHARE
+        bend_lumbar = bend_rad * self._LUMBAR_SHARE
+        rot_lumbar = rot_rad * self._LUMBAR_SHARE
 
         # Thoracic distribution
         for i, pivot_info in enumerate(self.thoracic_pivots):
@@ -92,11 +106,9 @@ class BodyAnimationSystem:
             frac = self.thoracic_fracs[i]
             pivot_node = pivot_info["group"]
 
-            # JS: rotation.set(flexRad*f + headPitch, rotRad*f + headYaw, bendRad*f + headRoll)
-            # headPitch/Yaw/Roll come from constraint solver — skip for now
-            x = flex_rad * frac
-            y = rot_rad * frac
-            z = bend_rad * frac
+            x = flex_thoracic * frac
+            y = rot_thoracic * frac
+            z = bend_thoracic * frac
 
             q = quat_from_euler(x, y, z, "XYZ")
             pivot_node.set_quaternion(q)
@@ -108,9 +120,9 @@ class BodyAnimationSystem:
             frac = self.lumbar_fracs[i]
             pivot_node = pivot_info["group"]
 
-            x = flex_rad * frac
-            y = rot_rad * frac
-            z = bend_rad * frac
+            x = flex_lumbar * frac
+            y = rot_lumbar * frac
+            z = bend_lumbar * frac
 
             q = quat_from_euler(x, y, z, "XYZ")
             pivot_node.set_quaternion(q)
@@ -131,8 +143,8 @@ class BodyAnimationSystem:
 
             # ── Shoulder: rotation.set(flRad, rotRad, abRad) ──
             shoulder = pivots.get(f"shoulder_{side}")
+            ab_val = getattr(state, f"shoulder_{s}_abduct", 0.0)
             if shoulder is not None:
-                ab_val = getattr(state, f"shoulder_{s}_abduct", 0.0)
                 fl_val = getattr(state, f"shoulder_{s}_flex", 0.0)
                 rot_val = getattr(state, f"shoulder_{s}_rotate", 0.0)
                 # Abduction: Z-axis, mirrored for left side (±90°)
@@ -143,6 +155,14 @@ class BodyAnimationSystem:
                 rot_rad = rot_val * deg_to_rad(70.0) * mirror
                 q = quat_from_euler(fl_rad, rot_rad, ab_rad, "XYZ")
                 shoulder.set_quaternion(q)
+
+            # ── Scapulohumeral rhythm: scapula rotates ~1° per 2° abduction ──
+            scapula = pivots.get(f"scapula_{side}")
+            if scapula is not None and abs(ab_val) > 0.01:
+                # Scapular upward rotation: ~1/3 of total arm abduction
+                scap_rad = ab_val * deg_to_rad(90.0) * mirror / 3.0
+                q = quat_from_euler(0.0, 0.0, scap_rad, "XYZ")
+                scapula.set_quaternion(q)
 
             # ── Elbow: rotation.set(-flex*145°, 0, 0) ──
             elbow = pivots.get(f"elbow_{side}")
@@ -331,9 +351,12 @@ class BodyAnimationSystem:
             return
 
         breath = math.sin(state.breath_phase_body) * state.breath_depth
+        n_ribs = len(self._rib_pivots)
         for i, pivot in enumerate(self._rib_pivots):
-            # Upper ribs expand more than lower
-            weight = max(0.0, 1.0 - i * 0.02)
+            # Exponential decay: upper ribs (pump-handle) expand more than
+            # lower ribs (bucket-handle), matching anatomical breathing mechanics
+            t = i / max(1, n_ribs - 1)  # 0..1 from top to bottom
+            weight = math.exp(-2.5 * t)  # ~1.0 at top, ~0.08 at bottom
             angle = breath * weight * 3.0  # degrees
             q = quat_from_euler(deg_to_rad(angle), 0.0, 0.0, "XYZ")
             pivot.set_quaternion(q)

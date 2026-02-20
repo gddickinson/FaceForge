@@ -395,6 +395,7 @@ def main():
 
     # ── On-demand body loading helpers ──
     skin_chain_ids: dict[str, int] = {}  # filled by load_assets(), read by on-demand loaders
+    _after_registration_hooks: list = []  # callbacks run after soft tissue mesh registration
     _loaded_muscle_regions: set = set()
     _organs_loaded = False
     _vasculature_loaded = False
@@ -408,9 +409,9 @@ def main():
         "back_muscles":     ["spine", "ribs"],
         "torso_muscles":    ["spine", "ribs"],
         "shoulder_muscles": ["spine", "arm"],
-        "arm_muscles":      ["spine", "arm"],
+        "arm_muscles":      ["spine", "arm", "forearm", "hand"],
         "hip_muscles":      ["spine", "leg"],
-        "leg_muscles":      ["spine", "leg"],
+        "leg_muscles":      ["spine", "leg", "lower_leg", "foot"],
     }
 
     # Per-muscle chain overrides — keyed by muscle name.
@@ -473,13 +474,18 @@ def main():
 
         resolved: list[str] = []
         for cn in chain_names:
-            if cn in ("arm", "leg"):
+            if cn in ("arm", "leg", "forearm", "lower_leg"):
                 if side is not None:
                     resolved.append(f"{cn}_{side}")
                 else:
-                    # Midline muscle — include both sides
                     resolved.append(f"{cn}_R")
                     resolved.append(f"{cn}_L")
+            elif cn in ("hand", "foot"):
+                # Expand to all 5 digit chains per side
+                sides = [side] if side is not None else ["R", "L"]
+                for s in sides:
+                    for digit in range(1, 6):
+                        resolved.append(f"{cn}_{s}_{digit}")
             else:
                 resolved.append(cn)
         return _resolve_chain_set(resolved)
@@ -512,9 +518,50 @@ def main():
                     override = _MUSCLE_CHAIN_OVERRIDES.get(muscle_name)
                     chain_names = override if override else default_chain_names
                     ac = _resolve_sided_chains(chain_names, muscle_name)
+                    head_follow = defn.get("headFollow")
                     simulation.soft_tissue.register_skin_mesh(
                         mesh, is_muscle=True, allowed_chains=ac,
+                        head_follow_config=head_follow,
+                        muscle_name=muscle_name,
                     )
+                    # Register bone attachment constraints (Layers 2-3)
+                    origin_bones = defn.get("originBones")
+                    insertion_bones = defn.get("insertionBones")
+                    if (origin_bones and insertion_bones
+                            and simulation.soft_tissue.attachment_system is not None):
+                        binding = simulation.soft_tissue.bindings[-1]
+                        fascia_regions = defn.get("fasciaRegions", [])
+                        simulation.soft_tissue.attachment_system.register_muscle(
+                            binding, origin_bones, insertion_bones,
+                            fascia_regions=fascia_regions,
+                        )
+
+                # Remove digit/limb cross-chain blending for arm and leg muscles.
+                # Digit chain joints inherit all limb transforms via scene graph
+                # (digit pivots are children of wrist/ankle), so blending with the
+                # limb chain double-counts the parent contribution.
+                if layer in ("arm_muscles", "leg_muscles"):
+                    digit_cids: set[int] = set()
+                    prefix = "hand" if layer == "arm_muscles" else "foot"
+                    for side in ("R", "L"):
+                        for digit in range(1, 6):
+                            cid = skin_chain_ids.get(f"{prefix}_{side}_{digit}")
+                            if cid is not None:
+                                digit_cids.add(cid)
+                    if digit_cids:
+                        simulation.soft_tissue.snap_hierarchy_blends(digit_cids)
+                        simulation.soft_tissue.reassign_orphan_vertices(digit_cids)
+
+            # Wire back-of-neck muscle pinning handler for back_muscles layer
+            if layer == "back_muscles" and simulation.soft_tissue is not None:
+                from faceforge.anatomy.back_neck_muscles import BackNeckMuscleHandler
+                handler = BackNeckMuscleHandler()
+                muscle_defs_map = {d["name"]: d for d in defs if "name" in d}
+                handler.register(simulation.soft_tissue, muscle_defs_map)
+                if handler.registered:
+                    if simulation.fascia is not None:
+                        handler.set_fascia_system(simulation.fascia)
+                    simulation.back_neck_muscles = handler
 
             # Register individual nodes for per-item toggling
             items = []
@@ -526,6 +573,8 @@ def main():
             event_bus.publish(EventType.STRUCTURES_LOADED, group_id=layer, items=items)
             logging.getLogger(__name__).info("Loaded body muscles: %s (%d meshes)",
                                               layer, len(result.meshes))
+            for hook in _after_registration_hooks:
+                hook()
         except Exception as e:
             logging.getLogger(__name__).warning("Failed to load %s: %s", layer, e)
 
@@ -559,6 +608,8 @@ def main():
                 items.append({"toggle_id": toggle_id, "name": name, "category": category})
             event_bus.publish(EventType.STRUCTURES_LOADED, group_id="organs", items=items)
             logging.getLogger(__name__).info("Loaded organs: %d meshes", len(result.meshes))
+            for hook in _after_registration_hooks:
+                hook()
         except Exception as e:
             logging.getLogger(__name__).warning("Failed to load organs: %s", e)
 
@@ -592,6 +643,8 @@ def main():
                 items.append({"toggle_id": toggle_id, "name": name, "type": vtype})
             event_bus.publish(EventType.STRUCTURES_LOADED, group_id="vasculature", items=items)
             logging.getLogger(__name__).info("Loaded vasculature: %d meshes", len(result.meshes))
+            for hook in _after_registration_hooks:
+                hook()
         except Exception as e:
             logging.getLogger(__name__).warning("Failed to load vasculature: %s", e)
 
@@ -680,13 +733,14 @@ def main():
                 visibility.register(tid, node)
                 items.append({"toggle_id": tid, "name": name})
             event_bus.publish(EventType.STRUCTURES_LOADED, group_id="hand_muscles", items=items)
-            # Register with soft tissue skinning (digit + arm chains)
+            # Register with soft tissue skinning — digit chains ONLY.
+            # Digit chain joints inherit wrist/elbow/shoulder transforms via
+            # parent pivots, so digit chain deltas already include all arm
+            # movement.  Excluding arm/forearm chains prevents the extrapolated
+            # wrist segment from competing with digit joints in the palm area.
             if simulation.soft_tissue is not None:
                 hand_chains: set[int] = set()
                 for side in ("R", "L"):
-                    arm_cid = skin_chain_ids.get(f"arm_{side}")
-                    if arm_cid is not None:
-                        hand_chains.add(arm_cid)
                     for digit in range(1, 6):
                         cid = skin_chain_ids.get(f"hand_{side}_{digit}")
                         if cid is not None:
@@ -697,6 +751,8 @@ def main():
                         mesh, is_muscle=True, allowed_chains=ac,
                     )
             logging.getLogger(__name__).info("Loaded hand muscles: %d meshes", len(result.meshes))
+            for hook in _after_registration_hooks:
+                hook()
         except Exception as e:
             logging.getLogger(__name__).warning("Failed to load hand muscles: %s", e)
 
@@ -721,13 +777,14 @@ def main():
                 visibility.register(tid, node)
                 items.append({"toggle_id": tid, "name": name})
             event_bus.publish(EventType.STRUCTURES_LOADED, group_id="foot_muscles", items=items)
-            # Register with soft tissue skinning (digit + leg chains)
+            # Register with soft tissue skinning — digit chains ONLY.
+            # Digit chain joints inherit ankle/knee/hip transforms via parent
+            # pivots, so digit chain deltas already include all leg movement.
+            # Excluding leg/lower_leg chains prevents the extrapolated ankle
+            # segment from competing with digit joints in the foot area.
             if simulation.soft_tissue is not None:
                 foot_chains: set[int] = set()
                 for side in ("R", "L"):
-                    leg_cid = skin_chain_ids.get(f"leg_{side}")
-                    if leg_cid is not None:
-                        foot_chains.add(leg_cid)
                     for digit in range(1, 6):
                         cid = skin_chain_ids.get(f"foot_{side}_{digit}")
                         if cid is not None:
@@ -738,6 +795,8 @@ def main():
                         mesh, is_muscle=True, allowed_chains=ac,
                     )
             logging.getLogger(__name__).info("Loaded foot muscles: %d meshes", len(result.meshes))
+            for hook in _after_registration_hooks:
+                hook()
         except Exception as e:
             logging.getLogger(__name__).warning("Failed to load foot muscles: %s", e)
 
@@ -783,7 +842,17 @@ def main():
                     ac = _resolve_sided_chains(chain_names, lig_name)
                     simulation.soft_tissue.register_skin_mesh(
                         mesh, is_muscle=True, allowed_chains=ac,
+                        muscle_name=lig_name,
                     )
+                    # Register ligament bone attachments (Layer 5)
+                    origin_bones = defn.get("originBones")
+                    insertion_bones = defn.get("insertionBones")
+                    if (origin_bones and insertion_bones
+                            and simulation.soft_tissue.attachment_system is not None):
+                        binding = simulation.soft_tissue.bindings[-1]
+                        simulation.soft_tissue.attachment_system.register_muscle(
+                            binding, origin_bones, insertion_bones,
+                        )
 
             # Register individual nodes for per-item toggling
             items = []
@@ -795,6 +864,8 @@ def main():
                 items.append({"toggle_id": tid, "name": name, "category": cat})
             event_bus.publish(EventType.STRUCTURES_LOADED, group_id="ligaments", items=items)
             logging.getLogger(__name__).info("Loaded ligaments: %d meshes", len(result.meshes))
+            for hook in _after_registration_hooks:
+                hook()
         except Exception as e:
             logging.getLogger(__name__).warning("Failed to load ligaments: %s", e)
 
@@ -885,6 +956,8 @@ def main():
                         spatial_limit=25.0,
                     )
             logging.getLogger(__name__).info("Loaded skin: %d meshes", len(result.meshes))
+            for hook in _after_registration_hooks:
+                hook()
         except Exception as e:
             logging.getLogger(__name__).warning("Failed to load skin: %s", e)
 
@@ -941,6 +1014,7 @@ def main():
         # Wire visibility group references for gating expensive updates
         simulation.jaw_muscle_group = named_nodes.get("stlMuscleGroup")
         simulation.expr_muscle_group = named_nodes.get("exprMuscleGroup")
+        simulation.platysma_group = named_nodes.get("platysmaGroup")
         simulation.neck_muscle_group = named_nodes.get("neckMuscleGroup")
         simulation.face_feature_group = named_nodes.get("faceFeatureGroup")
 
@@ -1020,6 +1094,28 @@ def main():
                     )
             simulation.body_animation = body_anim
 
+        # Wire bone anchors, platysma, and fascia to simulation
+        simulation.bone_anchors = pipeline.bone_anchors
+        simulation.platysma = pipeline.platysma
+        simulation.fascia = pipeline.fascia
+
+        # Create and wire MuscleAttachmentSystem (Layers 2-3)
+        if pipeline.bone_anchors is not None and simulation.soft_tissue is not None:
+            from faceforge.anatomy.muscle_attachments import MuscleAttachmentSystem
+            attachment_sys = MuscleAttachmentSystem(pipeline.bone_anchors)
+            simulation.soft_tissue.attachment_system = attachment_sys
+
+        # Create and wire BoneCollisionSystem (Layer 4)
+        if pipeline.bone_anchors is not None and simulation.soft_tissue is not None:
+            from faceforge.anatomy.bone_collision import BoneCollisionSystem
+            collision_sys = BoneCollisionSystem(pipeline.bone_anchors)
+            n_capsules = collision_sys.build_capsules()
+            if n_capsules > 0:
+                simulation.soft_tissue.collision_system = collision_sys
+
+        # Initialize neck body anchor rest positions for body-delta tracking
+        simulation.init_neck_body_anchors()
+
         # Body joint constraints
         body_constraints = BodyConstraints()
         body_constraints.load()
@@ -1047,31 +1143,53 @@ def main():
             skin_chain_ids["spine"] = len(joint_chains)
             joint_chains.append(spine_chain)
 
-        # Limb chains (one chain per limb)
+        # Limb chains (split into upper/lower per limb)
         if pipeline.joint_setup is not None:
             jp = pipeline.joint_setup.pivots
             for side in ("R", "L"):
-                # Chain: right/left arm (shoulder → elbow → wrist)
-                arm_chain: list[tuple[str, SceneNode]] = []
-                for jn in ("shoulder", "elbow", "wrist"):
+                # Upper arm chain: shoulder → elbow
+                upper_arm: list[tuple[str, SceneNode]] = []
+                for jn in ("shoulder", "elbow"):
                     node = jp.get(f"{jn}_{side}")
                     if node is not None:
-                        arm_chain.append((f"{jn}_{side}", node))
-                if arm_chain:
+                        upper_arm.append((f"{jn}_{side}", node))
+                if upper_arm:
                     skin_chain_ids[f"arm_{side}"] = len(joint_chains)
-                    joint_chains.append(arm_chain)
+                    joint_chains.append(upper_arm)
 
-                # Chain: right/left leg (hip → knee → ankle)
-                leg_chain: list[tuple[str, SceneNode]] = []
-                for jn in ("hip", "knee", "ankle"):
+                # Forearm chain: elbow → wrist
+                forearm: list[tuple[str, SceneNode]] = []
+                for jn in ("elbow", "wrist"):
                     node = jp.get(f"{jn}_{side}")
                     if node is not None:
-                        leg_chain.append((f"{jn}_{side}", node))
-                if leg_chain:
+                        forearm.append((f"{jn}_{side}", node))
+                if forearm:
+                    skin_chain_ids[f"forearm_{side}"] = len(joint_chains)
+                    joint_chains.append(forearm)
+
+                # Upper leg chain: hip → knee
+                upper_leg: list[tuple[str, SceneNode]] = []
+                for jn in ("hip", "knee"):
+                    node = jp.get(f"{jn}_{side}")
+                    if node is not None:
+                        upper_leg.append((f"{jn}_{side}", node))
+                if upper_leg:
                     skin_chain_ids[f"leg_{side}"] = len(joint_chains)
-                    joint_chains.append(leg_chain)
+                    joint_chains.append(upper_leg)
+
+                # Lower leg chain: knee → ankle
+                lower_leg: list[tuple[str, SceneNode]] = []
+                for jn in ("knee", "ankle"):
+                    node = jp.get(f"{jn}_{side}")
+                    if node is not None:
+                        lower_leg.append((f"{jn}_{side}", node))
+                if lower_leg:
+                    skin_chain_ids[f"lower_leg_{side}"] = len(joint_chains)
+                    joint_chains.append(lower_leg)
 
         # Digit chains (one chain per digit per side)
+        n_hand_chains = 0
+        n_foot_chains = 0
         if pipeline.joint_setup is not None:
             jp = pipeline.joint_setup.pivots
             for side in ("R", "L"):
@@ -1085,6 +1203,7 @@ def main():
                     if hand_chain:
                         skin_chain_ids[f"hand_{side}_{digit}"] = len(joint_chains)
                         joint_chains.append(hand_chain)
+                        n_hand_chains += 1
 
                     # Foot digit chain
                     foot_chain: list[tuple[str, SceneNode]] = []
@@ -1095,6 +1214,10 @@ def main():
                     if foot_chain:
                         skin_chain_ids[f"foot_{side}_{digit}"] = len(joint_chains)
                         joint_chains.append(foot_chain)
+                        n_foot_chains += 1
+        logging.getLogger(__name__).info(
+            "Digit chains built: %d hand, %d foot", n_hand_chains, n_foot_chains,
+        )
 
         # Chain: ribs (one pivot per rib, for rib-attached muscles)
         if simulation.body_animation is not None and simulation.body_animation._rib_pivots:
@@ -1247,9 +1370,20 @@ def main():
             overrides = load_overrides()
             if overrides:
                 count = apply_overrides(skinning, overrides)
-                debug_tab.set_override_count(count)
-                stretch_viz.invalidate_chain_cache()
-                print(f"[FaceForge] Loaded and applied {count} overrides")
+                if count > 0:
+                    debug_tab.set_override_count(count)
+                    stretch_viz.invalidate_chain_cache()
+                    skinning._last_signature = ()
+                    print(f"[FaceForge] Loaded and applied {count} overrides")
+                else:
+                    mesh_names = {b.mesh.name for b in skinning.bindings}
+                    override_names = set(overrides.keys())
+                    missing = override_names - mesh_names
+                    if missing:
+                        print(f"[FaceForge] 0 overrides applied — mesh layers not loaded: {missing}"
+                              " (enable the Skin layer first)")
+                    else:
+                        print("[FaceForge] 0 overrides applied — no matching vertices")
             else:
                 print("[FaceForge] No overrides file found")
 
@@ -1257,33 +1391,26 @@ def main():
         debug_tab.load_overrides_clicked.connect(_on_load_overrides)
 
         # Load overrides on startup (if file exists).
-        # Skin meshes load asynchronously via STL batches, so we retry
-        # periodically until bindings exist and overrides apply successfully.
-        startup_overrides = load_overrides()
-        if startup_overrides:
-            _override_retry_timer = QTimer()
-            _override_retry_timer.setInterval(2000)  # check every 2s
-            _override_attempts = [0]
+        # Overrides are applied event-driven: whenever a layer loads and
+        # registers meshes with soft tissue, we check for pending overrides.
+        _pending_overrides = load_overrides()
 
-            def _apply_startup_overrides():
-                _override_attempts[0] += 1
-                if skinning.bindings:
-                    count = apply_overrides(skinning, startup_overrides)
-                    if count > 0:
-                        debug_tab.set_override_count(count)
-                        stretch_viz.invalidate_chain_cache()
-                        # Force skinning recompute on next frame
-                        skinning._last_signature = ()
-                        print(f"[FaceForge] Auto-loaded {count} overrides on startup")
-                        _override_retry_timer.stop()
-                        return
-                # Give up after 30 attempts (60 seconds)
-                if _override_attempts[0] >= 30:
-                    print("[FaceForge] Warning: overrides file found but no matching bindings after 60s")
-                    _override_retry_timer.stop()
+        def _try_apply_pending_overrides():
+            nonlocal _pending_overrides
+            if _pending_overrides is None:
+                return
+            if not skinning.bindings:
+                return
+            count = apply_overrides(skinning, _pending_overrides)
+            if count > 0:
+                debug_tab.set_override_count(count)
+                stretch_viz.invalidate_chain_cache()
+                # Force skinning recompute on next frame
+                skinning._last_signature = ()
+                print(f"[FaceForge] Auto-loaded {count} overrides on startup")
+            _pending_overrides = None  # Applied (or no matches), clear pending
 
-            _override_retry_timer.timeout.connect(_apply_startup_overrides)
-            _override_retry_timer.start()
+        _after_registration_hooks.append(_try_apply_pending_overrides)
 
         # Hook stretch viz update into simulation
         _original_soft_tissue_update = skinning.update

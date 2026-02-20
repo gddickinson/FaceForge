@@ -250,10 +250,27 @@ class JointPivotSetup:
         if wrist_pivot is not None:
             elbow_pivot.add(wrist_pivot)
 
-        # Reparent only humerus under shoulder pivot (scapula and clavicle
-        # are part of the shoulder girdle and stay fixed to the torso,
-        # matching the original JS: reparentUnderPivot(humerus, shoulderPivot, shoulderPos))
+        # Reparent humerus under shoulder pivot
         reparent_under_pivot(humerus, shoulder_pivot, shoulder_pos)
+
+        # Scapulohumeral rhythm: create scapula pivot for coupled rotation
+        if scapula and scapula.mesh:
+            scap_geo = scapula.mesh.geometry
+            scap_pts = scap_geo.positions.reshape(-1, 3)[:scap_geo.vertex_count]
+            scap_center = scap_pts.mean(axis=0)
+            scap_pivot = SceneNode(name=f"scapula_{side}_pivot")
+            scap_pivot.set_position(
+                float(scap_center[0]), float(scap_center[1]), float(scap_center[2]),
+            )
+            parent = scapula.parent
+            if parent is not None:
+                parent.remove(scapula)
+                parent.add(scap_pivot)
+            reparent_under_pivot(scapula, scap_pivot, scap_center)
+            self.pivots[f"scapula_{side}"] = scap_pivot
+            self.joint_positions[f"scapula_{side}"] = vec3(
+                float(scap_center[0]), float(scap_center[1]), float(scap_center[2]),
+            )
 
         if radius:
             reparent_under_pivot(radius, elbow_pivot, elbow_pos)

@@ -1,0 +1,10 @@
+*.pyc
+/tools/__pycache__
+/src/faceforge/coordination/__pycache__
+/src/faceforge/body/__pycache__
+/tools/__pycache__
+/src/faceforge/body/__pycache__
+/src/faceforge/coordination/__pycache__
+/src/faceforge/core/__pycache__
+/tools/__pycache__
+*.pyc

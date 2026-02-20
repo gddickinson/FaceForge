@@ -2,121 +2,169 @@
   {
     "name": "Psoas Major R",
     "stl": "FMA22342",
-    "color": 12607584
+    "color": 12607584,
+    "origin": ["Right 12th Rib"],
+    "insertion": ["Right Femur"]
   },
   {
     "name": "Psoas Major L",
     "stl": "FMA22343",
-    "color": 12607584
+    "color": 12607584,
+    "origin": ["Left 12th Rib"],
+    "insertion": ["Left Femur"]
   },
   {
     "name": "Iliacus R",
     "stl": "FMA22322",
-    "color": 12079184
+    "color": 12079184,
+    "origin": ["Right 12th Rib"],
+    "insertion": ["Right Femur"]
   },
   {
     "name": "Iliacus L",
     "stl": "FMA22323",
-    "color": 12079184
+    "color": 12079184,
+    "origin": ["Left 12th Rib"],
+    "insertion": ["Left Femur"]
   },
   {
     "name": "Gluteus Max. R",
     "stl": "FMA22328",
-    "color": 12607584
+    "color": 12607584,
+    "origin": ["Right Femur"],
+    "insertion": ["Right Femur"]
   },
   {
     "name": "Gluteus Max. L",
     "stl": "FMA22329",
-    "color": 12607584
+    "color": 12607584,
+    "origin": ["Left Femur"],
+    "insertion": ["Left Femur"]
   },
   {
     "name": "Gluteus Med. R",
     "stl": "FMA22330",
-    "color": 12079184
+    "color": 12079184,
+    "origin": ["Right Femur"],
+    "insertion": ["Right Femur"]
   },
   {
     "name": "Gluteus Med. L",
     "stl": "FMA22331",
-    "color": 12079184
+    "color": 12079184,
+    "origin": ["Left Femur"],
+    "insertion": ["Left Femur"]
   },
   {
     "name": "Gluteus Min. R",
     "stl": "FMA22332",
-    "color": 11552840
+    "color": 11552840,
+    "origin": ["Right Femur"],
+    "insertion": ["Right Femur"]
   },
   {
     "name": "Gluteus Min. L",
     "stl": "FMA22333",
-    "color": 11552840
+    "color": 11552840,
+    "origin": ["Left Femur"],
+    "insertion": ["Left Femur"]
   },
   {
     "name": "Piriformis R",
     "stl": "FMA22340",
-    "color": 11028552
+    "color": 11028552,
+    "origin": ["Right 12th Rib"],
+    "insertion": ["Right Femur"]
   },
   {
     "name": "Piriformis L",
     "stl": "FMA22341",
-    "color": 11028552
+    "color": 11028552,
+    "origin": ["Left 12th Rib"],
+    "insertion": ["Left Femur"]
   },
   {
     "name": "Obt. Internus R",
     "stl": "FMA22324",
-    "color": 10502208
+    "color": 10502208,
+    "origin": ["Right Femur"],
+    "insertion": ["Right Femur"]
   },
   {
     "name": "Obt. Internus L",
     "stl": "FMA22325",
-    "color": 10502208
+    "color": 10502208,
+    "origin": ["Left Femur"],
+    "insertion": ["Left Femur"]
   },
   {
     "name": "Obt. Externus R",
     "stl": "FMA22326",
-    "color": 10502208
+    "color": 10502208,
+    "origin": ["Right Femur"],
+    "insertion": ["Right Femur"]
   },
   {
     "name": "Obt. Externus L",
     "stl": "FMA22327",
-    "color": 10502208
+    "color": 10502208,
+    "origin": ["Left Femur"],
+    "insertion": ["Left Femur"]
   },
   {
     "name": "Gem. Superior R",
     "stl": "FMA22334",
-    "color": 10044484
+    "color": 10044484,
+    "origin": ["Right Femur"],
+    "insertion": ["Right Femur"]
   },
   {
     "name": "Gem. Superior L",
     "stl": "FMA22335",
-    "color": 10044484
+    "color": 10044484,
+    "origin": ["Left Femur"],
+    "insertion": ["Left Femur"]
   },
   {
     "name": "Gem. Inferior R",
     "stl": "FMA22336",
-    "color": 10044484
+    "color": 10044484,
+    "origin": ["Right Femur"],
+    "insertion": ["Right Femur"]
   },
   {
     "name": "Gem. Inferior L",
     "stl": "FMA22337",
-    "color": 10044484
+    "color": 10044484,
+    "origin": ["Left Femur"],
+    "insertion": ["Left Femur"]
   },
   {
     "name": "Quad. Femoris R",
     "stl": "FMA22338",
-    "color": 10044484
+    "color": 10044484,
+    "origin": ["Right Femur"],
+    "insertion": ["Right Femur"]
   },
   {
     "name": "Quad. Femoris L",
     "stl": "FMA22339",
-    "color": 10044484
+    "color": 10044484,
+    "origin": ["Left Femur"],
+    "insertion": ["Left Femur"]
   },
   {
     "name": "Tensor Fasc. Lat. R",
     "stl": "FMA22425",
-    "color": 11552840
+    "color": 11552840,
+    "origin": ["Right Femur"],
+    "insertion": ["Right Tibia"]
   },
   {
     "name": "Tensor Fasc. Lat. L",
     "stl": "FMA22426",
-    "color": 11552840
+    "color": 11552840,
+    "origin": ["Left Femur"],
+    "insertion": ["Left Tibia"]
   }
 ]

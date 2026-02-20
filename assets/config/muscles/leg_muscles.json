@@ -2,301 +2,421 @@
   {
     "name": "Rectus Femoris R",
     "stl": "FMA38928",
-    "color": 12607584
+    "color": 12607584,
+    "origin": ["Right Femur"],
+    "insertion": ["Right Tibia"]
   },
   {
     "name": "Rectus Femoris L",
     "stl": "FMA38929",
-    "color": 12607584
+    "color": 12607584,
+    "origin": ["Left Femur"],
+    "insertion": ["Left Tibia"]
   },
   {
     "name": "Vastus Lat. R",
     "stl": "FMA38930",
-    "color": 12079184
+    "color": 12079184,
+    "origin": ["Right Femur"],
+    "insertion": ["Right Tibia"]
   },
   {
     "name": "Vastus Lat. L",
     "stl": "FMA38931",
-    "color": 12079184
+    "color": 12079184,
+    "origin": ["Left Femur"],
+    "insertion": ["Left Tibia"]
   },
   {
     "name": "Vastus Med. R",
     "stl": "FMA38932",
-    "color": 12079184
+    "color": 12079184,
+    "origin": ["Right Femur"],
+    "insertion": ["Right Tibia"]
   },
   {
     "name": "Vastus Med. L",
     "stl": "FMA38933",
-    "color": 12079184
+    "color": 12079184,
+    "origin": ["Left Femur"],
+    "insertion": ["Left Tibia"]
   },
   {
     "name": "Vastus Inter. R",
     "stl": "FMA38934",
-    "color": 11552840
+    "color": 11552840,
+    "origin": ["Right Femur"],
+    "insertion": ["Right Tibia"]
   },
   {
     "name": "Vastus Inter. L",
     "stl": "FMA38935",
-    "color": 11552840
+    "color": 11552840,
+    "origin": ["Left Femur"],
+    "insertion": ["Left Tibia"]
   },
   {
     "name": "Sartorius R",
     "stl": "FMA22354",
-    "color": 11028552
+    "color": 11028552,
+    "origin": ["Right Femur"],
+    "insertion": ["Right Tibia"]
   },
   {
     "name": "Sartorius L",
     "stl": "FMA22355",
-    "color": 11028552
+    "color": 11028552,
+    "origin": ["Left Femur"],
+    "insertion": ["Left Tibia"]
   },
   {
     "name": "Biceps Fem. Long R",
     "stl": "FMA45888",
-    "color": 12079184
+    "color": 12079184,
+    "origin": ["Right Femur"],
+    "insertion": ["Right Fibula"]
   },
   {
     "name": "Biceps Fem. Long L",
     "stl": "FMA45889",
-    "color": 12079184
+    "color": 12079184,
+    "origin": ["Left Femur"],
+    "insertion": ["Left Fibula"]
   },
   {
     "name": "Biceps Fem. Short R",
     "stl": "FMA45891",
-    "color": 11552840
+    "color": 11552840,
+    "origin": ["Right Femur"],
+    "insertion": ["Right Fibula"]
   },
   {
     "name": "Biceps Fem. Short L",
     "stl": "FMA45892",
-    "color": 11552840
+    "color": 11552840,
+    "origin": ["Left Femur"],
+    "insertion": ["Left Fibula"]
   },
   {
     "name": "Semitendinosus R",
     "stl": "FMA22358",
-    "color": 11028552
+    "color": 11028552,
+    "origin": ["Right Femur"],
+    "insertion": ["Right Tibia"]
   },
   {
     "name": "Semitendinosus L",
     "stl": "FMA22359",
-    "color": 11028552
+    "color": 11028552,
+    "origin": ["Left Femur"],
+    "insertion": ["Left Tibia"]
   },
   {
     "name": "Semimembranosus R",
     "stl": "FMA22448",
-    "color": 11028552
+    "color": 11028552,
+    "origin": ["Right Femur"],
+    "insertion": ["Right Tibia"]
   },
   {
     "name": "Semimembranosus L",
     "stl": "FMA22449",
-    "color": 11028552
+    "color": 11028552,
+    "origin": ["Left Femur"],
+    "insertion": ["Left Tibia"]
   },
   {
     "name": "Pectineus R",
     "stl": "FMA22450",
-    "color": 10502208
+    "color": 10502208,
+    "origin": ["Right Femur"],
+    "insertion": ["Right Femur"]
   },
   {
     "name": "Pectineus L",
     "stl": "FMA22451",
-    "color": 10502208
+    "color": 10502208,
+    "origin": ["Left Femur"],
+    "insertion": ["Left Femur"]
   },
   {
     "name": "Adductor Brevis R",
     "stl": "FMA22452",
-    "color": 10044484
+    "color": 10044484,
+    "origin": ["Right Femur"],
+    "insertion": ["Right Femur"]
   },
   {
     "name": "Adductor Brevis L",
     "stl": "FMA22454",
-    "color": 10044484
+    "color": 10044484,
+    "origin": ["Left Femur"],
+    "insertion": ["Left Femur"]
   },
   {
     "name": "Adductor Longus R",
     "stl": "FMA22456",
-    "color": 10044484
+    "color": 10044484,
+    "origin": ["Right Femur"],
+    "insertion": ["Right Femur"]
   },
   {
     "name": "Adductor Longus L",
     "stl": "FMA22457",
-    "color": 10044484
+    "color": 10044484,
+    "origin": ["Left Femur"],
+    "insertion": ["Left Femur"]
   },
   {
     "name": "Adductor Magnus R",
     "stl": "FMA22459",
-    "color": 8929344
+    "color": 8929344,
+    "origin": ["Right Femur"],
+    "insertion": ["Right Femur"]
   },
   {
     "name": "Adductor Magnus L",
     "stl": "FMA22460",
-    "color": 8929344
+    "color": 8929344,
+    "origin": ["Left Femur"],
+    "insertion": ["Left Femur"]
   },
   {
     "name": "Adductor Min. R",
     "stl": "FMA43886",
-    "color": 8929344
+    "color": 8929344,
+    "origin": ["Right Femur"],
+    "insertion": ["Right Femur"]
   },
   {
     "name": "Adductor Min. L",
     "stl": "FMA43887",
-    "color": 8929344
+    "color": 8929344,
+    "origin": ["Left Femur"],
+    "insertion": ["Left Femur"]
   },
   {
     "name": "Gracilis R",
     "stl": "FMA43883",
-    "color": 10502208
+    "color": 10502208,
+    "origin": ["Right Femur"],
+    "insertion": ["Right Tibia"]
   },
   {
     "name": "Gracilis L",
     "stl": "FMA43884",
-    "color": 10502208
+    "color": 10502208,
+    "origin": ["Left Femur"],
+    "insertion": ["Left Tibia"]
   },
   {
     "name": "Tibialis Ant. R",
     "stl": "FMA22544",
-    "color": 11552840
+    "color": 11552840,
+    "origin": ["Right Tibia"],
+    "insertion": ["Right Tibia"]
   },
   {
     "name": "Tibialis Ant. L",
     "stl": "FMA22545",
-    "color": 11552840
+    "color": 11552840,
+    "origin": ["Left Tibia"],
+    "insertion": ["Left Tibia"]
   },
   {
     "name": "Ext. Hall. Long. R",
     "stl": "FMA22546",
-    "color": 11028552
+    "color": 11028552,
+    "origin": ["Right Fibula"],
+    "insertion": ["Right Fibula"]
   },
   {
     "name": "Ext. Hall. Long. L",
     "stl": "FMA22547",
-    "color": 11028552
+    "color": 11028552,
+    "origin": ["Left Fibula"],
+    "insertion": ["Left Fibula"]
   },
   {
     "name": "Ext. Dig. Long. R",
     "stl": "FMA22548",
-    "color": 11028552
+    "color": 11028552,
+    "origin": ["Right Tibia", "Right Fibula"],
+    "insertion": ["Right Tibia"]
   },
   {
     "name": "Ext. Dig. Long. L",
     "stl": "FMA22549",
-    "color": 11028552
+    "color": 11028552,
+    "origin": ["Left Tibia", "Left Fibula"],
+    "insertion": ["Left Tibia"]
   },
   {
     "name": "Fibularis Tert. R",
     "stl": "FMA22550",
-    "color": 10502208
+    "color": 10502208,
+    "origin": ["Right Fibula"],
+    "insertion": ["Right Fibula"]
   },
   {
     "name": "Fibularis Tert. L",
     "stl": "FMA22551",
-    "color": 10502208
+    "color": 10502208,
+    "origin": ["Left Fibula"],
+    "insertion": ["Left Fibula"]
   },
   {
     "name": "Fibularis Long. R",
     "stl": "FMA22552",
-    "color": 10502208
+    "color": 10502208,
+    "origin": ["Right Fibula"],
+    "insertion": ["Right Fibula"]
   },
   {
     "name": "Fibularis Long. L",
     "stl": "FMA22553",
-    "color": 10502208
+    "color": 10502208,
+    "origin": ["Left Fibula"],
+    "insertion": ["Left Fibula"]
   },
   {
     "name": "Fibularis Brev. R",
     "stl": "FMA22554",
-    "color": 10044484
+    "color": 10044484,
+    "origin": ["Right Fibula"],
+    "insertion": ["Right Fibula"]
   },
   {
     "name": "Fibularis Brev. L",
     "stl": "FMA22555",
-    "color": 10044484
+    "color": 10044484,
+    "origin": ["Left Fibula"],
+    "insertion": ["Left Fibula"]
   },
   {
     "name": "Gastroc. Med. R",
     "stl": "FMA45957",
-    "color": 12607584
+    "color": 12607584,
+    "origin": ["Right Femur"],
+    "insertion": ["Right Tibia"]
   },
   {
     "name": "Gastroc. Med. L",
     "stl": "FMA45958",
-    "color": 12607584
+    "color": 12607584,
+    "origin": ["Left Femur"],
+    "insertion": ["Left Tibia"]
   },
   {
     "name": "Gastroc. Lat. R",
     "stl": "FMA45960",
-    "color": 12079184
+    "color": 12079184,
+    "origin": ["Right Femur"],
+    "insertion": ["Right Tibia"]
   },
   {
     "name": "Gastroc. Lat. L",
     "stl": "FMA45961",
-    "color": 12079184
+    "color": 12079184,
+    "origin": ["Left Femur"],
+    "insertion": ["Left Tibia"]
   },
   {
     "name": "Soleus R",
     "stl": "FMA22558",
-    "color": 11552840
+    "color": 11552840,
+    "origin": ["Right Tibia", "Right Fibula"],
+    "insertion": ["Right Tibia"]
   },
   {
     "name": "Soleus L",
     "stl": "FMA22559",
-    "color": 11552840
+    "color": 11552840,
+    "origin": ["Left Tibia", "Left Fibula"],
+    "insertion": ["Left Tibia"]
   },
   {
     "name": "Plantaris R",
     "stl": "FMA22560",
-    "color": 11028552
+    "color": 11028552,
+    "origin": ["Right Femur"],
+    "insertion": ["Right Tibia"]
   },
   {
     "name": "Plantaris L",
     "stl": "FMA22561",
-    "color": 11028552
+    "color": 11028552,
+    "origin": ["Left Femur"],
+    "insertion": ["Left Tibia"]
   },
   {
     "name": "Popliteus R",
     "stl": "FMA22591",
-    "color": 10502208
+    "color": 10502208,
+    "origin": ["Right Femur"],
+    "insertion": ["Right Tibia"]
   },
   {
     "name": "Popliteus L",
     "stl": "FMA22592",
-    "color": 10502208
+    "color": 10502208,
+    "origin": ["Left Femur"],
+    "insertion": ["Left Tibia"]
   },
   {
     "name": "Tibialis Post. R",
     "stl": "FMA65018",
-    "color": 10044484
+    "color": 10044484,
+    "origin": ["Right Tibia", "Right Fibula"],
+    "insertion": ["Right Tibia"]
   },
   {
     "name": "Tibialis Post. L",
     "stl": "FMA65019",
-    "color": 10044484
+    "color": 10044484,
+    "origin": ["Left Tibia", "Left Fibula"],
+    "insertion": ["Left Tibia"]
   },
   {
     "name": "Flex. Dig. Long. R",
     "stl": "FMA65016",
-    "color": 8929344
+    "color": 8929344,
+    "origin": ["Right Tibia"],
+    "insertion": ["Right Tibia"]
   },
   {
     "name": "Flex. Dig. Long. L",
     "stl": "FMA65017",
-    "color": 8929344
+    "color": 8929344,
+    "origin": ["Left Tibia"],
+    "insertion": ["Left Tibia"]
   },
   {
     "name": "Flex. Hall. Long. R",
     "stl": "FMA65014",
-    "color": 8929344
+    "color": 8929344,
+    "origin": ["Right Fibula"],
+    "insertion": ["Right Fibula"]
   },
   {
     "name": "Flex. Hall. Long. L",
     "stl": "FMA65015",
-    "color": 8929344
+    "color": 8929344,
+    "origin": ["Left Fibula"],
+    "insertion": ["Left Fibula"]
   },
   {
     "name": "Iliotibial Tract R",
     "stl": "FMA58776",
-    "color": 13421772
+    "color": 13421772,
+    "origin": ["Right Femur"],
+    "insertion": ["Right Tibia"]
   },
   {
     "name": "Iliotibial Tract L",
     "stl": "FMA58777",
-    "color": 13421772
+    "color": 13421772,
+    "origin": ["Left Femur"],
+    "insertion": ["Left Tibia"]
   }
 ]

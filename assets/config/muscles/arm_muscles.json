@@ -2,311 +2,435 @@
   {
     "name": "Biceps Short R",
     "stl": "FMA37684",
-    "color": 12607584
+    "color": 12607584,
+    "originBones": ["Right Scapula"],
+    "insertionBones": ["Right Radius"]
   },
   {
     "name": "Biceps Short L",
     "stl": "FMA37685",
-    "color": 12607584
+    "color": 12607584,
+    "originBones": ["Left Scapula"],
+    "insertionBones": ["Left Radius"]
   },
   {
     "name": "Biceps Long R",
     "stl": "FMA37686",
-    "color": 12607584
+    "color": 12607584,
+    "originBones": ["Right Scapula"],
+    "insertionBones": ["Right Radius"]
   },
   {
     "name": "Biceps Long L",
     "stl": "FMA37687",
-    "color": 12607584
+    "color": 12607584,
+    "originBones": ["Left Scapula"],
+    "insertionBones": ["Left Radius"]
   },
   {
     "name": "Triceps Med. R",
     "stl": "FMA37695",
-    "color": 12079184
+    "color": 12079184,
+    "originBones": ["Right Humerus"],
+    "insertionBones": ["Right Ulna"]
   },
   {
     "name": "Triceps Med. L",
     "stl": "FMA37696",
-    "color": 12079184
+    "color": 12079184,
+    "originBones": ["Left Humerus"],
+    "insertionBones": ["Left Ulna"]
   },
   {
     "name": "Triceps Lat. R",
     "stl": "FMA37697",
-    "color": 12079184
+    "color": 12079184,
+    "originBones": ["Right Humerus"],
+    "insertionBones": ["Right Ulna"]
   },
   {
     "name": "Triceps Lat. L",
     "stl": "FMA37698",
-    "color": 12079184
+    "color": 12079184,
+    "originBones": ["Left Humerus"],
+    "insertionBones": ["Left Ulna"]
   },
   {
     "name": "Triceps Long R",
     "stl": "FMA37699",
-    "color": 12079184
+    "color": 12079184,
+    "originBones": ["Right Scapula"],
+    "insertionBones": ["Right Ulna"]
   },
   {
     "name": "Triceps Long L",
     "stl": "FMA37700",
-    "color": 12079184
+    "color": 12079184,
+    "originBones": ["Left Scapula"],
+    "insertionBones": ["Left Ulna"]
   },
   {
     "name": "Coracobrachialis R",
     "stl": "FMA37665",
-    "color": 11028552
+    "color": 11028552,
+    "originBones": ["Right Scapula"],
+    "insertionBones": ["Right Humerus"]
   },
   {
     "name": "Coracobrachialis L",
     "stl": "FMA37666",
-    "color": 11028552
+    "color": 11028552,
+    "originBones": ["Left Scapula"],
+    "insertionBones": ["Left Humerus"]
   },
   {
     "name": "Brachialis R",
     "stl": "FMA37668",
-    "color": 11028552
+    "color": 11028552,
+    "originBones": ["Right Humerus"],
+    "insertionBones": ["Right Ulna"]
   },
   {
     "name": "Brachialis L",
     "stl": "FMA37669",
-    "color": 11028552
+    "color": 11028552,
+    "originBones": ["Left Humerus"],
+    "insertionBones": ["Left Ulna"]
   },
   {
     "name": "Anconeus R",
     "stl": "FMA37705",
-    "color": 10502208
+    "color": 10502208,
+    "originBones": ["Right Humerus"],
+    "insertionBones": ["Right Ulna"]
   },
   {
     "name": "Anconeus L",
     "stl": "FMA37706",
-    "color": 10502208
+    "color": 10502208,
+    "originBones": ["Left Humerus"],
+    "insertionBones": ["Left Ulna"]
   },
   {
     "name": "Pronator Teres Hum. R",
     "stl": "FMA38560",
-    "color": 11552840
+    "color": 11552840,
+    "originBones": ["Right Humerus"],
+    "insertionBones": ["Right Radius"]
   },
   {
     "name": "Pronator Teres Hum. L",
     "stl": "FMA38561",
-    "color": 11552840
+    "color": 11552840,
+    "originBones": ["Left Humerus"],
+    "insertionBones": ["Left Radius"]
   },
   {
     "name": "Pronator Teres Uln. R",
     "stl": "FMA38562",
-    "color": 11552840
+    "color": 11552840,
+    "originBones": ["Right Ulna"],
+    "insertionBones": ["Right Radius"]
   },
   {
     "name": "Pronator Teres Uln. L",
     "stl": "FMA38563",
-    "color": 11552840
+    "color": 11552840,
+    "originBones": ["Left Ulna"],
+    "insertionBones": ["Left Radius"]
   },
   {
     "name": "Pronator Quadratus R",
     "stl": "FMA38454",
-    "color": 11028552
+    "color": 11028552,
+    "originBones": ["Right Ulna"],
+    "insertionBones": ["Right Radius"]
   },
   {
     "name": "Pronator Quadratus L",
     "stl": "FMA38455",
-    "color": 11028552
+    "color": 11028552,
+    "originBones": ["Left Ulna"],
+    "insertionBones": ["Left Radius"]
   },
   {
     "name": "Flex. Carpi Rad. R",
     "stl": "FMA38460",
-    "color": 10044484
+    "color": 10044484,
+    "originBones": ["Right Humerus"],
+    "insertionBones": ["Right Radius"]
   },
   {
     "name": "Flex. Carpi Rad. L",
     "stl": "FMA38461",
-    "color": 10044484
+    "color": 10044484,
+    "originBones": ["Left Humerus"],
+    "insertionBones": ["Left Radius"]
   },
   {
     "name": "Palmaris Longus R",
     "stl": "FMA38463",
-    "color": 10044484
+    "color": 10044484,
+    "originBones": ["Right Humerus"],
+    "insertionBones": ["Right Radius"]
   },
   {
     "name": "Palmaris Longus L",
     "stl": "FMA38464",
-    "color": 10044484
+    "color": 10044484,
+    "originBones": ["Left Humerus"],
+    "insertionBones": ["Left Radius"]
   },
   {
     "name": "Flex. Carpi Uln. Hum. R",
     "stl": "FMA38617",
-    "color": 10044484
+    "color": 10044484,
+    "originBones": ["Right Humerus"],
+    "insertionBones": ["Right Ulna"]
   },
   {
     "name": "Flex. Carpi Uln. Hum. L",
     "stl": "FMA38618",
-    "color": 10044484
+    "color": 10044484,
+    "originBones": ["Left Humerus"],
+    "insertionBones": ["Left Ulna"]
   },
   {
     "name": "Flex. Carpi Uln. Uln. R",
     "stl": "FMA38619",
-    "color": 10044484
+    "color": 10044484,
+    "originBones": ["Right Ulna"],
+    "insertionBones": ["Right Ulna"]
   },
   {
     "name": "Flex. Carpi Uln. Uln. L",
     "stl": "FMA38620",
-    "color": 10044484
+    "color": 10044484,
+    "originBones": ["Left Ulna"],
+    "insertionBones": ["Left Ulna"]
   },
   {
     "name": "Flex. Dig. Sup. HU R",
     "stl": "FMA38638",
-    "color": 8929344
+    "color": 8929344,
+    "originBones": ["Right Humerus"],
+    "insertionBones": ["Right Radius"]
   },
   {
     "name": "Flex. Dig. Sup. HU L",
     "stl": "FMA38639",
-    "color": 8929344
+    "color": 8929344,
+    "originBones": ["Left Humerus"],
+    "insertionBones": ["Left Radius"]
   },
   {
     "name": "Flex. Dig. Sup. Rad. R",
     "stl": "FMA38640",
-    "color": 8929344
+    "color": 8929344,
+    "originBones": ["Right Radius"],
+    "insertionBones": ["Right Radius"]
   },
   {
     "name": "Flex. Dig. Sup. Rad. L",
     "stl": "FMA38641",
-    "color": 8929344
+    "color": 8929344,
+    "originBones": ["Left Radius"],
+    "insertionBones": ["Left Radius"]
   },
   {
     "name": "Flex. Dig. Prof. R",
     "stl": "FMA38479",
-    "color": 8929344
+    "color": 8929344,
+    "originBones": ["Right Ulna"],
+    "insertionBones": ["Right Ulna"]
   },
   {
     "name": "Flex. Dig. Prof. L",
     "stl": "FMA38480",
-    "color": 8929344
+    "color": 8929344,
+    "originBones": ["Left Ulna"],
+    "insertionBones": ["Left Ulna"]
   },
   {
     "name": "Flex. Poll. Long. R",
     "stl": "FMA38482",
-    "color": 8929344
+    "color": 8929344,
+    "originBones": ["Right Radius"],
+    "insertionBones": ["Right Radius"]
   },
   {
     "name": "Flex. Poll. Long. L",
     "stl": "FMA38484",
-    "color": 8929344
+    "color": 8929344,
+    "originBones": ["Left Radius"],
+    "insertionBones": ["Left Radius"]
   },
   {
     "name": "Brachioradialis R",
     "stl": "FMA38486",
-    "color": 11552840
+    "color": 11552840,
+    "originBones": ["Right Humerus"],
+    "insertionBones": ["Right Radius"]
   },
   {
     "name": "Brachioradialis L",
     "stl": "FMA38487",
-    "color": 11552840
+    "color": 11552840,
+    "originBones": ["Left Humerus"],
+    "insertionBones": ["Left Radius"]
   },
   {
     "name": "Ext. Carpi Rad. Long. R",
     "stl": "FMA38495",
-    "color": 11028552
+    "color": 11028552,
+    "originBones": ["Right Humerus"],
+    "insertionBones": ["Right Radius"]
   },
   {
     "name": "Ext. Carpi Rad. Long. L",
     "stl": "FMA38496",
-    "color": 11028552
+    "color": 11028552,
+    "originBones": ["Left Humerus"],
+    "insertionBones": ["Left Radius"]
   },
   {
     "name": "Ext. Carpi Rad. Brev. R",
     "stl": "FMA38498",
-    "color": 11028552
+    "color": 11028552,
+    "originBones": ["Right Humerus"],
+    "insertionBones": ["Right Radius"]
   },
   {
     "name": "Ext. Carpi Rad. Brev. L",
     "stl": "FMA38499",
-    "color": 11028552
+    "color": 11028552,
+    "originBones": ["Left Humerus"],
+    "insertionBones": ["Left Radius"]
   },
   {
     "name": "Ext. Digitorum R",
     "stl": "FMA38501",
-    "color": 10044484
+    "color": 10044484,
+    "originBones": ["Right Humerus"],
+    "insertionBones": ["Right Radius"]
   },
   {
     "name": "Ext. Digitorum L",
     "stl": "FMA38502",
-    "color": 10044484
+    "color": 10044484,
+    "originBones": ["Left Humerus"],
+    "insertionBones": ["Left Radius"]
   },
   {
     "name": "Ext. Dig. Min. R",
     "stl": "FMA38504",
-    "color": 10044484
+    "color": 10044484,
+    "originBones": ["Right Humerus"],
+    "insertionBones": ["Right Radius"]
   },
   {
     "name": "Ext. Dig. Min. L",
     "stl": "FMA38505",
-    "color": 10044484
+    "color": 10044484,
+    "originBones": ["Left Humerus"],
+    "insertionBones": ["Left Radius"]
   },
   {
     "name": "Ext. Carpi Uln. Hum. R",
     "stl": "BP45",
-    "color": 10044484
+    "color": 10044484,
+    "originBones": ["Right Humerus"],
+    "insertionBones": ["Right Ulna"]
   },
   {
     "name": "Ext. Carpi Uln. Hum. L",
     "stl": "BP44",
-    "color": 10044484
+    "color": 10044484,
+    "originBones": ["Left Humerus"],
+    "insertionBones": ["Left Ulna"]
   },
   {
     "name": "Ext. Carpi Uln. Uln. R",
     "stl": "BP47",
-    "color": 10044484
+    "color": 10044484,
+    "originBones": ["Right Ulna"],
+    "insertionBones": ["Right Ulna"]
   },
   {
     "name": "Ext. Carpi Uln. Uln. L",
     "stl": "BP46",
-    "color": 10044484
+    "color": 10044484,
+    "originBones": ["Left Ulna"],
+    "insertionBones": ["Left Ulna"]
   },
   {
     "name": "Supinator R",
     "stl": "FMA38513",
-    "color": 10502208
+    "color": 10502208,
+    "originBones": ["Right Humerus", "Right Ulna"],
+    "insertionBones": ["Right Radius"]
   },
   {
     "name": "Supinator L",
     "stl": "FMA38514",
-    "color": 10502208
+    "color": 10502208,
+    "originBones": ["Left Humerus", "Left Ulna"],
+    "insertionBones": ["Left Radius"]
   },
   {
     "name": "Abd. Poll. Long. R",
     "stl": "FMA38516",
-    "color": 8929344
+    "color": 8929344,
+    "originBones": ["Right Ulna", "Right Radius"],
+    "insertionBones": ["Right Radius"]
   },
   {
     "name": "Abd. Poll. Long. L",
     "stl": "FMA38517",
-    "color": 8929344
+    "color": 8929344,
+    "originBones": ["Left Ulna", "Left Radius"],
+    "insertionBones": ["Left Radius"]
   },
   {
     "name": "Ext. Poll. Brev. R",
     "stl": "FMA38519",
-    "color": 8929344
+    "color": 8929344,
+    "originBones": ["Right Radius"],
+    "insertionBones": ["Right Radius"]
   },
   {
     "name": "Ext. Poll. Brev. L",
     "stl": "FMA38520",
-    "color": 8929344
+    "color": 8929344,
+    "originBones": ["Left Radius"],
+    "insertionBones": ["Left Radius"]
   },
   {
     "name": "Ext. Poll. Long. R",
     "stl": "FMA38522",
-    "color": 8929344
+    "color": 8929344,
+    "originBones": ["Right Radius"],
+    "insertionBones": ["Right Radius"]
   },
   {
     "name": "Ext. Poll. Long. L",
     "stl": "FMA38523",
-    "color": 8929344
+    "color": 8929344,
+    "originBones": ["Left Radius"],
+    "insertionBones": ["Left Radius"]
   },
   {
     "name": "Ext. Indicis R",
     "stl": "FMA38525",
-    "color": 8929344
+    "color": 8929344,
+    "originBones": ["Right Ulna"],
+    "insertionBones": ["Right Ulna"]
   },
   {
     "name": "Ext. Indicis L",
     "stl": "FMA38526",
-    "color": 8929344
+    "color": 8929344,
+    "originBones": ["Left Ulna"],
+    "insertionBones": ["Left Ulna"]
   }
 ]

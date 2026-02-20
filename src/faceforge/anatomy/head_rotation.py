@@ -74,6 +74,9 @@ class HeadRotationSystem:
         vertebrae_pivots: Optional[list[dict]] = None,
         constraint_state: Optional[ConstraintState] = None,
         brain_group: Optional[SceneNode] = None,
+        stl_muscle_group: Optional[SceneNode] = None,
+        expr_muscle_group: Optional[SceneNode] = None,
+        face_feature_group: Optional[SceneNode] = None,
     ) -> Quat:
         """Compute and apply head rotation for this frame.
 
@@ -93,6 +96,13 @@ class HeadRotationSystem:
         constraint_state:
             If provided and ``total_excess > SOFT_CLAMP_THRESHOLD``,
             the rotation is scaled back to reduce overstretching.
+        stl_muscle_group:
+            Optional jaw muscle group (stlMuscleGroup) — sibling of skull,
+            must receive same pivot rotation.
+        expr_muscle_group:
+            Optional expression muscle group (exprMuscleGroup) — same.
+        face_feature_group:
+            Optional face feature group (faceFeatureGroup) — same.
 
         Returns
         -------
@@ -104,9 +114,10 @@ class HeadRotationSystem:
         pitch_rad = face_state.head_pitch * deg_to_rad(HEAD_PITCH_MAX)
         roll_rad = face_state.head_roll * deg_to_rad(HEAD_ROLL_MAX)
 
-        # Soft-clamping from constraint solver
-        if constraint_state is not None and constraint_state.total_excess > SOFT_CLAMP_THRESHOLD:
-            scale = 1.0 / (1.0 + constraint_state.total_excess)
+        # Soft-clamping from constraint solver (uses smoothed excess to
+        # prevent frame-to-frame oscillation / jitter)
+        if constraint_state is not None and constraint_state.smoothed_total_excess > SOFT_CLAMP_THRESHOLD:
+            scale = 1.0 / (1.0 + constraint_state.smoothed_total_excess)
             yaw_rad *= scale
             pitch_rad *= scale
             roll_rad *= scale
@@ -116,11 +127,17 @@ class HeadRotationSystem:
         head_q = quat_normalize(head_q)
         self._head_quat = head_q
 
-        # Apply full rotation to skull, face, and brain groups around head pivot
+        # Apply full rotation to skull, face, brain, and head-attached groups
         self._apply_pivot_rotation(skull_group, head_q, self._head_pivot)
         self._apply_pivot_rotation(face_group, head_q, self._head_pivot)
         if brain_group is not None:
             self._apply_pivot_rotation(brain_group, head_q, self._head_pivot)
+        if stl_muscle_group is not None:
+            self._apply_pivot_rotation(stl_muscle_group, head_q, self._head_pivot)
+        if expr_muscle_group is not None:
+            self._apply_pivot_rotation(expr_muscle_group, head_q, self._head_pivot)
+        if face_feature_group is not None:
+            self._apply_pivot_rotation(face_feature_group, head_q, self._head_pivot)
 
         # Distribute rotation to vertebrae
         if vertebrae_pivots is not None:
@@ -174,6 +191,208 @@ class HeadRotationSystem:
             q = quat_normalize(q)
             group.set_quaternion(q)
             group.mark_dirty()
+
+    # ------------------------------------------------------------------
+    # Skin mesh head-follow
+    # ------------------------------------------------------------------
+
+    # Z thresholds for skin head-follow blending (in BP3D world coords).
+    # Z > HEAD_Z_FULL: 100% head follow (mid-skull and above)
+    # Z between NECK_Z_START and HEAD_Z_FULL: smooth blend
+    # Z < NECK_Z_START: 0% head follow (body)
+    HEAD_Z_FULL = 5.0      # mid-head level
+    NECK_Z_START = -25.0   # below neck / shoulder level
+
+    def apply_to_skin(
+        self,
+        mesh_positions: np.ndarray,
+        rest_positions: np.ndarray,
+        head_q: Quat | None = None,
+    ) -> None:
+        """Apply head rotation to skin mesh vertices with Z-based blending.
+
+        Computes head-rotated REST positions and blends them with the
+        body-skinned positions:
+
+            result = (1 - w) * body_skinned + w * head_rotated_rest
+
+        where ``w`` is a smoothstep weight based on the vertex's rest Z
+        coordinate.  Head vertices (w=1) get pure head-rotated rest pose;
+        body vertices (w=0) keep their body-skinned positions; neck
+        vertices blend smoothly.
+
+        This should be called AFTER soft-tissue skinning so that body
+        deformation is already in ``mesh_positions``.
+
+        Parameters
+        ----------
+        mesh_positions : (V*3,) or (V, 3) float32 array
+            Current vertex positions (modified in place).  On entry these
+            are the body-skinned positions.
+        rest_positions : (V*3,) or (V, 3) float32 array
+            Rest-pose vertex positions.
+        head_q : Quat, optional
+            Head rotation quaternion.  If None, uses the most recently
+            computed quaternion from :meth:`apply`.
+        """
+        if head_q is None:
+            head_q = self._head_quat
+
+        identity_q = quat_identity()
+        if np.allclose(head_q, identity_q, atol=1e-6):
+            return
+
+        rest_pos = np.asarray(rest_positions, dtype=np.float64).reshape(-1, 3)
+        body_pos = np.asarray(mesh_positions, dtype=np.float64).reshape(-1, 3)
+
+        # Compute per-vertex head-follow weight from rest Z coordinate
+        z_vals = rest_pos[:, 2]
+        z_range = self.HEAD_Z_FULL - self.NECK_Z_START
+        weights = np.clip((z_vals - self.NECK_Z_START) / z_range, 0.0, 1.0)
+
+        # Smoothstep for a nicer transition
+        weights = weights * weights * (3.0 - 2.0 * weights)
+
+        # Only process vertices with non-zero weight
+        active = weights > 1e-4
+        if not active.any():
+            return
+
+        # Build full rotation matrix once (Rodrigues for the full head quat)
+        qx, qy, qz, qw = head_q
+        sin_half = np.sqrt(qx * qx + qy * qy + qz * qz)
+        if sin_half < 1e-8:
+            return
+        full_angle = 2.0 * np.arctan2(sin_half, qw)
+        if abs(full_angle) < 1e-8:
+            return
+
+        axis = np.array([qx, qy, qz], dtype=np.float64) / sin_half
+        kx, ky, kz = axis
+        K = np.array([
+            [0.0, -kz, ky],
+            [kz, 0.0, -kx],
+            [-ky, kx, 0.0],
+        ], dtype=np.float64)
+        K2 = K @ K
+        # Full rotation matrix R = I + sin(a)*K + (1-cos(a))*K²
+        sin_f = np.sin(full_angle)
+        cos_f = np.cos(full_angle)
+        R = np.eye(3, dtype=np.float64) + sin_f * K + (1.0 - cos_f) * K2
+
+        pivot = self._head_pivot.astype(np.float64)
+
+        # Compute head-rotated REST positions for active vertices
+        idx = np.where(active)[0]
+        rest_active = rest_pos[idx]            # (M, 3)
+        body_active = body_pos[idx]            # (M, 3) — body-skinned
+        w = weights[idx][:, None]              # (M, 1)
+
+        # Rotate rest positions around head pivot
+        rel = rest_active - pivot
+        head_rotated = (R @ rel.T).T + pivot   # (M, 3)
+
+        # Blend: result = (1 - w) * body_skinned + w * head_rotated_rest
+        blended = (1.0 - w) * body_active + w * head_rotated
+
+        # Write back
+        body_pos[idx] = blended
+
+        flat = mesh_positions.reshape(-1)
+        flat[:] = body_pos.astype(np.float32).ravel()
+
+    def apply_to_skin_muscle(
+        self,
+        mesh_positions: np.ndarray,
+        rest_positions: np.ndarray,
+        upper_frac: float,
+        lower_frac: float,
+        head_q: Quat | None = None,
+    ) -> None:
+        """Apply head rotation to a muscle mesh with per-muscle fractions.
+
+        Uses the mesh's Y-extent (not Z) to compute per-vertex head-follow
+        weight.  Vertex at top (Y=max) gets ``upper_frac``, vertex at bottom
+        (Y=min) gets ``lower_frac``, with linear interpolation between.
+
+        Parameters
+        ----------
+        mesh_positions : flat float32 array
+            Current vertex positions (modified in place).
+        rest_positions : flat float32 array
+            Rest-pose vertex positions.
+        upper_frac, lower_frac : float
+            Head-follow fractions for the top and bottom of the muscle.
+        head_q : Quat, optional
+            Head rotation quaternion.  If None, uses the most recently
+            computed quaternion.
+        """
+        if head_q is None:
+            head_q = self._head_quat
+
+        identity_q = quat_identity()
+        if np.allclose(head_q, identity_q, atol=1e-6):
+            return
+
+        rest_pos = np.asarray(rest_positions, dtype=np.float64).reshape(-1, 3)
+        body_pos = np.asarray(mesh_positions, dtype=np.float64).reshape(-1, 3)
+
+        # Compute per-vertex weight from Y-extent (top→upper_frac, bottom→lower_frac)
+        y_vals = rest_pos[:, 1]
+        y_min = y_vals.min()
+        y_max = y_vals.max()
+        y_range = y_max - y_min
+        if y_range < 1e-6:
+            t = np.full(len(y_vals), 0.5)
+        else:
+            t = (y_vals - y_min) / y_range  # 0 at bottom, 1 at top
+
+        weights = lower_frac + t * (upper_frac - lower_frac)
+        weights = np.clip(weights, 0.0, 1.0)
+
+        # Only process vertices with non-zero weight
+        active = weights > 1e-4
+        if not active.any():
+            return
+
+        # Build rotation matrix from quaternion (Rodrigues)
+        qx, qy, qz, qw = head_q
+        sin_half = np.sqrt(qx * qx + qy * qy + qz * qz)
+        if sin_half < 1e-8:
+            return
+        full_angle = 2.0 * np.arctan2(sin_half, qw)
+        if abs(full_angle) < 1e-8:
+            return
+
+        axis = np.array([qx, qy, qz], dtype=np.float64) / sin_half
+        kx, ky, kz = axis
+        K = np.array([
+            [0.0, -kz, ky],
+            [kz, 0.0, -kx],
+            [-ky, kx, 0.0],
+        ], dtype=np.float64)
+        K2 = K @ K
+        sin_f = np.sin(full_angle)
+        cos_f = np.cos(full_angle)
+        R = np.eye(3, dtype=np.float64) + sin_f * K + (1.0 - cos_f) * K2
+
+        pivot = self._head_pivot.astype(np.float64)
+
+        idx = np.where(active)[0]
+        rest_active = rest_pos[idx]
+        body_active = body_pos[idx]
+        w = weights[idx][:, None]
+
+        # Rotate rest positions around head pivot
+        rel = rest_active - pivot
+        head_rotated = (R @ rel.T).T + pivot
+
+        # Blend: result = (1 - w) * body_skinned + w * head_rotated_rest
+        blended = (1.0 - w) * body_active + w * head_rotated
+
+        body_pos[idx] = blended
+        flat = mesh_positions.reshape(-1)
+        flat[:] = body_pos.astype(np.float32).ravel()
 
     def reset(self) -> None:
         """Reset head rotation to identity."""

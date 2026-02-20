@@ -52,7 +52,7 @@ DEFAULT_CAMERA_POS = (0.0, -40.0, 120.0)
 DEFAULT_CAMERA_TARGET = (0.0, -30.0, 0.0)
 
 # Head rotation limits (degrees)
-HEAD_YAW_MAX = 45.0
+HEAD_YAW_MAX = 35.0
 HEAD_PITCH_MAX = 30.0
 HEAD_ROLL_MAX = 30.0
 

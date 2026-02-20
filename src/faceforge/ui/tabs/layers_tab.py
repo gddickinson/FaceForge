@@ -173,6 +173,12 @@ class LayersTab(QScrollArea):
             self._sections[group_id] = section
             self._layout.addWidget(section)
 
+        # ── Debug / Constraints ──
+        self._layout.addWidget(SectionLabel("Debug / Constraints"))
+        self._add_layer_group([
+            ("fascia", "Fascia Targets", False),
+        ])
+
         # ── Integument & Misc ──
         self._layout.addWidget(SectionLabel("Integument & Misc"))
         self._add_layer_group([

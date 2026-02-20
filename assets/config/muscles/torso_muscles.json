@@ -2,42 +2,66 @@
   {
     "name": "Pect. Major Clav. R",
     "stl": "FMA34690",
-    "color": 12607584
+    "color": 12607584,
+    "originBones": ["Right Clavicle"],
+    "insertionBones": ["Right Humerus"],
+    "fasciaRegions": ["pectoral_R"]
   },
   {
     "name": "Pect. Major Clav. L",
     "stl": "FMA34691",
-    "color": 12607584
+    "color": 12607584,
+    "originBones": ["Left Clavicle"],
+    "insertionBones": ["Left Humerus"],
+    "fasciaRegions": ["pectoral_L"]
   },
   {
     "name": "Pect. Major Stern. R",
     "stl": "FMA79979",
-    "color": 12607584
+    "color": 12607584,
+    "originBones": ["Manubrium", "Body of Sternum"],
+    "insertionBones": ["Right Humerus"],
+    "fasciaRegions": ["pectoral_R"]
   },
   {
     "name": "Pect. Major Stern. L",
     "stl": "FMA79980",
-    "color": 12607584
+    "color": 12607584,
+    "originBones": ["Manubrium", "Body of Sternum"],
+    "insertionBones": ["Left Humerus"],
+    "fasciaRegions": ["pectoral_L"]
   },
   {
     "name": "Pect. Major Abd. R",
     "stl": "FMA45874",
-    "color": 12607584
+    "color": 12607584,
+    "originBones": ["Right 5th Rib", "Right 6th Rib"],
+    "insertionBones": ["Right Humerus"],
+    "fasciaRegions": ["pectoral_R"]
   },
   {
     "name": "Pect. Major Abd. L",
     "stl": "FMA45875",
-    "color": 12607584
+    "color": 12607584,
+    "originBones": ["Left 5th Rib", "Left 6th Rib"],
+    "insertionBones": ["Left Humerus"],
+    "fasciaRegions": ["pectoral_L"]
   },
   {
     "name": "Pect. Minor R",
     "stl": "FMA13375",
-    "color": 12079184
+    "color": 12079184,
+    "originBones": ["Right 3rd Rib", "Right 4th Rib", "Right 5th Rib"],
+    "insertionBones": ["Right Scapula"],
+    "fasciaRegions": ["pectoral_R"]
   },
   {
     "name": "Pect. Minor L",
     "stl": "FMA13376",
-    "color": 12079184
+    "color": 12079184,
+    "originBones": ["Left 3rd Rib", "Left 4th Rib", "Left 5th Rib"],
+    "insertionBones": ["Left Scapula"],
+    "fasciaRegions": ["pectoral_L"]
   },
   {
     "name": "Ext. Oblique R",

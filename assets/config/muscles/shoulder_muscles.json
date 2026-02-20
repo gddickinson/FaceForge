@@ -2,101 +2,153 @@
   {
     "name": "Deltoid Clav. R",
     "stl": "FMA34680",
-    "color": 12607584
+    "color": 12607584,
+    "originBones": ["Right Clavicle"],
+    "insertionBones": ["Right Humerus"],
+    "fasciaRegions": ["deltoid_R"]
   },
   {
     "name": "Deltoid Clav. L",
     "stl": "FMA34681",
-    "color": 12607584
+    "color": 12607584,
+    "originBones": ["Left Clavicle"],
+    "insertionBones": ["Left Humerus"],
+    "fasciaRegions": ["deltoid_L"]
   },
   {
     "name": "Deltoid Acr. R",
     "stl": "FMA34682",
-    "color": 12607584
+    "color": 12607584,
+    "originBones": ["Right Scapula"],
+    "insertionBones": ["Right Humerus"],
+    "fasciaRegions": ["deltoid_R"]
   },
   {
     "name": "Deltoid Acr. L",
     "stl": "FMA34683",
-    "color": 12607584
+    "color": 12607584,
+    "originBones": ["Left Scapula"],
+    "insertionBones": ["Left Humerus"],
+    "fasciaRegions": ["deltoid_L"]
   },
   {
     "name": "Deltoid Spin. R",
     "stl": "FMA34684",
-    "color": 12607584
+    "color": 12607584,
+    "originBones": ["Right Scapula"],
+    "insertionBones": ["Right Humerus"],
+    "fasciaRegions": ["deltoid_R"]
   },
   {
     "name": "Deltoid Spin. L",
     "stl": "FMA34685",
-    "color": 12607584
+    "color": 12607584,
+    "originBones": ["Left Scapula"],
+    "insertionBones": ["Left Humerus"],
+    "fasciaRegions": ["deltoid_L"]
   },
   {
     "name": "Supraspinatus R",
     "stl": "FMA32544",
-    "color": 11554896
+    "color": 11554896,
+    "originBones": ["Right Scapula"],
+    "insertionBones": ["Right Humerus"],
+    "fasciaRegions": ["trapezius_R"]
   },
   {
     "name": "Supraspinatus L",
     "stl": "FMA32545",
-    "color": 11554896
+    "color": 11554896,
+    "originBones": ["Left Scapula"],
+    "insertionBones": ["Left Humerus"],
+    "fasciaRegions": ["trapezius_L"]
   },
   {
     "name": "Infraspinatus R",
     "stl": "FMA32547",
-    "color": 11554896
+    "color": 11554896,
+    "originBones": ["Right Scapula"],
+    "insertionBones": ["Right Humerus"],
+    "fasciaRegions": ["trapezius_R"]
   },
   {
     "name": "Infraspinatus L",
     "stl": "FMA32548",
-    "color": 11554896
+    "color": 11554896,
+    "originBones": ["Left Scapula"],
+    "insertionBones": ["Left Humerus"],
+    "fasciaRegions": ["trapezius_L"]
   },
   {
     "name": "Teres Major R",
     "stl": "FMA32551",
-    "color": 11028552
+    "color": 11028552,
+    "originBones": ["Right Scapula"],
+    "insertionBones": ["Right Humerus"]
   },
   {
     "name": "Teres Major L",
     "stl": "FMA32552",
-    "color": 11028552
+    "color": 11028552,
+    "originBones": ["Left Scapula"],
+    "insertionBones": ["Left Humerus"]
   },
   {
     "name": "Teres Minor R",
     "stl": "FMA32553",
-    "color": 11028552
+    "color": 11028552,
+    "originBones": ["Right Scapula"],
+    "insertionBones": ["Right Humerus"]
   },
   {
     "name": "Teres Minor L",
     "stl": "FMA32554",
-    "color": 11028552
+    "color": 11028552,
+    "originBones": ["Left Scapula"],
+    "insertionBones": ["Left Humerus"]
   },
   {
     "name": "Subscapularis R",
     "stl": "FMA13414",
-    "color": 10502208
+    "color": 10502208,
+    "originBones": ["Right Scapula"],
+    "insertionBones": ["Right Humerus"]
   },
   {
     "name": "Subscapularis L",
     "stl": "FMA13415",
-    "color": 10502208
+    "color": 10502208,
+    "originBones": ["Left Scapula"],
+    "insertionBones": ["Left Humerus"]
   },
   {
     "name": "Serratus Ant. R",
     "stl": "FMA13398",
-    "color": 12077128
+    "color": 12077128,
+    "originBones": ["Right 1st Rib", "Right 2nd Rib", "Right 3rd Rib"],
+    "insertionBones": ["Right Scapula"],
+    "fasciaRegions": ["pectoral_R"]
   },
   {
     "name": "Serratus Ant. L",
     "stl": "FMA13399",
-    "color": 12077128
+    "color": 12077128,
+    "originBones": ["Left 1st Rib", "Left 2nd Rib", "Left 3rd Rib"],
+    "insertionBones": ["Left Scapula"],
+    "fasciaRegions": ["pectoral_L"]
   },
   {
     "name": "Subclavius R",
     "stl": "FMA13412",
-    "color": 11028552
+    "color": 11028552,
+    "originBones": ["Right 1st Rib"],
+    "insertionBones": ["Right Clavicle"]
   },
   {
     "name": "Subclavius L",
     "stl": "FMA13411",
-    "color": 11028552
+    "color": 11028552,
+    "originBones": ["Left 1st Rib"],
+    "insertionBones": ["Left Clavicle"]
   }
 ]

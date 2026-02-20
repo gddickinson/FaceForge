@@ -19,7 +19,8 @@ class SceneBuilder:
               │           └── lower_teeth
               ├── faceGroup
               ├── stlMuscleGroup (jaw muscles)
-              ├── exprMuscleGroup (expression muscles)
+              ├── exprMuscleGroup (expression muscles, excl. Platysma)
+              ├── platysmaGroup (Platysma R/L — identity transform)
               ├── faceFeatureGroup
               ├── neckMuscleGroup
               ├── vertebraeGroup
@@ -28,6 +29,7 @@ class SceneBuilder:
               ├── ribCageGroup
               ├── pelvisGroup
               ├── brainGroup (independent of skull visibility)
+              ├── fasciaGroup (debug: fascia constraint markers)
               ├── [limb groups...]
               └── [on-demand: body muscles, organs, vasculature]
     """
@@ -63,6 +65,9 @@ class SceneBuilder:
         expr_muscle_group = SceneNode(name="exprMuscleGroup")
         body_root.add(expr_muscle_group)
 
+        platysma_group = SceneNode(name="platysmaGroup")
+        body_root.add(platysma_group)
+
         face_feature_group = SceneNode(name="faceFeatureGroup")
         body_root.add(face_feature_group)
 
@@ -76,6 +81,10 @@ class SceneBuilder:
         body_root.add(brain_group)
         brain_group.visible = False
 
+        fascia_group = SceneNode(name="fasciaGroup")
+        body_root.add(fascia_group)
+        fascia_group.visible = False
+
         # Register visibility toggles
         # Head soft tissue hidden by default for performance (skeleton-only view)
         self.visibility.register("skull", skull_group)
@@ -84,13 +93,16 @@ class SceneBuilder:
         self.visibility.register("jaw_muscles", stl_muscle_group)
         stl_muscle_group.visible = False
         self.visibility.register("expression_muscles", expr_muscle_group)
+        self.visibility.register("expression_muscles", platysma_group)
         expr_muscle_group.visible = False
+        platysma_group.visible = False
         self.visibility.register("face_features", face_feature_group)
         face_feature_group.visible = False
         self.visibility.register("neck_muscles", neck_muscle_group)
         neck_muscle_group.visible = False
         self.visibility.register("vertebrae", vertebrae_group)
         self.visibility.register("brain", brain_group)
+        self.visibility.register("fascia", fascia_group)
 
         named = {
             "bodyRoot": body_root,
@@ -98,10 +110,12 @@ class SceneBuilder:
             "faceGroup": face_group,
             "stlMuscleGroup": stl_muscle_group,
             "exprMuscleGroup": expr_muscle_group,
+            "platysmaGroup": platysma_group,
             "faceFeatureGroup": face_feature_group,
             "neckMuscleGroup": neck_muscle_group,
             "vertebraeGroup": vertebrae_group,
             "brainGroup": brain_group,
+            "fasciaGroup": fascia_group,
         }
 
         return scene, named

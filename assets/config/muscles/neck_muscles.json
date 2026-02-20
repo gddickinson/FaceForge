@@ -6,7 +6,9 @@
     "upperLevel": 0,
     "lowerLevel": 10,
     "headAttachFrac": 0.3,
-    "lowerAttach": "shoulder"
+    "lowerAttach": "shoulder",
+    "lowerBones": ["Right Clavicle"],
+    "bodyFollowOverride": 0.15
   },
   {
     "name": "Sternocleidomastoid L",
@@ -15,7 +17,9 @@
     "upperLevel": 0,
     "lowerLevel": 10,
     "headAttachFrac": 0.3,
-    "lowerAttach": "shoulder"
+    "lowerAttach": "shoulder",
+    "lowerBones": ["Left Clavicle"],
+    "bodyFollowOverride": 0.15
   },
   {
     "name": "Sternohyoid R",
@@ -24,7 +28,8 @@
     "upperLevel": 1,
     "lowerLevel": 10,
     "headAttachFrac": 0.15,
-    "lowerAttach": "shoulder"
+    "lowerAttach": "shoulder",
+    "lowerBones": ["Right Clavicle"]
   },
   {
     "name": "Sternohyoid L",
@@ -33,7 +38,8 @@
     "upperLevel": 1,
     "lowerLevel": 10,
     "headAttachFrac": 0.15,
-    "lowerAttach": "shoulder"
+    "lowerAttach": "shoulder",
+    "lowerBones": ["Left Clavicle"]
   },
   {
     "name": "Omohyoid R",
@@ -42,7 +48,9 @@
     "upperLevel": 1,
     "lowerLevel": 10,
     "headAttachFrac": 0.15,
-    "lowerAttach": "shoulder"
+    "lowerAttach": "shoulder",
+    "lowerBones": ["Right Scapula"],
+    "bodyFollowOverride": 0.14
   },
   {
     "name": "Omohyoid L",
@@ -51,7 +59,9 @@
     "upperLevel": 1,
     "lowerLevel": 10,
     "headAttachFrac": 0.15,
-    "lowerAttach": "shoulder"
+    "lowerAttach": "shoulder",
+    "lowerBones": ["Left Scapula"],
+    "bodyFollowOverride": 0.14
   },
   {
     "name": "Sternothyroid R",
@@ -60,7 +70,8 @@
     "upperLevel": 2,
     "lowerLevel": 10,
     "headAttachFrac": 0.1,
-    "lowerAttach": "shoulder"
+    "lowerAttach": "shoulder",
+    "lowerBones": ["Right Clavicle"]
   },
   {
     "name": "Sternothyroid L",
@@ -69,7 +80,8 @@
     "upperLevel": 2,
     "lowerLevel": 10,
     "headAttachFrac": 0.1,
-    "lowerAttach": "shoulder"
+    "lowerAttach": "shoulder",
+    "lowerBones": ["Left Clavicle"]
   },
   {
     "name": "Thyrohyoid R",
@@ -77,7 +89,9 @@
     "color": 12077128,
     "upperLevel": 1,
     "lowerLevel": 3,
-    "headAttachFrac": 0.4
+    "headAttachFrac": 0.4,
+    "lowerAttach": "thoracic",
+    "lowerBones": ["Thoracic Vertebra T1"]
   },
   {
     "name": "Thyrohyoid L",
@@ -85,7 +99,9 @@
     "color": 12077128,
     "upperLevel": 1,
     "lowerLevel": 3,
-    "headAttachFrac": 0.4
+    "headAttachFrac": 0.4,
+    "lowerAttach": "thoracic",
+    "lowerBones": ["Thoracic Vertebra T1"]
   },
   {
     "name": "Scalene Anterior R",
@@ -94,7 +110,8 @@
     "upperLevel": 2,
     "lowerLevel": 8,
     "headAttachFrac": 0.0,
-    "lowerAttach": "ribcage"
+    "lowerAttach": "ribcage",
+    "lowerBones": ["Right 1st Rib"]
   },
   {
     "name": "Scalene Anterior L",
@@ -103,7 +120,8 @@
     "upperLevel": 2,
     "lowerLevel": 8,
     "headAttachFrac": 0.0,
-    "lowerAttach": "ribcage"
+    "lowerAttach": "ribcage",
+    "lowerBones": ["Left 1st Rib"]
   },
   {
     "name": "Scalene Medius R",
@@ -112,7 +130,8 @@
     "upperLevel": 1,
     "lowerLevel": 8,
     "headAttachFrac": 0.0,
-    "lowerAttach": "ribcage"
+    "lowerAttach": "ribcage",
+    "lowerBones": ["Right 1st Rib"]
   },
   {
     "name": "Scalene Medius L",
@@ -121,7 +140,8 @@
     "upperLevel": 1,
     "lowerLevel": 8,
     "headAttachFrac": 0.0,
-    "lowerAttach": "ribcage"
+    "lowerAttach": "ribcage",
+    "lowerBones": ["Left 1st Rib"]
   },
   {
     "name": "Scalene Posterior R",
@@ -130,7 +150,8 @@
     "upperLevel": 3,
     "lowerLevel": 9,
     "headAttachFrac": 0.0,
-    "lowerAttach": "ribcage"
+    "lowerAttach": "ribcage",
+    "lowerBones": ["Right 2nd Rib"]
   },
   {
     "name": "Scalene Posterior L",
@@ -139,7 +160,8 @@
     "upperLevel": 3,
     "lowerLevel": 9,
     "headAttachFrac": 0.0,
-    "lowerAttach": "ribcage"
+    "lowerAttach": "ribcage",
+    "lowerBones": ["Left 2nd Rib"]
   },
   {
     "name": "Levator Scapulae R",
@@ -148,7 +170,9 @@
     "upperLevel": 0,
     "lowerLevel": 10,
     "headAttachFrac": 0.2,
-    "lowerAttach": "shoulder"
+    "lowerAttach": "shoulder",
+    "lowerBones": ["Right Scapula"],
+    "bodyFollowOverride": 0.14
   },
   {
     "name": "Levator Scapulae L",
@@ -157,7 +181,9 @@
     "upperLevel": 0,
     "lowerLevel": 10,
     "headAttachFrac": 0.2,
-    "lowerAttach": "shoulder"
+    "lowerAttach": "shoulder",
+    "lowerBones": ["Left Scapula"],
+    "bodyFollowOverride": 0.14
   },
   {
     "name": "Longus Colli Sup. Obl. R",
@@ -165,7 +191,9 @@
     "color": 10044484,
     "upperLevel": 0,
     "lowerLevel": 4,
-    "headAttachFrac": 0.2
+    "headAttachFrac": 0.2,
+    "lowerAttach": "thoracic",
+    "lowerBones": ["Thoracic Vertebra T1"]
   },
   {
     "name": "Longus Colli Sup. Obl. L",
@@ -173,7 +201,9 @@
     "color": 10044484,
     "upperLevel": 0,
     "lowerLevel": 4,
-    "headAttachFrac": 0.2
+    "headAttachFrac": 0.2,
+    "lowerAttach": "thoracic",
+    "lowerBones": ["Thoracic Vertebra T1"]
   },
   {
     "name": "Longus Colli Vert. R",
@@ -182,7 +212,8 @@
     "upperLevel": 1,
     "lowerLevel": 9,
     "headAttachFrac": 0.0,
-    "lowerAttach": "thoracic"
+    "lowerAttach": "thoracic",
+    "lowerBones": ["Thoracic Vertebra T3"]
   },
   {
     "name": "Longus Colli Vert. L",
@@ -191,7 +222,8 @@
     "upperLevel": 1,
     "lowerLevel": 9,
     "headAttachFrac": 0.0,
-    "lowerAttach": "thoracic"
+    "lowerAttach": "thoracic",
+    "lowerBones": ["Thoracic Vertebra T3"]
   },
   {
     "name": "Longus Colli Inf. Obl. R",
@@ -200,7 +232,8 @@
     "upperLevel": 4,
     "lowerLevel": 9,
     "headAttachFrac": 0.0,
-    "lowerAttach": "thoracic"
+    "lowerAttach": "thoracic",
+    "lowerBones": ["Thoracic Vertebra T3"]
   },
   {
     "name": "Longus Colli Inf. Obl. L",
@@ -209,7 +242,8 @@
     "upperLevel": 4,
     "lowerLevel": 9,
     "headAttachFrac": 0.0,
-    "lowerAttach": "thoracic"
+    "lowerAttach": "thoracic",
+    "lowerBones": ["Thoracic Vertebra T3"]
   },
   {
     "name": "Longus Capitis R",
@@ -217,7 +251,9 @@
     "color": 10044484,
     "upperLevel": 0,
     "lowerLevel": 5,
-    "headAttachFrac": 0.3
+    "headAttachFrac": 0.3,
+    "lowerAttach": "thoracic",
+    "lowerBones": ["Thoracic Vertebra T1"]
   },
   {
     "name": "Longus Capitis L",
@@ -225,39 +261,45 @@
     "color": 10044484,
     "upperLevel": 0,
     "lowerLevel": 5,
-    "headAttachFrac": 0.3
+    "headAttachFrac": 0.3,
+    "lowerAttach": "thoracic",
+    "lowerBones": ["Thoracic Vertebra T1"]
   },
   {
     "name": "Rectus Cap. Anterior R",
     "stl": "FMA46313",
     "color": 10044484,
     "upperLevel": 0,
-    "lowerLevel": 1,
-    "headAttachFrac": 0.7
+    "lowerLevel": 0,
+    "headAttachFrac": 0.9,
+    "lowerAttach": "thoracic"
   },
   {
     "name": "Rectus Cap. Anterior L",
     "stl": "FMA46314",
     "color": 10044484,
     "upperLevel": 0,
-    "lowerLevel": 1,
-    "headAttachFrac": 0.7
+    "lowerLevel": 0,
+    "headAttachFrac": 0.9,
+    "lowerAttach": "thoracic"
   },
   {
     "name": "Rectus Cap. Lateralis R",
     "stl": "FMA46317",
     "color": 10044484,
     "upperLevel": 0,
-    "lowerLevel": 1,
-    "headAttachFrac": 0.7
+    "lowerLevel": 0,
+    "headAttachFrac": 0.9,
+    "lowerAttach": "thoracic"
   },
   {
     "name": "Rectus Cap. Lateralis L",
     "stl": "FMA46318",
     "color": 10044484,
     "upperLevel": 0,
-    "lowerLevel": 1,
-    "headAttachFrac": 0.7
+    "lowerLevel": 0,
+    "headAttachFrac": 0.9,
+    "lowerAttach": "thoracic"
   },
   {
     "name": "Rectus Cap. Post. Maj. R",
@@ -265,7 +307,8 @@
     "color": 8929344,
     "upperLevel": 0,
     "lowerLevel": 1,
-    "headAttachFrac": 0.7
+    "headAttachFrac": 0.85,
+    "lowerAttach": "thoracic"
   },
   {
     "name": "Rectus Cap. Post. Maj. L",
@@ -273,7 +316,8 @@
     "color": 8929344,
     "upperLevel": 0,
     "lowerLevel": 1,
-    "headAttachFrac": 0.7
+    "headAttachFrac": 0.85,
+    "lowerAttach": "thoracic"
   },
   {
     "name": "Rectus Cap. Post. Min. R",
@@ -281,7 +325,8 @@
     "color": 8929344,
     "upperLevel": 0,
     "lowerLevel": 0,
-    "headAttachFrac": 0.9
+    "headAttachFrac": 0.9,
+    "lowerAttach": "thoracic"
   },
   {
     "name": "Rectus Cap. Post. Min. L",
@@ -289,7 +334,8 @@
     "color": 8929344,
     "upperLevel": 0,
     "lowerLevel": 0,
-    "headAttachFrac": 0.9
+    "headAttachFrac": 0.9,
+    "lowerAttach": "thoracic"
   },
   {
     "name": "Obliquus Cap. Sup. R",
@@ -297,7 +343,8 @@
     "color": 8929344,
     "upperLevel": 0,
     "lowerLevel": 0,
-    "headAttachFrac": 0.8
+    "headAttachFrac": 0.85,
+    "lowerAttach": "thoracic"
   },
   {
     "name": "Obliquus Cap. Sup. L",
@@ -305,7 +352,8 @@
     "color": 8929344,
     "upperLevel": 0,
     "lowerLevel": 0,
-    "headAttachFrac": 0.8
+    "headAttachFrac": 0.85,
+    "lowerAttach": "thoracic"
   },
   {
     "name": "Obliquus Cap. Inf. R",
@@ -313,7 +361,8 @@
     "color": 8929344,
     "upperLevel": 0,
     "lowerLevel": 1,
-    "headAttachFrac": 0.6
+    "headAttachFrac": 0.75,
+    "lowerAttach": "thoracic"
   },
   {
     "name": "Obliquus Cap. Inf. L",
@@ -321,6 +370,7 @@
     "color": 8929344,
     "upperLevel": 0,
     "lowerLevel": 1,
-    "headAttachFrac": 0.6
+    "headAttachFrac": 0.75,
+    "lowerAttach": "thoracic"
   }
 ]

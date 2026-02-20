@@ -21,6 +21,9 @@ from faceforge.anatomy.head_rotation import HeadRotationSystem
 from faceforge.anatomy.facs import FACSEngine
 from faceforge.body.skeleton import SkeletonBuilder
 from faceforge.body.joint_pivots import JointPivotSetup
+from faceforge.anatomy.bone_anchors import BoneAnchorRegistry
+from faceforge.anatomy.platysma import PlatysmaHandler
+from faceforge.anatomy.fascia import FasciaSystem, build_anatomical_fascia_regions
 from faceforge.constants import STL_DIR, set_jaw_pivot
 
 logger = logging.getLogger(__name__)
@@ -66,6 +69,9 @@ class LoadingPipeline:
         self.neck_constraints: Optional[NeckConstraintSolver] = None
         self.skeleton: Optional[SkeletonBuilder] = None
         self.joint_setup: Optional[JointPivotSetup] = None
+        self.bone_anchors: Optional[BoneAnchorRegistry] = None
+        self.platysma: Optional[PlatysmaHandler] = None
+        self.fascia: Optional[FasciaSystem] = None
 
     def _report(self, phase: str, progress: float) -> None:
         self.event_bus.publish(EventType.LOADING_PHASE, phase=phase)
@@ -130,6 +136,15 @@ class LoadingPipeline:
             self.expression_muscles = ExpressionMuscleSystem(defs, self.transform)
             expr_group = self.expression_muscles.load(stl_dir)
             self.nodes["exprMuscleGroup"].add(expr_group)
+
+            # Reparent Platysma R/L from exprMuscleGroup to platysmaGroup
+            # (platysmaGroup has identity transform — no group rotation)
+            platysma_group = self.nodes.get("platysmaGroup")
+            if platysma_group is not None:
+                n = PlatysmaHandler.reparent_to_group(
+                    self.expression_muscles.muscle_data, platysma_group,
+                )
+                logger.info("Reparented %d Platysma muscle(s) to platysmaGroup", n)
         except Exception as e:
             logger.warning("Expression muscles failed: %s", e)
             self.expression_muscles = None
@@ -171,6 +186,14 @@ class LoadingPipeline:
         # Head rotation system
         self.head_rotation = HeadRotationSystem(jaw_pivot=self.jaw_pivot)
 
+        # Platysma body-spanning handler (registers from expression muscles)
+        if self.expression_muscles is not None:
+            self.platysma = PlatysmaHandler(head_pivot=self.jaw_pivot)
+            self.platysma.register(self.expression_muscles.muscle_data)
+            if self.platysma.registered:
+                logger.info("Platysma handler registered (%d muscles)",
+                            len(self.platysma._platysma))
+
         # Neck constraint solver
         try:
             limits_data = load_config("joint_limits.json")
@@ -208,6 +231,53 @@ class LoadingPipeline:
 
         logger.info("Body skeleton loaded: %d groups, %d pivots",
                      len(self.skeleton.groups), len(self.joint_setup.pivots))
+
+        # Build BoneAnchorRegistry from skeleton nodes + thoracic pivots
+        self.bone_anchors = BoneAnchorRegistry()
+        self.bone_anchors.register_bones(bone_nodes)
+
+        # Also register thoracic pivot nodes (used by deep prevertebral muscles)
+        thoracic_group = self.skeleton.groups.get("thoracic")
+        if thoracic_group is not None:
+            for child in thoracic_group.children:
+                if child.name and child.name not in bone_nodes:
+                    self.bone_anchors.register_bones({child.name: child})
+
+        # Register rib nodes for scalene attachment
+        rib_group = self.skeleton.groups.get("ribs")
+        if rib_group is not None:
+            for child in rib_group.children:
+                if child.name and child.name not in bone_nodes:
+                    self.bone_anchors.register_bones({child.name: child})
+
+        # Force world matrix update so bone positions are correct for snapshot.
+        # The pipeline doesn't hold a Scene reference, but body_root is the
+        # common ancestor of all skeleton nodes.
+        body_root.update_world_matrix(force=True)
+
+        # Snapshot rest positions (now that world matrices are current)
+        self.bone_anchors.snapshot_rest_positions()
+        logger.info("Bone anchor registry: %d bones registered",
+                     len(self.bone_anchors.bone_names))
+
+        # Build fascia constraint system from skeleton bones
+        self.fascia = FasciaSystem(build_anatomical_fascia_regions(), self.bone_anchors)
+        self.fascia.snapshot_rest()
+        if self.platysma is not None:
+            self.platysma.set_fascia_system(self.fascia)
+            logger.info("Fascia system wired to Platysma handler")
+
+        # Create fascia visualization markers
+        from faceforge.anatomy.fascia import create_fascia_markers
+        fascia_group = self.nodes.get("fasciaGroup")
+        if fascia_group is not None:
+            markers = create_fascia_markers(self.fascia)
+            fascia_group.add(markers)
+            logger.info("Fascia markers created (%d regions)", len(self.fascia.region_names))
+
+        # Wire bone registry to neck muscles for per-muscle pinning
+        if self.neck_muscles is not None:
+            self.neck_muscles.set_bone_registry(self.bone_anchors)
 
         self._report("Skeleton complete", 1.0)
         self.event_bus.publish(EventType.LOADING_COMPLETE)

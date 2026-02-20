@@ -147,7 +147,7 @@ class GLRenderer:
         total = len(opaque) + len(transparent)
         self._frame_count += 1
         if self._frame_count <= 3 or (self._frame_count % 300 == 0 and total > 0):
-            logger.info(
+            logger.debug(
                 "Frame %d: %d meshes (%d opaque, %d transparent), viewport %dx%d",
                 self._frame_count, total, len(opaque), len(transparent),
                 self._width, self._height,

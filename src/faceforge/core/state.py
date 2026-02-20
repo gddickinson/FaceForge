@@ -233,6 +233,9 @@ class ConstraintState:
     attachments: list = field(default_factory=list)
     tensions: list = field(default_factory=list)
     total_excess: float = 0.0
+    # Smoothed total_excess to prevent frame-to-frame oscillation / jitter.
+    # Head rotation soft-clamp reads this instead of raw total_excess.
+    smoothed_total_excess: float = 0.0
     spine_compensation_yaw: float = 0.0
     spine_compensation_pitch: float = 0.0
     spine_compensation_roll: float = 0.0

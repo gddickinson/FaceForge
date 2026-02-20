@@ -47,6 +47,9 @@ class SkinBinding:
     rest_neighbor_dist: Optional[np.ndarray] = None  # (V,) rest distance to neighbor avg
     boundary_blend: Optional[np.ndarray] = None    # (V,) fraction of same-chain neighbors (0=all different, 1=all same)
     smooth_zone: Optional[np.ndarray] = None       # (V,) propagated boundary weight for displacement smoothing
+    # Per-muscle head-follow configuration (Layer 1)
+    head_follow_config: Optional[dict] = None  # {"upperFrac": float, "lowerFrac": float}
+    muscle_name: Optional[str] = None  # for debug/lookup
 
 
 class SoftTissueSkinning:
@@ -128,6 +131,10 @@ class SoftTissueSkinning:
         self.chain_count: int = 0
         self._dirty: bool = True
         self._last_signature: tuple = ()
+        # Muscle attachment system for bone pinning + stretch limits (Layers 2-3)
+        self.attachment_system = None  # MuscleAttachmentSystem or None
+        # Bone collision system for penetration resolution (Layer 4)
+        self.collision_system = None  # BoneCollisionSystem or None
 
         # Registration-time filter constants (tunable for optimization).
         # Defaults match the original hard-coded values.
@@ -206,6 +213,8 @@ class SoftTissueSkinning:
         spatial_limit: float | None = None,
         chain_z_margin: float | None = None,
         use_geodesic: bool = True,
+        head_follow_config: dict | None = None,
+        muscle_name: str | None = None,
     ) -> None:
         """Assign each vertex to nearest bone segment with blend weights.
 
@@ -699,9 +708,221 @@ class SoftTissueSkinning:
             is_muscle=is_muscle,
             base_color=mesh.material.color,
             rest_y_span=rest_y_span,
+            head_follow_config=head_follow_config,
+            muscle_name=muscle_name,
         )
         self._build_neighbor_data(binding, precomputed_edges=_precomputed_edges)
         self.bindings.append(binding)
+
+    def snap_hierarchy_blends(self, child_chain_ids: set[int]) -> None:
+        """Remove cross-chain blending between child chains and parent chains.
+
+        Digit chain joints inherit all parent transforms (wrist, elbow,
+        shoulder) via the scene graph hierarchy.  Cross-chain blending
+        between a digit chain and the forearm/arm chain double-counts
+        the parent contribution, making the vertex only partially follow
+        finger curl.
+
+        This snaps any muscle vertex whose primary and secondary chains
+        straddle the child/parent boundary to 100% primary weight.
+
+        Parameters
+        ----------
+        child_chain_ids : set of int
+            Chain IDs of child chains (e.g. hand digit chains, foot digit
+            chains) that inherit parent transforms via scene graph.
+        """
+        if not child_chain_ids:
+            return
+
+        all_chain_ids = np.array(
+            [j.chain_id for j in self.joints], dtype=np.int32,
+        )
+        max_cid = int(all_chain_ids.max()) + 1
+        is_child = np.zeros(max_cid, dtype=bool)
+        for cid in child_chain_ids:
+            if cid < max_cid:
+                is_child[cid] = True
+
+        for binding in self.bindings:
+            if not binding.is_muscle:
+                continue
+            blended = binding.weights < 1.0
+            if not np.any(blended):
+                continue
+
+            b_idx = np.where(blended)[0]
+            pri_cid = all_chain_ids[binding.joint_indices[b_idx]]
+            sec_cid = all_chain_ids[binding.secondary_indices[b_idx]]
+            pri_child = is_child[pri_cid]
+            sec_child = is_child[sec_cid]
+
+            # Snap where one is child and the other isn't
+            mismatch = pri_child != sec_child
+            if np.any(mismatch):
+                snap_idx = b_idx[mismatch]
+                binding.weights[snap_idx] = 1.0
+                binding.secondary_indices[snap_idx] = binding.joint_indices[snap_idx]
+
+    def reassign_orphan_vertices(self, child_chain_ids: set[int]) -> int:
+        """Reassign non-digit muscle vertices that should follow digit chains.
+
+        After ``snap_hierarchy_blends``, some muscle vertices at the
+        digit/limb transition may remain on the limb chain while their
+        mesh neighbors are on digit chains.  These orphan vertices follow
+        wrist movement but not finger curl, causing visible spikes.
+
+        Two phases:
+
+        Phase 1 — topology voting (iterative):
+            Non-child vertices whose majority of mesh neighbors are on
+            child chains get reassigned to the nearest child-chain
+            neighbor's joint.  Iterates to cascade.
+
+        Phase 2 — spatial proximity:
+            Remaining non-child vertices that are closer to a digit-chain
+            joint than to their currently assigned joint get reassigned.
+            This catches clusters of orphan vertices (e.g. the middle
+            finger tendon) that can't reach majority through topology
+            alone because they form a connected non-child group.
+
+        Returns the total number of vertices reassigned.
+        """
+        if not child_chain_ids:
+            return 0
+
+        all_chain_ids = np.array(
+            [j.chain_id for j in self.joints], dtype=np.int32,
+        )
+        max_cid = int(all_chain_ids.max()) + 1
+        is_child_lut = np.zeros(max_cid, dtype=bool)
+        for cid in child_chain_ids:
+            if cid < max_cid:
+                is_child_lut[cid] = True
+
+        # Collect digit-chain joint indices and positions for Phase 2
+        child_ji_list = [
+            j_idx for j_idx in range(len(self.joints))
+            if is_child_lut[all_chain_ids[j_idx]]
+        ]
+        child_j_pos = (
+            np.array([self.joints[j].rest_world[:3, 3] for j in child_ji_list])
+            if child_ji_list else np.empty((0, 3))
+        )
+
+        total = 0
+        for binding in self.bindings:
+            if not binding.is_muscle or binding.edge_pairs is None:
+                continue
+
+            ji = binding.joint_indices
+            si = binding.secondary_indices
+            w = binding.weights
+            V = len(ji)
+            edges = binding.edge_pairs  # (E, 2) unique undirected edges
+            positions = binding.mesh.rest_positions.reshape(-1, 3).astype(
+                np.float64,
+            )
+
+            # ── Phase 1: topology-based majority voting ──
+            for _pass in range(5):
+                is_child = is_child_lut[all_chain_ids[ji]]
+                if np.all(is_child) or not np.any(is_child):
+                    break
+
+                child_count = np.zeros(V, dtype=np.int32)
+                total_count = np.zeros(V, dtype=np.int32)
+                e0, e1 = edges[:, 0], edges[:, 1]
+                np.add.at(child_count, e0, is_child[e1].astype(np.int32))
+                np.add.at(child_count, e1, is_child[e0].astype(np.int32))
+                np.add.at(total_count, e0, 1)
+                np.add.at(total_count, e1, 1)
+
+                orphan = (
+                    ~is_child
+                    & (total_count > 0)
+                    & (child_count * 2 > total_count)
+                )
+                if not np.any(orphan):
+                    break
+
+                orphan_idx = np.where(orphan)[0]
+                for vi in orphan_idx:
+                    mask_a = e0 == vi
+                    mask_b = e1 == vi
+                    neighbors = np.concatenate([e1[mask_a], e0[mask_b]])
+                    child_nbrs = neighbors[is_child[neighbors]]
+                    if len(child_nbrs) == 0:
+                        continue
+                    dists = np.linalg.norm(
+                        positions[child_nbrs] - positions[vi], axis=1,
+                    )
+                    nearest = child_nbrs[np.argmin(dists)]
+                    ji[vi] = ji[nearest]
+                    w[vi] = 1.0
+                    si[vi] = ji[vi]
+
+                total += len(orphan_idx)
+
+            # ── Phase 2: spatial proximity to digit joints ──
+            # Catches clusters of non-child vertices (e.g. middle finger
+            # tendon) where no single vertex reaches majority through
+            # topology.  If a non-child vertex is closer to any digit
+            # joint than to any non-digit joint, reassign it.
+            #
+            # Important: compare against the nearest NON-CHILD joint, not
+            # the assigned joint.  A vertex at t=0.7 on the elbow→wrist
+            # segment is assigned to the elbow (far away) but physically
+            # near the wrist.  Using the assigned joint would incorrectly
+            # reassign mid-forearm vertices whose elbow is farther than
+            # the nearest mc joint.
+            if len(child_ji_list) == 0:
+                continue
+
+            is_child = is_child_lut[all_chain_ids[ji]]
+            if np.all(is_child) or not np.any(is_child):
+                continue
+
+            remaining = np.where(~is_child)[0]
+            rem_pos = positions[remaining]  # (R, 3)
+
+            # Distance to nearest digit joint
+            d_to_digit = np.linalg.norm(
+                rem_pos[:, np.newaxis, :] - child_j_pos[np.newaxis, :, :],
+                axis=2,
+            )  # (R, D)
+            nearest_d_idx = np.argmin(d_to_digit, axis=1)  # (R,)
+            d_nearest_digit = d_to_digit[
+                np.arange(len(remaining)), nearest_d_idx,
+            ]  # (R,)
+
+            # Distance to nearest non-child joint (e.g. wrist, elbow)
+            non_child_ji_list = [
+                j_idx for j_idx in range(len(self.joints))
+                if not is_child_lut[all_chain_ids[j_idx]]
+            ]
+            if not non_child_ji_list:
+                continue
+            non_child_j_pos = np.array([
+                self.joints[j].rest_world[:3, 3] for j in non_child_ji_list
+            ])  # (P, 3)
+            d_to_parent = np.linalg.norm(
+                rem_pos[:, np.newaxis, :] - non_child_j_pos[np.newaxis, :, :],
+                axis=2,
+            )  # (R, P)
+            d_nearest_parent = d_to_parent.min(axis=1)  # (R,)
+
+            # Reassign if digit joint is closer than any non-digit joint
+            closer = d_nearest_digit < d_nearest_parent
+            if np.any(closer):
+                closer_idx = remaining[closer]
+                new_ji = np.array(child_ji_list)[nearest_d_idx[closer]]
+                ji[closer_idx] = new_ji
+                w[closer_idx] = 1.0
+                si[closer_idx] = new_ji
+                total += int(np.sum(closer))
+
+        return total
 
     # Number of Laplacian smoothing iterations for boundary weights.
     SMOOTH_ITERATIONS = 5
@@ -1382,9 +1603,29 @@ class SoftTissueSkinning:
             # Neighbor-stretch clamping: snap back vertices that are
             # anomalously far from their mesh neighbors (mis-binding safety net).
             # Multiple passes catch cascading shifts from clamped neighbors.
-            for _clamp_pass in range(self.CLAMP_PASSES):
-                if self._apply_neighbor_clamp(binding) == 0:
-                    break
+            # Muscles skip this — they span multiple joints (e.g. forearm to
+            # fingertips) and the cross-chain stretch is intentional.  Muscles
+            # have their own Layer 2-4 correction (bone pinning, stretch clamp,
+            # collision) which handle positioning correctly.
+            if not binding.is_muscle:
+                for _clamp_pass in range(self.CLAMP_PASSES):
+                    if self._apply_neighbor_clamp(binding) == 0:
+                        break
+
+            # Bone attachment pinning for muscles (Layer 2)
+            if binding.is_muscle and self.attachment_system is not None:
+                self.attachment_system.apply_bone_pinning(binding)
+
+            # Per-muscle stretch clamping (Layer 3)
+            if binding.is_muscle and self.attachment_system is not None:
+                self.attachment_system.apply_stretch_clamp(binding)
+
+            # Bone collision resolution (Layer 4)
+            if binding.is_muscle and self.collision_system is not None:
+                self.collision_system.resolve_penetrations(
+                    binding.mesh.geometry.positions,
+                    binding.mesh.rest_positions,
+                )
 
             # Boundary displacement smoothing: reduce seams at chain transitions.
             # Runs after clamping, then a final clamp pass catches any new

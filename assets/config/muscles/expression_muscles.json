@@ -303,7 +303,10 @@
     "color": 13656160,
     "auMap": {
       "AU20": 0.5
-    }
+    },
+    "fasciaRegions": [
+      "pectoral_R", "investing_R", "supraclavicular_R", "deltoid_R", "trapezius_R"
+    ]
   },
   {
     "name": "Platysma L",
@@ -311,14 +314,18 @@
     "color": 13656160,
     "auMap": {
       "AU20": 0.5
-    }
+    },
+    "fasciaRegions": [
+      "pectoral_L", "investing_L", "supraclavicular_L", "deltoid_L", "trapezius_L"
+    ]
   },
   {
     "name": "Occipitalis R",
     "stl": "FMA46761",
     "color": 13395558,
     "auMap": {
-      "AU4": 0.3
+      "AU1": 0.15,
+      "AU2": 0.15
     }
   },
   {
@@ -326,7 +333,8 @@
     "stl": "FMA46762",
     "color": 13395558,
     "auMap": {
-      "AU4": 0.3
+      "AU1": 0.15,
+      "AU2": 0.15
     }
   },
   {
@@ -334,7 +342,7 @@
     "stl": "FMA46763",
     "color": 13395558,
     "auMap": {
-      "AU6": 0.2
+      "AU6": 0.1
     }
   },
   {
@@ -342,7 +350,23 @@
     "stl": "FMA46764",
     "color": 13395558,
     "auMap": {
-      "AU6": 0.2
+      "AU6": 0.1
+    }
+  },
+  {
+    "name": "Lev. Palpebrae Sup. R",
+    "stl": "FMA49041",
+    "color": 12277077,
+    "auMap": {
+      "AU5": 1.0
+    }
+  },
+  {
+    "name": "Lev. Palpebrae Sup. L",
+    "stl": "FMA49042",
+    "color": 12277077,
+    "auMap": {
+      "AU5": 1.0
     }
   }
 ]
