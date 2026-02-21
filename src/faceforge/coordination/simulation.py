@@ -92,6 +92,9 @@ class Simulation:
         # Back-of-neck muscle body-end pinning handler
         self.back_neck_muscles = None  # BackNeckMuscleHandler or None
 
+        # Physiological simulations (set by app.py)
+        self.physiology = None  # PhysiologySystem or None
+
         # Scene animation player (set by app.py when scene mode wired)
         self.anim_player = None  # AnimationPlayer or None
 
@@ -263,6 +266,17 @@ class Simulation:
 
         # 13. Update scene graph matrices
         self.scene.update()
+
+        # 14. Physiological simulations (after scene graph, works on current positions)
+        if self.physiology is not None:
+            positions_modified = self.physiology.step(body, dt)
+            # When physiology modified mesh positions, invalidate the soft tissue
+            # skinning cache so it recalculates from scratch next frame.  Without
+            # this, the signature-based early-exit would leave stale positions
+            # (including our delta) in place, and the next physiology step would
+            # stack another delta on top — causing unbounded growth.
+            if positions_modified and self.soft_tissue is not None:
+                self.soft_tissue._last_signature = ()
 
         # Frame counter
         self.state.frame_count += 1

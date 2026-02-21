@@ -165,6 +165,16 @@ class BodyState:
     breath_phase_body: float = 0.0
     auto_breath_body: bool = False
 
+    # Physiology
+    heart_rate: float = 72.0           # BPM (30-200)
+    auto_heartbeat: bool = False
+    auto_pulse_wave: bool = False
+    auto_lung_expand: bool = False
+    peristalsis_rate: float = 0.5      # 0-1 maps to slow-fast
+    auto_peristalsis: bool = False
+    fasciculation_intensity: float = 0.3
+    auto_fasciculation: bool = False
+
     # Hands
     finger_curl_r: float = 0.0
     finger_spread_r: float = 0.0
@@ -203,6 +213,11 @@ class BodyState:
             "ankleLFlex": "ankle_l_flex", "ankleLInvert": "ankle_l_invert",
             "breathDepth": "breath_depth", "breathRate": "breath_rate",
             "breathPhaseBody": "breath_phase_body", "autoBreathBody": "auto_breath_body",
+            "heartRate": "heart_rate", "autoHeartbeat": "auto_heartbeat",
+            "autoPulseWave": "auto_pulse_wave", "autoLungExpand": "auto_lung_expand",
+            "peristalsisRate": "peristalsis_rate", "autoPeristalsis": "auto_peristalsis",
+            "fasciculationIntensity": "fasciculation_intensity",
+            "autoFasciculation": "auto_fasciculation",
             "fingerCurlR": "finger_curl_r", "fingerSpreadR": "finger_spread_r",
             "thumbOpR": "thumb_op_r",
             "fingerCurlL": "finger_curl_l", "fingerSpreadL": "finger_spread_l",

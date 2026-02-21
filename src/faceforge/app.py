@@ -93,6 +93,11 @@ def main():
     # Simulation
     simulation = Simulation(state, scene)
 
+    # Physiology system
+    from faceforge.body.physiology import PhysiologySystem
+    physiology = PhysiologySystem()
+    simulation.physiology = physiology
+
     # Preset manager
     presets = PresetManager()
     try:
@@ -706,6 +711,14 @@ def main():
                         simulation.soft_tissue.snap_hierarchy_blends(digit_cids)
                         simulation.soft_tissue.reassign_orphan_vertices(digit_cids)
 
+            # Register muscles with physiology system (fasciculation)
+            if simulation.physiology is not None:
+                simulation.physiology.muscle_groups.append(result.group)
+                for mesh, defn in zip(result.meshes, defs):
+                    simulation.physiology.register_muscle(
+                        mesh, defn.get("name", mesh.name),
+                    )
+
             # Wire back-of-neck muscle pinning handler for back_muscles layer
             if layer == "back_muscles" and simulation.soft_tissue is not None:
                 from faceforge.anatomy.back_neck_muscles import BackNeckMuscleHandler
@@ -761,6 +774,13 @@ def main():
                 visibility.register(toggle_id, node)
                 items.append({"toggle_id": toggle_id, "name": name, "category": category})
             event_bus.publish(EventType.STRUCTURES_LOADED, group_id="organs", items=items)
+            # Register organs with physiology system
+            if simulation.physiology is not None:
+                simulation.physiology.organ_group = result.group
+                for mesh, defn in zip(result.meshes, defs):
+                    simulation.physiology.register_organ(
+                        mesh, defn.get("name", ""), defn.get("category", ""),
+                    )
             logging.getLogger(__name__).info("Loaded organs: %d meshes", len(result.meshes))
             for hook in _after_registration_hooks:
                 hook()
@@ -796,6 +816,13 @@ def main():
                 visibility.register(toggle_id, node)
                 items.append({"toggle_id": toggle_id, "name": name, "type": vtype})
             event_bus.publish(EventType.STRUCTURES_LOADED, group_id="vasculature", items=items)
+            # Register vasculature with physiology system
+            if simulation.physiology is not None:
+                simulation.physiology.vascular_group = result.group
+                for mesh, defn in zip(result.meshes, defs):
+                    simulation.physiology.register_vascular(
+                        mesh, defn.get("name", ""), defn.get("type", ""),
+                    )
             logging.getLogger(__name__).info("Loaded vasculature: %d meshes", len(result.meshes))
             for hook in _after_registration_hooks:
                 hook()
@@ -1589,6 +1616,23 @@ def main():
             print(f"  - {m.name}: {g.vertex_count} verts, "
                   f"{'indexed' if g.has_indices else 'non-indexed'}, "
                   f"mode={m.material.render_mode.name}")
+
+        # Apply startup preset (after all systems wired, scene ready)
+        if _startup_preset and _startup_preset != "Default":
+            apply_preset(
+                _startup_preset,
+                window.control_panel.layers_tab,
+                event_bus,
+            )
+            print(f"[FaceForge] Applied startup preset: {_startup_preset}")
+
+    # Startup preset dialog (must run BEFORE QTimer is scheduled,
+    # because QDialog.exec() runs a nested event loop that would
+    # fire the timer before _startup_preset is assigned)
+    from faceforge.ui.startup_dialog import StartupDialog, apply_preset
+    startup_dialog = StartupDialog()
+    startup_dialog.exec()
+    _startup_preset = startup_dialog.selected_preset
 
     # Schedule asset loading after GL init
     QTimer.singleShot(100, load_assets)

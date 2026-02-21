@@ -135,6 +135,39 @@ class BodyTab(QScrollArea):
         self._auto_breath.toggled.connect(self._on_auto_breath_toggled)
         self._layout.addWidget(self._auto_breath)
 
+        # ── 12. Physiology ──
+        self._layout.addWidget(SectionLabel("Physiology"))
+        self._add_slider("heart_rate", "Heart Rate (BPM)", 30.0, 200.0, default=72.0)
+
+        self._auto_heartbeat = ToggleRow("Heartbeat", default=False)
+        self._auto_heartbeat.toggled.connect(
+            lambda v: self._on_physiology_toggled("auto_heartbeat", v))
+        self._layout.addWidget(self._auto_heartbeat)
+
+        self._auto_pulse_wave = ToggleRow("Arterial Pulse Wave", default=False)
+        self._auto_pulse_wave.toggled.connect(
+            lambda v: self._on_physiology_toggled("auto_pulse_wave", v))
+        self._layout.addWidget(self._auto_pulse_wave)
+
+        self._auto_lung_expand = ToggleRow("Lung Expansion", default=False)
+        self._auto_lung_expand.toggled.connect(
+            lambda v: self._on_physiology_toggled("auto_lung_expand", v))
+        self._layout.addWidget(self._auto_lung_expand)
+
+        self._add_slider("peristalsis_rate", "Peristalsis Rate", 0.0, 1.0, default=0.5)
+
+        self._auto_peristalsis = ToggleRow("Peristalsis", default=False)
+        self._auto_peristalsis.toggled.connect(
+            lambda v: self._on_physiology_toggled("auto_peristalsis", v))
+        self._layout.addWidget(self._auto_peristalsis)
+
+        self._add_slider("fasciculation_intensity", "Fasciculation", 0.0, 1.0, default=0.3)
+
+        self._auto_fasciculation = ToggleRow("Muscle Twitch", default=False)
+        self._auto_fasciculation.toggled.connect(
+            lambda v: self._on_physiology_toggled("auto_fasciculation", v))
+        self._layout.addWidget(self._auto_fasciculation)
+
         self._layout.addStretch()
 
     # ── Helpers ──
@@ -187,6 +220,9 @@ class BodyTab(QScrollArea):
     def _on_auto_breath_toggled(self, enabled: bool) -> None:
         self._bus.publish(EventType.BODY_STATE_CHANGED, field="auto_breath_body", value=enabled)
 
+    def _on_physiology_toggled(self, field: str, enabled: bool) -> None:
+        self._bus.publish(EventType.BODY_STATE_CHANGED, field=field, value=enabled)
+
     # ── External Updates ──
 
     def sync_from_state(self) -> None:
@@ -196,3 +232,8 @@ class BodyTab(QScrollArea):
             val = getattr(body, field, 0.0)
             slider.set_value(val)
         self._auto_breath.set_checked(body.auto_breath_body)
+        self._auto_heartbeat.set_checked(body.auto_heartbeat)
+        self._auto_pulse_wave.set_checked(body.auto_pulse_wave)
+        self._auto_lung_expand.set_checked(body.auto_lung_expand)
+        self._auto_peristalsis.set_checked(body.auto_peristalsis)
+        self._auto_fasciculation.set_checked(body.auto_fasciculation)

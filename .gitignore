@@ -20,3 +20,5 @@ tests/.DS_Store
 /src/faceforge/coordination/__pycache__
 /src/faceforge/core/__pycache__
 /src/faceforge/loaders/__pycache__
+.DS_Store
+*.pyc
