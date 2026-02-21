@@ -30,3 +30,4 @@ tests/.DS_Store
 /src/faceforge/rendering/__pycache__
 /src/faceforge/rendering/__pycache__
 *.pyc
+/src/faceforge/ui/__pycache__

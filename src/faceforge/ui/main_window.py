@@ -6,6 +6,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QFont, QAction
+from PySide6.QtCore import Signal as _Signal
 
 from faceforge.core.events import EventBus, EventType
 from faceforge.core.state import StateManager
@@ -22,6 +23,8 @@ class MainWindow(QMainWindow):
     Layout: [InfoPanel | GLViewport | ControlPanel]
     with status bar at bottom showing vertex/face/FPS counts.
     """
+
+    scanner_requested = _Signal()
 
     def __init__(
         self,
@@ -106,6 +109,14 @@ class MainWindow(QMainWindow):
         export_glb_action.setShortcut("Ctrl+E")
         export_glb_action.triggered.connect(self._export_glb)
         file_menu.addAction(export_glb_action)
+
+        # ── Tools menu ──
+        tools_menu = menu_bar.addMenu("&Tools")
+
+        scanner_action = QAction("Scanner...", self)
+        scanner_action.setShortcut("Ctrl+Shift+S")
+        scanner_action.triggered.connect(self.scanner_requested.emit)
+        tools_menu.addAction(scanner_action)
 
     def _export_glb(self) -> None:
         """Export visible meshes to a GLB file."""

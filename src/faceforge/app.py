@@ -120,6 +120,58 @@ def main():
     _labels_enabled = False
     _labels_dirty = True
 
+    # ── Virtual scanner ──────────────────────────────────────────────
+    from faceforge.scanner.tissue_map import TissueMapper
+    from faceforge.scanner.engine import ScannerEngine
+    from faceforge.scanner.scan_plane import ScanPlaneViz
+
+    _tissue_mapper = TissueMapper()
+    _scanner_engine = ScannerEngine(_tissue_mapper)
+    _scan_plane_viz = ScanPlaneViz(scene)
+    _scanner_window = None
+
+    def _open_scanner():
+        nonlocal _scanner_window
+        from faceforge.scanner.scanner_window import ScannerWindow
+
+        if _scanner_window is not None and _scanner_window.isVisible():
+            _scanner_window.raise_()
+            _scanner_window.activateWindow()
+            return
+
+        _scanner_window = ScannerWindow(window, _scanner_engine)
+
+        def _on_scan():
+            # Update 3D plane visualization immediately
+            _update_scan_plane(_scanner_window.plane_params)
+            # Collect meshes and run scan (synchronous with processEvents)
+            meshes = scene.collect_meshes()
+            _scanner_window.run_scan(meshes)
+
+        def _on_plane_changed(plane_params):
+            _update_scan_plane(plane_params)
+
+        def _update_scan_plane(params):
+            _scan_plane_viz.update(
+                origin=params["origin"],
+                normal=params["normal"],
+                right=params["right"],
+                up=params["up"],
+                width=params["width"],
+                height=params["height"],
+            )
+
+        _scanner_window.scan_requested.connect(_on_scan)
+        _scanner_window.plane_changed.connect(_on_plane_changed)
+        _scanner_window.closed.connect(lambda: _scan_plane_viz.set_visible(False))
+        _scanner_window.show()
+
+        # Show the scan plane immediately with initial params
+        _scan_plane_viz.set_visible(True)
+        _update_scan_plane(_scanner_window.plane_params)
+
+    window.scanner_requested.connect(_open_scanner)
+
     # ── Wire UI events → state ──────────────────────────────────────
     # The UI tabs publish events; these handlers update the target state
     # that the simulation interpolates toward each frame.
