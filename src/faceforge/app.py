@@ -44,21 +44,23 @@ from faceforge.ui.widgets.label_overlay import LabelOverlay
 
 
 # Camera presets: (position, target)
+# Body center is ~Y=-45 (head top ~Y=5, feet ~Y=-95).
+# Head center is ~Y=-5 (top of skull ~Y=5, chin ~Y=-15).
 _CAMERA_PRESETS = {
-    # Body views (radius ~120, target at torso center)
-    "body_front":         ((0, -30, 120),   (0, -30, 0)),
-    "body_left":          ((-120, -30, 0),  (0, -30, 0)),
-    "body_right":         ((120, -30, 0),   (0, -30, 0)),
-    "body_top":           ((0, 120, 0),     (0, -30, 0)),
-    "body_back":          ((0, -30, -120),  (0, -30, 0)),
-    "body_three_quarter": ((80, -10, 90),   (0, -30, 0)),
-    # Head views (radius ~40, target at head center)
-    "head_front":         ((0, -8, 40),     (0, -8, 0)),
-    "head_left":          ((-40, -8, 0),    (0, -8, 0)),
-    "head_right":         ((40, -8, 0),     (0, -8, 0)),
-    "head_top":           ((0, 40, 0),      (0, -8, 0)),
-    "head_back":          ((0, -8, -40),    (0, -8, 0)),
-    "head_three_quarter": ((28, 0, 32),     (0, -8, 0)),
+    # Body views (radius ~150, target at body center)
+    "body_front":         ((0, -45, 150),    (0, -45, 0)),
+    "body_left":          ((-150, -45, 0),   (0, -45, 0)),
+    "body_right":         ((150, -45, 0),    (0, -45, 0)),
+    "body_top":           ((0, 110, 0),      (0, -45, 0)),
+    "body_back":          ((0, -45, -150),   (0, -45, 0)),
+    "body_three_quarter": ((100, -25, 110),  (0, -45, 0)),
+    # Head views (radius ~35, target at head center)
+    "head_front":         ((0, -5, 35),      (0, -5, 0)),
+    "head_left":          ((-35, -5, 0),     (0, -5, 0)),
+    "head_right":         ((35, -5, 0),      (0, -5, 0)),
+    "head_top":           ((0, 35, 0),       (0, -5, 0)),
+    "head_back":          ((0, -5, -35),     (0, -5, 0)),
+    "head_three_quarter": ((24, 2, 26),      (0, -5, 0)),
 }
 
 
@@ -1623,6 +1625,7 @@ def main():
                 _startup_preset,
                 window.control_panel.layers_tab,
                 event_bus,
+                gl_widget=gl_widget,
             )
             print(f"[FaceForge] Applied startup preset: {_startup_preset}")
 

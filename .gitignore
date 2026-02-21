@@ -22,3 +22,4 @@ tests/.DS_Store
 /src/faceforge/loaders/__pycache__
 .DS_Store
 *.pyc
+/src/faceforge/ui/__pycache__

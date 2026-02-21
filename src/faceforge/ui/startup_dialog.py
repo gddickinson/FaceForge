@@ -54,8 +54,8 @@ _ALL_OFF = {
 PRESETS: dict[str, dict] = {}
 
 
-def _preset(name, description, icon, layers):
-    PRESETS[name] = {"description": description, "icon": icon, "layers": layers}
+def _preset(name, description, icon, layers, camera="body_front"):
+    PRESETS[name] = {"description": description, "icon": icon, "layers": layers, "camera": camera}
 
 
 _preset(
@@ -131,6 +131,25 @@ _preset(
     "All head structures, no body soft tissue",
     "\u263A",  # smiley
     {**_ALL_OFF, **_SKELETON, **_HEAD_SOFT},
+    camera="head_front",
+)
+
+_preset(
+    "Head Only",
+    "Head and neck only, no body skeleton",
+    "\U0001F9D1",  # person silhouette
+    {**_ALL_OFF,
+     "skull": True, "vertebrae": True, "teeth": True,
+     **_HEAD_SOFT},
+    camera="head_front",
+)
+
+_preset(
+    "Nervous System Only",
+    "Brain and eyes, no skeleton or muscles",
+    "\U0001F9E0",  # brain
+    {**_ALL_OFF, "brain": True, "eyes": True},
+    camera="body_front",
 )
 
 _preset(
@@ -154,7 +173,7 @@ class StartupDialog(QDialog):
         super().__init__(parent)
         self.setWindowTitle("FaceForge — Choose Configuration")
         self.setStyleSheet(DARK_THEME)
-        self.setMinimumSize(520, 420)
+        self.setMinimumSize(520, 520)
         self.setModal(True)
         self.selected_preset: str = "Default"
 
@@ -224,7 +243,7 @@ class StartupDialog(QDialog):
         self.accept()
 
 
-def apply_preset(preset_name: str, layers_tab, event_bus) -> None:
+def apply_preset(preset_name: str, layers_tab, event_bus, gl_widget=None) -> None:
     """Apply a layer preset by toggling layers in the UI.
 
     Parameters
@@ -235,11 +254,20 @@ def apply_preset(preset_name: str, layers_tab, event_bus) -> None:
         The layers tab instance for programmatic toggle updates.
     event_bus : EventBus
         For publishing LAYER_TOGGLED events (on-demand layers).
+    gl_widget : GLViewport, optional
+        If provided, set camera to the preset's camera view.
     """
     from faceforge.core.events import EventType
 
     preset = PRESETS.get(preset_name)
-    if preset is None or not preset["layers"]:
+    if preset is None:
+        return
+
+    # Apply camera positioning
+    if gl_widget is not None and "camera" in preset:
+        event_bus.publish(EventType.CAMERA_PRESET, preset=preset["camera"])
+
+    if not preset["layers"]:
         return  # "Default" or unknown — use tab defaults
 
     layers = preset["layers"]

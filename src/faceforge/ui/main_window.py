@@ -2,10 +2,10 @@
 
 from PySide6.QtWidgets import (
     QMainWindow, QWidget, QHBoxLayout, QVBoxLayout,
-    QStatusBar, QLabel, QSizePolicy,
+    QStatusBar, QLabel, QSizePolicy, QFileDialog, QMenuBar,
 )
 from PySide6.QtCore import Qt, QTimer
-from PySide6.QtGui import QFont
+from PySide6.QtGui import QFont, QAction
 
 from faceforge.core.events import EventBus, EventType
 from faceforge.core.state import StateManager
@@ -75,6 +75,9 @@ class MainWindow(QMainWindow):
         self.status_bar.addPermanentWidget(self.face_label)
         self.status_bar.addPermanentWidget(self.fps_label)
 
+        # Menu bar
+        self._build_menu_bar()
+
         # Loading overlay
         self.loading_overlay = LoadingOverlay(gl_widget)
         self.loading_overlay.hide()
@@ -91,6 +94,44 @@ class MainWindow(QMainWindow):
 
         # FPS tracking
         self._frame_count_at_last_update = 0
+
+    def _build_menu_bar(self) -> None:
+        """Create the application menu bar."""
+        menu_bar = self.menuBar()
+
+        # ── File menu ──
+        file_menu = menu_bar.addMenu("&File")
+
+        export_glb_action = QAction("Export GLB (Blender)...", self)
+        export_glb_action.setShortcut("Ctrl+E")
+        export_glb_action.triggered.connect(self._export_glb)
+        file_menu.addAction(export_glb_action)
+
+    def _export_glb(self) -> None:
+        """Export visible meshes to a GLB file."""
+        path, _ = QFileDialog.getSaveFileName(
+            self,
+            "Export GLB",
+            "faceforge_export.glb",
+            "GLB Files (*.glb);;All Files (*)",
+        )
+        if not path:
+            return
+
+        from faceforge.export.glb_exporter import export_glb
+
+        scene = self.gl_widget.scene
+        if scene is None:
+            self.status_bar.showMessage("No scene to export", 3000)
+            return
+
+        try:
+            count = export_glb(scene, path)
+            self.status_bar.showMessage(
+                f"Exported {count} meshes to {path}", 5000,
+            )
+        except Exception as e:
+            self.status_bar.showMessage(f"Export failed: {e}", 5000)
 
     def _on_loading_phase(self, phase: str = "", **kw):
         self.loading_overlay.show_loading(phase, 0.0)
