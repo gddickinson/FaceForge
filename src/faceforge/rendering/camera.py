@@ -40,7 +40,7 @@ class Camera:
 
         self.position: Vec3 = vec3(*DEFAULT_CAMERA_POS)
         self.target: Vec3 = vec3(*DEFAULT_CAMERA_TARGET)
-        self.up: Vec3 = vec3(0.0, 1.0, 0.0)
+        self.up: Vec3 = vec3(0.0, 0.0, 1.0)  # Z-up (body vertical axis)
 
         # Cached matrices (recomputed on demand)
         self._view_dirty: bool = True

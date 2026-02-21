@@ -44,23 +44,23 @@ from faceforge.ui.widgets.label_overlay import LabelOverlay
 
 
 # Camera presets: (position, target)
-# Body center is ~Y=-45 (head top ~Y=5, feet ~Y=-95).
-# Head center is ~Y=-5 (top of skull ~Y=5, chin ~Y=-15).
+# Body coordinate system: X=lateral, Y=depth (−Y=anterior), Z=vertical (head≈0, feet≈−200).
+# Body visual center ≈ (0, 0, −80).  Head center ≈ (0, 0, −5).
 _CAMERA_PRESETS = {
-    # Body views (radius ~150, target at body center)
-    "body_front":         ((0, -45, 150),    (0, -45, 0)),
-    "body_left":          ((-150, -45, 0),   (0, -45, 0)),
-    "body_right":         ((150, -45, 0),    (0, -45, 0)),
-    "body_top":           ((0, 110, 0),      (0, -45, 0)),
-    "body_back":          ((0, -45, -150),   (0, -45, 0)),
-    "body_three_quarter": ((100, -25, 110),  (0, -45, 0)),
+    # Body views (radius ~150, target at body visual center)
+    "body_front":         ((0, -150, -80),   (0, 0, -80)),
+    "body_left":          ((-150, 0, -80),   (0, 0, -80)),
+    "body_right":         ((150, 0, -80),    (0, 0, -80)),
+    "body_top":           ((0, 0, 80),       (0, 0, -80)),
+    "body_back":          ((0, 150, -80),    (0, 0, -80)),
+    "body_three_quarter": ((80, -110, -50),  (0, 0, -80)),
     # Head views (radius ~35, target at head center)
-    "head_front":         ((0, -5, 35),      (0, -5, 0)),
-    "head_left":          ((-35, -5, 0),     (0, -5, 0)),
-    "head_right":         ((35, -5, 0),      (0, -5, 0)),
-    "head_top":           ((0, 35, 0),       (0, -5, 0)),
-    "head_back":          ((0, -5, -35),     (0, -5, 0)),
-    "head_three_quarter": ((24, 2, 26),      (0, -5, 0)),
+    "head_front":         ((0, -35, -5),     (0, 0, -5)),
+    "head_left":          ((-35, 0, -5),     (0, 0, -5)),
+    "head_right":         ((35, 0, -5),      (0, 0, -5)),
+    "head_top":           ((0, 0, 30),       (0, 0, -5)),
+    "head_back":          ((0, 35, -5),      (0, 0, -5)),
+    "head_three_quarter": ((18, -26, 3),     (0, 0, -5)),
 }
 
 

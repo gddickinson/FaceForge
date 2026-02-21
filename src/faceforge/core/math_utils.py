@@ -122,10 +122,10 @@ def mat4_look_at(eye: Vec3, target: Vec3, up: Vec3) -> Mat4:
     """Create view matrix (camera look-at)."""
     f = normalize(target - eye)
     s = normalize(np.cross(f, up))
-    # Degenerate case: forward is parallel to up (e.g. looking straight down).
-    # Fall back to an alternative up vector.
+    # Degenerate case: forward is parallel to up (e.g. looking straight down Z).
+    # Fall back to an alternative up vector perpendicular to forward.
     if np.linalg.norm(s) < 1e-6:
-        alt_up = np.array([0.0, 0.0, -1.0]) if abs(f[1]) > 0.9 else np.array([0.0, 1.0, 0.0])
+        alt_up = np.array([1.0, 0.0, 0.0]) if abs(f[0]) < 0.9 else np.array([0.0, 1.0, 0.0])
         s = normalize(np.cross(f, alt_up))
     u = np.cross(s, f)
     m = np.eye(4, dtype=np.float64)

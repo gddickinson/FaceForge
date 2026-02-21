@@ -47,9 +47,10 @@ def set_jaw_pivot(x: float, y: float, z: float) -> None:
     """Set the active jaw pivot (e.g. after computing TMJ from BP3D mandible)."""
     _active_jaw_pivot[:] = [x, y, z]
 
-# Camera defaults (full body view)
-DEFAULT_CAMERA_POS = (0.0, -40.0, 120.0)
-DEFAULT_CAMERA_TARGET = (0.0, -30.0, 0.0)
+# Camera defaults (front view, Z-up body)
+# Body Z-vertical: head≈0, feet≈-200; Y-depth: anterior≈-5, posterior≈+10
+DEFAULT_CAMERA_POS = (0.0, -120.0, -30.0)
+DEFAULT_CAMERA_TARGET = (0.0, 0.0, -50.0)
 
 # Head rotation limits (degrees)
 HEAD_YAW_MAX = 35.0

@@ -11,8 +11,11 @@ from faceforge.rendering.camera import Camera
 class OrbitControls:
     """Orbits the camera around a target point.
 
-    Uses spherical coordinates (theta, phi, radius) with optional damping
-    and auto-rotation.
+    Uses spherical coordinates (theta, phi, radius) with Z as the polar
+    axis, matching the body mesh coordinate system (Z = vertical).
+
+    - phi is the polar angle from +Z (0 = directly above, pi = below).
+    - theta is the azimuthal angle in the XY plane.
 
     Parameters
     ----------
@@ -175,7 +178,10 @@ class OrbitControls:
         self._apply_to_camera()
 
     def _sync_from_camera(self) -> None:
-        """Derive spherical coords from the current camera position/target."""
+        """Derive spherical coords from the current camera position/target.
+
+        Z-up: phi measured from +Z axis, theta in XY plane.
+        """
         offset = self.camera.position - self.target
         self._radius = float(np.linalg.norm(offset))
         if self._radius < 1e-6:
@@ -183,15 +189,18 @@ class OrbitControls:
             return
 
         n = offset / self._radius
-        self._phi = math.acos(clamp(float(n[1]), -1.0, 1.0))
-        self._theta = math.atan2(float(n[0]), float(n[2]))
+        self._phi = math.acos(clamp(float(n[2]), -1.0, 1.0))
+        self._theta = math.atan2(float(n[1]), float(n[0]))
 
     def _apply_to_camera(self) -> None:
-        """Write spherical coords back to the camera position."""
+        """Write spherical coords back to the camera position.
+
+        Z-up: x = R*sin(phi)*cos(theta), y = R*sin(phi)*sin(theta), z = R*cos(phi).
+        """
         sin_phi = math.sin(self._phi)
-        x = self._radius * sin_phi * math.sin(self._theta)
-        y = self._radius * math.cos(self._phi)
-        z = self._radius * sin_phi * math.cos(self._theta)
+        x = self._radius * sin_phi * math.cos(self._theta)
+        y = self._radius * sin_phi * math.sin(self._theta)
+        z = self._radius * math.cos(self._phi)
 
         self.camera.position = self.target + vec3(x, y, z)
         self.camera.target = self.target.copy()
