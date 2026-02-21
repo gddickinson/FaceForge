@@ -97,6 +97,11 @@ class MeshInstance:
     rest_positions: Optional[NDArray[np.float32]] = None
     rest_normals: Optional[NDArray[np.float32]] = None
 
+    # Scene mode: if True (default), the renderer applies scene_transform
+    # to this mesh's model_view matrix.  Set False for environment meshes
+    # (table, walls, lamp) that should stay fixed in world space.
+    scene_affected: bool = True
+
     def store_rest_pose(self) -> None:
         """Save current positions/normals as rest pose for deformation."""
         self.rest_positions = self.positions.copy()

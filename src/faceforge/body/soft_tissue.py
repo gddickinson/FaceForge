@@ -138,6 +138,10 @@ class SoftTissueSkinning:
         self.attachment_system = None  # MuscleAttachmentSystem or None
         # Bone collision system for penetration resolution (Layer 4)
         self.collision_system = None  # BoneCollisionSystem or None
+        # Scene wrapper node: when set, its transform is cancelled from joint
+        # world matrices during delta computation to avoid double-rotation.
+        # Set by app.py when scene mode activates (wrapper reparents bodyRoot).
+        self.scene_wrapper: SceneNode | None = None
 
         # Registration-time filter constants (tunable for optimization).
         # Defaults match the original hard-coded values.
@@ -1545,11 +1549,21 @@ class SoftTissueSkinning:
             return
         self._last_signature = sig
 
-        # Compute delta matrices for each joint
+        # Compute delta matrices for each joint.
+        # When a scene_wrapper is active, cancel its transform from joint
+        # world matrices so the skinning outputs local-space positions
+        # (the renderer applies the wrapper via the scene graph).
+        cancel = None
+        if self.scene_wrapper is not None and self.scene_wrapper.parent is not None:
+            self.scene_wrapper.update_world_matrix(force=True)
+            cancel = mat4_inverse(self.scene_wrapper.world_matrix)
+
         deltas = []
         for joint in self.joints:
             joint.node.update_world_matrix()
             current = joint.node.world_matrix
+            if cancel is not None:
+                current = cancel @ current
             delta = current @ joint.rest_world_inv
             deltas.append(delta)
 
@@ -1772,7 +1786,16 @@ class SoftTissueSkinning:
         Returns a tuple of rounded floats — fast equality check, no string
         formatting overhead.
         """
-        return (
+        # Include wrapper position AND quaternion so skinning reruns when wrapper moves/rotates
+        wrapper_sig: tuple = ()
+        if self.scene_wrapper is not None and self.scene_wrapper.parent is not None:
+            wp = self.scene_wrapper.position
+            wq = self.scene_wrapper.quaternion
+            wrapper_sig = (round(float(wp[0]), 2), round(float(wp[1]), 2),
+                           round(float(wp[2]), 2),
+                           round(float(wq[0]), 4), round(float(wq[1]), 4),
+                           round(float(wq[2]), 4), round(float(wq[3]), 4))
+        return wrapper_sig + (
             round(state.spine_flex, 4), round(state.spine_lat_bend, 4),
             round(state.spine_rotation, 4),
             round(state.shoulder_r_abduct, 4), round(state.shoulder_r_flex, 4),

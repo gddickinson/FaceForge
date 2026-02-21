@@ -16,3 +16,7 @@ src/faceforge/.DS_Store
 /src/faceforge/body/__pycache__
 /tools/__pycache__
 tests/.DS_Store
+/src/faceforge/coordination/__pycache__
+/src/faceforge/coordination/__pycache__
+/src/faceforge/core/__pycache__
+/src/faceforge/loaders/__pycache__

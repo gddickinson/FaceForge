@@ -56,6 +56,13 @@ class GLRenderer:
         self._frame_count: int = 0
         self._bg_color_dirty: bool = False
 
+        # Scene mode: when set, this 4x4 matrix is multiplied into the
+        # model-view for meshes with ``mesh.scene_affected == True``.
+        # This applies the supine rotation + table positioning at render
+        # time, bypassing the scene graph (which stays in clinical frame).
+        self.scene_transform: Mat4 | None = None
+        self._scene_transform_logged: bool = False
+
     # ------------------------------------------------------------------
     # Lifecycle
     # ------------------------------------------------------------------
@@ -117,6 +124,40 @@ class GLRenderer:
 
         # Collect visible meshes with world transforms
         mesh_list: list[tuple[MeshInstance, Mat4]] = scene.collect_meshes()
+
+        # Multi-frame diagnostic: log body mesh world matrices for the
+        # first 10 frames after a non-identity world matrix is detected.
+        if not self._scene_transform_logged and len(mesh_list) > 0:
+            has_non_identity = False
+            for mesh, world in mesh_list[:5]:
+                if not np.allclose(np.diag(world), [1, 1, 1, 1], atol=0.01):
+                    has_non_identity = True
+                    break
+            if has_non_identity:
+                self._scene_transform_logged = True
+                self._scene_diag_start = self._frame_count
+
+        if (hasattr(self, '_scene_diag_start')
+                and self._frame_count - self._scene_diag_start < 10
+                and len(mesh_list) > 0):
+            body_count = 0
+            identity_count = 0
+            sample_name = ""
+            sample_diag = None
+            for mesh, world in mesh_list[:20]:
+                if getattr(mesh, 'scene_affected', False):
+                    body_count += 1
+                    if np.allclose(np.diag(world), [1, 1, 1, 1], atol=0.01):
+                        identity_count += 1
+                    elif not sample_name:
+                        sample_name = mesh.name
+                        sample_diag = np.diag(world).round(3)
+            if body_count > 0:
+                logger.info(
+                    "Frame %d: %d body meshes, %d identity, sample='%s' diag=%s",
+                    self._frame_count, body_count, identity_count,
+                    sample_name, sample_diag,
+                )
 
         # Check if we're in OPAQUE mode (all meshes rendered as fully opaque)
         global_opaque = (
@@ -180,7 +221,9 @@ class GLRenderer:
         vert_src = load_shader_source("default.vert")
         points_vert_src = load_shader_source("points.vert")
 
-        phong_frag = load_shader_source("phong.frag")
+        # Use point-light-aware phong shader (backward compatible when point
+        # light is disabled — the uniform branch adds zero cost).
+        phong_frag = load_shader_source("phong_pointlight.frag")
         shader_configs = {
             RenderMode.SOLID: (vert_src, phong_frag),
             RenderMode.WIREFRAME: (vert_src, load_shader_source("wireframe.frag")),
@@ -239,8 +282,27 @@ class GLRenderer:
 
         shader.use()
 
-        # Model-view and projection
-        model_view = view @ world
+        # Apply scene transform for body meshes when in scene mode.
+        # model_view = view @ scene_transform @ world  (body meshes)
+        # model_view = view @ world                    (environment meshes)
+        if self.scene_transform is not None and mesh.scene_affected:
+            effective_world = self.scene_transform @ world
+            # One-shot diagnostic: log first body mesh drawn with scene_transform
+            if not self._scene_transform_logged:
+                self._scene_transform_logged = True
+                logger.info(
+                    "Scene transform applied to '%s': "
+                    "scene_diag=%s, world_diag=%s, eff_diag=%s, mv_diag=%s",
+                    mesh.name,
+                    np.diag(self.scene_transform).round(3),
+                    np.diag(world).round(3),
+                    np.diag(effective_world).round(3),
+                    np.diag(view @ effective_world).round(3),
+                )
+        else:
+            effective_world = world
+        model_view = view @ effective_world
+
         shader.set_uniform_mat4("uModelView", model_view)
         shader.set_uniform_mat4("uProjection", proj)
 
@@ -257,6 +319,7 @@ class GLRenderer:
 
         # Light and material uniforms
         lights.apply(shader)
+        lights.upload_point_light(shader, view)
         apply_material(shader, mesh.material)
 
         # Draw

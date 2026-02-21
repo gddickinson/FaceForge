@@ -1,7 +1,8 @@
 """Display tab: render mode, camera presets, colors."""
 
 from PySide6.QtWidgets import (
-    QScrollArea, QWidget, QVBoxLayout, QGridLayout, QPushButton, QSizePolicy,
+    QScrollArea, QWidget, QVBoxLayout, QGridLayout, QHBoxLayout,
+    QPushButton, QSizePolicy, QComboBox, QLabel,
 )
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor
@@ -12,6 +13,7 @@ from faceforge.core.material import RenderMode
 from faceforge.ui.widgets.section_label import SectionLabel
 from faceforge.ui.widgets.color_picker import ColorPicker
 from faceforge.ui.widgets.toggle_row import ToggleRow
+from faceforge.ui.widgets.transport_controls import TransportControls
 
 
 # Render modes with display labels
@@ -149,6 +151,87 @@ class DisplayTab(QScrollArea):
         )
         self._layout.addWidget(self._bg_color)
 
+        # ── 4. Scene View ──
+        self._layout.addWidget(SectionLabel("Scene View"))
+
+        self._scene_toggle = QPushButton("Scene View: OFF")
+        self._scene_toggle.setObjectName("sceneToggleButton")
+        self._scene_toggle.setCheckable(True)
+        self._scene_toggle.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self._scene_toggle.clicked.connect(self._on_scene_toggled)
+        self._layout.addWidget(self._scene_toggle)
+
+        self._scene_camera_combo = QComboBox()
+        self._scene_camera_combo.addItems([
+            "overhead", "side", "head_end", "foot_end", "corner",
+        ])
+        self._scene_camera_combo.setEnabled(False)
+        self._scene_camera_combo.currentTextChanged.connect(self._on_scene_camera_changed)
+        self._layout.addWidget(self._scene_camera_combo)
+
+        # ── 4b. Wrapper Transform Debug ──
+        self._layout.addWidget(SectionLabel("Wrapper Nudge"))
+
+        self._nudge_buttons: list[QPushButton] = []
+        nudge_step = 10.0
+        rot_step = 15.0  # degrees
+
+        # Position: +/- X, Y, Z
+        for axis_label, axis_key in [("X", "px"), ("Y", "py"), ("Z", "pz")]:
+            row = QHBoxLayout()
+            row.addWidget(QLabel(f"Pos {axis_label}:"))
+            minus = QPushButton(f"-{int(nudge_step)}")
+            minus.setFixedWidth(50)
+            minus.clicked.connect(lambda _, a=axis_key: self._on_nudge(a, -nudge_step))
+            row.addWidget(minus)
+            plus = QPushButton(f"+{int(nudge_step)}")
+            plus.setFixedWidth(50)
+            plus.clicked.connect(lambda _, a=axis_key: self._on_nudge(a, nudge_step))
+            row.addWidget(plus)
+            self._nudge_buttons.extend([minus, plus])
+            wrapper = QWidget()
+            wrapper.setLayout(row)
+            self._layout.addWidget(wrapper)
+
+        # Rotation: +/- around X, Y, Z
+        for axis_label, axis_key in [("Rot X", "rx"), ("Rot Y", "ry"), ("Rot Z", "rz")]:
+            row = QHBoxLayout()
+            row.addWidget(QLabel(f"{axis_label}:"))
+            minus = QPushButton(f"-{int(rot_step)}°")
+            minus.setFixedWidth(50)
+            minus.clicked.connect(lambda _, a=axis_key: self._on_nudge(a, -rot_step))
+            row.addWidget(minus)
+            plus = QPushButton(f"+{int(rot_step)}°")
+            plus.setFixedWidth(50)
+            plus.clicked.connect(lambda _, a=axis_key: self._on_nudge(a, rot_step))
+            row.addWidget(plus)
+            self._nudge_buttons.extend([minus, plus])
+            wrapper = QWidget()
+            wrapper.setLayout(row)
+            self._layout.addWidget(wrapper)
+
+        # Reset button
+        reset_btn = QPushButton("Reset to Supine Default")
+        reset_btn.clicked.connect(lambda: self._on_nudge("reset", 0))
+        self._nudge_buttons.append(reset_btn)
+        self._layout.addWidget(reset_btn)
+
+        # Enable/disable with scene mode
+        for btn in self._nudge_buttons:
+            btn.setEnabled(False)
+
+        # ── 5. Animation ──
+        self._layout.addWidget(SectionLabel("Animation"))
+
+        self._anim_clip_combo = QComboBox()
+        self._anim_clip_combo.setEnabled(False)
+        self._anim_clip_combo.currentTextChanged.connect(self._on_anim_clip_selected)
+        self._layout.addWidget(self._anim_clip_combo)
+
+        self._transport = TransportControls(event_bus)
+        self._transport.setEnabled(False)
+        self._layout.addWidget(self._transport)
+
         self._layout.addStretch()
 
     # ── Slots ──
@@ -168,9 +251,50 @@ class DisplayTab(QScrollArea):
         rgb = (color.redF(), color.greenF(), color.blueF())
         self._bus.publish(EventType.COLOR_CHANGED, target=target, color=rgb)
 
+    def _on_nudge(self, axis: str, delta: float) -> None:
+        self._bus.publish(EventType.SCENE_WRAPPER_NUDGE, axis=axis, delta=delta)
+
+    def _on_scene_toggled(self, checked: bool) -> None:
+        self._scene_toggle.setText(f"Scene View: {'ON' if checked else 'OFF'}")
+        self._scene_camera_combo.setEnabled(checked)
+        self._anim_clip_combo.setEnabled(checked)
+        self._transport.setEnabled(checked)
+        for btn in self._nudge_buttons:
+            btn.setEnabled(checked)
+        if not checked:
+            # Stop animation when leaving scene mode
+            self._bus.publish(EventType.ANIM_STOP)
+            self._transport.set_playing(False)
+        self._bus.publish(EventType.SCENE_MODE_TOGGLED, enabled=checked)
+
+    def _on_scene_camera_changed(self, preset: str) -> None:
+        if self._scene_toggle.isChecked():
+            self._bus.publish(EventType.SCENE_CAMERA_CHANGED, preset=preset)
+
+    def _on_anim_clip_selected(self, clip_name: str) -> None:
+        if clip_name:
+            self._bus.publish(EventType.ANIM_CLIP_SELECTED, clip_name=clip_name)
+
     # ── Public API ──
 
     def set_render_mode(self, mode: RenderMode) -> None:
         """Highlight the specified render mode button."""
         for m, btn in self._mode_buttons.items():
             btn.setChecked(m == mode)
+
+    def set_animation_clips(self, clip_names: list[str]) -> None:
+        """Populate the clip selection combo with available clips."""
+        self._anim_clip_combo.blockSignals(True)
+        self._anim_clip_combo.clear()
+        self._anim_clip_combo.addItems(clip_names)
+        self._anim_clip_combo.blockSignals(False)
+
+    def update_animation_progress(self, progress: float, current_time: float,
+                                  duration: float) -> None:
+        """Update the transport controls with current playback state."""
+        self._transport.set_progress(progress, current_time, duration)
+
+    @property
+    def transport(self) -> TransportControls:
+        """Access the transport controls widget."""
+        return self._transport

@@ -92,6 +92,9 @@ class Simulation:
         # Back-of-neck muscle body-end pinning handler
         self.back_neck_muscles = None  # BackNeckMuscleHandler or None
 
+        # Scene animation player (set by app.py when scene mode wired)
+        self.anim_player = None  # AnimationPlayer or None
+
         # Cached head quaternion for neck muscles
         self._head_quat: Quat = quat_identity()
 
@@ -108,6 +111,10 @@ class Simulation:
         """Advance simulation by dt seconds."""
         face = self.state.face
         body = self.state.body
+
+        # 0. Scene animation (drives wrapper transform + body/face targets)
+        if self.anim_player is not None and self.anim_player.is_playing:
+            self.anim_player.tick(dt)
 
         # 1. Interpolate state toward targets
         self.interpolator.interpolate(

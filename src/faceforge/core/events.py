@@ -58,6 +58,20 @@ class EventType(Enum):
     DEBUG_VIZ_CHANGED = auto()
     SELECTION_CHANGED = auto()
 
+    # Scene view mode
+    SCENE_MODE_TOGGLED = auto()
+    SCENE_CAMERA_CHANGED = auto()
+    SCENE_WRAPPER_NUDGE = auto()  # data: axis (str), delta (float)
+
+    # Animation playback
+    ANIM_PLAY = auto()
+    ANIM_PAUSE = auto()
+    ANIM_STOP = auto()
+    ANIM_SEEK = auto()            # data: position (0-1)
+    ANIM_SPEED = auto()           # data: speed (float)
+    ANIM_CLIP_SELECTED = auto()   # data: clip_name (str)
+    ANIM_PROGRESS = auto()        # data: progress (0-1), time (float), duration (float)
+
 
 class EventBus:
     """Simple publish/subscribe event system."""

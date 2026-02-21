@@ -37,6 +37,9 @@ from faceforge.body.organs import OrganManager
 from faceforge.body.vasculature import VasculatureManager
 from faceforge.body.brain import BrainManager
 from faceforge.rendering.gl_widget import GLViewport, create_gl_format
+from faceforge.scene.scene_mode_controller import SceneModeController
+from faceforge.scene.scene_animation import AnimationPlayer
+from faceforge.scene.builtin_animations import get_builtin_clips
 from faceforge.ui.widgets.label_overlay import LabelOverlay
 
 
@@ -279,11 +282,161 @@ def main():
         if pipeline.face_features is not None:
             pipeline.face_features.set_eye_color(color)
 
+    # ── Scene mode controller ──
+    scene_controller = SceneModeController()
+
+    # ── Animation player ──
+    anim_player = AnimationPlayer()
+    builtin_clips = get_builtin_clips()
+
+    def _on_anim_wrapper_transform(pos, quat):
+        scene_controller.set_wrapper_transform(pos, quat)
+
+    def _on_anim_body_state(state_dict):
+        state.target_body.set_from_js_dict(state_dict)
+
+    def _on_anim_face(aus_dict, head_dict):
+        if aus_dict:
+            for au_id, val in aus_dict.items():
+                state.target_au.set(au_id, val)
+        if head_dict:
+            state.target_head.head_yaw = head_dict.get("headYaw", 0.0)
+            state.target_head.head_pitch = head_dict.get("headPitch", 0.0)
+            state.target_head.head_roll = head_dict.get("headRoll", 0.0)
+
+    def _on_anim_complete():
+        event_bus.publish(EventType.ANIM_PROGRESS, progress=1.0, time=anim_player.duration,
+                          duration=anim_player.duration)
+        window.control_panel.display_tab.transport.set_playing(False)
+
+    anim_player.on_wrapper_transform = _on_anim_wrapper_transform
+    anim_player.on_body_state = _on_anim_body_state
+    # Camera left under user control — no on_camera callback
+    anim_player.on_face = _on_anim_face
+    anim_player.on_complete = _on_anim_complete
+
+    def on_anim_play(**kw):
+        anim_player.play()
+
+    def on_anim_pause(**kw):
+        anim_player.pause()
+
+    def on_anim_stop(**kw):
+        anim_player.stop()
+
+    def on_anim_seek(position: float = 0.0, **kw):
+        anim_player.seek(position)
+
+    def on_anim_speed(speed: float = 1.0, **kw):
+        anim_player.set_speed(speed)
+
+    def on_anim_clip_selected(clip_name: str = "", **kw):
+        clip = builtin_clips.get(clip_name)
+        if clip is not None:
+            anim_player.load(clip)
+            window.control_panel.display_tab.transport.set_duration(clip.duration)
+
+    def on_scene_mode_toggled(enabled: bool = False, **kw):
+        body_root = named_nodes.get("bodyRoot")
+        if body_root is None:
+            return
+        if enabled:
+            scene_controller.activate(
+                body_root, scene, gl_widget.camera, gl_widget.lights,
+            )
+            # Tell soft tissue about the wrapper so it cancels the rotation
+            # from joint delta matrices (prevents double-rotation).
+            if simulation.soft_tissue is not None:
+                simulation.soft_tissue.scene_wrapper = scene_controller.wrapper_node
+            # Force immediate world matrix rebuild so the first render
+            # sees supine matrices (not stale identity from before activation).
+            scene.update()
+            # Auto-seek Wake Up clip to t=0: this fires the same callbacks
+            # that work during animation playback (proven path), setting
+            # wrapper transform + body state to supine rest.
+            clip = builtin_clips.get("Wake Up")
+            if clip is not None:
+                anim_player.load(clip)
+                anim_player.seek(0)
+                window.control_panel.display_tab.transport.set_duration(
+                    clip.duration,
+                )
+            # Rebuild world matrices again after seek(0) fired callbacks
+            # that may have modified the wrapper transform.
+            scene.update()
+        else:
+            # Stop animation when leaving scene mode
+            anim_player.stop()
+            window.control_panel.display_tab.transport.set_playing(False)
+            scene_controller.deactivate(
+                body_root, scene, gl_widget.camera, gl_widget.lights,
+            )
+            # Clear soft tissue wrapper
+            if simulation.soft_tissue is not None:
+                simulation.soft_tissue.scene_wrapper = None
+        # Renderer no longer uses scene_transform (wrapper node handles it)
+        gl_widget.renderer.scene_transform = None
+        gl_widget.orbit_controls.reset_from_camera()
+        # Apply current render mode to environment meshes
+        existing = scene.collect_meshes()
+        if existing:
+            scene_controller.set_render_mode(existing[0][0].material.render_mode)
+
+    def on_scene_camera_changed(preset: str = "", **kw):
+        if scene_controller.is_active:
+            scene_controller.set_camera_preset(gl_widget.camera, preset)
+            gl_widget.orbit_controls.reset_from_camera()
+
+    def on_wrapper_nudge(axis: str = "", delta: float = 0.0, **kw):
+        """Manual wrapper transform nudge for debugging positioning."""
+        import math as _math
+        wrapper = scene_controller.wrapper_node
+        if not scene_controller.is_active:
+            return
+
+        if axis == "reset":
+            # Reset to default supine (empirically determined)
+            from faceforge.core.math_utils import quat_from_axis_angle, quat_multiply
+            q = quat_multiply(
+                quat_from_axis_angle(vec3(0, 0, 1), _math.pi / 2),
+                quat_multiply(
+                    quat_from_axis_angle(vec3(0, 1, 0), _math.pi / 2),
+                    quat_from_axis_angle(vec3(1, 0, 0), -_math.pi / 2),
+                ),
+            )
+            wrapper.set_position(-85.0, 105.0, 0.0)
+            wrapper.set_quaternion(q)
+            print(f"[WRAPPER RESET] pos=(-85, 105, 0) quat={q.round(4)}")
+        elif axis.startswith("p"):
+            # Position nudge
+            pos = wrapper.position.copy()
+            idx = {"px": 0, "py": 1, "pz": 2}[axis]
+            pos[idx] += delta
+            wrapper.set_position(*pos)
+            print(f"[WRAPPER POS] {axis}+={delta} → pos=({pos[0]:.1f}, {pos[1]:.1f}, {pos[2]:.1f})")
+        elif axis.startswith("r"):
+            # Rotation nudge: compose incremental rotation
+            from faceforge.core.math_utils import quat_from_axis_angle, quat_multiply
+            angle = _math.radians(delta)
+            ax_vec = {"rx": vec3(1, 0, 0), "ry": vec3(0, 1, 0), "rz": vec3(0, 0, 1)}[axis]
+            dq = quat_from_axis_angle(ax_vec, angle)
+            new_q = quat_multiply(dq, wrapper.quaternion)
+            wrapper.set_quaternion(new_q)
+            print(f"[WRAPPER ROT] {axis}+={delta}° → quat=({new_q[0]:.4f}, {new_q[1]:.4f}, {new_q[2]:.4f}, {new_q[3]:.4f})")
+
+        # Force world matrix rebuild and re-render
+        scene.update()
+        print(f"[WRAPPER] world_matrix diag={wrapper.world_matrix.diagonal().round(3)}")
+        print(f"[WRAPPER] world_matrix pos={wrapper.world_matrix[:3, 3].round(1)}")
+
     # ── Display tab: render mode ──
     def on_render_mode_changed(mode: RenderMode = RenderMode.WIREFRAME, **kw):
         meshes = scene.collect_meshes()
         for mesh, _ in meshes:
             mesh.material.render_mode = mode
+        # Also update environment meshes if scene mode is active
+        if scene_controller.is_active:
+            scene_controller.set_render_mode(mode)
 
     # ── Display tab: camera presets ──
     def on_camera_preset(preset: str = "", **kw):
@@ -974,6 +1127,15 @@ def main():
     event_bus.subscribe(EventType.MICRO_EXPRESSIONS_TOGGLED, on_micro_expressions)
     event_bus.subscribe(EventType.RENDER_MODE_CHANGED, on_render_mode_changed)
     event_bus.subscribe(EventType.CAMERA_PRESET, on_camera_preset)
+    event_bus.subscribe(EventType.SCENE_MODE_TOGGLED, on_scene_mode_toggled)
+    event_bus.subscribe(EventType.SCENE_CAMERA_CHANGED, on_scene_camera_changed)
+    event_bus.subscribe(EventType.SCENE_WRAPPER_NUDGE, on_wrapper_nudge)
+    event_bus.subscribe(EventType.ANIM_PLAY, on_anim_play)
+    event_bus.subscribe(EventType.ANIM_PAUSE, on_anim_pause)
+    event_bus.subscribe(EventType.ANIM_STOP, on_anim_stop)
+    event_bus.subscribe(EventType.ANIM_SEEK, on_anim_seek)
+    event_bus.subscribe(EventType.ANIM_SPEED, on_anim_speed)
+    event_bus.subscribe(EventType.ANIM_CLIP_SELECTED, on_anim_clip_selected)
     event_bus.subscribe(EventType.COLOR_CHANGED, on_color_changed)
     event_bus.subscribe(EventType.ALIGNMENT_CHANGED, on_alignment_changed)
     event_bus.subscribe(EventType.LABELS_TOGGLED, on_labels_toggled)
@@ -1413,6 +1575,12 @@ def main():
                 simulation.eye_tracking.set_cursor_position(norm_x, norm_y)
         gl_widget.mouse_move_callback = on_mouse_move_for_tracking
 
+        # Wire animation player to simulation
+        simulation.anim_player = anim_player
+
+        # Populate animation clip selector in display tab
+        window.control_panel.display_tab.set_animation_clips(list(builtin_clips.keys()))
+
         # Report loaded meshes
         meshes = scene.collect_meshes()
         print(f"[FaceForge] Scene has {len(meshes)} renderable meshes")
@@ -1432,6 +1600,13 @@ def main():
         dt = clock.get_delta()
         simulation.step(dt)
         original_paint()
+        # Update animation transport controls
+        if anim_player.is_playing or anim_player.progress > 0:
+            window.control_panel.display_tab.update_animation_progress(
+                anim_player.progress,
+                anim_player.current_time,
+                anim_player.duration,
+            )
         # Update label overlay
         if _labels_enabled:
             if _labels_dirty:

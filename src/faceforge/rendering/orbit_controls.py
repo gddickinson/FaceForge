@@ -135,6 +135,8 @@ class OrbitControls:
     def reset_from_camera(self) -> None:
         """Re-sync orbit state from current camera position/target."""
         self.target = self.camera.target.copy()
+        self._damping_theta = 0.0
+        self._damping_phi = 0.0
         self._sync_from_camera()
 
     # ------------------------------------------------------------------
