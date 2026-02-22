@@ -489,7 +489,22 @@ def main():
         print(f"[WRAPPER] world_matrix pos={wrapper.world_matrix[:3, 3].round(1)}")
 
     # ── Display tab: render mode ──
-    _prev_bg_color = None  # stash for restoring bg after illustration mode
+    _prev_bg_color = None  # stash for restoring bg after styled modes
+
+    # Auto-background colours per render mode (modes not listed keep current bg)
+    _MODE_BG = {
+        RenderMode.ILLUSTRATION: (0.96, 0.94, 0.90, 1.0),  # warm paper
+        RenderMode.SEPIA:        (0.92, 0.86, 0.74, 1.0),  # aged parchment
+        RenderMode.COLOR_ATLAS:  (0.96, 0.94, 0.90, 1.0),  # paper
+        RenderMode.PEN_INK:      (1.00, 1.00, 1.00, 1.0),  # pure white
+        RenderMode.MEDICAL:      (0.12, 0.14, 0.18, 1.0),  # dark slate
+        RenderMode.HOLOGRAM:     (0.02, 0.03, 0.06, 1.0),  # near-black
+        RenderMode.CARTOON:      (0.18, 0.20, 0.25, 1.0),  # medium dark
+        RenderMode.PORCELAIN:    (0.88, 0.87, 0.85, 1.0),  # soft grey
+        RenderMode.BLUEPRINT:    (0.05, 0.12, 0.28, 1.0),  # blueprint blue
+        RenderMode.THERMAL:      (0.02, 0.02, 0.04, 1.0),  # near-black
+        RenderMode.ETHEREAL:     (0.04, 0.02, 0.08, 1.0),  # deep purple-black
+    }
 
     def on_render_mode_changed(mode: RenderMode = RenderMode.WIREFRAME, **kw):
         nonlocal _prev_bg_color
@@ -499,11 +514,13 @@ def main():
         # Also update environment meshes if scene mode is active
         if scene_controller.is_active:
             scene_controller.set_render_mode(mode)
-        # Auto-switch background for illustration mode (paper white ↔ dark)
+        # Auto-switch background for styled modes
         renderer = gl_widget.renderer
-        if mode == RenderMode.ILLUSTRATION:
-            _prev_bg_color = renderer.CLEAR_COLOR
-            renderer.CLEAR_COLOR = (0.96, 0.94, 0.90, 1.0)  # warm paper
+        auto_bg = _MODE_BG.get(mode)
+        if auto_bg is not None:
+            if _prev_bg_color is None:
+                _prev_bg_color = renderer.CLEAR_COLOR
+            renderer.CLEAR_COLOR = auto_bg
             renderer._bg_color_dirty = True
         elif _prev_bg_color is not None:
             renderer.CLEAR_COLOR = _prev_bg_color
@@ -1248,6 +1265,13 @@ def main():
     event_bus.subscribe(EventType.LABELS_TOGGLED, on_labels_toggled)
     event_bus.subscribe(EventType.LAYER_TOGGLED, _on_layer_toggled_labels)
     event_bus.subscribe(EventType.CLIP_PLANE_CHANGED, on_clip_plane_changed)
+
+    # Wire label style controls → label overlay
+    def _on_label_style_changed():
+        style = window.control_panel.display_tab.get_label_style()
+        label_overlay.apply_style(style)
+
+    window.control_panel.display_tab.label_style_changed.connect(_on_label_style_changed)
     event_bus.subscribe(EventType.SKULL_MODE_CHANGED, on_skull_mode_changed)
     event_bus.subscribe(EventType.EYE_COLOR_SET, on_eye_color_set)
     event_bus.subscribe(

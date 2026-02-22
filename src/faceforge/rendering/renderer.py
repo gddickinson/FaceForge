@@ -244,12 +244,25 @@ class GLRenderer:
         # light is disabled — the uniform branch adds zero cost).
         phong_frag = load_shader_source("phong_pointlight.frag")
         shader_configs = {
+            # Standard clinical
             RenderMode.SOLID: (vert_src, phong_frag),
             RenderMode.WIREFRAME: (vert_src, load_shader_source("wireframe.frag")),
             RenderMode.XRAY: (vert_src, load_shader_source("xray.frag")),
             RenderMode.POINTS: (points_vert_src, load_shader_source("points.frag")),
             RenderMode.OPAQUE: (vert_src, phong_frag),
+            # Textbook / illustration
             RenderMode.ILLUSTRATION: (vert_src, load_shader_source("illustration.frag")),
+            RenderMode.SEPIA: (vert_src, load_shader_source("sepia.frag")),
+            RenderMode.COLOR_ATLAS: (vert_src, load_shader_source("color_atlas.frag")),
+            RenderMode.PEN_INK: (vert_src, load_shader_source("pen_ink.frag")),
+            RenderMode.MEDICAL: (vert_src, load_shader_source("medical.frag")),
+            # Creative / stylised
+            RenderMode.HOLOGRAM: (vert_src, load_shader_source("hologram.frag")),
+            RenderMode.CARTOON: (vert_src, load_shader_source("cartoon.frag")),
+            RenderMode.PORCELAIN: (vert_src, load_shader_source("porcelain.frag")),
+            RenderMode.BLUEPRINT: (vert_src, load_shader_source("blueprint.frag")),
+            RenderMode.THERMAL: (vert_src, load_shader_source("thermal.frag")),
+            RenderMode.ETHEREAL: (vert_src, load_shader_source("ethereal.frag")),
         }
 
         for mode, (v_src, f_src) in shader_configs.items():

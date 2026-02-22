@@ -1,10 +1,11 @@
-"""Display tab: render mode, camera presets, colors."""
+"""Display tab: render mode, camera presets, colors, labels, clip plane."""
 
 from PySide6.QtWidgets import (
     QScrollArea, QWidget, QVBoxLayout, QGridLayout, QHBoxLayout,
     QPushButton, QSizePolicy, QComboBox, QLabel, QCheckBox, QSlider,
+    QSpinBox,
 )
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QColor
 
 from faceforge.core.events import EventBus, EventType
@@ -16,14 +17,31 @@ from faceforge.ui.widgets.toggle_row import ToggleRow
 from faceforge.ui.widgets.transport_controls import TransportControls
 
 
-# Render modes with display labels
-_RENDER_MODES = [
+# ── Render mode groups ───────────────────────────────────────────────────
+
+_CLINICAL_MODES = [
     (RenderMode.WIREFRAME, "Wireframe"),
     (RenderMode.SOLID, "Solid"),
     (RenderMode.XRAY, "X-Ray"),
     (RenderMode.POINTS, "Points"),
     (RenderMode.OPAQUE, "Opaque"),
-    (RenderMode.ILLUSTRATION, "Illustration"),
+]
+
+_ILLUSTRATION_MODES = [
+    (RenderMode.ILLUSTRATION, "B&W Textbook"),
+    (RenderMode.SEPIA, "Sepia Vintage"),
+    (RenderMode.COLOR_ATLAS, "Colour Atlas"),
+    (RenderMode.PEN_INK, "Pen & Ink"),
+    (RenderMode.MEDICAL, "Medical Atlas"),
+]
+
+_CREATIVE_MODES = [
+    (RenderMode.HOLOGRAM, "Hologram"),
+    (RenderMode.CARTOON, "Cartoon"),
+    (RenderMode.PORCELAIN, "Porcelain"),
+    (RenderMode.BLUEPRINT, "Blueprint"),
+    (RenderMode.THERMAL, "Thermal"),
+    (RenderMode.ETHEREAL, "Ethereal"),
 ]
 
 # Camera preset definitions: (id, label)
@@ -45,13 +63,46 @@ _HEAD_CAMERA_PRESETS = [
     ("head_three_quarter", "3/4 View"),
 ]
 
+# Background colour presets: (name, hex)
+_BG_PRESETS = [
+    ("Dark",      "#0A0B0E"),
+    ("Charcoal",  "#1E1E24"),
+    ("Slate",     "#2C3040"),
+    ("Midnight",  "#0D1B2A"),
+    ("Paper",     "#F5F0E8"),
+    ("Cream",     "#FFFDD0"),
+    ("White",     "#FFFFFF"),
+    ("Black",     "#000000"),
+    ("Sage",      "#2A3A2A"),
+    ("Navy",      "#101828"),
+]
+
+# Label font families
+_FONT_FAMILIES = [
+    "Georgia", "Times New Roman", "Garamond",
+    "Arial", "Helvetica", "Verdana",
+    "Courier New", "monospace",
+]
+
+# Leader line styles
+_LINE_STYLES = [
+    ("Solid", Qt.PenStyle.SolidLine),
+    ("Dashed", Qt.PenStyle.DashLine),
+    ("Dotted", Qt.PenStyle.DotLine),
+    ("Dash-Dot", Qt.PenStyle.DashDotLine),
+]
+
 
 class DisplayTab(QScrollArea):
-    """Tab for render mode selection, camera presets, and colour pickers.
+    """Tab for render mode selection, camera presets, colours, labels,
+    clip plane, and scene controls.
 
-    Publishes ``RENDER_MODE_CHANGED``, ``CAMERA_PRESET``, and
-    ``COLOR_CHANGED`` events.
+    Publishes ``RENDER_MODE_CHANGED``, ``CAMERA_PRESET``,
+    ``COLOR_CHANGED``, ``LABELS_TOGGLED``, ``CLIP_PLANE_CHANGED`` events.
     """
+
+    # Signal emitted when label style settings change (listened to by app.py)
+    label_style_changed = Signal()
 
     def __init__(
         self,
@@ -79,24 +130,112 @@ class DisplayTab(QScrollArea):
         self._labels_toggle.toggled.connect(self._on_labels_toggled)
         self._layout.addWidget(self._labels_toggle)
 
-        # ── 1. Render Mode ──
-        self._layout.addWidget(SectionLabel("Render Mode"))
+        # ── 0b. Label Style ──
+        self._layout.addWidget(SectionLabel("Label Style"))
+
+        # Font family
+        font_row = QHBoxLayout()
+        font_row.addWidget(QLabel("Font:"))
+        self._label_font_combo = QComboBox()
+        self._label_font_combo.addItems(_FONT_FAMILIES)
+        self._label_font_combo.setCurrentText("Georgia")
+        self._label_font_combo.currentTextChanged.connect(lambda _: self.label_style_changed.emit())
+        font_row.addWidget(self._label_font_combo)
+        font_row_w = QWidget()
+        font_row_w.setLayout(font_row)
+        self._layout.addWidget(font_row_w)
+
+        # Font size
+        size_row = QHBoxLayout()
+        size_row.addWidget(QLabel("Size:"))
+        self._label_size_spin = QSpinBox()
+        self._label_size_spin.setRange(6, 28)
+        self._label_size_spin.setValue(10)
+        self._label_size_spin.valueChanged.connect(lambda _: self.label_style_changed.emit())
+        size_row.addWidget(self._label_size_spin)
+
+        self._label_italic = QCheckBox("Italic")
+        self._label_italic.setChecked(True)
+        self._label_italic.toggled.connect(lambda _: self.label_style_changed.emit())
+        size_row.addWidget(self._label_italic)
+
+        self._label_bold = QCheckBox("Bold")
+        self._label_bold.toggled.connect(lambda _: self.label_style_changed.emit())
+        size_row.addWidget(self._label_bold)
+        size_row_w = QWidget()
+        size_row_w.setLayout(size_row)
+        self._layout.addWidget(size_row_w)
+
+        # Line width + dot size
+        line_row = QHBoxLayout()
+        line_row.addWidget(QLabel("Line:"))
+        self._label_line_width = QSlider(Qt.Orientation.Horizontal)
+        self._label_line_width.setRange(1, 5)
+        self._label_line_width.setValue(1)
+        self._label_line_width.setFixedWidth(60)
+        self._label_line_width.valueChanged.connect(lambda _: self.label_style_changed.emit())
+        line_row.addWidget(self._label_line_width)
+        self._label_line_width_lbl = QLabel("1")
+        self._label_line_width_lbl.setFixedWidth(12)
+        self._label_line_width.valueChanged.connect(
+            lambda v: self._label_line_width_lbl.setText(str(v)))
+        line_row.addWidget(self._label_line_width_lbl)
+
+        line_row.addWidget(QLabel("Dot:"))
+        self._label_dot_size = QSlider(Qt.Orientation.Horizontal)
+        self._label_dot_size.setRange(1, 8)
+        self._label_dot_size.setValue(3)
+        self._label_dot_size.setFixedWidth(60)
+        self._label_dot_size.valueChanged.connect(lambda _: self.label_style_changed.emit())
+        line_row.addWidget(self._label_dot_size)
+        self._label_dot_size_lbl = QLabel("3")
+        self._label_dot_size_lbl.setFixedWidth(12)
+        self._label_dot_size.valueChanged.connect(
+            lambda v: self._label_dot_size_lbl.setText(str(v)))
+        line_row.addWidget(self._label_dot_size_lbl)
+        line_row_w = QWidget()
+        line_row_w.setLayout(line_row)
+        self._layout.addWidget(line_row_w)
+
+        # Line style
+        style_row = QHBoxLayout()
+        style_row.addWidget(QLabel("Style:"))
+        self._label_line_style = QComboBox()
+        self._label_line_style.addItems([name for name, _ in _LINE_STYLES])
+        self._label_line_style.currentIndexChanged.connect(lambda _: self.label_style_changed.emit())
+        style_row.addWidget(self._label_line_style)
+        style_row_w = QWidget()
+        style_row_w.setLayout(style_row)
+        self._layout.addWidget(style_row_w)
+
+        # Text / line / dot colour pickers
+        self._label_text_color = ColorPicker("Text", QColor(200, 200, 200))
+        self._label_text_color.color_changed.connect(lambda _: self.label_style_changed.emit())
+        self._layout.addWidget(self._label_text_color)
+
+        self._label_line_color = ColorPicker("Line", QColor(160, 160, 160))
+        self._label_line_color.color_changed.connect(lambda _: self.label_style_changed.emit())
+        self._layout.addWidget(self._label_line_color)
+
+        self._label_dot_color = ColorPicker("Dot", QColor(180, 60, 60))
+        self._label_dot_color.color_changed.connect(lambda _: self.label_style_changed.emit())
+        self._layout.addWidget(self._label_dot_color)
+
+        # ── 1. Render Mode: Clinical ──
+        self._layout.addWidget(SectionLabel("Clinical Render"))
         self._mode_buttons: dict[RenderMode, QPushButton] = {}
-        mode_grid = QGridLayout()
-        mode_grid.setSpacing(4)
-        for i, (mode, label) in enumerate(_RENDER_MODES):
-            btn = QPushButton(label)
-            btn.setObjectName("renderModeButton")
-            btn.setCheckable(True)
-            btn.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-            btn.clicked.connect(lambda checked, m=mode: self._on_render_mode(m))
-            mode_grid.addWidget(btn, i // 2, i % 2)
-            self._mode_buttons[mode] = btn
+        self._build_mode_grid(_CLINICAL_MODES, cols=3)
+
+        # ── 1b. Render Mode: Illustration ──
+        self._layout.addWidget(SectionLabel("Illustration Render"))
+        self._build_mode_grid(_ILLUSTRATION_MODES, cols=3)
+
+        # ── 1c. Render Mode: Creative ──
+        self._layout.addWidget(SectionLabel("Creative Render"))
+        self._build_mode_grid(_CREATIVE_MODES, cols=3)
+
         # Default to wireframe
         self._mode_buttons[RenderMode.WIREFRAME].setChecked(True)
-        mode_widget = QWidget()
-        mode_widget.setLayout(mode_grid)
-        self._layout.addWidget(mode_widget)
 
         # ── 2. Camera Presets ──
         self._camera_buttons: dict[str, QPushButton] = {}
@@ -152,6 +291,22 @@ class DisplayTab(QScrollArea):
         )
         self._layout.addWidget(self._bg_color)
 
+        # Background colour presets
+        bg_preset_grid = QGridLayout()
+        bg_preset_grid.setSpacing(3)
+        for i, (name, hex_str) in enumerate(_BG_PRESETS):
+            btn = QPushButton()
+            btn.setFixedSize(24, 20)
+            btn.setToolTip(name)
+            btn.setStyleSheet(
+                f"background-color: {hex_str}; border: 1px solid #404040; border-radius: 3px;"
+            )
+            btn.clicked.connect(lambda _, h=hex_str, n=name: self._on_bg_preset(h))
+            bg_preset_grid.addWidget(btn, i // 5, i % 5)
+        bg_preset_widget = QWidget()
+        bg_preset_widget.setLayout(bg_preset_grid)
+        self._layout.addWidget(bg_preset_widget)
+
         # ── 4. Clip Plane ──
         self._layout.addWidget(SectionLabel("Clip Plane"))
 
@@ -205,7 +360,7 @@ class DisplayTab(QScrollArea):
         self._scene_camera_combo.currentTextChanged.connect(self._on_scene_camera_changed)
         self._layout.addWidget(self._scene_camera_combo)
 
-        # ── 4b. Wrapper Transform Debug ──
+        # ── 5b. Wrapper Transform Debug ──
         self._layout.addWidget(SectionLabel("Wrapper Nudge"))
 
         self._nudge_buttons: list[QPushButton] = []
@@ -233,11 +388,11 @@ class DisplayTab(QScrollArea):
         for axis_label, axis_key in [("Rot X", "rx"), ("Rot Y", "ry"), ("Rot Z", "rz")]:
             row = QHBoxLayout()
             row.addWidget(QLabel(f"{axis_label}:"))
-            minus = QPushButton(f"-{int(rot_step)}°")
+            minus = QPushButton(f"-{int(rot_step)}\u00B0")
             minus.setFixedWidth(50)
             minus.clicked.connect(lambda _, a=axis_key: self._on_nudge(a, -rot_step))
             row.addWidget(minus)
-            plus = QPushButton(f"+{int(rot_step)}°")
+            plus = QPushButton(f"+{int(rot_step)}\u00B0")
             plus.setFixedWidth(50)
             plus.clicked.connect(lambda _, a=axis_key: self._on_nudge(a, rot_step))
             row.addWidget(plus)
@@ -256,7 +411,7 @@ class DisplayTab(QScrollArea):
         for btn in self._nudge_buttons:
             btn.setEnabled(False)
 
-        # ── 5. Animation ──
+        # ── 6. Animation ──
         self._layout.addWidget(SectionLabel("Animation"))
 
         self._anim_clip_combo = QComboBox()
@@ -269,6 +424,24 @@ class DisplayTab(QScrollArea):
         self._layout.addWidget(self._transport)
 
         self._layout.addStretch()
+
+    # ── Helpers ──
+
+    def _build_mode_grid(self, modes: list, cols: int = 3) -> None:
+        """Build a grid of render mode buttons and add to layout."""
+        grid = QGridLayout()
+        grid.setSpacing(4)
+        for i, (mode, label) in enumerate(modes):
+            btn = QPushButton(label)
+            btn.setObjectName("renderModeButton")
+            btn.setCheckable(True)
+            btn.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+            btn.clicked.connect(lambda checked, m=mode: self._on_render_mode(m))
+            grid.addWidget(btn, i // cols, i % cols)
+            self._mode_buttons[mode] = btn
+        widget = QWidget()
+        widget.setLayout(grid)
+        self._layout.addWidget(widget)
 
     # ── Slots ──
 
@@ -286,6 +459,11 @@ class DisplayTab(QScrollArea):
     def _on_color_changed(self, target: str, color: QColor) -> None:
         rgb = (color.redF(), color.greenF(), color.blueF())
         self._bus.publish(EventType.COLOR_CHANGED, target=target, color=rgb)
+
+    def _on_bg_preset(self, hex_str: str) -> None:
+        color = QColor(hex_str)
+        self._bg_color.set_color(color)
+        self._on_color_changed("background", color)
 
     def _on_clip_changed(self, _=None) -> None:
         enabled = self._clip_enable.isChecked()
@@ -372,3 +550,22 @@ class DisplayTab(QScrollArea):
     def transport(self) -> TransportControls:
         """Access the transport controls widget."""
         return self._transport
+
+    # ── Label style getters ──
+
+    def get_label_style(self) -> dict:
+        """Return current label style settings as a dict."""
+        style_idx = self._label_line_style.currentIndex()
+        _, qt_style = _LINE_STYLES[style_idx] if style_idx < len(_LINE_STYLES) else _LINE_STYLES[0]
+        return {
+            "font_family": self._label_font_combo.currentText(),
+            "font_size": self._label_size_spin.value(),
+            "italic": self._label_italic.isChecked(),
+            "bold": self._label_bold.isChecked(),
+            "line_width": self._label_line_width.value(),
+            "line_style": qt_style,
+            "dot_size": self._label_dot_size.value(),
+            "text_color": self._label_text_color.color,
+            "line_color": self._label_line_color.color,
+            "dot_color": self._label_dot_color.color,
+        }

@@ -5,12 +5,25 @@ from dataclasses import dataclass, field
 
 
 class RenderMode(Enum):
+    # Standard clinical
     SOLID = auto()
     WIREFRAME = auto()
     XRAY = auto()
     POINTS = auto()
     OPAQUE = auto()
+    # Textbook / illustration
     ILLUSTRATION = auto()
+    SEPIA = auto()
+    COLOR_ATLAS = auto()
+    PEN_INK = auto()
+    MEDICAL = auto()
+    # Creative / stylised
+    HOLOGRAM = auto()
+    CARTOON = auto()
+    PORCELAIN = auto()
+    BLUEPRINT = auto()
+    THERMAL = auto()
+    ETHEREAL = auto()
 
 
 @dataclass

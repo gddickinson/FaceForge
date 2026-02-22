@@ -4,17 +4,20 @@ Supports two modes:
 - Simple mode: text at projected 3D positions (original behavior).
 - Illustration mode: Grey's Anatomy-style labels with leader lines arranged
   in left/right columns, used by illustration presets.
+
+Label font, size, line width/style, and colours are configurable via
+``apply_style()``, driven by the Display tab's Label Style controls.
 """
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Optional
 
 from PySide6.QtWidgets import QWidget
-from PySide6.QtCore import Qt, QRectF, QPointF
+from PySide6.QtCore import Qt, QPointF
 from PySide6.QtGui import (
-    QPainter, QColor, QFont, QPen, QFontMetrics, QBrush, QPainterPath,
+    QPainter, QColor, QFont, QPen, QFontMetrics, QBrush,
 )
 
 from faceforge.core.math_utils import Vec3, Mat4, world_to_screen
@@ -54,12 +57,15 @@ class LabelOverlay(QWidget):
         self._illustration_labels: list[LabelDef] = []
         self._illustration_positions: dict[str, Vec3] = {}  # mesh_name → world pos
 
-        # Illustration fonts/colors (Grey's Anatomy aesthetic)
+        # Illustration style defaults (Grey's Anatomy aesthetic)
         self._illust_font = QFont("Georgia", 10)
         self._illust_font.setItalic(True)
-        self._illust_text_color = QColor(200, 200, 200)       # light on dark bg
-        self._illust_line_color = QColor(160, 160, 160, 180)   # subtle leader lines
-        self._illust_dot_color = QColor(180, 60, 60)           # red anchor dots
+        self._illust_text_color = QColor(200, 200, 200)
+        self._illust_line_color = QColor(160, 160, 160, 180)
+        self._illust_dot_color = QColor(180, 60, 60)
+        self._illust_line_width: float = 1.0
+        self._illust_line_style: Qt.PenStyle = Qt.PenStyle.SolidLine
+        self._illust_dot_radius: float = 3.0
 
         self.hide()
 
@@ -90,6 +96,49 @@ class LabelOverlay(QWidget):
         self._illustration_mode = False
         self._illustration_labels = []
         self._illustration_positions = {}
+
+    def apply_style(self, style: dict) -> None:
+        """Apply label style settings from the Display tab.
+
+        Parameters
+        ----------
+        style : dict
+            Keys: font_family, font_size, italic, bold, line_width,
+            line_style (Qt.PenStyle), dot_size, text_color (QColor),
+            line_color (QColor), dot_color (QColor).
+        """
+        family = style.get("font_family", "Georgia")
+        size = style.get("font_size", 10)
+        italic = style.get("italic", True)
+        bold = style.get("bold", False)
+
+        self._illust_font = QFont(family, size)
+        self._illust_font.setItalic(italic)
+        self._illust_font.setBold(bold)
+
+        # Also update simple mode font
+        self._font = QFont(family, size)
+        self._font.setItalic(italic)
+        self._font.setBold(bold)
+
+        self._illust_line_width = float(style.get("line_width", 1))
+        self._illust_line_style = style.get("line_style", Qt.PenStyle.SolidLine)
+        self._illust_dot_radius = float(style.get("dot_size", 3))
+
+        tc = style.get("text_color")
+        if tc is not None:
+            self._illust_text_color = QColor(tc)
+            self._text_color = QColor(tc)
+
+        lc = style.get("line_color")
+        if lc is not None:
+            self._illust_line_color = QColor(lc)
+
+        dc = style.get("dot_color")
+        if dc is not None:
+            self._illust_dot_color = QColor(dc)
+
+        self.update()
 
     # ── Paint ──
 
@@ -156,7 +205,7 @@ class LabelOverlay(QWidget):
         usable_height = h - top_margin - bottom_margin
 
         # Project all labels to screen space
-        left_items: list[tuple[LabelDef, float, float]] = []   # (label, sx, sy)
+        left_items: list[tuple[LabelDef, float, float]] = []
         right_items: list[tuple[LabelDef, float, float]] = []
 
         for label_def in self._illustration_labels:
@@ -174,7 +223,6 @@ class LabelOverlay(QWidget):
             elif label_def.side == "right":
                 right_items.append((label_def, sx, sy))
             else:
-                # Auto: use world X coordinate (positive X = right side of body)
                 if world_pos[0] >= 0:
                     right_items.append((label_def, sx, sy))
                 else:
@@ -189,13 +237,11 @@ class LabelOverlay(QWidget):
         min_spacing = max(20, fm.height() + 4)
 
         def distribute_y(items, count):
-            """Return evenly spaced Y positions within usable area."""
             if count <= 0:
                 return []
             if count == 1:
                 return [top_margin + usable_height // 2]
             spacing = max(min_spacing, usable_height / (count - 1))
-            # Center the block if it doesn't fill the space
             total = spacing * (count - 1)
             start = top_margin + max(0, (usable_height - total)) // 2
             return [int(start + i * spacing) for i in range(count)]
@@ -207,13 +253,14 @@ class LabelOverlay(QWidget):
         painter.setFont(self._illust_font)
 
         line_pen = QPen(self._illust_line_color)
-        line_pen.setWidthF(1.0)
+        line_pen.setWidthF(self._illust_line_width)
+        line_pen.setStyle(self._illust_line_style)
 
         text_pen = QPen(self._illust_text_color)
 
         dot_brush = QBrush(self._illust_dot_color)
         dot_pen = QPen(self._illust_dot_color)
-        dot_radius = 3.0
+        dot_radius = self._illust_dot_radius
 
         # Draw left column
         for i, (label_def, anchor_sx, anchor_sy) in enumerate(left_items):
@@ -221,7 +268,6 @@ class LabelOverlay(QWidget):
             text_x = left_margin
             text_width = fm.horizontalAdvance(label_def.display_text)
 
-            # Leader line: from text end → midpoint → anchor
             line_start_x = text_x + text_width + 6
             line_start_y = label_y
             mid_x = left_margin + int((anchor_sx - left_margin) * 0.5)
@@ -237,7 +283,6 @@ class LabelOverlay(QWidget):
                 QPointF(anchor_sx, anchor_sy),
             )
 
-            # Anchor dot
             painter.setPen(dot_pen)
             painter.setBrush(dot_brush)
             painter.drawEllipse(
@@ -245,7 +290,6 @@ class LabelOverlay(QWidget):
             )
             painter.setBrush(Qt.BrushStyle.NoBrush)
 
-            # Label text
             painter.setPen(text_pen)
             painter.drawText(text_x, label_y + fm.ascent() // 2, label_def.display_text)
 
@@ -255,7 +299,6 @@ class LabelOverlay(QWidget):
             text_width = fm.horizontalAdvance(label_def.display_text)
             text_x = w - right_margin - text_width
 
-            # Leader line: from text start → midpoint → anchor
             line_start_x = text_x - 6
             line_start_y = label_y
             mid_x = anchor_sx + int((line_start_x - anchor_sx) * 0.5)
@@ -271,7 +314,6 @@ class LabelOverlay(QWidget):
                 QPointF(anchor_sx, anchor_sy),
             )
 
-            # Anchor dot
             painter.setPen(dot_pen)
             painter.setBrush(dot_brush)
             painter.drawEllipse(
@@ -279,7 +321,6 @@ class LabelOverlay(QWidget):
             )
             painter.setBrush(Qt.BrushStyle.NoBrush)
 
-            # Label text
             painter.setPen(text_pen)
             painter.drawText(text_x, label_y + fm.ascent() // 2, label_def.display_text)
 

@@ -33,3 +33,6 @@ tests/.DS_Store
 /src/faceforge/ui/__pycache__
 /src/faceforge/core/__pycache__
 /src/faceforge/rendering/__pycache__
+/src/faceforge/core/__pycache__
+/src/faceforge/ui/tabs/__pycache__
+/src/faceforge/ui/widgets/__pycache__
