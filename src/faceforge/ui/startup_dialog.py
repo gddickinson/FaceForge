@@ -2,7 +2,7 @@
 
 from PySide6.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
-    QGridLayout, QWidget, QSizePolicy,
+    QGridLayout, QWidget, QSizePolicy, QTabWidget, QScrollArea,
 )
 from PySide6.QtCore import Qt
 
@@ -163,61 +163,97 @@ _preset(
 # ── Dialog ──────────────────────────────────────────────────────────────
 
 class StartupDialog(QDialog):
-    """Modal dialog shown at startup for choosing a layer preset.
+    """Modal dialog shown at startup for choosing a layer preset or illustration.
 
     Returns the chosen preset name via ``selected_preset`` after ``exec()``.
     If the user closes the dialog, ``selected_preset`` is ``"Default"``.
+    For illustration presets, ``selected_illustration`` is set instead.
     """
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.setWindowTitle("FaceForge — Choose Configuration")
         self.setStyleSheet(DARK_THEME)
-        self.setMinimumSize(520, 520)
+        self.setMinimumSize(520, 560)
         self.setModal(True)
         self.selected_preset: str = "Default"
+        self.selected_illustration: str | None = None
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(24, 20, 24, 20)
         layout.setSpacing(16)
 
         # Title
-        title = QLabel("Choose a Layer Configuration")
+        title = QLabel("Choose a Configuration")
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         title.setStyleSheet("font-size: 16px; font-weight: 600; color: #4fd1c5;")
         layout.addWidget(title)
 
-        subtitle = QLabel("Select which anatomical layers to show on startup")
+        subtitle = QLabel("Select a layer preset or anatomical illustration")
         subtitle.setAlignment(Qt.AlignmentFlag.AlignCenter)
         subtitle.setStyleSheet("font-size: 11px; color: #8b8e99; margin-bottom: 8px;")
         layout.addWidget(subtitle)
 
-        # Preset grid
-        grid = QGridLayout()
-        grid.setSpacing(8)
+        # Tab widget
+        tabs = QTabWidget()
+        tabs.setStyleSheet("""
+            QTabBar::tab {
+                padding: 6px 18px;
+                font-size: 12px;
+            }
+        """)
+
+        # ── Tab 1: Configurations ──
+        config_scroll = QScrollArea()
+        config_scroll.setWidgetResizable(True)
+        config_scroll.setFrameShape(QScrollArea.Shape.NoFrame)
+        config_container = QWidget()
+        config_grid = QGridLayout(config_container)
+        config_grid.setSpacing(8)
 
         preset_names = list(PRESETS.keys())
         cols = 2
         for i, name in enumerate(preset_names):
             info = PRESETS[name]
             btn = self._make_preset_button(name, info)
-            grid.addWidget(btn, i // cols, i % cols)
+            btn.clicked.connect(lambda _, n=name: self._on_preset_clicked(n))
+            config_grid.addWidget(btn, i // cols, i % cols)
 
-        grid_widget = QWidget()
-        grid_widget.setLayout(grid)
-        layout.addWidget(grid_widget)
+        config_scroll.setWidget(config_container)
+        tabs.addTab(config_scroll, "Configurations")
 
-        layout.addStretch()
+        # ── Tab 2: Illustrations ──
+        from faceforge.ui.illustration_presets import ILLUSTRATION_PRESETS
+        illust_scroll = QScrollArea()
+        illust_scroll.setWidgetResizable(True)
+        illust_scroll.setFrameShape(QScrollArea.Shape.NoFrame)
+        illust_container = QWidget()
+        illust_grid = QGridLayout(illust_container)
+        illust_grid.setSpacing(8)
 
-    def _make_preset_button(self, name: str, info: dict) -> QPushButton:
+        illust_names = list(ILLUSTRATION_PRESETS.keys())
+        for i, name in enumerate(illust_names):
+            p = ILLUSTRATION_PRESETS[name]
+            info = {"icon": p.icon, "description": p.description}
+            btn = self._make_preset_button(name, info, obj_name="illustButton")
+            btn.clicked.connect(lambda _, n=name: self._on_illustration_clicked(n))
+            illust_grid.addWidget(btn, i // cols, i % cols)
+
+        illust_scroll.setWidget(illust_container)
+        tabs.addTab(illust_scroll, "Illustrations")
+
+        layout.addWidget(tabs)
+
+    def _make_preset_button(self, name: str, info: dict,
+                            obj_name: str = "presetButton") -> QPushButton:
         icon = info["icon"]
         desc = info["description"]
         btn = QPushButton(f" {icon}  {name}\n      {desc}")
-        btn.setObjectName("presetButton")
+        btn.setObjectName(obj_name)
         btn.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         btn.setMinimumHeight(52)
-        btn.setStyleSheet("""
-            QPushButton#presetButton {
+        btn.setStyleSheet(f"""
+            QPushButton#{obj_name} {{
                 text-align: left;
                 padding: 8px 12px;
                 font-size: 12px;
@@ -225,21 +261,24 @@ class StartupDialog(QDialog):
                 background-color: #12141a;
                 border: 1px solid #252830;
                 border-radius: 6px;
-            }
-            QPushButton#presetButton:hover {
+            }}
+            QPushButton#{obj_name}:hover {{
                 background-color: #1a1d26;
                 border-color: #4fd1c5;
-            }
-            QPushButton#presetButton:pressed {
+            }}
+            QPushButton#{obj_name}:pressed {{
                 background-color: #4fd1c5;
                 color: #0a0b0e;
-            }
+            }}
         """)
-        btn.clicked.connect(lambda _, n=name: self._on_preset_clicked(n))
         return btn
 
     def _on_preset_clicked(self, name: str) -> None:
         self.selected_preset = name
+        self.accept()
+
+    def _on_illustration_clicked(self, name: str) -> None:
+        self.selected_illustration = name
         self.accept()
 
 

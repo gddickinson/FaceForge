@@ -2,7 +2,7 @@
 
 from PySide6.QtWidgets import (
     QScrollArea, QWidget, QVBoxLayout, QGridLayout, QHBoxLayout,
-    QPushButton, QSizePolicy, QComboBox, QLabel,
+    QPushButton, QSizePolicy, QComboBox, QLabel, QCheckBox, QSlider,
 )
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor
@@ -23,6 +23,7 @@ _RENDER_MODES = [
     (RenderMode.XRAY, "X-Ray"),
     (RenderMode.POINTS, "Points"),
     (RenderMode.OPAQUE, "Opaque"),
+    (RenderMode.ILLUSTRATION, "Illustration"),
 ]
 
 # Camera preset definitions: (id, label)
@@ -151,7 +152,42 @@ class DisplayTab(QScrollArea):
         )
         self._layout.addWidget(self._bg_color)
 
-        # ── 4. Scene View ──
+        # ── 4. Clip Plane ──
+        self._layout.addWidget(SectionLabel("Clip Plane"))
+
+        clip_row = QHBoxLayout()
+        self._clip_enable = QCheckBox("Enable")
+        self._clip_enable.toggled.connect(self._on_clip_changed)
+        clip_row.addWidget(self._clip_enable)
+
+        self._clip_axis = QComboBox()
+        self._clip_axis.addItems(["Sagittal (X)", "Coronal (Y)", "Axial (Z)"])
+        self._clip_axis.currentIndexChanged.connect(lambda _: self._on_clip_changed())
+        clip_row.addWidget(self._clip_axis)
+
+        self._clip_flip = QCheckBox("Flip")
+        self._clip_flip.toggled.connect(self._on_clip_changed)
+        clip_row.addWidget(self._clip_flip)
+
+        clip_row_widget = QWidget()
+        clip_row_widget.setLayout(clip_row)
+        self._layout.addWidget(clip_row_widget)
+
+        offset_row = QHBoxLayout()
+        offset_row.addWidget(QLabel("Offset:"))
+        self._clip_offset = QSlider(Qt.Orientation.Horizontal)
+        self._clip_offset.setRange(-200, 200)
+        self._clip_offset.setValue(0)
+        self._clip_offset.valueChanged.connect(lambda _: self._on_clip_changed())
+        offset_row.addWidget(self._clip_offset)
+        self._clip_offset_label = QLabel("0")
+        self._clip_offset_label.setFixedWidth(30)
+        offset_row.addWidget(self._clip_offset_label)
+        offset_row_widget = QWidget()
+        offset_row_widget.setLayout(offset_row)
+        self._layout.addWidget(offset_row_widget)
+
+        # ── 5. Scene View ──
         self._layout.addWidget(SectionLabel("Scene View"))
 
         self._scene_toggle = QPushButton("Scene View: OFF")
@@ -250,6 +286,44 @@ class DisplayTab(QScrollArea):
     def _on_color_changed(self, target: str, color: QColor) -> None:
         rgb = (color.redF(), color.greenF(), color.blueF())
         self._bus.publish(EventType.COLOR_CHANGED, target=target, color=rgb)
+
+    def _on_clip_changed(self, _=None) -> None:
+        enabled = self._clip_enable.isChecked()
+        axis_map = {0: "x", 1: "y", 2: "z"}
+        axis = axis_map.get(self._clip_axis.currentIndex(), "x")
+        offset = self._clip_offset.value()
+        flip = self._clip_flip.isChecked()
+        self._clip_offset_label.setText(str(offset))
+        self._bus.publish(
+            EventType.CLIP_PLANE_CHANGED,
+            enabled=enabled, axis=axis, offset=float(offset), flip=flip,
+        )
+
+    def set_clip_plane(self, enabled: bool, axis: str = "x",
+                       offset: float = 0.0, flip: bool = False) -> None:
+        """Programmatically set clip plane state (used by illustration presets)."""
+        self._clip_enable.blockSignals(True)
+        self._clip_axis.blockSignals(True)
+        self._clip_offset.blockSignals(True)
+        self._clip_flip.blockSignals(True)
+
+        self._clip_enable.setChecked(enabled)
+        axis_idx = {"x": 0, "y": 1, "z": 2}.get(axis, 0)
+        self._clip_axis.setCurrentIndex(axis_idx)
+        self._clip_offset.setValue(int(offset))
+        self._clip_flip.setChecked(flip)
+        self._clip_offset_label.setText(str(int(offset)))
+
+        self._clip_enable.blockSignals(False)
+        self._clip_axis.blockSignals(False)
+        self._clip_offset.blockSignals(False)
+        self._clip_flip.blockSignals(False)
+
+        # Fire the event
+        self._bus.publish(
+            EventType.CLIP_PLANE_CHANGED,
+            enabled=enabled, axis=axis, offset=float(offset), flip=flip,
+        )
 
     def _on_nudge(self, axis: str, delta: float) -> None:
         self._bus.publish(EventType.SCENE_WRAPPER_NUDGE, axis=axis, delta=delta)

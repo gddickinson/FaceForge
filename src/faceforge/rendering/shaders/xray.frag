@@ -3,6 +3,7 @@
 in vec3 vNormal;
 in vec3 vViewPos;
 in vec3 vVertexColor;
+in vec3 vWorldPos;
 
 uniform vec3 uColor;
 uniform float uOpacity;
@@ -10,9 +11,15 @@ uniform vec3 uAmbientColor;
 uniform vec3 uLightDir;
 uniform vec3 uLightColor;
 
+// Clip plane
+uniform int uClipEnabled;
+uniform vec4 uClipPlane;
+
 out vec4 fragColor;
 
 void main() {
+    if (uClipEnabled != 0 && dot(vWorldPos, uClipPlane.xyz) + uClipPlane.w < 0.0) discard;
+
     vec3 N = normalize(vNormal);
     vec3 V = normalize(-vViewPos);
 

@@ -72,6 +72,9 @@ class EventType(Enum):
     ANIM_CLIP_SELECTED = auto()   # data: clip_name (str)
     ANIM_PROGRESS = auto()        # data: progress (0-1), time (float), duration (float)
 
+    # Clip plane
+    CLIP_PLANE_CHANGED = auto()   # data: enabled (bool), axis (str), offset (float), flip (bool)
+
 
 class EventBus:
     """Simple publish/subscribe event system."""

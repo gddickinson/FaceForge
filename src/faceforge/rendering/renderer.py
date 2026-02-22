@@ -63,6 +63,11 @@ class GLRenderer:
         self.scene_transform: Mat4 | None = None
         self._scene_transform_logged: bool = False
 
+        # Clip plane: world-space half-plane for cutaway views.
+        # Plane equation: dot(pos, normal) + offset < 0 → discard.
+        self.clip_plane_enabled: bool = False
+        self.clip_plane: tuple = (1.0, 0.0, 0.0, 0.0)  # (nx, ny, nz, offset)
+
     # ------------------------------------------------------------------
     # Lifecycle
     # ------------------------------------------------------------------
@@ -205,6 +210,20 @@ class GLRenderer:
         restore_material_defaults()
 
     # ------------------------------------------------------------------
+    # Clip plane
+    # ------------------------------------------------------------------
+
+    def set_clip_plane(self, normal: tuple, offset: float) -> None:
+        """Enable a world-space clip plane.  Fragments with
+        ``dot(pos, normal) + offset < 0`` are discarded."""
+        self.clip_plane_enabled = True
+        self.clip_plane = (float(normal[0]), float(normal[1]), float(normal[2]), float(offset))
+
+    def clear_clip_plane(self) -> None:
+        """Disable the clip plane."""
+        self.clip_plane_enabled = False
+
+    # ------------------------------------------------------------------
     # Shader access
     # ------------------------------------------------------------------
 
@@ -230,6 +249,7 @@ class GLRenderer:
             RenderMode.XRAY: (vert_src, load_shader_source("xray.frag")),
             RenderMode.POINTS: (points_vert_src, load_shader_source("points.frag")),
             RenderMode.OPAQUE: (vert_src, phong_frag),
+            RenderMode.ILLUSTRATION: (vert_src, load_shader_source("illustration.frag")),
         }
 
         for mode, (v_src, f_src) in shader_configs.items():
@@ -305,6 +325,12 @@ class GLRenderer:
 
         shader.set_uniform_mat4("uModelView", model_view)
         shader.set_uniform_mat4("uProjection", proj)
+        shader.set_uniform_mat4("uModelMatrix", effective_world)
+
+        # Clip plane
+        shader.set_uniform_int("uClipEnabled", 1 if self.clip_plane_enabled else 0)
+        if self.clip_plane_enabled:
+            shader.set_uniform_vec4("uClipPlane", self.clip_plane)
 
         # Normal matrix (inverse transpose of upper-left 3x3 of model-view)
         try:

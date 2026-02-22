@@ -28,6 +28,7 @@ from OpenGL.GL import (
     glUniform1f,
     glUniform1i,
     glUniform3f,
+    glUniform4f,
     glUniformMatrix3fv,
     glUniformMatrix4fv,
     glUseProgram,
@@ -134,6 +135,13 @@ class ShaderProgram:
         if loc < 0:
             return
         glUniform3f(loc, float(vec3[0]), float(vec3[1]), float(vec3[2]))
+
+    def set_uniform_vec4(self, name: str, vec4: tuple | np.ndarray) -> None:
+        """Set a vec4 uniform from a 4-element sequence."""
+        loc = self.get_uniform_location(name)
+        if loc < 0:
+            return
+        glUniform4f(loc, float(vec4[0]), float(vec4[1]), float(vec4[2]), float(vec4[3]))
 
     def set_uniform_float(self, name: str, value: float) -> None:
         loc = self.get_uniform_location(name)

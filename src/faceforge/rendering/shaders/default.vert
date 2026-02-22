@@ -8,14 +8,17 @@ uniform mat4 uModelView;
 uniform mat4 uProjection;
 uniform mat3 uNormalMatrix;
 uniform int uUseVertexColor;
+uniform mat4 uModelMatrix;
 
 out vec3 vNormal;
 out vec3 vViewPos;
 out vec3 vVertexColor;
+out vec3 vWorldPos;
 
 void main() {
     vec4 mvPos = uModelView * vec4(aPosition, 1.0);
     vViewPos = mvPos.xyz;
+    vWorldPos = (uModelMatrix * vec4(aPosition, 1.0)).xyz;
     vNormal = normalize(uNormalMatrix * aNormal);
     vVertexColor = uUseVertexColor != 0 ? aColor : vec3(0.0);
     gl_Position = uProjection * mvPos;

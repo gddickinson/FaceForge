@@ -489,13 +489,26 @@ def main():
         print(f"[WRAPPER] world_matrix pos={wrapper.world_matrix[:3, 3].round(1)}")
 
     # ── Display tab: render mode ──
+    _prev_bg_color = None  # stash for restoring bg after illustration mode
+
     def on_render_mode_changed(mode: RenderMode = RenderMode.WIREFRAME, **kw):
+        nonlocal _prev_bg_color
         meshes = scene.collect_meshes()
         for mesh, _ in meshes:
             mesh.material.render_mode = mode
         # Also update environment meshes if scene mode is active
         if scene_controller.is_active:
             scene_controller.set_render_mode(mode)
+        # Auto-switch background for illustration mode (paper white ↔ dark)
+        renderer = gl_widget.renderer
+        if mode == RenderMode.ILLUSTRATION:
+            _prev_bg_color = renderer.CLEAR_COLOR
+            renderer.CLEAR_COLOR = (0.96, 0.94, 0.90, 1.0)  # warm paper
+            renderer._bg_color_dirty = True
+        elif _prev_bg_color is not None:
+            renderer.CLEAR_COLOR = _prev_bg_color
+            renderer._bg_color_dirty = True
+            _prev_bg_color = None
 
     # ── Display tab: camera presets ──
     def on_camera_preset(preset: str = "", **kw):
@@ -566,6 +579,19 @@ def main():
     def _on_layer_toggled_labels(**kw):
         nonlocal _labels_dirty
         _labels_dirty = True
+
+    # ── Clip plane ──
+    def on_clip_plane_changed(enabled: bool = False, axis: str = "x",
+                              offset: float = 0.0, flip: bool = False, **kw):
+        renderer = gl_widget.renderer
+        if not enabled:
+            renderer.clear_clip_plane()
+            return
+        normal_map = {"x": (1, 0, 0), "y": (0, 1, 0), "z": (0, 0, 1)}
+        normal = list(normal_map.get(axis, (1, 0, 0)))
+        if flip:
+            normal = [-n for n in normal]
+        renderer.set_clip_plane(tuple(normal), offset)
 
     # ── Skull mode switching ──
     def on_skull_mode_changed(mode: str = "original", **kw):
@@ -1221,6 +1247,7 @@ def main():
     event_bus.subscribe(EventType.ALIGNMENT_CHANGED, on_alignment_changed)
     event_bus.subscribe(EventType.LABELS_TOGGLED, on_labels_toggled)
     event_bus.subscribe(EventType.LAYER_TOGGLED, _on_layer_toggled_labels)
+    event_bus.subscribe(EventType.CLIP_PLANE_CHANGED, on_clip_plane_changed)
     event_bus.subscribe(EventType.SKULL_MODE_CHANGED, on_skull_mode_changed)
     event_bus.subscribe(EventType.EYE_COLOR_SET, on_eye_color_set)
     event_bus.subscribe(
@@ -1672,7 +1699,19 @@ def main():
                   f"mode={m.material.render_mode.name}")
 
         # Apply startup preset (after all systems wired, scene ready)
-        if _startup_preset and _startup_preset != "Default":
+        if _startup_illustration:
+            from faceforge.ui.illustration_presets import apply_illustration_preset
+            apply_illustration_preset(
+                _startup_illustration,
+                window.control_panel.layers_tab,
+                event_bus,
+                gl_widget,
+                window.control_panel.display_tab,
+                label_overlay,
+                scene,
+            )
+            print(f"[FaceForge] Applied illustration preset: {_startup_illustration}")
+        elif _startup_preset and _startup_preset != "Default":
             apply_preset(
                 _startup_preset,
                 window.control_panel.layers_tab,
@@ -1688,12 +1727,20 @@ def main():
     startup_dialog = StartupDialog()
     startup_dialog.exec()
     _startup_preset = startup_dialog.selected_preset
+    _startup_illustration = startup_dialog.selected_illustration
 
     # Schedule asset loading after GL init
     QTimer.singleShot(100, load_assets)
 
     # Simulation loop (driven by GL widget's paint timer)
     original_paint = gl_widget.paintGL
+
+    def _rebuild_labels_illustration():
+        """Rebuild illustration-mode labels from current scene meshes."""
+        nonlocal _labels_dirty
+        _labels_dirty = False
+        from faceforge.ui.illustration_presets import rebuild_illustration_labels
+        rebuild_illustration_labels(label_overlay, scene)
 
     def simulation_paint():
         dt = clock.get_delta()
@@ -1709,7 +1756,10 @@ def main():
         # Update label overlay
         if _labels_enabled:
             if _labels_dirty:
-                _rebuild_labels()
+                if label_overlay._illustration_mode:
+                    _rebuild_labels_illustration()
+                else:
+                    _rebuild_labels()
             label_overlay.set_view_proj(gl_widget.camera.get_view_projection())
             label_overlay.update()
 

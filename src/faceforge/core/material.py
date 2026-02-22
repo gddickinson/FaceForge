@@ -10,6 +10,7 @@ class RenderMode(Enum):
     XRAY = auto()
     POINTS = auto()
     OPAQUE = auto()
+    ILLUSTRATION = auto()
 
 
 @dataclass
