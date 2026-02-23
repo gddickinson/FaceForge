@@ -10,6 +10,8 @@ MESHDATA_DIR = ASSETS_DIR / "meshdata"
 STL_DIR = ASSETS_DIR / "stl"
 MUSCLE_CONFIG_DIR = CONFIG_DIR / "muscles"
 SKELETON_CONFIG_DIR = CONFIG_DIR / "skeleton"
+MAKEHUMAN_DIR = ASSETS_DIR / "makehuman"
+BODY_MESHES_DIR = ASSETS_DIR / "body_meshes"
 
 # Face mesh constants
 FACE_VERT_COUNT = 468  # Original MediaPipe face landmarks

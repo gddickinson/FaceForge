@@ -24,6 +24,7 @@ from faceforge.body.joint_pivots import JointPivotSetup
 from faceforge.anatomy.bone_anchors import BoneAnchorRegistry
 from faceforge.anatomy.platysma import PlatysmaHandler
 from faceforge.anatomy.fascia import FasciaSystem, build_anatomical_fascia_regions
+from faceforge.body.gender_morph import GenderMorphSystem
 from faceforge.constants import STL_DIR, set_jaw_pivot
 
 logger = logging.getLogger(__name__)
@@ -72,6 +73,7 @@ class LoadingPipeline:
         self.bone_anchors: Optional[BoneAnchorRegistry] = None
         self.platysma: Optional[PlatysmaHandler] = None
         self.fascia: Optional[FasciaSystem] = None
+        self.gender_morph: Optional[GenderMorphSystem] = None
 
     def _report(self, phase: str, progress: float) -> None:
         self.event_bus.publish(EventType.LOADING_PHASE, phase=phase)
@@ -278,6 +280,20 @@ class LoadingPipeline:
         # Wire bone registry to neck muscles for per-muscle pinning
         if self.neck_muscles is not None:
             self.neck_muscles.set_bone_registry(self.bone_anchors)
+
+        # Load MakeHuman body surface mesh for gender morph
+        self._report("Loading body surface mesh...", 0.95)
+        try:
+            self.gender_morph = GenderMorphSystem()
+            mesh_node = self.gender_morph.load(self.assets)
+            if mesh_node is not None:
+                body_mesh_group = self.nodes.get("bodyMeshGroup")
+                if body_mesh_group is not None:
+                    body_mesh_group.add(mesh_node)
+                logger.info("Gender morph system loaded")
+        except Exception as e:
+            logger.warning("Gender morph system failed: %s", e)
+            self.gender_morph = None
 
         self._report("Skeleton complete", 1.0)
         self.event_bus.publish(EventType.LOADING_COMPLETE)

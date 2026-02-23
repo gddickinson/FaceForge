@@ -95,6 +95,12 @@ class Simulation:
         # Physiological simulations (set by app.py)
         self.physiology = None  # PhysiologySystem or None
 
+        # Muscle activation heatmap system (set by app.py)
+        self.muscle_activation = None  # MuscleActivationSystem or None
+
+        # Pathology visualization system (set by app.py)
+        self.pathology = None  # PathologySystem or None
+
         # Scene animation player (set by app.py when scene mode wired)
         self.anim_player = None  # AnimationPlayer or None
 
@@ -264,6 +270,10 @@ class Simulation:
         if self.back_neck_muscles is not None and self.back_neck_muscles.registered:
             self.back_neck_muscles.update(self._head_quat)
 
+        # 12.7 Muscle activation heatmap (after soft tissue, before scene update)
+        if self.muscle_activation is not None:
+            self.muscle_activation.update(body)
+
         # 13. Update scene graph matrices
         self.scene.update()
 
@@ -277,6 +287,10 @@ class Simulation:
             # stack another delta on top — causing unbounded growth.
             if positions_modified and self.soft_tissue is not None:
                 self.soft_tissue._last_signature = ()
+
+        # 14.5 Pathology visualization (after physiology)
+        if self.pathology is not None:
+            self.pathology.update()
 
         # Frame counter
         self.state.frame_count += 1

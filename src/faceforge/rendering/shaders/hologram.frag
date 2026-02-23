@@ -38,8 +38,13 @@ void main() {
     float interference = 0.90 + 0.10 * sin(vWorldPos.z * 3.0 + vWorldPos.y * 1.5);
 
     // Hologram colour: cyan core with blue-white edges
+    // When vertex colors active, tint hologram with the vertex color
     vec3 coreColor = vec3(0.0, 0.85, 0.95);   // cyan
     vec3 edgeColor = vec3(0.4, 0.9, 1.0);     // bright cyan-white
+    if (uUseVertexColor != 0) {
+        coreColor = vVertexColor * 0.9;
+        edgeColor = mix(vVertexColor, vec3(1.0), 0.4);
+    }
     vec3 holoColor = mix(coreColor, edgeColor, fresnel);
 
     // Glow intensity

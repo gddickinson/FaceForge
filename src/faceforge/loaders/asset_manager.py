@@ -11,7 +11,7 @@ from faceforge.loaders.mesh_data_loader import load_skull_meshes, load_face_mesh
 from faceforge.core.config_loader import (
     load_config, load_muscle_config, load_skeleton_config,
 )
-from faceforge.constants import STL_DIR
+from faceforge.constants import STL_DIR, BODY_MESHES_DIR
 
 
 class AssetManager:
@@ -223,6 +223,21 @@ class AssetManager:
             transform=self.transform,
             stl_dir=self.stl_dir,
         )
+
+    def load_body_mesh(self) -> tuple[BufferGeometry, BufferGeometry]:
+        """Load male and female body surface meshes.
+
+        Returns (male_geometry, female_geometry) with identical topology.
+        """
+        from faceforge.loaders.obj_parser import load_obj_file
+
+        male_geom = load_obj_file(BODY_MESHES_DIR / "body_male.obj")
+        female_geom = load_obj_file(BODY_MESHES_DIR / "body_female.obj")
+        assert male_geom.vertex_count == female_geom.vertex_count, (
+            f"Topology mismatch: male={male_geom.vertex_count} "
+            f"vs female={female_geom.vertex_count}"
+        )
+        return male_geom, female_geom
 
     def clear_cache(self) -> None:
         """Clear all caches."""

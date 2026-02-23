@@ -10,6 +10,7 @@ uniform float uOpacity;
 uniform vec3 uAmbientColor;
 uniform vec3 uLightDir;
 uniform vec3 uLightColor;
+uniform int uUseVertexColor;
 
 // Clip plane
 uniform int uClipEnabled;
@@ -37,7 +38,8 @@ void main() {
     vec3 L = normalize(uLightDir);
     float diff = max(dot(N, L), 0.0) * 0.3;
 
-    vec3 color = uColor * (fresnel * 0.8 + diff + 0.1);
+    vec3 baseColor = uUseVertexColor != 0 ? vVertexColor : uColor;
+    vec3 color = baseColor * (fresnel * 0.8 + diff + 0.1);
 
     // Opacity is strong at edges, faint when facing
     float alpha = uOpacity * (fresnel * 0.8 + 0.15);

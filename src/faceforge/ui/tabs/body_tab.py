@@ -43,6 +43,13 @@ class BodyTab(QScrollArea):
         self._poses = self._load_poses()
         self._sliders: dict[str, SliderRow] = {}
 
+        # ── 0. Model (Gender) ──
+        self._layout.addWidget(SectionLabel("Model"))
+        self._gender_slider = SliderRow("Sex (M\u2192F)", min_val=0.0, max_val=1.0, default=0.0)
+        self._gender_slider.value_changed.connect(self._on_gender_changed)
+        self._gender_slider.slider.sliderReleased.connect(self._on_gender_released)
+        self._layout.addWidget(self._gender_slider)
+
         # ── 1. Body Poses ──
         self._layout.addWidget(SectionLabel("Body Poses"))
         self._pose_buttons: dict[str, QPushButton] = {}
@@ -168,6 +175,22 @@ class BodyTab(QScrollArea):
             lambda v: self._on_physiology_toggled("auto_fasciculation", v))
         self._layout.addWidget(self._auto_fasciculation)
 
+        self._auto_blood_flow = ToggleRow("Blood Flow Particles", default=False)
+        self._auto_blood_flow.toggled.connect(
+            lambda v: self._on_physiology_toggled("auto_blood_flow", v))
+        self._layout.addWidget(self._auto_blood_flow)
+
+        self._auto_neural = ToggleRow("Neural Impulses", default=False)
+        self._auto_neural.toggled.connect(
+            lambda v: self._on_physiology_toggled("auto_neural", v))
+        self._layout.addWidget(self._auto_neural)
+
+        # ── 13. Muscle Activation Heatmap ──
+        self._layout.addWidget(SectionLabel("Visualization"))
+        self._heatmap_toggle = ToggleRow("Activation Heatmap", default=False)
+        self._heatmap_toggle.toggled.connect(self._on_heatmap_toggled)
+        self._layout.addWidget(self._heatmap_toggle)
+
         self._layout.addStretch()
 
     # ── Helpers ──
@@ -222,6 +245,15 @@ class BodyTab(QScrollArea):
 
     def _on_physiology_toggled(self, field: str, enabled: bool) -> None:
         self._bus.publish(EventType.BODY_STATE_CHANGED, field=field, value=enabled)
+
+    def _on_gender_changed(self, value: float) -> None:
+        self._bus.publish(EventType.GENDER_CHANGED, gender=value)
+
+    def _on_gender_released(self) -> None:
+        self._bus.publish(EventType.GENDER_RELEASED, gender=self._gender_slider.value)
+
+    def _on_heatmap_toggled(self, enabled: bool) -> None:
+        self._bus.publish(EventType.HEATMAP_TOGGLED, enabled=enabled)
 
     # ── External Updates ──
 

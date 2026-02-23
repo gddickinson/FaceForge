@@ -6,6 +6,7 @@ from PySide6.QtCore import Qt
 from faceforge.core.events import EventBus, EventType
 from faceforge.core.state import StateManager
 from faceforge.ui.widgets.section_label import SectionLabel
+from faceforge.ui.widgets.slider_row import SliderRow
 from faceforge.ui.widgets.toggle_row import ToggleRow
 from faceforge.ui.widgets.collapsible_section import CollapsibleSection
 
@@ -120,7 +121,10 @@ class LayersTab(QScrollArea):
 
         # ── Body Surface ──
         self._layout.addWidget(SectionLabel("Body Surface"))
-        self._add_layer_group([("skin", "Skin", False)])
+        self._add_layer_group([
+            ("body_mesh", "Body Surface Mesh", False),
+            ("skin", "Skin", False),
+        ])
 
         # ── Body Soft Tissue ──
         self._layout.addWidget(SectionLabel("Body Soft Tissue"))
@@ -187,6 +191,38 @@ class LayersTab(QScrollArea):
             ("epicranial_aponeurosis", "Epicranial Aponeurosis", False),
             ("spinal_central_canal", "Spinal Central Canal", False),
         ])
+
+        # ── Pathology ──
+        self._layout.addWidget(SectionLabel("Pathology"))
+        from PySide6.QtWidgets import QComboBox
+        self._pathology_condition = QComboBox()
+        self._pathology_condition.addItems([
+            "None", "Inflammation", "Edema", "Osteoarthritis", "Fracture", "Tumor",
+        ])
+        self._pathology_condition.setStyleSheet(
+            "QComboBox { background: rgba(40, 42, 50, 0.9); color: #ccc; "
+            "border: 1px solid #555; border-radius: 4px; padding: 4px 8px; }"
+        )
+        self._layout.addWidget(self._pathology_condition)
+
+        self._pathology_target = QComboBox()
+        self._pathology_target.setPlaceholderText("Select target structure...")
+        self._pathology_target.setStyleSheet(
+            "QComboBox { background: rgba(40, 42, 50, 0.9); color: #ccc; "
+            "border: 1px solid #555; border-radius: 4px; padding: 4px 8px; }"
+        )
+        self._layout.addWidget(self._pathology_target)
+
+        self._pathology_severity = SliderRow("Severity", min_val=0.0, max_val=1.0, default=0.5)
+        self._pathology_severity.value_changed.connect(self._on_pathology_changed)
+        self._layout.addWidget(self._pathology_severity)
+
+        self._pathology_condition.currentTextChanged.connect(
+            lambda _: self._on_pathology_changed(self._pathology_severity.value)
+        )
+        self._pathology_target.currentTextChanged.connect(
+            lambda _: self._on_pathology_changed(self._pathology_severity.value)
+        )
 
         self._layout.addStretch()
 
@@ -261,3 +297,19 @@ class LayersTab(QScrollArea):
 
         section._updating_master = False
         section._update_master_state()
+
+    def _on_pathology_changed(self, severity: float) -> None:
+        condition = self._pathology_condition.currentText()
+        target = self._pathology_target.currentText()
+        if condition == "None" or not target:
+            self._bus.publish(EventType.PATHOLOGY_CHANGED,
+                              condition="none", target="", severity=0.0)
+        else:
+            self._bus.publish(EventType.PATHOLOGY_CHANGED,
+                              condition=condition.lower(), target=target,
+                              severity=severity)
+
+    def set_pathology_targets(self, names: list[str]) -> None:
+        """Populate pathology target combo with available structure names."""
+        self._pathology_target.clear()
+        self._pathology_target.addItems(sorted(names))

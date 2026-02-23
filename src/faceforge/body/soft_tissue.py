@@ -151,6 +151,23 @@ class SoftTissueSkinning:
         self.lateral_threshold: float = 5.0 # |centroid_x| above this triggers X filter
         self.midline_tolerance: float = 5.0 # vertices within ± this of midline aren't filtered
 
+    def clear_bindings(self) -> None:
+        """Remove all registered mesh bindings (e.g. before re-registration)."""
+        self.bindings.clear()
+        self._dirty = True
+
+    def rebuild_skin_joints(
+        self,
+        joint_chains: list[list[tuple[str, SceneNode]]],
+    ) -> None:
+        """Clear existing joints and rebuild from new chain data.
+
+        Use this after bone positions change (e.g. gender scaling) to
+        re-snapshot rest matrices from the updated skeleton.
+        """
+        self.joints.clear()
+        self.build_skin_joints(joint_chains)
+
     def build_skin_joints(
         self,
         joint_chains: list[list[tuple[str, SceneNode]]],

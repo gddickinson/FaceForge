@@ -220,6 +220,87 @@ def main():
         if values:
             state.target_body.set_from_js_dict(values)
 
+    # Mutable container for the chain-building function (populated by load_assets)
+    _gender_helpers: dict = {}
+
+    def on_gender_changed(gender: float = 0.0, **kw):
+        """Handle live gender slider drag — morph body surface only (fast)."""
+        state.body.gender = gender
+        if pipeline.gender_morph is not None and pipeline.gender_morph.loaded:
+            pipeline.gender_morph.set_gender(gender)
+
+    def on_gender_released(gender: float = 0.0, **kw):
+        """Handle gender slider release — full bone scaling + re-registration."""
+        state.body.gender = gender
+        gm = pipeline.gender_morph
+        if gm is None or not gm.loaded:
+            return
+        gm.set_gender(gender)
+
+        # Collect ALL bone meshes from entire body_root subtree
+        # (includes bones reparented under pivot nodes by setup_from_skeleton)
+        bone_meshes: list[tuple[str, 'MeshInstance']] = []
+        body_root = named_nodes.get("bodyRoot")
+        if body_root is not None:
+            def _collect_meshes(node):
+                # Skip non-bone meshes (body surface mesh, skin, soft tissue)
+                if node.mesh is not None and node.name and node.name != "body_surface":
+                    bone_meshes.append((node.name, node.mesh))
+                for ch in node.children:
+                    _collect_meshes(ch)
+            _collect_meshes(body_root)
+        if bone_meshes:
+            n_scaled = gm.scale_skeleton(bone_meshes)
+            logging.getLogger(__name__).info(
+                "Gender %.2f: scaled %d/%d bone meshes",
+                gender, n_scaled, len(bone_meshes),
+            )
+
+            # Update rest poses for scaled meshes
+            for _, mesh in bone_meshes:
+                mesh.store_rest_pose()
+
+        # Note: We do NOT re-call setup_from_skeleton() here. Pivots were
+        # already built during initial loading and bones are reparented under
+        # them. Re-calling would fail because bones are no longer in their
+        # original skeleton groups. The bone scaling above updates vertex
+        # positions in-place, which is sufficient.
+
+        # Rebuild skin joints and re-register all meshes
+        if simulation.soft_tissue is not None:
+            body_root_node = named_nodes.get("bodyRoot")
+            if body_root_node is not None:
+                body_root_node.update_world_matrix(force=True)
+            scene.update()
+
+            build_fn = _gender_helpers.get("build_chains")
+            new_chains = build_fn() if build_fn else []
+            if new_chains:
+                skinning = simulation.soft_tissue
+                # Save currently registered meshes for re-registration
+                old_bindings = list(skinning.bindings)
+                skinning.clear_bindings()
+                skinning.rebuild_skin_joints(new_chains)
+
+                # Re-register all previously registered meshes
+                for binding in old_bindings:
+                    try:
+                        skinning.register_skin_mesh(
+                            binding.mesh,
+                            is_muscle=binding.is_muscle,
+                            muscle_name=binding.muscle_name,
+                        )
+                    except Exception as e:
+                        logging.getLogger(__name__).warning(
+                            "Re-registration failed for %s: %s",
+                            binding.mesh.name, e,
+                        )
+
+                logging.getLogger(__name__).info(
+                    "Gender re-registration complete: %d meshes",
+                    len(skinning.bindings),
+                )
+
     # On-demand loaders (created after skeleton loads)
     demand_loaders: dict = {}
 
@@ -395,25 +476,27 @@ def main():
             anim_player.load(clip)
             window.control_panel.display_tab.transport.set_duration(clip.duration)
 
-    def on_scene_mode_toggled(enabled: bool = False, **kw):
+    def on_scene_mode_toggled(enabled: bool = False, scene_type: str = "examination", **kw):
         body_root = named_nodes.get("bodyRoot")
         if body_root is None:
             return
         if enabled:
             scene_controller.activate(
                 body_root, scene, gl_widget.camera, gl_widget.lights,
+                scene_type=scene_type,
             )
             # Tell soft tissue about the wrapper so it cancels the rotation
             # from joint delta matrices (prevents double-rotation).
             if simulation.soft_tissue is not None:
                 simulation.soft_tissue.scene_wrapper = scene_controller.wrapper_node
             # Force immediate world matrix rebuild so the first render
-            # sees supine matrices (not stale identity from before activation).
+            # sees correct matrices (not stale identity from before activation).
             scene.update()
-            # Auto-seek Wake Up clip to t=0: this fires the same callbacks
-            # that work during animation playback (proven path), setting
-            # wrapper transform + body state to supine rest.
-            clip = builtin_clips.get("Wake Up")
+            # Auto-load appropriate clip based on scene type
+            if scene_type == "dance_studio":
+                clip = builtin_clips.get("Contemporary")
+            else:
+                clip = builtin_clips.get("Wake Up")
             if clip is not None:
                 anim_player.load(clip)
                 anim_player.seek(0)
@@ -1244,6 +1327,8 @@ def main():
     event_bus.subscribe(EventType.HEAD_ROTATION_CHANGED, on_head_changed)
     event_bus.subscribe(EventType.BODY_STATE_CHANGED, on_body_changed)
     event_bus.subscribe(EventType.BODY_POSE_SET, on_body_pose_set)
+    event_bus.subscribe(EventType.GENDER_CHANGED, on_gender_changed)
+    event_bus.subscribe(EventType.GENDER_RELEASED, on_gender_released)
     event_bus.subscribe(EventType.LAYER_TOGGLED, on_layer_toggled)
     event_bus.subscribe(EventType.AUTO_BLINK_TOGGLED, on_auto_blink)
     event_bus.subscribe(EventType.AUTO_BREATHING_TOGGLED, on_auto_breathing)
@@ -1278,6 +1363,211 @@ def main():
         EventType.STRUCTURES_LOADED,
         window.control_panel.layers_tab.on_structures_loaded,
     )
+
+    # ── Feature 1: Muscle Activation Heatmap ──
+    from faceforge.body.muscle_activation import MuscleActivationSystem
+    _muscle_activation = MuscleActivationSystem()
+    simulation.muscle_activation = _muscle_activation
+
+    def on_heatmap_toggled(enabled: bool = False, **kw):
+        _muscle_activation.set_enabled(enabled)
+
+    event_bus.subscribe(EventType.HEATMAP_TOGGLED, on_heatmap_toggled)
+
+    # ── Feature 2: Natural Language Structure Search ──
+    from faceforge.anatomy.structure_search import AnatomySearchIndex
+    _search_index = AnatomySearchIndex()
+    _search_highlighting = False
+
+    def on_structure_search(query: str = "", **kw):
+        nonlocal _search_highlighting
+        if not query:
+            if _search_highlighting:
+                # Restore all opacities
+                for mesh, _ in scene.collect_meshes():
+                    mesh.material.opacity = 1.0
+                _search_highlighting = False
+            return
+        results = _search_index.search(query)
+        if not results:
+            return
+        matched_names = {r.mesh_name for r in results}
+        # Dim non-matching meshes
+        for mesh, _ in scene.collect_meshes():
+            if mesh.name in matched_names:
+                mesh.material.opacity = 1.0
+            else:
+                mesh.material.opacity = 0.15
+        _search_highlighting = True
+
+    event_bus.subscribe(EventType.STRUCTURE_SEARCH, on_structure_search)
+
+    # ── Feature 3: Physiological Simulation Overlays (particles) ──
+    from faceforge.rendering.particle_system import ParticleSystem
+
+    _blood_particles = ParticleSystem(max_particles=3000)
+    _neural_particles = ParticleSystem(max_particles=2000)
+
+    def on_physiology_blood_flow(enabled: bool = False, **kw):
+        if not enabled:
+            _blood_particles.clear()
+
+    def on_physiology_neural(enabled: bool = False, **kw):
+        if not enabled:
+            _neural_particles.clear()
+
+    # ── Feature 4: Speech & Phoneme Animation ──
+    from faceforge.animation.speech import SpeechEngine
+    _speech_engine = SpeechEngine()
+    _speech_playing = False
+    _speech_sequence = []
+    _speech_time = 0.0
+
+    def on_speech_play(text: str = "", speed: float = 1.0, **kw):
+        nonlocal _speech_playing, _speech_sequence, _speech_time
+        if not text:
+            return
+        _speech_sequence = _speech_engine.generate_au_sequence(text, speed=speed)
+        _speech_time = 0.0
+        _speech_playing = True
+
+    event_bus.subscribe(EventType.SPEECH_PLAY, on_speech_play)
+
+    # ── Feature 5: Video/GIF Export ──
+    from faceforge.export.video_export import VideoExporter
+    _video_exporter = VideoExporter(gl_widget)
+
+    _export_dialog = None
+
+    def _on_export_requested():
+        nonlocal _export_dialog
+        from faceforge.ui.export_dialog import ExportDialog
+        if _export_dialog is None:
+            _export_dialog = ExportDialog(window)
+
+            def _do_export(config):
+                mode = config.get("mode", "turntable")
+                fps = config.get("fps", 30)
+                duration = config.get("duration", 10.0)
+                output = config.get("output_path", "export.mp4")
+                w = config.get("width", gl_widget.width())
+                h = config.get("height", gl_widget.height())
+
+                if mode == "screenshot":
+                    _video_exporter.export_screenshot(output, width=w, height=h)
+                elif mode == "turntable":
+                    _video_exporter.export_turntable(
+                        output, duration=duration, fps=fps,
+                        width=w, height=h,
+                    )
+                elif mode == "animation":
+                    _video_exporter.export_animation(
+                        anim_player, simulation, output, fps=fps,
+                        width=w, height=h,
+                    )
+
+            _export_dialog.export_requested.connect(_do_export)
+        _export_dialog.show()
+
+    # ── Feature 6: Interactive Anatomy Quiz ──
+    from faceforge.anatomy.quiz_engine import QuizEngine
+    _quiz_engine = QuizEngine(_search_index)
+    _quiz_dialog = None
+
+    def _on_quiz_requested():
+        nonlocal _quiz_dialog
+        from faceforge.ui.quiz_dialog import QuizDialog
+        if _quiz_dialog is None:
+            _quiz_dialog = QuizDialog(_quiz_engine, window)
+
+            def _on_highlight(mesh_name):
+                for mesh, _ in scene.collect_meshes():
+                    if mesh.name == mesh_name:
+                        mesh.material.opacity = 1.0
+                    else:
+                        mesh.material.opacity = 0.2
+
+            def _on_clear():
+                for mesh, _ in scene.collect_meshes():
+                    mesh.material.opacity = 1.0
+
+            def _on_quiz_click_mode(enabled):
+                gl_widget.quiz_click_mode = enabled
+                if enabled:
+                    def _on_mesh_clicked(name):
+                        if _quiz_dialog is not None:
+                            _quiz_dialog.on_mesh_clicked(name)
+                    gl_widget.quiz_click_callback = _on_mesh_clicked
+                else:
+                    gl_widget.quiz_click_callback = None
+
+            _quiz_dialog.highlight_requested.connect(_on_highlight)
+            _quiz_dialog.clear_highlight.connect(_on_clear)
+            _quiz_dialog.quiz_click_mode.connect(_on_quiz_click_mode)
+
+        _quiz_dialog.show()
+
+    # ── Feature 7: Pathology Visualization ──
+    from faceforge.anatomy.pathology import PathologySystem
+    _pathology = PathologySystem()
+    simulation.pathology = _pathology
+
+    def on_pathology_changed(condition: str = "none", target: str = "",
+                             severity: float = 0.0, **kw):
+        if condition == "none":
+            _pathology.clear_all()
+            return
+        _pathology.remove_condition(target)
+        if severity > 0:
+            _pathology.add_condition(target, condition, severity)
+
+    event_bus.subscribe(EventType.PATHOLOGY_CHANGED, on_pathology_changed)
+
+    # ── Feature 8: Custom Animation Timeline Editor ──
+    _timeline_editor = None
+
+    def _on_timeline_requested():
+        nonlocal _timeline_editor
+        from faceforge.ui.timeline_editor import TimelineEditor
+        if _timeline_editor is None:
+            _timeline_editor = TimelineEditor(window)
+            _timeline_editor.set_animation_player(anim_player)
+            _timeline_editor.set_state_refs(state, gl_widget.camera)
+        _timeline_editor.show()
+
+    # ── Feature 9: Comparative Anatomy Views ──
+    _comparison_dialog = None
+
+    def _on_compare_toggled(checked):
+        nonlocal _comparison_dialog
+        if checked:
+            from faceforge.ui.comparison_dialog import ComparisonDialog
+            if _comparison_dialog is None:
+                _comparison_dialog = ComparisonDialog(window)
+
+                def _on_config_changed(left_cfg, right_cfg):
+                    gl_widget.comparison_left_config = left_cfg
+                    gl_widget.comparison_right_config = right_cfg
+
+                _comparison_dialog.config_changed.connect(_on_config_changed)
+
+            gl_widget.comparison_mode = True
+            _comparison_dialog.show()
+        else:
+            gl_widget.comparison_mode = False
+            if _comparison_dialog is not None:
+                _comparison_dialog.hide()
+
+    # Wire display tab tool buttons
+    display_tab = window.control_panel.display_tab
+    if hasattr(display_tab, '_export_btn'):
+        display_tab._export_btn.clicked.connect(_on_export_requested)
+    if hasattr(display_tab, '_quiz_btn'):
+        display_tab._quiz_btn.clicked.connect(_on_quiz_requested)
+    if hasattr(display_tab, '_timeline_btn'):
+        display_tab._timeline_btn.clicked.connect(_on_timeline_requested)
+    if hasattr(display_tab, '_compare_btn'):
+        display_tab._compare_btn.toggled.connect(_on_compare_toggled)
 
     # Loading pipeline
     pipeline = LoadingPipeline(assets, event_bus, named_nodes)
@@ -1420,91 +1710,94 @@ def main():
         skinning = SoftTissueSkinning()
         simulation.soft_tissue = skinning
 
-        # Build skin joints as separate kinematic chains
-        # Each chain gets its own bone segments (no cross-chain segments)
-        # Convention: chain 0=spine, 1=arm_R, 2=leg_R, 3=arm_L, 4=leg_L
-        joint_chains: list[list[tuple[str, SceneNode]]] = []
-        # Populate the outer skin_chain_ids dict so on-demand loaders can use it
-        skin_chain_ids.clear()
+        def _build_joint_chains() -> list:
+            """Build kinematic joint chains from skeleton and joint pivots.
 
-        # Chain 0: Spine (thoracic top→bottom → lumbar)
-        spine_chain: list[tuple[str, SceneNode]] = []
-        if pipeline.skeleton is not None:
-            for pinfo in pipeline.skeleton.pivots.get("thoracic", []):
-                spine_chain.append((f"thoracic_{pinfo.get('level', 0)}", pinfo["group"]))
-            for pinfo in pipeline.skeleton.pivots.get("lumbar", []):
-                spine_chain.append((f"lumbar_{pinfo.get('level', 0)}", pinfo["group"]))
-        if spine_chain:
-            skin_chain_ids["spine"] = len(joint_chains)
-            joint_chains.append(spine_chain)
+            Populates the outer skin_chain_ids dict and returns the chain list.
+            Convention: chain 0=spine, 1=arm_R, 2=leg_R, 3=arm_L, 4=leg_L, etc.
+            """
+            chains: list[list[tuple[str, SceneNode]]] = []
+            skin_chain_ids.clear()
 
-        # Limb chains (single 3-joint chain per limb — no shared-joint duplication)
-        if pipeline.joint_setup is not None:
-            jp = pipeline.joint_setup.pivots
-            for side in ("R", "L"):
-                # Arm chain: shoulder → elbow → wrist
-                arm_chain: list[tuple[str, SceneNode]] = []
-                for jn in ("shoulder", "elbow", "wrist"):
-                    node = jp.get(f"{jn}_{side}")
-                    if node is not None:
-                        arm_chain.append((f"{jn}_{side}", node))
-                if arm_chain:
-                    skin_chain_ids[f"arm_{side}"] = len(joint_chains)
-                    joint_chains.append(arm_chain)
+            # Chain 0: Spine (thoracic top→bottom → lumbar)
+            spine_chain: list[tuple[str, SceneNode]] = []
+            if pipeline.skeleton is not None:
+                for pinfo in pipeline.skeleton.pivots.get("thoracic", []):
+                    spine_chain.append((f"thoracic_{pinfo.get('level', 0)}", pinfo["group"]))
+                for pinfo in pipeline.skeleton.pivots.get("lumbar", []):
+                    spine_chain.append((f"lumbar_{pinfo.get('level', 0)}", pinfo["group"]))
+            if spine_chain:
+                skin_chain_ids["spine"] = len(chains)
+                chains.append(spine_chain)
 
-                # Leg chain: hip → knee → ankle
-                leg_chain: list[tuple[str, SceneNode]] = []
-                for jn in ("hip", "knee", "ankle"):
-                    node = jp.get(f"{jn}_{side}")
-                    if node is not None:
-                        leg_chain.append((f"{jn}_{side}", node))
-                if leg_chain:
-                    skin_chain_ids[f"leg_{side}"] = len(joint_chains)
-                    joint_chains.append(leg_chain)
+            # Limb chains (single 3-joint chain per limb)
+            if pipeline.joint_setup is not None:
+                jp = pipeline.joint_setup.pivots
+                for side in ("R", "L"):
+                    arm_chain: list[tuple[str, SceneNode]] = []
+                    for jn in ("shoulder", "elbow", "wrist"):
+                        node = jp.get(f"{jn}_{side}")
+                        if node is not None:
+                            arm_chain.append((f"{jn}_{side}", node))
+                    if arm_chain:
+                        skin_chain_ids[f"arm_{side}"] = len(chains)
+                        chains.append(arm_chain)
 
-        # Digit chains (one chain per digit per side)
-        n_hand_chains = 0
-        n_foot_chains = 0
-        if pipeline.joint_setup is not None:
-            jp = pipeline.joint_setup.pivots
-            for side in ("R", "L"):
-                for digit in range(1, 6):
-                    # Hand digit chain
-                    hand_chain: list[tuple[str, SceneNode]] = []
-                    for seg in ("mc", "prox", "mid", "dist"):
-                        p = jp.get(f"finger_{side}_{digit}_{seg}")
-                        if p is not None:
-                            hand_chain.append((f"finger_{side}_{digit}_{seg}", p))
-                    if hand_chain:
-                        skin_chain_ids[f"hand_{side}_{digit}"] = len(joint_chains)
-                        joint_chains.append(hand_chain)
-                        n_hand_chains += 1
+                    leg_chain: list[tuple[str, SceneNode]] = []
+                    for jn in ("hip", "knee", "ankle"):
+                        node = jp.get(f"{jn}_{side}")
+                        if node is not None:
+                            leg_chain.append((f"{jn}_{side}", node))
+                    if leg_chain:
+                        skin_chain_ids[f"leg_{side}"] = len(chains)
+                        chains.append(leg_chain)
 
-                    # Foot digit chain
-                    foot_chain: list[tuple[str, SceneNode]] = []
-                    for seg in ("mt", "prox", "mid", "dist"):
-                        p = jp.get(f"toe_{side}_{digit}_{seg}")
-                        if p is not None:
-                            foot_chain.append((f"toe_{side}_{digit}_{seg}", p))
-                    if foot_chain:
-                        skin_chain_ids[f"foot_{side}_{digit}"] = len(joint_chains)
-                        joint_chains.append(foot_chain)
-                        n_foot_chains += 1
-        logging.getLogger(__name__).info(
-            "Digit chains built: %d hand, %d foot", n_hand_chains, n_foot_chains,
-        )
+            # Digit chains (one chain per digit per side)
+            n_hand_chains = 0
+            n_foot_chains = 0
+            if pipeline.joint_setup is not None:
+                jp = pipeline.joint_setup.pivots
+                for side in ("R", "L"):
+                    for digit in range(1, 6):
+                        hand_chain: list[tuple[str, SceneNode]] = []
+                        for seg in ("mc", "prox", "mid", "dist"):
+                            p = jp.get(f"finger_{side}_{digit}_{seg}")
+                            if p is not None:
+                                hand_chain.append((f"finger_{side}_{digit}_{seg}", p))
+                        if hand_chain:
+                            skin_chain_ids[f"hand_{side}_{digit}"] = len(chains)
+                            chains.append(hand_chain)
+                            n_hand_chains += 1
 
-        # Chain: ribs (one pivot per rib, for rib-attached muscles)
-        if simulation.body_animation is not None and simulation.body_animation._rib_pivots:
-            rib_chain: list[tuple[str, SceneNode]] = []
-            for i, pivot in enumerate(simulation.body_animation._rib_pivots):
-                rib_chain.append((f"rib_{i}", pivot))
-            if rib_chain:
-                skin_chain_ids["ribs"] = len(joint_chains)
-                joint_chains.append(rib_chain)
-                logging.getLogger(__name__).info(
-                    "Rib skinning chain added: %d rib pivots", len(rib_chain),
-                )
+                        foot_chain: list[tuple[str, SceneNode]] = []
+                        for seg in ("mt", "prox", "mid", "dist"):
+                            p = jp.get(f"toe_{side}_{digit}_{seg}")
+                            if p is not None:
+                                foot_chain.append((f"toe_{side}_{digit}_{seg}", p))
+                        if foot_chain:
+                            skin_chain_ids[f"foot_{side}_{digit}"] = len(chains)
+                            chains.append(foot_chain)
+                            n_foot_chains += 1
+            logging.getLogger(__name__).info(
+                "Digit chains built: %d hand, %d foot", n_hand_chains, n_foot_chains,
+            )
+
+            # Chain: ribs (one pivot per rib, for rib-attached muscles)
+            if simulation.body_animation is not None and simulation.body_animation._rib_pivots:
+                rib_chain: list[tuple[str, SceneNode]] = []
+                for i, pivot in enumerate(simulation.body_animation._rib_pivots):
+                    rib_chain.append((f"rib_{i}", pivot))
+                if rib_chain:
+                    skin_chain_ids["ribs"] = len(chains)
+                    chains.append(rib_chain)
+                    logging.getLogger(__name__).info(
+                        "Rib skinning chain added: %d rib pivots", len(rib_chain),
+                    )
+
+            return chains
+
+        joint_chains = _build_joint_chains()
+        _gender_helpers["build_chains"] = _build_joint_chains
 
         if joint_chains:
             # Force a scene graph update so rest matrices are correct
@@ -1548,6 +1841,8 @@ def main():
         reassigner = ChainReassigner(skinning)
         selection_tool = SelectionTool(skinning)
         gl_widget.selection_tool = selection_tool
+        print(f"[DEBUG] Created StretchVisualizer, ChainReassigner, SelectionTool"
+              f" (skinning id={id(skinning)}, bindings={len(skinning.bindings)})")
 
         # Track which vertices have been modified for override saving
         _modified_vertices: dict[int, set[int]] = {}
@@ -1574,17 +1869,28 @@ def main():
         debug_tab = window.control_panel.debug_tab
 
         def _on_stretch_viz(enabled):
+            print(f"[DEBUG] _on_stretch_viz({enabled}), bindings={len(skinning.bindings)}")
             stretch_viz.stretch_enabled = enabled
             if not enabled:
                 stretch_viz.chain_enabled = False
+            else:
+                # Apply colors immediately (don't wait for simulation tick)
+                stretch_viz.update()
+            print(f"[DEBUG]   stretch_enabled={stretch_viz.stretch_enabled}, chain_enabled={stretch_viz.chain_enabled}")
 
         def _on_chain_viz(enabled):
+            print(f"[DEBUG] _on_chain_viz({enabled}), bindings={len(skinning.bindings)}")
             stretch_viz.chain_enabled = enabled
             if not enabled:
                 stretch_viz.stretch_enabled = False
+            else:
+                # Apply colors immediately (don't wait for simulation tick)
+                stretch_viz.update()
+            print(f"[DEBUG]   stretch_enabled={stretch_viz.stretch_enabled}, chain_enabled={stretch_viz.chain_enabled}")
 
         debug_tab.stretch_viz_toggled.connect(_on_stretch_viz)
         debug_tab.chain_viz_toggled.connect(_on_chain_viz)
+        print(f"[DEBUG] Connected stretch_viz_toggled and chain_viz_toggled signals")
 
         # Wire selection tool
         def _on_selection_mode(enabled):
@@ -1690,12 +1996,150 @@ def main():
         # Hook stretch viz update into simulation
         _original_soft_tissue_update = skinning.update
 
+        _viz_update_log_counter = [0]
+        _skinning_err_reported = [False]
+
         def _skinning_update_with_viz(body_state):
-            _original_soft_tissue_update(body_state)
+            try:
+                _original_soft_tissue_update(body_state)
+            except Exception as e:
+                if not _skinning_err_reported[0]:
+                    print(f"[DEBUG] EXCEPTION in soft tissue update: {e}")
+                    import traceback; traceback.print_exc()
+                    _skinning_err_reported[0] = True
             if stretch_viz.stretch_enabled or stretch_viz.chain_enabled:
+                if _viz_update_log_counter[0] < 3:
+                    print(f"[DEBUG] _skinning_update_with_viz: calling stretch_viz.update() "
+                          f"(stretch={stretch_viz.stretch_enabled}, chain={stretch_viz.chain_enabled})")
+                    _viz_update_log_counter[0] += 1
                 stretch_viz.update()
 
         skinning.update = _skinning_update_with_viz
+
+        # Store signal handler references on debug_tab to prevent GC
+        debug_tab._viz_handler_stretch = _on_stretch_viz
+        debug_tab._viz_handler_chain = _on_chain_viz
+
+        # ── Region label visualization + body mesh selection (isolated) ──
+        try:
+            from faceforge.body.region_labels import (
+                BodyRegion, compute_region_colors, segment_mh_mesh,
+                save_region_overrides, load_region_overrides, apply_region_overrides,
+            )
+
+            # Populate region names in debug tab
+            region_names = [f"{r.value}: {r.name}" for r in BodyRegion]
+            debug_tab.set_region_names(region_names)
+
+            _region_color_cache: dict[int, bytes] = {}
+            _region_viz_active = [False]
+            _region_modified: dict[int, int] = {}
+
+            def _on_region_viz(enabled):
+                print(f"[DEBUG] _on_region_viz({enabled}), bindings={len(skinning.bindings)}")
+                if not enabled:
+                    if _region_viz_active[0]:
+                        _region_viz_active[0] = False
+                        for binding in skinning.bindings:
+                            if not binding.is_muscle:
+                                binding.mesh.material.vertex_colors_active = False
+                    return
+
+                # Disable stretch/chain first so they don't fight
+                stretch_viz.stretch_enabled = False
+                stretch_viz.chain_enabled = False
+
+                gm = pipeline.gender_morph
+                skel_lm = gm.skel_landmarks if gm is not None else None
+                if skel_lm is None:
+                    print("[FaceForge] Region viz: no skeleton landmarks available yet")
+                    return
+
+                _region_viz_active[0] = True
+                for binding in skinning.bindings:
+                    if binding.is_muscle:
+                        continue
+                    key = id(binding)
+                    if key not in _region_color_cache:
+                        pos = binding.mesh.geometry.positions.reshape(-1, 3)
+                        labels = segment_mh_mesh(pos.astype(float), skel_lm)
+                        _region_color_cache[key] = compute_region_colors(labels)
+                    binding.mesh.geometry.vertex_colors = _region_color_cache[key]
+                    binding.mesh.geometry.colors_dirty = True
+                    binding.mesh.material.vertex_colors_active = True
+
+            debug_tab.region_viz_toggled.connect(_on_region_viz)
+
+            def _region_name_to_id(name: str) -> int:
+                try:
+                    return int(name.split(":")[0])
+                except (ValueError, IndexError):
+                    return 0
+
+            def _on_region_reassign(region_name_str):
+                region_id = _region_name_to_id(region_name_str)
+                gm = pipeline.gender_morph
+                if gm is None or gm.mh_region_labels is None:
+                    print("[FaceForge] Region reassign: no region labels computed yet")
+                    return
+                count = 0
+                for vi in selection_tool.body_selection:
+                    if 0 <= vi < len(gm.mh_region_labels):
+                        gm.mh_region_labels[vi] = region_id
+                        _region_modified[vi] = region_id
+                        count += 1
+                if count > 0:
+                    gm._region_kdtrees = None
+                    _region_color_cache.clear()
+                    debug_tab.update_region_override_count(len(_region_modified))
+                    print(f"[FaceForge] Set {count} body mesh vertices to region {region_id}")
+                    if _region_viz_active[0]:
+                        _on_region_viz(True)
+
+            debug_tab.region_reassign_clicked.connect(_on_region_reassign)
+
+            # Deferred body mesh reference for selection tool
+            def _ensure_body_mesh_ref():
+                if selection_tool.body_mesh is None:
+                    gm = pipeline.gender_morph
+                    if gm is not None and gm.body_mesh is not None:
+                        selection_tool.body_mesh = gm.body_mesh
+
+            # Patch selection mode to defer body mesh ref
+            _original_on_selection_mode = debug_tab.selection_mode_toggled
+            old_selection_handler = [None]
+
+            def _on_selection_mode_with_body(enabled):
+                _ensure_body_mesh_ref()
+                selection_tool.active = enabled
+                count = selection_tool.selection.total_count + len(selection_tool.body_selection)
+                debug_tab.update_selection_count(count)
+
+            # Replace selection mode handler
+            debug_tab.selection_mode_toggled.disconnect()
+            debug_tab.selection_mode_toggled.connect(_on_selection_mode_with_body)
+
+            # Replace selection changed to include body count
+            def _on_selection_changed_with_body():
+                count = selection_tool.selection.total_count + len(selection_tool.body_selection)
+                debug_tab.update_selection_count(count)
+
+            selection_tool.on_selection_changed = _on_selection_changed_with_body
+
+            # Replace clear to also clear body selection
+            def _on_clear_with_body():
+                selection_tool.selection.clear()
+                selection_tool.body_selection.clear()
+                _on_selection_changed_with_body()
+
+            debug_tab.clear_selection_clicked.disconnect()
+            debug_tab.clear_selection_clicked.connect(_on_clear_with_body)
+
+            print("[FaceForge] Region label visualization wired successfully")
+        except Exception as e:
+            print(f"[FaceForge] Region label features unavailable: {e}")
+            import traceback
+            traceback.print_exc()
 
         # Wire eye tracking cursor from GL widget
         def on_mouse_move_for_tracking(x, y):
@@ -1721,6 +2165,22 @@ def main():
             print(f"  - {m.name}: {g.vertex_count} verts, "
                   f"{'indexed' if g.has_indices else 'non-indexed'}, "
                   f"mode={m.material.render_mode.name}")
+
+        # Build search index from loaded meshes (Feature 2)
+        mesh_names = [m.name for m, _ in meshes if m.name]
+        _search_index.build_from_names(mesh_names)
+        print(f"[FaceForge] Search index built: {len(_search_index._entries)} entries")
+
+        # Populate pathology target combo (Feature 7)
+        window.control_panel.layers_tab.set_pathology_targets(mesh_names)
+
+        # Register loaded muscle meshes for heatmap (Feature 1)
+        # Register all meshes for pathology (Feature 7)
+        for m, _ in meshes:
+            if m.name:
+                _pathology.register_mesh(m, m.name)
+                if "muscle" in m.name.lower() or "Muscle" in m.name:
+                    _muscle_activation.register_muscle(m, m.name)
 
         # Apply startup preset (after all systems wired, scene ready)
         if _startup_illustration:
@@ -1768,6 +2228,26 @@ def main():
 
     def simulation_paint():
         dt = clock.get_delta()
+
+        # Drive speech AU targets (Feature 4)
+        nonlocal _speech_playing, _speech_time
+        if _speech_playing:
+            _speech_time += dt
+            # Find current viseme and apply AU targets
+            active_viseme = None
+            for viseme in _speech_sequence:
+                if viseme.start_time <= _speech_time <= viseme.end_time:
+                    active_viseme = viseme
+                    break
+            if active_viseme is not None:
+                for au_id, val in active_viseme.au_targets.items():
+                    state.target_au.set(au_id, val)
+            elif _speech_time > 0 and (not _speech_sequence or _speech_time > _speech_sequence[-1].end_time):
+                # Speech finished — reset mouth AUs
+                for au_id in ("AU25", "AU26", "AU22", "AU20"):
+                    state.target_au.set(au_id, 0.0)
+                _speech_playing = False
+
         simulation.step(dt)
         original_paint()
         # Update animation transport controls

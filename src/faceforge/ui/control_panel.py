@@ -1,9 +1,9 @@
 """Right control panel with QTabWidget containing 6 tabs."""
 
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QTabWidget
-from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QTabWidget, QLineEdit, QHBoxLayout
+from PySide6.QtCore import Qt, QTimer
 
-from faceforge.core.events import EventBus
+from faceforge.core.events import EventBus, EventType
 from faceforge.core.state import StateManager
 from faceforge.ui.tabs.animate_tab import AnimateTab
 from faceforge.ui.tabs.body_tab import BodyTab
@@ -32,6 +32,22 @@ class ControlPanel(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
 
+        # Search bar (above tabs)
+        self._search_bar = QLineEdit()
+        self._search_bar.setPlaceholderText("Search anatomy...")
+        self._search_bar.setStyleSheet(
+            "QLineEdit { background: rgba(40, 42, 50, 0.9); color: #ccc; "
+            "border: 1px solid #555; border-radius: 4px; padding: 4px 8px; "
+            "margin: 4px; }"
+        )
+        self._search_bar.setClearButtonEnabled(True)
+        self._search_debounce = QTimer(self)
+        self._search_debounce.setSingleShot(True)
+        self._search_debounce.setInterval(300)
+        self._search_debounce.timeout.connect(self._on_search)
+        self._search_bar.textChanged.connect(lambda _: self._search_debounce.start())
+        layout.addWidget(self._search_bar)
+
         # Tab widget
         self.tabs = QTabWidget()
         self.tabs.setDocumentMode(True)
@@ -52,3 +68,7 @@ class ControlPanel(QWidget):
         self.tabs.addTab(self.debug_tab, "DEBUG")
 
         layout.addWidget(self.tabs)
+
+    def _on_search(self) -> None:
+        query = self._search_bar.text().strip()
+        self.event_bus.publish(EventType.STRUCTURE_SEARCH, query=query)

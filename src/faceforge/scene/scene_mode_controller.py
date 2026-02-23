@@ -7,11 +7,15 @@ positioning is applied to ``scene_wrapper``, keeping ``bodyRoot`` at identity.
 The soft tissue skinning system receives a reference to ``scene_wrapper``
 and cancels its transform from joint delta matrices, avoiding double-rotation.
 
+Supports two scene types:
+  - **examination** (default): body supine on table, side camera
+  - **dance_studio**: body standing upright on floor, front camera
+
 Activating scene mode:
   - Creates ``scene_wrapper`` and reparents ``bodyRoot`` under it
-  - Applies supine quaternion + table position to ``scene_wrapper``
+  - Applies appropriate quaternion + position to ``scene_wrapper``
   - Parents the environment root into the scene
-  - Switches camera to side preset
+  - Switches camera to default preset
   - Enables point light
 
 Deactivating restores everything to clinical defaults.
@@ -55,6 +59,9 @@ _Q_SUPINE = quat_multiply(
 # Upright but facing +X (for standing after climbing off table)
 _Q_UPRIGHT_X = quat_from_axis_angle(vec3(0, 1, 0), math.pi / 2)
 
+# Standing upright, facing +Z (toward camera) — Rx(-90°)
+_Q_STANDING_Z = quat_from_axis_angle(vec3(1, 0, 0), -math.pi / 2)
+
 # Identity quaternion (facing +Z, normal clinical view)
 _Q_IDENTITY = quat_identity()
 
@@ -65,6 +72,11 @@ _BODY_TABLE_Y = TABLE_HEIGHT + 15
 # After supine rotation, body extends from X=0 (head) to X=170 (feet).
 # To center on the table (X=0), offset X by half the body length.
 _BODY_CENTER_X = -85.0
+
+# Dance studio: body stands at Y=203 (feet on floor).
+# Body Z-axis: head≈0, feet≈-200.  Rx(-90°) maps body Z → world Y.
+# Wrapper Y = 200 + ~3 units clearance ≈ 203.
+_STAND_Y = 203.0
 
 # Scene camera presets: (position, target)
 # Body center is at (_BODY_CENTER_X, _BODY_TABLE_Y, 0) after supine rotation.
@@ -77,14 +89,27 @@ _SCENE_CAMERA_PRESETS: dict[str, tuple[tuple, tuple]] = {
     "corner":    ((_BODY_CENTER_X + 80, 160, 120),        _BODY_TARGET),
 }
 
+# Dance studio camera presets: body center at roughly (0, 100, 0)
+_DANCE_TARGET = (0, 100, 0)
+_DANCE_CAMERA_PRESETS: dict[str, tuple[tuple, tuple]] = {
+    "front":       ((0, 120, 350),         _DANCE_TARGET),
+    "front_wide":  ((0, 140, 450),         _DANCE_TARGET),
+    "side_left":   ((-300, 120, 0),        _DANCE_TARGET),
+    "side_right":  ((300, 120, 0),         _DANCE_TARGET),
+    "overhead":    ((0, 380, 10),          _DANCE_TARGET),
+    "corner":      ((220, 150, 250),       _DANCE_TARGET),
+    "low_front":   ((0, 30, 320),          _DANCE_TARGET),
+}
+
 
 class SceneModeController:
     """Orchestrates activation / deactivation of the scene environment."""
 
     def __init__(self) -> None:
         self._active: bool = False
-        self._environment: SceneEnvironment = SceneEnvironment()
-        self._env_built: bool = False
+        self._scene_type: str = "examination"
+        self._environments: dict[str, SceneEnvironment] = {}
+        self._active_environment: SceneEnvironment | None = None
 
         # Wrapper node that sits between scene and bodyRoot.
         # Carries the supine rotation + table position.
@@ -97,10 +122,15 @@ class SceneModeController:
         # Saved state for deactivation restore
         self._saved_cam_pos: np.ndarray | None = None
         self._saved_cam_target: np.ndarray | None = None
+        self._saved_cam_up: np.ndarray | None = None
 
     @property
     def is_active(self) -> bool:
         return self._active
+
+    @property
+    def scene_type(self) -> str:
+        return self._scene_type
 
     @property
     def wrapper_node(self) -> SceneNode:
@@ -131,12 +161,21 @@ class SceneModeController:
     # Activation / Deactivation
     # ------------------------------------------------------------------
 
+    def _get_environment(self, scene_type: str) -> SceneEnvironment:
+        """Get or create the environment for the given scene type."""
+        if scene_type not in self._environments:
+            env = SceneEnvironment(scene_type=scene_type)
+            env.build()
+            self._environments[scene_type] = env
+        return self._environments[scene_type]
+
     def activate(
         self,
         body_root: SceneNode,
         scene: Scene,
         camera: Camera,
         light_setup: LightSetup,
+        scene_type: str = "examination",
     ) -> None:
         """Enter scene mode: reparent body under wrapper, build room, enable light."""
         if self._active:
@@ -144,53 +183,70 @@ class SceneModeController:
 
         self._scene = scene
         self._body_root = body_root
+        self._scene_type = scene_type
 
-        # Build environment lazily (once)
-        if not self._env_built:
-            self._environment.build()
-            self._env_built = True
-
-        env_root = self._environment.root
+        # Build/retrieve environment
+        env = self._get_environment(scene_type)
+        self._active_environment = env
 
         # Parent environment into scene
-        scene.add(env_root)
+        scene.add(env.root)
 
         # Reparent bodyRoot under the wrapper node, then add wrapper to scene.
-        # SceneNode.add() handles removing bodyRoot from its current parent.
-        self._wrapper.set_position(*(_BODY_CENTER_X, _BODY_TABLE_Y, 0))
-        self._wrapper.set_quaternion(_Q_SUPINE.copy())
+        if scene_type == "dance_studio":
+            # Standing upright facing +Z, feet on floor
+            self._wrapper.set_position(0, _STAND_Y, 0)
+            self._wrapper.set_quaternion(_Q_STANDING_Z.copy())
+            logger.info(
+                "Dance studio wrapper: pos=(0, %s, 0), quat=%s",
+                _STAND_Y, _Q_STANDING_Z.round(3),
+            )
+        else:
+            # Supine on table
+            self._wrapper.set_position(*(_BODY_CENTER_X, _BODY_TABLE_Y, 0))
+            self._wrapper.set_quaternion(_Q_SUPINE.copy())
+            logger.info(
+                "Wrapper transform: pos=(%s, %s, %s), quat=%s",
+                _BODY_CENTER_X, _BODY_TABLE_Y, 0,
+                _Q_SUPINE.round(3),
+            )
+
         self._wrapper.add(body_root)
         scene.add(self._wrapper)
-
-        logger.info(
-            "Wrapper transform: pos=(%s, %s, %s), quat=%s",
-            _BODY_CENTER_X, _BODY_TABLE_Y, 0,
-            _Q_SUPINE.round(3),
-        )
 
         # Save camera state
         self._saved_cam_pos = camera.position.copy()
         self._saved_cam_target = camera.target.copy()
+        self._saved_cam_up = camera.up.copy()
 
-        # Set camera to side view (overhead is degenerate with Y-up)
-        self.set_camera_preset(camera, "side")
+        # Scene mode uses Y-up (room has floor at Y=0, ceiling at Y=height)
+        camera.up = vec3(0.0, 1.0, 0.0)
+        camera._view_dirty = True
+
+        # Set camera to default preset
+        if scene_type == "dance_studio":
+            self.set_camera_preset(camera, "front")
+        else:
+            self.set_camera_preset(camera, "side")
 
         # Enable point light
-        light_pos = self._environment.get_light_position()
+        light_pos = env.get_light_position()
         if light_setup.point_light is None:
             light_setup.point_light = PointLight(
                 position=light_pos,
                 color=(1.0, 0.95, 0.85),
-                intensity=1.5,
-                range=400.0,
+                intensity=2.0 if scene_type == "dance_studio" else 1.5,
+                range=500.0 if scene_type == "dance_studio" else 400.0,
                 enabled=True,
             )
         else:
             light_setup.point_light.position = light_pos
+            light_setup.point_light.intensity = 2.0 if scene_type == "dance_studio" else 1.5
+            light_setup.point_light.range = 500.0 if scene_type == "dance_studio" else 400.0
             light_setup.point_light.enabled = True
 
         self._active = True
-        logger.info("Scene mode activated (wrapper node approach).")
+        logger.info("Scene mode activated: %s", scene_type)
 
     def deactivate(
         self,
@@ -208,15 +264,18 @@ class SceneModeController:
 
         # Remove wrapper and environment from scene
         scene.remove(self._wrapper)
-        env_root = self._environment.root
-        if env_root is not None:
-            scene.remove(env_root)
+        if self._active_environment is not None and self._active_environment.root is not None:
+            scene.remove(self._active_environment.root)
+        self._active_environment = None
 
         # Reset wrapper to identity for clean state
         self._wrapper.set_position(0, 0, 0)
         self._wrapper.set_quaternion(_Q_IDENTITY.copy())
 
         # Restore camera
+        if self._saved_cam_up is not None:
+            camera.up = self._saved_cam_up.copy()
+            camera._view_dirty = True
         if self._saved_cam_pos is not None:
             camera.set_position(*self._saved_cam_pos)
         if self._saved_cam_target is not None:
@@ -237,7 +296,8 @@ class SceneModeController:
 
     def set_camera_preset(self, camera: Camera, preset_name: str) -> None:
         """Apply one of the scene camera presets."""
-        data = _SCENE_CAMERA_PRESETS.get(preset_name)
+        presets = self._get_camera_presets()
+        data = presets.get(preset_name)
         if data is None:
             logger.warning("Unknown scene camera preset: %s", preset_name)
             return
@@ -245,11 +305,17 @@ class SceneModeController:
         camera.set_position(*pos)
         camera.set_target(*target)
 
-    @staticmethod
-    def get_preset_names() -> list[str]:
+    def get_preset_names(self) -> list[str]:
         """Return the list of available scene camera preset names."""
-        return list(_SCENE_CAMERA_PRESETS.keys())
+        return list(self._get_camera_presets().keys())
+
+    def _get_camera_presets(self) -> dict[str, tuple[tuple, tuple]]:
+        """Return the camera presets for the current scene type."""
+        if self._scene_type == "dance_studio":
+            return _DANCE_CAMERA_PRESETS
+        return _SCENE_CAMERA_PRESETS
 
     def set_render_mode(self, mode) -> None:
         """Propagate render mode to environment meshes."""
-        self._environment.set_render_mode(mode)
+        if self._active_environment is not None:
+            self._active_environment.set_render_mode(mode)

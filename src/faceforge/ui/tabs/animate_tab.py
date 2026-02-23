@@ -1,6 +1,9 @@
-"""Animate tab: expressions grid, AU sliders, eye controls, head rotation, auto-animation toggles."""
+"""Animate tab: expressions grid, AU sliders, eye controls, head rotation, auto-animation toggles, speech."""
 
-from PySide6.QtWidgets import QScrollArea, QWidget, QVBoxLayout, QSizePolicy
+from PySide6.QtWidgets import (
+    QScrollArea, QWidget, QVBoxLayout, QHBoxLayout, QSizePolicy,
+    QLineEdit, QPushButton,
+)
 from PySide6.QtCore import Qt
 
 from faceforge.core.events import EventBus, EventType
@@ -146,6 +149,28 @@ class AnimateTab(QScrollArea):
         )
         self._layout.addWidget(self._micro_expr)
 
+        # ── 7. Speech ──
+        self._layout.addWidget(SectionLabel("Speech"))
+        speech_row = QHBoxLayout()
+        speech_row.setSpacing(4)
+        self._speech_input = QLineEdit()
+        self._speech_input.setPlaceholderText("Type text to speak...")
+        self._speech_input.setStyleSheet(
+            "QLineEdit { background: rgba(40, 42, 50, 0.9); color: #ccc; "
+            "border: 1px solid #555; border-radius: 4px; padding: 4px 8px; }"
+        )
+        speech_row.addWidget(self._speech_input, stretch=1)
+        self._speak_btn = QPushButton("Speak")
+        self._speak_btn.setObjectName("speakButton")
+        self._speak_btn.clicked.connect(self._on_speak_clicked)
+        speech_row.addWidget(self._speak_btn)
+        speech_widget = QWidget()
+        speech_widget.setLayout(speech_row)
+        self._layout.addWidget(speech_widget)
+
+        self._speech_speed = SliderRow("Speed", min_val=0.5, max_val=2.0, default=1.0)
+        self._layout.addWidget(self._speech_speed)
+
         # Push everything up
         self._layout.addStretch()
 
@@ -202,6 +227,12 @@ class AnimateTab(QScrollArea):
 
     def _on_ear_wiggle_changed(self, value: float) -> None:
         self._bus.publish(EventType.AU_CHANGED, au_id="ear_wiggle", value=value)
+
+    def _on_speak_clicked(self) -> None:
+        text = self._speech_input.text().strip()
+        if text:
+            speed = self._speech_speed.value
+            self._bus.publish(EventType.SPEECH_PLAY, text=text, speed=speed)
 
     def _on_eye_color_selected(self, name: str, r: float, g: float, b: float) -> None:
         self._bus.publish(EventType.EYE_COLOR_SET, name=name, color=(r, g, b))

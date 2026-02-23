@@ -28,3 +28,31 @@ class VisibilityManager:
 
     def get_toggle_names(self) -> list[str]:
         return list(self._toggles.keys())
+
+    def get_all_nodes(self) -> list[SceneNode]:
+        """Return a flat list of all registered nodes."""
+        result = []
+        for nodes in self._toggles.values():
+            result.extend(nodes)
+        return result
+
+    def dim_all_except(self, names: set[str], dim_opacity: float = 0.15) -> None:
+        """Dim all nodes except those whose mesh name is in *names*.
+
+        Sets opacity on matching nodes to 1.0, all others to *dim_opacity*.
+        Used for search highlighting.
+        """
+        for toggle_name, nodes in self._toggles.items():
+            for node in nodes:
+                for mesh, _ in node.collect_meshes() if hasattr(node, 'collect_meshes') else []:
+                    if mesh.name in names:
+                        mesh.material.opacity = 1.0
+                    else:
+                        mesh.material.opacity = dim_opacity
+
+    def restore_opacity(self) -> None:
+        """Restore all nodes to full opacity after search highlighting."""
+        for toggle_name, nodes in self._toggles.items():
+            for node in nodes:
+                for mesh, _ in node.collect_meshes() if hasattr(node, 'collect_meshes') else []:
+                    mesh.material.opacity = 1.0

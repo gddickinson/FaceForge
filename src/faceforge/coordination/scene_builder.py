@@ -28,6 +28,7 @@ class SceneBuilder:
               ├── lumbarSpineGroup
               ├── ribCageGroup
               ├── pelvisGroup
+              ├── bodyMeshGroup (MakeHuman body surface mesh)
               ├── brainGroup (independent of skull visibility)
               ├── fasciaGroup (debug: fascia constraint markers)
               ├── [limb groups...]
@@ -77,6 +78,10 @@ class SceneBuilder:
         vertebrae_group = SceneNode(name="vertebraeGroup")
         body_root.add(vertebrae_group)
 
+        body_mesh_group = SceneNode(name="bodyMeshGroup")
+        body_root.add(body_mesh_group)
+        body_mesh_group.visible = False
+
         brain_group = SceneNode(name="brainGroup")
         body_root.add(brain_group)
         brain_group.visible = False
@@ -101,6 +106,7 @@ class SceneBuilder:
         self.visibility.register("neck_muscles", neck_muscle_group)
         neck_muscle_group.visible = False
         self.visibility.register("vertebrae", vertebrae_group)
+        self.visibility.register("body_mesh", body_mesh_group)
         self.visibility.register("brain", brain_group)
         self.visibility.register("fascia", fascia_group)
 
@@ -114,6 +120,7 @@ class SceneBuilder:
             "faceFeatureGroup": face_feature_group,
             "neckMuscleGroup": neck_muscle_group,
             "vertebraeGroup": vertebrae_group,
+            "bodyMeshGroup": body_mesh_group,
             "brainGroup": brain_group,
             "fasciaGroup": fascia_group,
         }

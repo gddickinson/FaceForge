@@ -50,8 +50,9 @@ void main() {
     lineIntensity = clamp(lineIntensity, 0.0, 1.0);
 
     // Blueprint blue background → white lines
+    // When vertex colors active, use vertex color for lines
     vec3 bgBlue = vec3(0.05, 0.12, 0.28);
-    vec3 lineWhite = vec3(0.85, 0.90, 1.0);
+    vec3 lineWhite = uUseVertexColor != 0 ? vVertexColor : vec3(0.85, 0.90, 1.0);
 
     vec3 finalColor = mix(bgBlue, lineWhite, lineIntensity);
 

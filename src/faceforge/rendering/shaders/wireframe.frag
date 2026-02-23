@@ -7,6 +7,7 @@ in vec3 vWorldPos;
 
 uniform vec3 uColor;
 uniform float uOpacity;
+uniform int uUseVertexColor;
 
 // Clip plane
 uniform int uClipEnabled;
@@ -17,5 +18,6 @@ out vec4 fragColor;
 void main() {
     if (uClipEnabled != 0 && dot(vWorldPos, uClipPlane.xyz) + uClipPlane.w < 0.0) discard;
 
-    fragColor = vec4(uColor, uOpacity);
+    vec3 color = uUseVertexColor != 0 ? vVertexColor : uColor;
+    fragColor = vec4(color, uOpacity);
 }

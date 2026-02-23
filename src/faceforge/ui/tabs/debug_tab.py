@@ -22,8 +22,10 @@ class DebugTab(QScrollArea):
     # Signals for the new features
     stretch_viz_toggled = Signal(bool)
     chain_viz_toggled = Signal(bool)
+    region_viz_toggled = Signal(bool)
     selection_mode_toggled = Signal(bool)
     reassign_clicked = Signal(str)  # target chain name
+    region_reassign_clicked = Signal(str)  # target region name
     clear_selection_clicked = Signal()
     undo_clicked = Signal()
     save_overrides_clicked = Signal()
@@ -80,6 +82,10 @@ class DebugTab(QScrollArea):
         self._chain_toggle.toggled.connect(self._on_chain_toggled)
         self._layout.addWidget(self._chain_toggle)
 
+        self._region_toggle = ToggleRow("Region Labels", default=False)
+        self._region_toggle.toggled.connect(self._on_region_toggled)
+        self._layout.addWidget(self._region_toggle)
+
         # ── Vertex Selection ──
         self._layout.addWidget(SectionLabel("Vertex Selection"))
 
@@ -106,6 +112,22 @@ class DebugTab(QScrollArea):
         self._reassign_btn.setEnabled(False)
         chain_layout.addWidget(self._reassign_btn)
         self._layout.addWidget(chain_row)
+
+        # Region selector + set region button
+        region_row = QWidget()
+        region_layout = QHBoxLayout(region_row)
+        region_layout.setContentsMargins(0, 0, 0, 0)
+        region_layout.setSpacing(4)
+
+        self._region_combo = QComboBox()
+        self._region_combo.setMinimumWidth(100)
+        region_layout.addWidget(self._region_combo, 1)
+
+        self._region_reassign_btn = QPushButton("Set Region")
+        self._region_reassign_btn.clicked.connect(self._on_region_reassign)
+        self._region_reassign_btn.setEnabled(False)
+        region_layout.addWidget(self._region_reassign_btn)
+        self._layout.addWidget(region_row)
 
         # Clear and Undo buttons
         btn_row = QWidget()
@@ -143,6 +165,10 @@ class DebugTab(QScrollArea):
         self._override_label = QLabel("0 overrides active")
         self._override_label.setObjectName("statsLabel")
         self._layout.addWidget(self._override_label)
+
+        self._region_override_label = QLabel("0 region overrides")
+        self._region_override_label.setObjectName("statsLabel")
+        self._layout.addWidget(self._region_override_label)
 
         # ── Stats ──
         self._layout.addWidget(SectionLabel("Statistics"))
@@ -188,16 +214,37 @@ class DebugTab(QScrollArea):
         self._bus.publish(EventType.LAYER_TOGGLED, layer=layer_id, visible=visible)
 
     def _on_stretch_toggled(self, checked: bool) -> None:
-        # Mutually exclusive with chain viz
-        if checked and self._chain_toggle.is_checked:
-            self._chain_toggle.set_checked(False)
+        # Mutually exclusive with chain/region viz
+        print(f"[DEBUG] _on_stretch_toggled({checked})")
+        if checked:
+            if self._chain_toggle.is_checked:
+                self._chain_toggle.set_checked(False)
+            if self._region_toggle.is_checked:
+                self._region_toggle.set_checked(False)
+        print(f"[DEBUG] emitting stretch_viz_toggled({checked})")
         self.stretch_viz_toggled.emit(checked)
 
     def _on_chain_toggled(self, checked: bool) -> None:
-        # Mutually exclusive with stretch viz
-        if checked and self._stretch_toggle.is_checked:
-            self._stretch_toggle.set_checked(False)
+        # Mutually exclusive with stretch/region viz
+        print(f"[DEBUG] _on_chain_toggled({checked})")
+        if checked:
+            if self._stretch_toggle.is_checked:
+                self._stretch_toggle.set_checked(False)
+            if self._region_toggle.is_checked:
+                self._region_toggle.set_checked(False)
+        print(f"[DEBUG] emitting chain_viz_toggled({checked})")
         self.chain_viz_toggled.emit(checked)
+
+    def _on_region_toggled(self, checked: bool) -> None:
+        # Mutually exclusive with stretch/chain viz
+        print(f"[DEBUG] _on_region_toggled({checked})")
+        if checked:
+            if self._stretch_toggle.is_checked:
+                self._stretch_toggle.set_checked(False)
+            if self._chain_toggle.is_checked:
+                self._chain_toggle.set_checked(False)
+        print(f"[DEBUG] emitting region_viz_toggled({checked})")
+        self.region_viz_toggled.emit(checked)
 
     def _on_selection_toggled(self, checked: bool) -> None:
         self.selection_mode_toggled.emit(checked)
@@ -206,6 +253,11 @@ class DebugTab(QScrollArea):
         chain_name = self._chain_combo.currentText()
         if chain_name:
             self.reassign_clicked.emit(chain_name)
+
+    def _on_region_reassign(self) -> None:
+        region_name = self._region_combo.currentText()
+        if region_name:
+            self.region_reassign_clicked.emit(region_name)
 
     def _on_clear_selection(self) -> None:
         self.clear_selection_clicked.emit()
@@ -237,10 +289,16 @@ class DebugTab(QScrollArea):
         self._chain_combo.clear()
         self._chain_combo.addItems(names)
 
+    def set_region_names(self, names: list[str]) -> None:
+        """Populate the region selector combo box."""
+        self._region_combo.clear()
+        self._region_combo.addItems(names)
+
     def update_selection_count(self, count: int) -> None:
         """Update the selected vertex count label."""
         self._selected_label.setText(f"Selected: {count} vertices")
         self._reassign_btn.setEnabled(count > 0)
+        self._region_reassign_btn.setEnabled(count > 0)
 
     def set_undo_enabled(self, enabled: bool) -> None:
         """Enable/disable the undo button."""
@@ -249,6 +307,10 @@ class DebugTab(QScrollArea):
     def set_override_count(self, count: int) -> None:
         """Update the override count label."""
         self._override_label.setText(f"{count} overrides active")
+
+    def update_region_override_count(self, count: int) -> None:
+        """Update the region override count label."""
+        self._region_override_label.setText(f"{count} region overrides")
 
     def update_stats(
         self,

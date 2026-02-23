@@ -67,6 +67,11 @@ class SliderRow(QWidget):
         """Current float value."""
         return self._int_to_float(self._slider.value())
 
+    @property
+    def slider(self) -> QSlider:
+        """The underlying QSlider (for connecting to signals like sliderReleased)."""
+        return self._slider
+
     # ── Public API ──
 
     def set_value(self, val: float) -> None:

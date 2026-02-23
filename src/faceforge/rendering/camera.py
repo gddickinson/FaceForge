@@ -73,6 +73,12 @@ class Camera:
             self._proj_dirty = False
         return self._proj
 
+    def get_projection_matrix_for_size(self, width: int, height: int) -> Mat4:
+        """Return a projection matrix with a custom aspect ratio (for split viewport)."""
+        aspect = width / height if height > 0 else 1.0
+        fov_rad = deg_to_rad(self.fov)
+        return mat4_perspective(fov_rad, aspect, self.near, self.far)
+
     def get_view_projection(self) -> Mat4:
         """Return ``projection @ view``."""
         return self.get_projection_matrix() @ self.get_view_matrix()

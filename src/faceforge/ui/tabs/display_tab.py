@@ -345,6 +345,17 @@ class DisplayTab(QScrollArea):
         # ── 5. Scene View ──
         self._layout.addWidget(SectionLabel("Scene View"))
 
+        # Scene type selector
+        scene_type_row = QHBoxLayout()
+        scene_type_row.addWidget(QLabel("Scene:"))
+        self._scene_type_combo = QComboBox()
+        self._scene_type_combo.addItems(["Examination Room", "Dance Studio"])
+        self._scene_type_combo.setEnabled(True)
+        scene_type_row.addWidget(self._scene_type_combo)
+        scene_type_widget = QWidget()
+        scene_type_widget.setLayout(scene_type_row)
+        self._layout.addWidget(scene_type_widget)
+
         self._scene_toggle = QPushButton("Scene View: OFF")
         self._scene_toggle.setObjectName("sceneToggleButton")
         self._scene_toggle.setCheckable(True)
@@ -411,7 +422,38 @@ class DisplayTab(QScrollArea):
         for btn in self._nudge_buttons:
             btn.setEnabled(False)
 
-        # ── 6. Animation ──
+        # ── 6. Tools ──
+        self._layout.addWidget(SectionLabel("Tools"))
+
+        tools_grid = QGridLayout()
+        tools_grid.setSpacing(4)
+
+        self._export_btn = QPushButton("Export Video")
+        self._export_btn.setObjectName("toolButton")
+        self._export_btn.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        tools_grid.addWidget(self._export_btn, 0, 0)
+
+        self._quiz_btn = QPushButton("Anatomy Quiz")
+        self._quiz_btn.setObjectName("toolButton")
+        self._quiz_btn.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        tools_grid.addWidget(self._quiz_btn, 0, 1)
+
+        self._timeline_btn = QPushButton("Edit Timeline")
+        self._timeline_btn.setObjectName("toolButton")
+        self._timeline_btn.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        tools_grid.addWidget(self._timeline_btn, 1, 0)
+
+        self._compare_btn = QPushButton("Compare")
+        self._compare_btn.setObjectName("toolButton")
+        self._compare_btn.setCheckable(True)
+        self._compare_btn.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        tools_grid.addWidget(self._compare_btn, 1, 1)
+
+        tools_widget = QWidget()
+        tools_widget.setLayout(tools_grid)
+        self._layout.addWidget(tools_widget)
+
+        # ── 7. Animation ──
         self._layout.addWidget(SectionLabel("Animation"))
 
         self._anim_clip_combo = QComboBox()
@@ -511,13 +553,35 @@ class DisplayTab(QScrollArea):
         self._scene_camera_combo.setEnabled(checked)
         self._anim_clip_combo.setEnabled(checked)
         self._transport.setEnabled(checked)
+        self._scene_type_combo.setEnabled(not checked)  # lock while active
         for btn in self._nudge_buttons:
             btn.setEnabled(checked)
         if not checked:
             # Stop animation when leaving scene mode
             self._bus.publish(EventType.ANIM_STOP)
             self._transport.set_playing(False)
-        self._bus.publish(EventType.SCENE_MODE_TOGGLED, enabled=checked)
+        # Determine scene type from combo
+        scene_type = "dance_studio" if self._scene_type_combo.currentIndex() == 1 else "examination"
+        self._bus.publish(EventType.SCENE_MODE_TOGGLED, enabled=checked, scene_type=scene_type)
+
+        # Update camera presets for scene type
+        if checked:
+            self._update_camera_presets(scene_type)
+
+    def _update_camera_presets(self, scene_type: str) -> None:
+        """Update camera combo items for the given scene type."""
+        self._scene_camera_combo.blockSignals(True)
+        self._scene_camera_combo.clear()
+        if scene_type == "dance_studio":
+            self._scene_camera_combo.addItems([
+                "front", "front_wide", "side_left", "side_right",
+                "overhead", "corner", "low_front",
+            ])
+        else:
+            self._scene_camera_combo.addItems([
+                "overhead", "side", "head_end", "foot_end", "corner",
+            ])
+        self._scene_camera_combo.blockSignals(False)
 
     def _on_scene_camera_changed(self, preset: str) -> None:
         if self._scene_toggle.isChecked():

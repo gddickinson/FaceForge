@@ -170,11 +170,17 @@ class StretchVisualizer:
         elif not self._stretch_enabled:
             self._disable_all()
 
+    _update_log_count = 0
+
     def update(self) -> None:
         """Recompute per-vertex colors for active visualization mode.
 
         Call once per frame when enabled.
         """
+        if StretchVisualizer._update_log_count < 3:
+            print(f"[DEBUG] StretchVisualizer.update(): stretch={self._stretch_enabled}, "
+                  f"chain={self._chain_enabled}, bindings={len(self.skinning.bindings)}")
+            StretchVisualizer._update_log_count += 1
         if self._stretch_enabled:
             self._update_stretch()
         elif self._chain_enabled:
@@ -194,10 +200,14 @@ class StretchVisualizer:
             binding.mesh.geometry.colors_dirty = True
             binding.mesh.material.vertex_colors_active = True
 
+    _chain_update_log_count = 0
+
     def _update_chain(self) -> None:
+        skin_count = 0
         for binding in self.skinning.bindings:
             if binding.is_muscle:
                 continue
+            skin_count += 1
             key = id(binding)
             if key not in self._chain_color_cache:
                 self._chain_color_cache[key] = compute_chain_colors(
@@ -206,6 +216,10 @@ class StretchVisualizer:
             binding.mesh.geometry.vertex_colors = self._chain_color_cache[key]
             binding.mesh.geometry.colors_dirty = True
             binding.mesh.material.vertex_colors_active = True
+        if StretchVisualizer._chain_update_log_count < 3:
+            print(f"[DEBUG] _update_chain: applied colors to {skin_count} skin bindings "
+                  f"(total bindings={len(self.skinning.bindings)})")
+            StretchVisualizer._chain_update_log_count += 1
 
     def _disable_all(self) -> None:
         for binding in self.skinning.bindings:

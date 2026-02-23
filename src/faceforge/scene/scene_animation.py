@@ -368,6 +368,87 @@ def load_clip_from_dict(d: dict) -> AnimationClip:
     )
 
 
+def capture_keyframe(
+    body_state,
+    face_state,
+    time: float,
+    camera=None,
+    wrapper=None,
+    easing: str = "ease_in_out",
+) -> AnimationKeyframe:
+    """Create an AnimationKeyframe from current body/face/camera state.
+
+    Parameters
+    ----------
+    body_state : BodyState
+        Current body joint values.
+    face_state : FaceState
+        Current face AU values + head rotation.
+    time : float
+        Keyframe time in seconds.
+    camera : Camera, optional
+        If provided, capture camera position and target.
+    wrapper : SceneNode, optional
+        If provided, capture wrapper position and quaternion.
+    easing : str
+        Easing function name for this keyframe.
+    """
+    # Body state dict
+    body_dict = {}
+    for field_name in dir(body_state):
+        if field_name.startswith("_"):
+            continue
+        val = getattr(body_state, field_name, None)
+        if isinstance(val, (int, float)) and not isinstance(val, bool):
+            body_dict[field_name] = float(val)
+
+    # Face AUs
+    face_aus = {}
+    if hasattr(face_state, 'get_au'):
+        from faceforge.core.state import AU_IDS
+        for au_id in AU_IDS:
+            val = face_state.get_au(au_id)
+            if val != 0.0:
+                face_aus[au_id] = val
+
+    # Head rotation
+    head_rot = {
+        "headYaw": getattr(face_state, "head_yaw", 0.0),
+        "headPitch": getattr(face_state, "head_pitch", 0.0),
+        "headRoll": getattr(face_state, "head_roll", 0.0),
+    }
+
+    # Camera
+    cam_pos = None
+    cam_tgt = None
+    if camera is not None:
+        pos = camera.position
+        cam_pos = (float(pos[0]), float(pos[1]), float(pos[2]))
+        tgt = camera.target
+        cam_tgt = (float(tgt[0]), float(tgt[1]), float(tgt[2]))
+
+    # Wrapper
+    wrap_pos = None
+    wrap_quat = None
+    if wrapper is not None:
+        wp = wrapper.position
+        wrap_pos = (float(wp[0]), float(wp[1]), float(wp[2]))
+        wq = wrapper.quaternion
+        wrap_quat = (float(wq[0]), float(wq[1]), float(wq[2]), float(wq[3]))
+
+    return AnimationKeyframe(
+        time=time,
+        wrapper_position=wrap_pos,
+        wrapper_quaternion=wrap_quat,
+        body_state=body_dict if body_dict else None,
+        camera_position=cam_pos,
+        camera_target=cam_tgt,
+        face_aus=face_aus if face_aus else None,
+        head_rotation=head_rot,
+        easing=easing,
+    )
+
+
 def clip_to_dict(clip: AnimationClip) -> dict:
     """Serialize an AnimationClip to a JSON-compatible dict."""
     keyframes = []

@@ -189,6 +189,9 @@ class BodyState:
     toe_curl_l: float = 0.0
     toe_spread_l: float = 0.0
 
+    # Gender dimorphism (0=male, 1=female)
+    gender: float = 0.0
+
     # Mapping from JS camelCase to Python snake_case
     _JS_KEY_MAP: dict[str, str] = field(default=None, init=False, repr=False)
 

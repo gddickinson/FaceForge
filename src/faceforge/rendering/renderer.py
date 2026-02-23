@@ -364,6 +364,67 @@ class GLRenderer:
         # Draw
         gl_mesh.draw(mode)
 
+    def render_split(
+        self,
+        scene: Scene,
+        camera: Camera,
+        lights: LightSetup,
+        left_config: dict,
+        right_config: dict,
+    ) -> None:
+        """Render split viewport: left half with left_config, right half with right_config.
+
+        Each config dict has 'visibility' (set of toggle names to show) and
+        optionally 'render_mode' (RenderMode).
+        """
+        if not self._initialised:
+            return
+
+        if self._bg_color_dirty:
+            glClearColor(*self.CLEAR_COLOR)
+            self._bg_color_dirty = False
+
+        glViewport(0, 0, self._width, self._height)
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+
+        scene.update()
+        view = camera.get_view_matrix()
+        proj = camera.get_projection_matrix()
+
+        hw = self._width // 2
+
+        for half_idx, config in enumerate((left_config, right_config)):
+            x_offset = 0 if half_idx == 0 else hw
+            w = hw if half_idx == 0 else (self._width - hw)
+            glViewport(x_offset, 0, w, self._height)
+
+            # Adjust projection for half-width aspect ratio
+            half_proj = camera.get_projection_matrix_for_size(w, self._height)
+
+            visible_toggles = config.get("visibility", set())
+            override_mode = config.get("render_mode")
+
+            mesh_list = scene.collect_meshes()
+            for mesh, world in mesh_list:
+                # Check if mesh should be visible in this config
+                if visible_toggles and mesh.name not in visible_toggles:
+                    continue
+
+                saved_mode = None
+                if override_mode is not None:
+                    saved_mode = mesh.material.render_mode
+                    mesh.material.render_mode = override_mode
+
+                self._draw_mesh(mesh, world, view, half_proj, lights)
+
+                if saved_mode is not None:
+                    mesh.material.render_mode = saved_mode
+
+        # Restore full viewport
+        glViewport(0, 0, self._width, self._height)
+        restore_material_defaults()
+        self._frame_count += 1
+
     def remove_mesh(self, mesh: MeshInstance) -> None:
         """Remove a mesh's GL resources (e.g. when it's removed from the scene)."""
         key = id(mesh)

@@ -76,6 +76,15 @@ class GLViewport(QOpenGLWidget):
         # Selection tool (set externally when skinning is ready)
         self.selection_tool: Optional[SelectionTool] = None
 
+        # Quiz click mode: when True, mouse clicks report nearest mesh name
+        self.quiz_click_mode: bool = False
+        self.quiz_click_callback = None  # Callable[[str], None]
+
+        # Comparison mode
+        self.comparison_mode: bool = False
+        self.comparison_left_config: dict = {}
+        self.comparison_right_config: dict = {}
+
         # Cached GL resources for selection overlay (avoid per-frame churn)
         self._sel_vao: int = 0
         self._sel_vbo: int = 0
@@ -114,7 +123,14 @@ class GLViewport(QOpenGLWidget):
         try:
             if self.scene is not None:
                 self.orbit_controls.update()
-                self.renderer.render(self.scene, self.camera, self.lights)
+                if self.comparison_mode:
+                    self.renderer.render_split(
+                        self.scene, self.camera, self.lights,
+                        self.comparison_left_config,
+                        self.comparison_right_config,
+                    )
+                else:
+                    self.renderer.render(self.scene, self.camera, self.lights)
 
                 # Render selected vertex highlights via GL_POINTS
                 self._draw_selection_points()
@@ -297,6 +313,16 @@ class GLViewport(QOpenGLWidget):
         button = self._qt_button_to_int(event.button())
         pos = event.position()
 
+        # Quiz click mode: report nearest mesh on left click
+        if (self.quiz_click_mode
+                and button == OrbitControls.BUTTON_LEFT
+                and self.quiz_click_callback is not None):
+            mesh_name = self._find_nearest_mesh(pos.x(), pos.y())
+            if mesh_name:
+                self.quiz_click_callback(mesh_name)
+            event.accept()
+            return
+
         # Selection tool intercepts left button when active
         if (self.selection_tool is not None
                 and self.selection_tool.active
@@ -385,6 +411,37 @@ class GLViewport(QOpenGLWidget):
     def _on_timer(self) -> None:
         """Timer callback to drive continuous rendering."""
         self.update()
+
+    def _find_nearest_mesh(self, screen_x: float, screen_y: float) -> str:
+        """Find the mesh name closest to a screen coordinate (for quiz mode)."""
+        if self.scene is None:
+            return ""
+        vp = self.camera.get_view_projection()
+        w, h = self.width(), self.height()
+        if w <= 0 or h <= 0:
+            return ""
+
+        ndc_x = (screen_x / w) * 2.0 - 1.0
+        ndc_y = 1.0 - (screen_y / h) * 2.0
+
+        best_name = ""
+        best_dist = float("inf")
+
+        for mesh, world in self.scene.collect_meshes():
+            if not mesh.material.opacity > 0.1:
+                continue
+            center = world[:3, 3]
+            clip = vp @ np.append(center, 1.0)
+            if clip[3] <= 0:
+                continue
+            px = clip[0] / clip[3]
+            py = clip[1] / clip[3]
+            dist = (px - ndc_x) ** 2 + (py - ndc_y) ** 2
+            if dist < best_dist:
+                best_dist = dist
+                best_name = mesh.name
+
+        return best_name
 
     @staticmethod
     def _qt_button_to_int(qt_button) -> int | None:
