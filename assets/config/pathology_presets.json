@@ -1,0 +1,54 @@
+{
+    "conditions": [
+        {
+            "name": "Fracture",
+            "description": "Bone fracture with displacement",
+            "applicable_categories": ["bone"],
+            "default_severity": 0.5
+        },
+        {
+            "name": "Tumor",
+            "description": "Neoplastic growth on surface",
+            "applicable_categories": ["organ", "muscle", "bone"],
+            "default_severity": 0.3
+        },
+        {
+            "name": "Inflammation",
+            "description": "Acute inflammation with swelling",
+            "applicable_categories": ["muscle", "organ", "bone"],
+            "default_severity": 0.6
+        },
+        {
+            "name": "Osteoarthritis",
+            "description": "Joint surface degeneration",
+            "applicable_categories": ["bone"],
+            "default_severity": 0.5
+        },
+        {
+            "name": "Edema",
+            "description": "Tissue swelling with fluid retention",
+            "applicable_categories": ["muscle", "organ"],
+            "default_severity": 0.4
+        }
+    ],
+    "presets": [
+        {
+            "name": "Fractured Femur",
+            "target": "Femur R",
+            "condition": "fracture",
+            "severity": 0.6
+        },
+        {
+            "name": "Inflamed Heart",
+            "target": "Heart Wall",
+            "condition": "inflammation",
+            "severity": 0.7
+        },
+        {
+            "name": "Knee Osteoarthritis",
+            "target": "Patella R",
+            "condition": "osteoarthritis",
+            "severity": 0.5
+        }
+    ]
+}

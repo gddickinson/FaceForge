@@ -1,0 +1,132 @@
+{
+    "spine_flex": [
+        "Erector Spinae R", "Erector Spinae L",
+        "Iliocostalis Lumb. R", "Iliocostalis Lumb. L",
+        "Longissimus Thor. R", "Longissimus Thor. L",
+        "Spinalis Thor. R", "Spinalis Thor. L",
+        "Multifidus R", "Multifidus L",
+        "Rectus Abdominis R", "Rectus Abdominis L",
+        "Ext. Oblique R", "Ext. Oblique L",
+        "Int. Oblique R", "Int. Oblique L"
+    ],
+    "spine_lat_bend": [
+        "Quadratus Lumb. R", "Quadratus Lumb. L",
+        "Ext. Oblique R", "Ext. Oblique L",
+        "Int. Oblique R", "Int. Oblique L",
+        "Iliocostalis Lumb. R", "Iliocostalis Lumb. L"
+    ],
+    "spine_rotation": [
+        "Ext. Oblique R", "Ext. Oblique L",
+        "Int. Oblique R", "Int. Oblique L",
+        "Multifidus R", "Multifidus L",
+        "Rotatores R", "Rotatores L"
+    ],
+    "shoulder_r_abduct": [
+        "Deltoid Lat. R", "Supraspinatus R",
+        "Asc. Trapezius R", "Serratus Ant. R"
+    ],
+    "shoulder_r_flex": [
+        "Deltoid Ant. R", "Pect. Major Clav. R",
+        "Biceps Long R", "Coracobrachialis R"
+    ],
+    "shoulder_r_rotate": [
+        "Infraspinatus R", "Teres Minor R",
+        "Subscapularis R", "Teres Major R"
+    ],
+    "shoulder_l_abduct": [
+        "Deltoid Lat. L", "Supraspinatus L",
+        "Asc. Trapezius L", "Serratus Ant. L"
+    ],
+    "shoulder_l_flex": [
+        "Deltoid Ant. L", "Pect. Major Clav. L",
+        "Biceps Long L", "Coracobrachialis L"
+    ],
+    "shoulder_l_rotate": [
+        "Infraspinatus L", "Teres Minor L",
+        "Subscapularis L", "Teres Major L"
+    ],
+    "elbow_r_flex": [
+        "Biceps Long R", "Biceps Short R",
+        "Brachialis R", "Brachioradialis R",
+        "Triceps Long R", "Triceps Lat. R", "Triceps Med. R"
+    ],
+    "elbow_l_flex": [
+        "Biceps Long L", "Biceps Short L",
+        "Brachialis L", "Brachioradialis L",
+        "Triceps Long L", "Triceps Lat. L", "Triceps Med. L"
+    ],
+    "hip_r_flex": [
+        "Iliopsoas R", "Rectus Femoris R",
+        "Sartorius R", "Tensor Fasciae L. R",
+        "Gluteus Max. R", "Hamstring R"
+    ],
+    "hip_r_abduct": [
+        "Gluteus Med. R", "Gluteus Min. R",
+        "Tensor Fasciae L. R",
+        "Adductor Long. R", "Adductor Mag. R", "Gracilis R"
+    ],
+    "hip_r_rotate": [
+        "Piriformis R", "Obturator Int. R",
+        "Obturator Ext. R", "Gemelli R",
+        "Gluteus Med. R"
+    ],
+    "hip_l_flex": [
+        "Iliopsoas L", "Rectus Femoris L",
+        "Sartorius L", "Tensor Fasciae L. L",
+        "Gluteus Max. L", "Hamstring L"
+    ],
+    "hip_l_abduct": [
+        "Gluteus Med. L", "Gluteus Min. L",
+        "Tensor Fasciae L. L",
+        "Adductor Long. L", "Adductor Mag. L", "Gracilis L"
+    ],
+    "hip_l_rotate": [
+        "Piriformis L", "Obturator Int. L",
+        "Obturator Ext. L", "Gemelli L",
+        "Gluteus Med. L"
+    ],
+    "knee_r_flex": [
+        "Quadriceps R", "Rectus Femoris R",
+        "Vastus Lat. R", "Vastus Med. R", "Vastus Int. R",
+        "Hamstring R", "Gastrocnemius R"
+    ],
+    "knee_l_flex": [
+        "Quadriceps L", "Rectus Femoris L",
+        "Vastus Lat. L", "Vastus Med. L", "Vastus Int. L",
+        "Hamstring L", "Gastrocnemius L"
+    ],
+    "ankle_r_flex": [
+        "Gastrocnemius R", "Soleus R",
+        "Tibialis Ant. R", "Peroneus Long. R"
+    ],
+    "ankle_r_invert": [
+        "Tibialis Post. R", "Tibialis Ant. R",
+        "Peroneus Long. R", "Peroneus Brevis R"
+    ],
+    "ankle_l_flex": [
+        "Gastrocnemius L", "Soleus L",
+        "Tibialis Ant. L", "Peroneus Long. L"
+    ],
+    "ankle_l_invert": [
+        "Tibialis Post. L", "Tibialis Ant. L",
+        "Peroneus Long. L", "Peroneus Brevis L"
+    ],
+    "wrist_r_flex": [
+        "Flexor Carpi Rad. R", "Flexor Carpi Uln. R",
+        "Ext. Carpi Rad. L. R", "Ext. Carpi Rad. B. R",
+        "Ext. Carpi Uln. R"
+    ],
+    "wrist_l_flex": [
+        "Flexor Carpi Rad. L", "Flexor Carpi Uln. L",
+        "Ext. Carpi Rad. L. L", "Ext. Carpi Rad. B. L",
+        "Ext. Carpi Uln. L"
+    ],
+    "forearm_r_rotate": [
+        "Pronator Teres R", "Supinator R",
+        "Pronator Quad. R", "Biceps Short R"
+    ],
+    "forearm_l_rotate": [
+        "Pronator Teres L", "Supinator L",
+        "Pronator Quad. L", "Biceps Short L"
+    ]
+}
