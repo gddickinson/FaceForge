@@ -224,11 +224,44 @@ Built in Python with:
 - Tiled 16x16 ray-casting for performance
 - Adjustable scan plane position and orientation
 
+### Anatomy Education and Assessment
+- Exam items generated from the FMA ontology, never authored by hand: identification
+  (923 structures), body system, laterality, ontological classification and
+  containment, plus a negative "which is NOT part of X" form
+- Radiological identification: name the tagged structure on a simulated CT/MRI slice
+- Distractors drawn from anatomical neighbours (FMA siblings, cousins, shared
+  containing whole) so items discriminate rather than being guessable
+- SM-2 spaced repetition with per-item history, and curricula derived from the
+  anatomy configs
+- **Every item carries provenance and a `verified` flag.** Items that cannot be
+  traced to real data are excluded from exam mode, and clinical vignettes are
+  refused unless they carry a citation — see `src/faceforge/anatomy/README.md`
+  for what this dataset can and cannot support
+
 ### Export
-- **Screenshot**: PNG/JPG/BMP at custom resolution
+- **Stills**: true-resolution offscreen FBO rendering at an arbitrary requested
+  size, bounds-checked against the driver's texture/renderbuffer limits. This
+  renders at the target size rather than upscaling a window grab
 - **Video**: MP4 via FFmpeg or GIF via Pillow
-- **GLB**: Binary glTF 2.0 for Blender import with baked world transforms
+- **Meshes**: OBJ, PLY, STL and binary glTF 2.0 (GLB) with baked world transforms
+- **Provenance in exports**: glTF carries the required BodyParts3D attribution
+  plus per-structure FMA identifiers and preferred labels; every format also
+  writes a machine-readable `.provenance.json` sidecar. STL cannot carry
+  per-structure identity and says so
+- **Medical imaging**: DICOM (CT Image Storage) and NIfTI-1 from the virtual
+  scanner, with geometry that round-trips to under 1e-4 mm. Pixel-value
+  semantics are declared honestly rather than presented as calibrated
+  Hounsfield units — see the limitations note in `docs/headless_cli.md`
 - **Turntable**: 360-degree rotation capture
+
+### Headless Use and Scripting
+- `faceforge-cli render --state FILE --out PNG` — render a scene from a saved
+  `SceneState`; byte-identical across runs, so a figure regenerates from a
+  committed file
+- `faceforge-cli batch|scan|export|verify-assets|list-layers`
+- A `Session` API (`faceforge.session`) for use from Python with no GUI and no
+  display. See `docs/headless_cli.md`
+- `faceforge` (no `-cli`) remains the GUI entry point and is unchanged
 
 ## Requirements
 
@@ -239,7 +272,13 @@ Built in Python with:
 - glfw >= 2.6
 - BodyParts3D STL files (symlinked at `assets/stl/`)
 
-Optional: pytest, pytest-qt (dev), scipy (tools), Pillow (image tools), FFmpeg (video export).
+SciPy is a **required** dependency: `body/soft_tissue.py` builds cached CSR neighbour
+operators with it, which is a 5.2× speedup on the per-frame animation path (417.5 →
+80.2 ms/frame at 199,363 vertices). The code still falls back to `np.add.at` if SciPy
+is missing, producing bitwise-identical positions 5.2× slower.
+
+Optional: pytest, pytest-qt (dev), glslang (dev — compiles the shaders in CI without a
+GPU, `conda install -c conda-forge glslang`), Pillow (image tools), FFmpeg (video export).
 
 ## Installation
 
@@ -256,6 +295,17 @@ faceforge
 # Or:
 python -m faceforge.app
 ```
+
+Both of the above require the editable install above (it is what puts `faceforge` on
+`sys.path`). To run straight from a clone without installing anything:
+
+```bash
+PYTHONPATH=src python -m faceforge.app
+```
+
+The app needs a real window-server session: it creates a `QOpenGLWidget`, so it will
+not start over SSH or under `QT_QPA_PLATFORM=offscreen` (you will see
+`QOpenGLWidget is not supported on this platform`).
 
 ## Project Structure
 
@@ -323,6 +373,26 @@ python -m tools.visual_skinning_test
 # Head rotation test renders
 python -m tools.head_rotation_test
 ```
+
+## Attribution
+
+Anatomical geometry is derived from **BodyParts3D**, © The Database Center for
+Life Science (DBCLS), licensed under
+[CC BY-SA 2.1 Japan](https://creativecommons.org/licenses/by-sa/2.1/jp/en/).
+
+> BodyParts3D, © The Database Center for Life Science licensed under
+> CC Attribution-Share Alike 2.1 Japan.
+
+This credit is a condition of the licence and must be displayed by anything
+that redistributes or publishes renders derived from these meshes — including
+figures in papers, teaching material and exported images or video. Note that
+CC BY-SA is a **share-alike** licence: derivative geometry inherits it.
+
+Structures are cross-referenced to the Foundational Model of Anatomy in
+`assets/config/fma_labels.json`, so a rendered structure can be cited by its
+FMA identifier and preferred term rather than by FaceForge's display name.
+
+FaceForge's own source code is separately licensed; see below.
 
 ## License
 

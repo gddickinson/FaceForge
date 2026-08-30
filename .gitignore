@@ -1,39 +1,66 @@
-*.pyc
-/tools/__pycache__
-/src/faceforge/coordination/__pycache__
-/src/faceforge/body/__pycache__
-/tools/__pycache__
-/src/faceforge/body/__pycache__
-/src/faceforge/coordination/__pycache__
-/src/faceforge/core/__pycache__
-/tools/__pycache__
-*.pyc
+# Python bytecode
+__pycache__/
+*.py[cod]
+
+# Build / packaging artifacts
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# NOTE: src/faceforge.egg-info is currently TRACKED in git (6 files), committed
+# before this file covered build artifacts. The pattern above stops it being
+# re-added but does not untrack it. To finish the job:
+#     git rm -r --cached src/faceforge.egg-info
+# Left for a human to run: it rewrites the index, and a stale egg-info is also
+# what makes `pip install -e .` fail for some sandboxed toolchains.
+
+# Test / coverage output
+.coverage
+.coverage.*
+htmlcov/
+.pytest_cache/
+.ruff_cache/
+
+# Diagnostic and benchmark output written into the repo root by tools/
+results/
+gpu_baseline.csv
+gpu_opaque.csv
+gpu_bench.csv
+
+# Render agent working directory: job queue, per-job PNG results, status files
+# and the instance lock.  All machine-local and regenerable; the agent confines
+# every write it makes to this tree.  .render_agent/README.md is the one thing
+# in here worth tracking, so it is re-included below.
+# Excluding the CONTENTS (`/*`) rather than the directory (`/`) is load-bearing:
+# git does not descend into an excluded directory, so a `!` re-include for a
+# file inside one never takes effect.  With `/*` the directory is still walked
+# and the negation below works.
+.render_agent/*
+!.render_agent/README.md
+
+# Scratch left by verification passes.  These were written into the repo root
+# and into .fixpass/ by review tooling that should have used a temp directory;
+# they are proof artifacts for a one-off measurement, not project files.
+# Ignored rather than deleted: removing files under a user's working tree is
+# the user's call, not the tool's.
+proof_arrays.npz
+proof_metrics.json
+.fixpass/
+
+# Golden-image captures.  Reference sets are large binary PNG sets that belong
+# in a release asset or a local directory, not in git history.  Committing them
+# is what makes a repo unclonable after a year of regression runs.
+captures/
+*_captures/
+
+# macOS
+# NOTE: `git check-ignore .DS_Store` reports NO MATCH, which looks like this
+# pattern is broken.  It is not.  assets/.DS_Store is already TRACKED (`git
+# ls-files --error-unmatch assets/.DS_Store` succeeds), and ignore rules never
+# apply to paths in the index -- check-ignore correctly reports no match for
+# them.  The pattern below does cover every untracked .DS_Store.  To finish the
+# job, as with src/faceforge.egg-info above:
+#     git rm --cached assets/.DS_Store
+# Left for a human to run: it rewrites the index.
 .DS_Store
-assets/.DS_Store
-results/.DS_Store
-src/.DS_Store
-src/faceforge/.DS_Store
-/src/faceforge/body/__pycache__
-/tools/__pycache__
-tests/.DS_Store
-/src/faceforge/coordination/__pycache__
-/src/faceforge/coordination/__pycache__
-/src/faceforge/core/__pycache__
-/src/faceforge/loaders/__pycache__
-.DS_Store
-*.pyc
-/src/faceforge/ui/__pycache__
-/src/faceforge/__pycache__
-/src/faceforge/__pycache__
-/src/faceforge/core/__pycache__
-/src/faceforge/rendering/__pycache__
-/src/faceforge/rendering/__pycache__
-/src/faceforge/rendering/__pycache__
-*.pyc
-/src/faceforge/ui/__pycache__
-/src/faceforge/core/__pycache__
-/src/faceforge/rendering/__pycache__
-/src/faceforge/core/__pycache__
-/src/faceforge/ui/tabs/__pycache__
-/src/faceforge/ui/widgets/__pycache__
-results/.DS_Store

@@ -89,8 +89,21 @@ Embedded mesh data in JSON format, extracted from the original single-file HTML 
 
 ## stl/
 
-Symlink to the BodyParts3D STL file repository (`../../bodyparts3D/stl`). Contains ~934 binary STL files representing individual anatomical structures identified by FMA (Foundational Model of Anatomy) codes.
+Symlink to the BodyParts3D STL file repository. Contains ~934 binary STL files representing individual anatomical structures identified by FMA (Foundational Model of Anatomy) codes.
 
 File naming convention: `FMA{id}.stl` (e.g., `FMA49027.stl` for the right masseter muscle).
 
 These files are not included in the repository and must be obtained separately from the BodyParts3D project (DBCLS, Japan).
+
+### Attribution (required by the licence)
+
+> BodyParts3D, © The Database Center for Life Science licensed under
+> CC Attribution-Share Alike 2.1 Japan.
+
+[CC BY-SA 2.1 Japan](https://creativecommons.org/licenses/by-sa/2.1/jp/en/) requires this credit to be displayed wherever the meshes or renders derived from them are used or redistributed, and it is a **share-alike** licence — derivative geometry inherits it.
+
+## config/fma_labels.json
+
+Crosswalk from BodyParts3D mesh id to FMA preferred terminology, generated from the `FMA.csv` shipped with the dataset (104,695 rows). Covers all 923 distinct mesh ids referenced by the configs: FMA id, preferred label, owning config category, and derived body system.
+
+This exists because the display names in the anatomy configs are frequently abbreviated or colloquial — 89.2% differ from the FMA preferred term (`Ant. Commissure` vs `Anterior commissure`) — so display names cannot be used to identify or cite a structure.

@@ -8,23 +8,43 @@ version = "0.1.0"
 description = "FACS-based facial animation with full-body anatomy visualization"
 requires-python = ">=3.11"
 dependencies = [
-    "numpy>=1.24",
+    # Upper bound is load-bearing: the NumPy 2.0 removal of `ndarray.ptp`
+    # silently disabled the entire face-features subsystem behind one WARNING
+    # line, and the test suite did not notice. See defects.md.
+    "numpy>=1.24,<3",
     "PyOpenGL>=3.1.7",
     "PySide6>=6.6",
     "glfw>=2.6",
+    # Promoted from the optional `tools` extra to a hard requirement: the
+    # cached-CSR neighbour sum in body/soft_tissue.py is a 5.2x speedup on the
+    # per-frame animation path (417.5 -> 80.2 ms/frame at 199,363 vertices).
+    # The code still degrades to np.add.at if scipy is missing, but shipping
+    # the slow path by default made the primary use case 5x slower for a
+    # dependency almost every install already has.
+    "scipy>=1.10",
 ]
 
 [project.optional-dependencies]
 dev = [
     "pytest>=7.4",
     "pytest-qt>=4.2",
-]
-tools = [
-    "scipy>=1.10",
+    # Lower bound is the version .github/ruff_baseline.json was measured with;
+    # a newer minor can add rules and move the counts, so CI pins it exactly
+    # (RUFF_VERSION in .github/workflows/ci.yml) while contributors get a range.
+    "ruff>=0.16.5,<0.17",
 ]
 
 [project.scripts]
+# Two entry points, deliberately.  `faceforge` launches the GUI and is
+# unchanged: it has always opened a window with no arguments, and making it a
+# subcommand dispatcher would either break that or hide the GUI behind an
+# implicit default subcommand, so a mistyped subcommand would open a window
+# instead of printing an error.  `faceforge-cli` is the headless one; its entry
+# module imports no Qt (tests/session/test_cli.py asserts that), so it runs on a
+# cluster node or a CI runner that has no display and no PySide6.  See the
+# module docstring of src/faceforge/cli.py for the full argument.
 faceforge = "faceforge.app:main"
+faceforge-cli = "faceforge.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
@@ -32,3 +52,81 @@ where = ["src"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
+markers = [
+    # Two tiers. Measured with --durations=0 on 2026-08-29:
+    #
+    #   full          1091 passed, 8 skipped   73.75 s
+    #   -m "not slow" 1032 passed, 8 skipped   16.90 s   (59 deselected)
+    #
+    # Tests requesting an asset-reading fixture are marked `slow` automatically
+    # at collection time -- see tests/conftest.py.
+    #
+    # `slow` means one of three things, and nothing else:
+    #   * the test loads the BodyParts3D asset set (test_headless_diagnostic
+    #     alone was 52.08 s of the 104.27 s of measured test time; also
+    #     test_real_hand_curl, test_head_rotation_diagnostic,
+    #     test_fascia_integration, the real-mesh cases in
+    #     test_stl_parser_equivalence, the real-repo case in test_fetch_assets)
+    #   * it runs the whole Qt application (tests/ui/test_gui_smoke.py)
+    #   * it is a measurement rather than a regression guard
+    #     (test_meshinstance_addresses_are_heavily_recycled: 200 gc.collect()
+    #     calls to establish that CPython recycles addresses)
+    #
+    # Everything asset-heavy is therefore in the slow tier, which is what lets
+    # `pytest -m "not slow"` pass with no dataset at all -- verified: 944
+    # passed, 8 skipped, 46 deselected, 14.5 s against an empty asset path.
+    # That is the condition CI runs in.
+    "slow: loads the asset set or the full application; seconds, not milliseconds",
+]
+
+# ----------------------------------------------------------------------------
+# Ruff. Tuned to surface the findings that are BUGS.
+#
+# Measured on this tree with ruff 0.16.5:
+#   `ruff check --isolated src tests tools`                    -> 718 findings
+#   `ruff check --isolated --select E4,E7,E9,F,B,BLE,S,C4,SIM,UP,I ...` -> 1279
+# of which the largest groups are noise for this project:
+#   475 S101   assert (the test suite is 218 files of asserts)
+#   177 I001   unsorted-imports
+#   166 F401   unused-import
+#   151 UP045  Optional[X] instead of X | None
+# The findings that are actual defects — 8 F821 undefined names, 41 BLE001
+# blind excepts, 33 B905 positional zips over lists that can differ in length —
+# were invisible in that pile. The select below is what a contributor should
+# have to keep clean; the noisy families stay available on demand via
+#   ruff check --select ALL --statistics src tests tools
+# ----------------------------------------------------------------------------
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src", "tests", "tools"]
+
+[tool.ruff.lint]
+select = [
+    "F",        # pyflakes — F821 undefined-name above all
+    "E9",       # syntax / IO errors
+    "E711",     # `== None`
+    "E712",     # `== True`
+    "E713",     # `not x in y`
+    "E714",     # `not x is y`
+    "B",        # bugbear — B905 zip-without-strict, B006 mutable default,
+                #           B023 closure over loop variable
+    "BLE",      # blind-except: `except Exception` that hides real bugs
+    "S110",     # try-except-pass — the exact shape of the silent-load-failure defect
+    "S112",     # try-except-continue
+    "LOG",      # logging misuse (root-logger calls, pre-formatted messages)
+    "G201",     # logger.error(..., exc_info=True) instead of logger.exception
+]
+ignore = [
+    # Import hygiene, not correctness. 343 findings between them; real cleanup,
+    # but it must not hide the list above. Run with --select I,F401 to see them.
+    "F401",     # unused-import           (166)
+    "F841",     # unused-variable         (39, mostly diagnostic scaffolding)
+    "F541",     # f-string without placeholders (36)
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Asserts are the point of a test.
+"tests/**" = ["S101", "B011"]
+# One-off diagnostics are allowed to degrade rather than abort.
+"tools/**" = ["S110", "BLE001", "S101"]
