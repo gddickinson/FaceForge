@@ -1,36 +1,198 @@
 [
-  {"name": "Upper R 3rd Molar", "stl": "FMA55680", "jaw": "upper", "color": 15263952},
-  {"name": "Upper R 2nd Molar", "stl": "FMA55681", "jaw": "upper", "color": 15263952},
-  {"name": "Upper R 1st Molar", "stl": "FMA55682", "jaw": "upper", "color": 15263952},
-  {"name": "Upper L 3rd Molar", "stl": "FMA55683", "jaw": "upper", "color": 15263952},
-  {"name": "Upper R Canine", "stl": "FMA55686", "jaw": "upper", "color": 15263952},
-  {"name": "Upper L Canine", "stl": "FMA55687", "jaw": "upper", "color": 15263952},
-  {"name": "Upper R 2nd Premolar", "stl": "FMA55688", "jaw": "upper", "color": 15263952},
-  {"name": "Upper R 1st Premolar", "stl": "FMA55689", "jaw": "upper", "color": 15263952},
-  {"name": "Upper L 2nd Premolar", "stl": "FMA55690", "jaw": "upper", "color": 15263952},
-  {"name": "Upper L 1st Premolar", "stl": "FMA55691", "jaw": "upper", "color": 15263952},
-  {"name": "Upper L 2nd Molar", "stl": "FMA55692", "jaw": "upper", "color": 15263952},
-  {"name": "Upper L 1st Molar", "stl": "FMA55693", "jaw": "upper", "color": 15263952},
-  {"name": "Upper R Lateral Incisor", "stl": "FMA55694", "jaw": "upper", "color": 15263952},
-  {"name": "Upper R Central Incisor", "stl": "FMA55695", "jaw": "upper", "color": 15263952},
-  {"name": "Lower R 3rd Molar", "stl": "FMA55697", "jaw": "lower", "color": 15263952},
-  {"name": "Lower R 2nd Molar", "stl": "FMA55698", "jaw": "lower", "color": 15263952},
-  {"name": "Lower R 1st Molar", "stl": "FMA55699", "jaw": "lower", "color": 15263952},
-  {"name": "Lower L 3rd Molar", "stl": "FMA55700", "jaw": "lower", "color": 15263952},
-  {"name": "Lower R 2nd Premolar", "stl": "FMA55703", "jaw": "lower", "color": 15263952},
-  {"name": "Lower R 1st Premolar", "stl": "FMA55704", "jaw": "lower", "color": 15263952},
-  {"name": "Lower L 2nd Premolar", "stl": "FMA55705", "jaw": "lower", "color": 15263952},
-  {"name": "Lower L 1st Premolar", "stl": "FMA55706", "jaw": "lower", "color": 15263952},
-  {"name": "Upper R Canine Alt", "stl": "FMA55798", "jaw": "upper", "color": 15263952},
-  {"name": "Upper L Canine Alt", "stl": "FMA55799", "jaw": "upper", "color": 15263952},
-  {"name": "Upper R Central Incisor Alt", "stl": "FMA57140", "jaw": "upper", "color": 15263952},
-  {"name": "Upper L Central Incisor Alt", "stl": "FMA57141", "jaw": "upper", "color": 15263952},
-  {"name": "Upper R Lateral Incisor Alt", "stl": "FMA57142", "jaw": "upper", "color": 15263952},
-  {"name": "Upper L Lateral Incisor Alt", "stl": "FMA57143", "jaw": "upper", "color": 15263952},
-  {"name": "Lower R Canine", "stl": "FMA55606", "jaw": "lower", "color": 15263952},
-  {"name": "Lower L Canine", "stl": "FMA55607", "jaw": "lower", "color": 15263952},
-  {"name": "Lower R Lateral Incisor", "stl": "FMA55608", "jaw": "lower", "color": 15263952},
-  {"name": "Lower L Lateral Incisor", "stl": "FMA55609", "jaw": "lower", "color": 15263952},
-  {"name": "Lower R Central Incisor", "stl": "FMA55610", "jaw": "lower", "color": 15263952},
-  {"name": "Lower L Central Incisor", "stl": "FMA55611", "jaw": "lower", "color": 15263952}
+  {
+    "name": "Upper R Lateral Incisor",
+    "stl": "FMA55680",
+    "jaw": "upper",
+    "color": 15263952,
+    "fma_preferred_label": "Right upper lateral incisor tooth"
+  },
+  {
+    "name": "Upper R Central Incisor",
+    "stl": "FMA55681",
+    "jaw": "upper",
+    "color": 15263952,
+    "fma_preferred_label": "Right upper central incisor tooth"
+  },
+  {
+    "name": "Upper L Central Incisor",
+    "stl": "FMA55682",
+    "jaw": "upper",
+    "color": 15263952,
+    "fma_preferred_label": "Left upper central incisor tooth"
+  },
+  {
+    "name": "Upper L Lateral Incisor",
+    "stl": "FMA55683",
+    "jaw": "upper",
+    "color": 15263952,
+    "fma_preferred_label": "Left upper lateral incisor tooth"
+  },
+  {
+    "name": "Lower R Canine",
+    "stl": "FMA55686",
+    "jaw": "lower",
+    "color": 15263952,
+    "fma_preferred_label": "Right lower canine tooth"
+  },
+  {
+    "name": "Lower L Canine",
+    "stl": "FMA55687",
+    "jaw": "lower",
+    "color": 15263952,
+    "fma_preferred_label": "Left lower canine tooth"
+  },
+  {
+    "name": "Upper R 2nd Premolar",
+    "stl": "FMA55688",
+    "jaw": "upper",
+    "color": 15263952,
+    "fma_preferred_label": "Right second upper premolar tooth"
+  },
+  {
+    "name": "Upper R 1st Premolar",
+    "stl": "FMA55689",
+    "jaw": "upper",
+    "color": 15263952,
+    "fma_preferred_label": "Right first upper premolar tooth"
+  },
+  {
+    "name": "Upper L 1st Premolar",
+    "stl": "FMA55690",
+    "jaw": "upper",
+    "color": 15263952,
+    "fma_preferred_label": "Left first upper premolar tooth"
+  },
+  {
+    "name": "Upper L 2nd Premolar",
+    "stl": "FMA55691",
+    "jaw": "upper",
+    "color": 15263952,
+    "fma_preferred_label": "Left second upper premolar tooth"
+  },
+  {
+    "name": "Lower L 2nd Premolar",
+    "stl": "FMA55692",
+    "jaw": "lower",
+    "color": 15263952,
+    "fma_preferred_label": "Left second lower premolar tooth"
+  },
+  {
+    "name": "Lower L 1st Premolar",
+    "stl": "FMA55693",
+    "jaw": "lower",
+    "color": 15263952,
+    "fma_preferred_label": "Left first lower premolar tooth"
+  },
+  {
+    "name": "Lower R 1st Premolar",
+    "stl": "FMA55694",
+    "jaw": "lower",
+    "color": 15263952,
+    "fma_preferred_label": "Right first lower premolar tooth"
+  },
+  {
+    "name": "Lower R 2nd Premolar",
+    "stl": "FMA55695",
+    "jaw": "lower",
+    "color": 15263952,
+    "fma_preferred_label": "Right second lower premolar tooth"
+  },
+  {
+    "name": "Upper R 2nd Molar",
+    "stl": "FMA55697",
+    "jaw": "upper",
+    "color": 15263952,
+    "fma_preferred_label": "Right second upper molar tooth"
+  },
+  {
+    "name": "Upper R 1st Molar",
+    "stl": "FMA55698",
+    "jaw": "upper",
+    "color": 15263952,
+    "fma_preferred_label": "Right first upper molar tooth"
+  },
+  {
+    "name": "Upper L 1st Molar",
+    "stl": "FMA55699",
+    "jaw": "upper",
+    "color": 15263952,
+    "fma_preferred_label": "Left first upper molar tooth"
+  },
+  {
+    "name": "Upper L 2nd Molar",
+    "stl": "FMA55700",
+    "jaw": "upper",
+    "color": 15263952,
+    "fma_preferred_label": "Left second upper molar tooth"
+  },
+  {
+    "name": "Lower L 2nd Molar",
+    "stl": "FMA55703",
+    "jaw": "lower",
+    "color": 15263952,
+    "fma_preferred_label": "Left second lower molar tooth"
+  },
+  {
+    "name": "Lower L 1st Molar",
+    "stl": "FMA55704",
+    "jaw": "lower",
+    "color": 15263952,
+    "fma_preferred_label": "Left first lower molar tooth"
+  },
+  {
+    "name": "Lower R 1st Molar",
+    "stl": "FMA55705",
+    "jaw": "lower",
+    "color": 15263952,
+    "fma_preferred_label": "Right first lower molar tooth"
+  },
+  {
+    "name": "Lower R 2nd Molar",
+    "stl": "FMA55706",
+    "jaw": "lower",
+    "color": 15263952,
+    "fma_preferred_label": "Right second lower molar tooth"
+  },
+  {
+    "name": "Upper R Canine",
+    "stl": "FMA55798",
+    "jaw": "upper",
+    "color": 15263952,
+    "fma_preferred_label": "Right upper canine tooth"
+  },
+  {
+    "name": "Upper L Canine",
+    "stl": "FMA55799",
+    "jaw": "upper",
+    "color": 15263952,
+    "fma_preferred_label": "Left upper canine tooth"
+  },
+  {
+    "name": "Lower R Lateral Incisor",
+    "stl": "FMA57140",
+    "jaw": "lower",
+    "color": 15263952,
+    "fma_preferred_label": "Right lower lateral incisor tooth"
+  },
+  {
+    "name": "Lower L Lateral Incisor",
+    "stl": "FMA57141",
+    "jaw": "lower",
+    "color": 15263952,
+    "fma_preferred_label": "Left lower lateral incisor tooth"
+  },
+  {
+    "name": "Lower R Central Incisor",
+    "stl": "FMA57142",
+    "jaw": "lower",
+    "color": 15263952,
+    "fma_preferred_label": "Right lower central incisor tooth"
+  },
+  {
+    "name": "Lower L Central Incisor",
+    "stl": "FMA57143",
+    "jaw": "lower",
+    "color": 15263952,
+    "fma_preferred_label": "Left lower central incisor tooth"
+  }
 ]
