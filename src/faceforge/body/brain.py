@@ -4,9 +4,13 @@ Brain meshes are parented to skullGroup (not bodyRoot) so they follow
 skull movement via the scene graph, without needing soft tissue skinning.
 """
 
+import logging
+
 from faceforge.core.scene_graph import SceneNode
 from faceforge.core.mesh import MeshInstance
 from faceforge.loaders.asset_manager import AssetManager
+
+logger = logging.getLogger(__name__)
 
 
 class BrainManager:
@@ -17,6 +21,10 @@ class BrainManager:
         self.group: SceneNode | None = None
         self.meshes: list[MeshInstance] = []
         self.loaded: bool = False
+        #: Set when the last load attempt failed. ``loaded`` stays False so the
+        #: layer can be retried once the asset problem is fixed.
+        self.load_failed: bool = False
+        self.load_error: str | None = None
 
     def load(self, skull_group: SceneNode) -> None:
         """Load brain structures and parent to skull group (not bodyRoot).
@@ -30,9 +38,17 @@ class BrainManager:
             self.group = result.group
             self.meshes = result.meshes
             skull_group.add(result.group)
-        except Exception:
-            pass
+        except (OSError, ValueError, KeyError) as exc:
+            # Missing/unreadable STL, malformed config, missing config key.
+            # Anything else (AttributeError, TypeError) is a bug and must
+            # propagate rather than become a silently empty layer.
+            logger.exception("Brain load failed; brain layer will be empty")
+            self.load_failed = True
+            self.load_error = f"{type(exc).__name__}: {exc}"
+            return
         self.loaded = True
+        self.load_failed = False
+        self.load_error = None
 
     def set_visibility(self, visible: bool) -> None:
         if self.group is not None:

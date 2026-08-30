@@ -1,9 +1,13 @@
 """On-demand organ loading."""
 
+import logging
+
 from faceforge.core.scene_graph import SceneNode
 from faceforge.core.mesh import MeshInstance
 from faceforge.loaders.asset_manager import AssetManager
 from faceforge.body.soft_tissue import SoftTissueSkinning
+
+logger = logging.getLogger(__name__)
 
 
 class OrganManager:
@@ -14,6 +18,10 @@ class OrganManager:
         self.group: SceneNode | None = None
         self.meshes: list[MeshInstance] = []
         self.loaded: bool = False
+        #: Set when the last load attempt failed. ``loaded`` stays False so the
+        #: layer can be retried once the asset problem is fixed.
+        self.load_failed: bool = False
+        self.load_error: str | None = None
 
     def load(
         self,
@@ -30,9 +38,17 @@ class OrganManager:
             if skinning is not None:
                 for mesh in result.meshes:
                     skinning.register_skin_mesh(mesh)
-        except Exception:
-            pass
+        except (OSError, ValueError, KeyError) as exc:
+            # Missing/unreadable STL, malformed config, missing config key.
+            # Anything else (AttributeError, TypeError) is a bug and must
+            # propagate rather than become a silently empty layer.
+            logger.exception("Organ load failed; organ layer will be empty")
+            self.load_failed = True
+            self.load_error = f"{type(exc).__name__}: {exc}"
+            return
         self.loaded = True
+        self.load_failed = False
+        self.load_error = None
 
     def set_visibility(self, visible: bool) -> None:
         if self.group is not None:
