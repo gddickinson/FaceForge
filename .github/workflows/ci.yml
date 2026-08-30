@@ -1,0 +1,254 @@
+# FaceForge CI
+#
+# Four gating jobs and one experiment.
+#
+#   lint            ruff, using the tuned select in pyproject.toml
+#   fast-tests      pytest -m "not slow" -- the sub-minute contributor signal
+#   shaders         glslang compilation + CPU shader semantics
+#   golden-images   EXPERIMENT, non-blocking: can a macOS runner get a GL context?
+#
+# Two things shape every job here.
+#
+# 1. There is no dataset.  The 1.2 GB BodyParts3D STL set lives outside the
+#    repo behind `assets/stl`, which IS committed -- as a symlink to
+#    ../../BodyParts3D/... .  A fresh checkout therefore has a *dangling*
+#    symlink, which is exactly the state that silently disabled 33 tests before
+#    the 2026-08 review.  The fast tier is verified to pass in that state (see
+#    the `dataset state` step, which records the diagnosis in the log rather
+#    than failing on it).  Nothing in a gating job may need the dataset.
+#
+# 2. A skip is not a pass.  Every module CI gates on can skip itself when a
+#    dependency is missing -- test_shader_compile.py skips without
+#    glslangValidator, the asset modules skip without assets.  So each test job
+#    writes a JUnit report and .github/scripts/check_junit.py asserts how many
+#    tests actually ran.  A job that installs glslang and then skips the
+#    compile tests fails instead of reporting success.
+
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHON_VERSION: "3.11"
+  # Pinned to the version whose findings the baseline in
+  # .github/ruff_baseline.json was measured with.
+  RUFF_VERSION: "0.16.5"
+  # Khronos glslang release. 16.5.0 is the version the 35 compile tests were
+  # verified against locally; the archive and its sha256 were confirmed by
+  # downloading it. Release assets are immutable, so the digest is a real pin.
+  GLSLANG_TAG: "16.5.0"
+  GLSLANG_SHA256_LINUX: "dfc3fb889eeb9344dce58606a0b37bde89f1eec6140f4e9b4b3d9305f46f64f4"
+  GLSLANG_SHA256_MACOS: "4ee2c136b7d6c703fa43f6f17eeddceeec3a1386aebeece77a07c836b1fbde93"
+  QT_QPA_PLATFORM: offscreen
+  PYTHONDONTWRITEBYTECODE: "1"
+
+jobs:
+
+  # ── lint ──────────────────────────────────────────────────────────
+  lint:
+    name: ruff
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install ruff
+        run: pip install "ruff==${RUFF_VERSION}"
+
+      - name: Correctness families must stay clean
+        # The tuned select minus the five families that carry pre-existing
+        # debt. This subset is at zero on the tree this workflow was added to,
+        # so any finding here is new and blocks the build. F821 undefined-name
+        # lives in this subset -- it is the single most valuable rule in the
+        # config and it is currently clean.
+        run: |
+          ruff check --extend-ignore B905,BLE001,B007,LOG015,B023 \
+            src tests tools .github/scripts
+
+      - name: Debt ratchet (per-rule counts may fall, never rise)
+        # Baseline: 96 findings (35 B905, 32 BLE001, 18 B007, 8 LOG015, 3 B023).
+        # Demanding all 96 be fixed before CI exists means CI never exists;
+        # this blocks new ones instead. See .github/scripts/ruff_ratchet.py.
+        run: python .github/scripts/ruff_ratchet.py
+
+  # ── fast test tier ────────────────────────────────────────────────
+  fast-tests:
+    name: fast tier (pytest -m "not slow")
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: pyproject.toml
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Dataset state (informational -- CI is expected to have none)
+        # Records the diagnosis rather than gating on it. On a fresh checkout
+        # this prints DANGLING-SYMLINK and exits 1, which is correct and
+        # expected: the point of the step is that the state is now *visible*
+        # in the log instead of silently turning tests into skips.
+        continue-on-error: true
+        run: python -m tools.fetch_assets verify --limit 5
+
+      - name: Fast tier
+        run: |
+          pytest -m "not slow" -q -p no:cacheprovider --junitxml=fast.xml
+
+      - name: Assert the fast tier actually ran
+        # Measured locally with the dataset absent: 1032 passed, 8 skipped,
+        # 54 deselected, 0 errors in 18.3 s. The floors below leave room for
+        # tests other work adds, while still catching a collection failure or a
+        # marker that deselects far more than intended.
+        run: |
+          python .github/scripts/check_junit.py fast.xml \
+            --min-tests 900 --max-skips 20
+
+  # ── shader compilation + semantics ────────────────────────────────
+  shaders:
+    name: shaders (glslang compile + CPU semantics)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: pyproject.toml
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Install glslang ${{ env.GLSLANG_TAG }}
+        # Not the distro package: `apt install glslang-tools` gives whatever
+        # version the runner image happens to ship, which is not a pin and can
+        # change under us. The Khronos release archive is immutable and its
+        # digest is checked here.
+        run: |
+          set -euo pipefail
+          url="https://github.com/KhronosGroup/glslang/releases/download/${GLSLANG_TAG}/glslang-${GLSLANG_TAG}-linux-x86_64-release.zip"
+          curl -fsSL --retry 3 -o glslang.zip "$url"
+          echo "${GLSLANG_SHA256_LINUX}  glslang.zip" | sha256sum -c -
+          unzip -q glslang.zip -d "${RUNNER_TEMP}/glslang"
+          chmod +x "${RUNNER_TEMP}/glslang/bin/glslangValidator"
+          echo "${RUNNER_TEMP}/glslang/bin" >> "$GITHUB_PATH"
+
+      - name: Assert the compiler is present
+        # Without this, a broken install step turns test_shader_compile.py's
+        # module-level skipif into a green build that compiled no shaders.
+        run: |
+          set -euo pipefail
+          command -v glslangValidator
+          glslangValidator --version
+          glslangValidator --version | grep -q "${GLSLANG_TAG}"
+
+      - name: Compile + semantics + static checks
+        # test_shader_compile      35  every shader compiles, every pair links
+        # test_shader_static       81  source-level interface checks
+        # test_shader_semantics   131  CPU transliteration invariants
+        # None of these need a GL context or the dataset.
+        run: |
+          pytest -q -p no:cacheprovider --junitxml=shaders.xml \
+            tests/rendering/test_shader_compile.py \
+            tests/rendering/test_shader_static.py \
+            tests/rendering/test_shader_semantics.py
+
+      - name: Assert nothing skipped
+        # 247 locally with glslang 16.5.0, zero skips. Zero is the right budget
+        # here: every skip in this job means a compiler that should have been
+        # installed was not.
+        run: |
+          python .github/scripts/check_junit.py shaders.xml \
+            --min-tests 247 --max-skips 0
+
+  # ── EXPERIMENT: can a macOS runner render? ────────────────────────
+  golden-images:
+    name: "golden-image feasibility (experiment, non-blocking)"
+    runs-on: macos-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: pyproject.toml
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Probe for an offscreen GL context
+        # THE EXPERIMENT. tools/glcontext.py reaches Apple's software
+        # rasteriser through CGL with kCGLRendererGenericFloatID, which works
+        # without a window server -- verified in a headless sandbox, where it
+        # returns "Apple Software Renderer", GL 4.1, MAX_CLIP_DISTANCES 8. A
+        # GitHub macOS runner is the same shape of environment but has never
+        # been tried. This step records the answer either way.
+        run: python .github/scripts/gl_probe.py
+
+      - name: Shader/GPU agreement (needs a context, needs no dataset)
+        # 139 tests that link each real .frag against a pass-through vertex
+        # shader, render known varyings and check tools/glsl_cpu reproduces the
+        # pixels. This is the part of visual validation that can gate CI
+        # without the 1.2 GB dataset -- if the probe above succeeds, promote
+        # this job to gating by deleting continue-on-error.
+        run: |
+          pytest -q -p no:cacheprovider --junitxml=gpu.xml \
+            tests/rendering/test_shader_gpu_agreement.py
+
+      - name: Assert the agreement tests ran rather than skipped
+        # 8 known skips locally: points.frag needs gl_PointCoord, which is
+        # undefined when rasterising a triangle.
+        run: |
+          python .github/scripts/check_junit.py gpu.xml \
+            --min-tests 139 --max-skips 8
+
+      - name: Why full golden-image capture cannot gate CI yet
+        # tools/capture_golden.py renders an explicit list of 16 named FMA
+        # meshes (230,490 triangles) and refuses to substitute anything for
+        # them, so it needs the dataset that CI does not have. Context
+        # acquisition and shader agreement are the parts that can run here; the
+        # pixel comparison needs assets on the runner first.
+        if: always()
+        run: python -m tools.fetch_assets verify --limit 3 || true
+
+# ── Caching notes ────────────────────────────────────────────────────
+#
+# Cached: pip wheels, via actions/setup-python (PySide6 alone is ~130 MB, and
+# the fast tier never imports it -- it is a hard dependency of the package, not
+# of the tier).
+#
+# NOT cached, deliberately:
+#
+# * The .npz welded-mesh cache and the 28.5 MB skin-binding cache entry are
+#   both deterministic functions of the BodyParts3D dataset. CI has no dataset,
+#   so there is nothing to cache -- a cache key computed from absent inputs
+#   would be a cache of nothing. They become worth caching only on a runner
+#   that has the assets, and at that point the key must be the same
+#   (mtime_ns, size) / blake2b digest the caches already use internally
+#   (see loaders/stl_parser.py and body/skinning_cache.py).
+# * glslang: a 7.8 MB download with a checked digest. actions/cache round-trip
+#   costs about as much as the download and adds a way to be wrong.

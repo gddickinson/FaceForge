@@ -15,6 +15,7 @@ from faceforge.core.scene_graph import SceneNode, Scene
 from faceforge.core.mesh import BufferGeometry, MeshInstance
 from faceforge.core.material import Material
 from faceforge.core.state import BodyState
+from faceforge.body import soft_tissue
 from faceforge.body.soft_tissue import SoftTissueSkinning
 
 
@@ -869,3 +870,172 @@ class TestMuscleBlending:
         rigid = (binding.weights > 0.999).sum()
         total = len(binding.weights)
         assert rigid / total > 0.5, f"Non-muscle should be mostly rigid, got {rigid}/{total}"
+
+
+# ── Neighbour-operator equivalence (CSR vs np.add.at) ────────────────
+#
+# The per-frame neighbour sums in _apply_neighbor_clamp and
+# _smooth_boundary_displacements were replaced by a sparse matvec against a
+# CSR adjacency operator cached on the binding.  scipy is an optional
+# dependency, so the np.add.at implementation is retained as a fallback and
+# both must produce identical output.
+
+def _grid_binding(nx: int = 40, ny: int = 40) -> "soft_tissue.SkinBinding":
+    """A triangulated grid mesh with an index buffer, wrapped in a binding."""
+    gx, gy = np.meshgrid(np.arange(nx, dtype=np.float64),
+                         np.arange(ny, dtype=np.float64), indexing="ij")
+    jitter = np.random.default_rng(3).normal(0.0, 0.12, (nx * ny, 3))
+    pos = np.stack([gx.ravel(), gy.ravel(),
+                    0.3 * np.sin(gx.ravel() * 0.4) * np.cos(gy.ravel() * 0.3)], axis=1)
+    # Rest-pose jitter keeps rest_neighbor_dist above the clamp's 0.05
+    # "meaningful" floor, so outlier detection is actually exercised.
+    pos = pos + jitter
+    quad = np.arange(nx * ny).reshape(nx, ny)
+    a = quad[:-1, :-1].ravel(); b = quad[1:, :-1].ravel()
+    c = quad[1:, 1:].ravel();   d = quad[:-1, 1:].ravel()
+    tris = np.concatenate([np.stack([a, b, c], 1), np.stack([a, c, d], 1)])
+
+    geom = BufferGeometry(
+        positions=pos.ravel().astype(np.float32),
+        normals=np.tile([0.0, 0.0, 1.0], len(pos)).astype(np.float32),
+        indices=tris.ravel().astype(np.uint32),
+        vertex_count=len(pos),
+    )
+    mesh = MeshInstance(name="grid_muscle", geometry=geom, material=Material())
+    mesh.store_rest_pose()
+
+    V = len(pos)
+    rng = np.random.default_rng(0)
+    return soft_tissue.SkinBinding(
+        mesh=mesh,
+        joint_indices=rng.integers(0, 3, V).astype(np.int32),
+        weights=rng.random(V),
+        secondary_indices=rng.integers(0, 3, V).astype(np.int32),
+        is_muscle=True,
+    )
+
+
+_BINDING_CACHES = (
+    "_smooth_active", "_smooth_mask", "_smooth_alpha", "_rest_f64",
+    "_per_vert_max", "_adj_csr", "_adj_edges", "_safe_counts",
+    "_neighbor_sum_buf", "_disp_sum_buf",
+)
+
+
+def _posed(binding) -> np.ndarray:
+    """A deterministic post-skinning pose: smooth drift plus outlier spikes."""
+    rest = binding.mesh.rest_positions.reshape(-1, 3).astype(np.float64)
+    rng = np.random.default_rng(1)
+    pose = rest + 0.15 * np.sin(rest[:, [1, 2, 0]] * 0.7)
+    spikes = rng.choice(len(rest), size=max(1, len(rest) // 50), replace=False)
+    pose[spikes] += rng.normal(0.0, 1.5, (len(spikes), 3))
+    return pose.astype(np.float32)
+
+
+def _run_both_paths(binding, pose):
+    """Run clamp + smoothing with and without scipy, returning both results."""
+    skinning = SoftTissueSkinning()
+    skinning._build_neighbor_data(binding)
+    assert binding.edge_pairs is not None and len(binding.edge_pairs) > 0
+    # smooth_zone is produced upstream from chain boundaries; set a
+    # deterministic band here so the smoothing loop actually executes.
+    rest = binding.mesh.rest_positions.reshape(-1, 3).astype(np.float64)
+    span = np.ptp(rest[:, 0]) + 1e-9
+    zn = (rest[:, 0] - rest[:, 0].min()) / span
+    binding.smooth_zone = np.clip(1.0 - np.abs(zn - 0.5) * 3.0, 0.0, 1.0)
+    assert (binding.smooth_zone > 0.01).any()
+
+    out = {}
+    saved = soft_tissue._sparse
+    try:
+        for label, sparse_mod in (("csr", saved), ("add_at", None)):
+            soft_tissue._sparse = sparse_mod
+            for attr in _BINDING_CACHES:
+                setattr(binding, attr, None)
+            binding.mesh.geometry.positions[:] = pose.ravel()
+            n_clamped = skinning._apply_neighbor_clamp(binding)
+            after_clamp = binding.mesh.geometry.positions.copy()
+            skinning._smooth_boundary_displacements(binding)
+            out[label] = (n_clamped, after_clamp,
+                          binding.mesh.geometry.positions.copy())
+    finally:
+        soft_tissue._sparse = saved
+    return out
+
+
+@pytest.mark.skipif(soft_tissue._sparse is None, reason="scipy not installed")
+def test_csr_neighbor_path_is_bit_identical_to_add_at():
+    binding = _grid_binding()
+    pose = _posed(binding)
+    res = _run_both_paths(binding, pose)
+
+    n_csr, clamp_csr, smooth_csr = res["csr"]
+    n_ref, clamp_ref, smooth_ref = res["add_at"]
+
+    assert n_csr == n_ref > 0, "clamp must actually fire for this to prove anything"
+    # float64 neighbour sums differ only below float32 resolution, so the
+    # positions written back are bit-identical.
+    assert np.array_equal(clamp_csr, clamp_ref)
+    assert np.array_equal(smooth_csr, smooth_ref)
+    # And the smoothing pass must have changed something.
+    assert not np.array_equal(smooth_csr, clamp_csr)
+
+
+@pytest.mark.skipif(soft_tissue._sparse is None, reason="scipy not installed")
+def test_csr_operator_is_cached_and_invalidated():
+    binding = _grid_binding()
+    skinning = SoftTissueSkinning()
+    skinning._build_neighbor_data(binding)
+    V = binding.mesh.geometry.vertex_count
+
+    first = soft_tissue._neighbor_adjacency(binding, V)
+    assert first is not None
+    assert soft_tissue._neighbor_adjacency(binding, V) is first, "not cached"
+
+    # Rebuilding the neighbour data must drop the stale operator.
+    skinning._build_neighbor_data(binding)
+    assert binding._adj_csr is None
+    second = soft_tissue._neighbor_adjacency(binding, V)
+    assert second is not first
+
+
+@pytest.mark.skipif(soft_tissue._sparse is None, reason="scipy not installed")
+def test_adjacency_matches_edge_pairs():
+    """The cached operator is exactly the symmetric edge adjacency."""
+    binding = _grid_binding(12, 12)
+    skinning = SoftTissueSkinning()
+    skinning._build_neighbor_data(binding)
+    V = binding.mesh.geometry.vertex_count
+    A = soft_tissue._neighbor_adjacency(binding, V).toarray()
+
+    expect = np.zeros((V, V))
+    e = binding.edge_pairs
+    np.add.at(expect, (e[:, 0], e[:, 1]), 1.0)
+    np.add.at(expect, (e[:, 1], e[:, 0]), 1.0)
+    assert np.array_equal(A, expect)
+    # Row sums are the neighbour counts used as the averaging divisor.
+    assert np.array_equal(A.sum(axis=1), binding.neighbor_counts.astype(float))
+
+
+def test_add_at_fallback_runs_without_scipy():
+    """A scipy-less install must still produce a working clamp/smooth pass."""
+    binding = _grid_binding(20, 20)
+    pose = _posed(binding)
+    skinning = SoftTissueSkinning()
+    skinning._build_neighbor_data(binding)
+    binding.smooth_zone = np.full(binding.mesh.geometry.vertex_count, 0.5)
+
+    saved = soft_tissue._sparse
+    soft_tissue._sparse = None
+    try:
+        for attr in _BINDING_CACHES:
+            setattr(binding, attr, None)
+        binding.mesh.geometry.positions[:] = pose.ravel()
+        assert soft_tissue._neighbor_adjacency(binding, 400) is None
+        n_clamped = skinning._apply_neighbor_clamp(binding)
+        skinning._smooth_boundary_displacements(binding)
+    finally:
+        soft_tissue._sparse = saved
+
+    assert n_clamped > 0
+    assert np.isfinite(binding.mesh.geometry.positions).all()

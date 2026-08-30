@@ -17,10 +17,19 @@ from faceforge.constants import STL_DIR
 
 # Skip all tests in this module if STL directory is missing
 _has_stl_assets = STL_DIR.is_dir() and any(STL_DIR.glob("*.stl"))
-pytestmark = pytest.mark.skipif(
-    not _has_stl_assets,
-    reason="BP3D STL assets not found — skipping headless diagnostic tests",
-)
+
+# `slow`: this module is the single largest contributor to suite wall time --
+# 52.08 s of a measured 104.27 s, because the module-scoped `headless_scene`
+# fixture loads the whole BP3D asset set and solves the skin binding.  It is
+# also asset-gated (see the skipif above), so deselecting it is part of what
+# makes `pytest -m "not slow"` runnable with no dataset at all.
+pytestmark = [
+    pytest.mark.slow,
+    pytest.mark.skipif(
+        not _has_stl_assets,
+        reason="BP3D STL assets not found — skipping headless diagnostic tests",
+    ),
+]
 
 
 @pytest.fixture(scope="module")

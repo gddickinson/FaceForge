@@ -3,32 +3,17 @@
 // Colour anatomical atlas — retains structure colours with ink-line contours
 // and subtle cross-hatching.  Looks like a hand-coloured medical plate.
 
-in vec3 vNormal;
-in vec3 vViewPos;
-in vec3 vVertexColor;
-in vec3 vWorldPos;
+#include "_common.glsl"
+#include "_lighting.glsl"
 
-uniform vec3 uColor;
-uniform float uOpacity;
 uniform float uShininess;
-uniform vec3 uAmbientColor;
-uniform vec3 uLightDir;
-uniform vec3 uLightColor;
-uniform int uUseVertexColor;
-
-uniform int uClipEnabled;
-uniform vec4 uClipPlane;
-
-out vec4 fragColor;
 
 void main() {
-    if (uClipEnabled != 0 && dot(vWorldPos, uClipPlane.xyz) + uClipPlane.w < 0.0) discard;
+    vec3 N = ffNormal();
+    vec3 V = ffViewDir();
+    vec3 L = ffLightDir();
 
-    vec3 N = normalize(vNormal);
-    vec3 V = normalize(-vViewPos);
-    vec3 L = normalize(uLightDir);
-
-    vec3 baseColor = uUseVertexColor != 0 ? vVertexColor : uColor;
+    vec3 baseColor = ffBaseColor();
 
     // Diffuse
     float NdotL = dot(N, L);
@@ -41,9 +26,7 @@ void main() {
     vec3 goochColor = mix(coolShift, warmShift, t);
 
     // Ink contour lines via Fresnel
-    float facing = abs(dot(N, V));
-    float edge = 1.0 - facing;
-    float contour = smoothstep(0.0, 0.42, edge);
+    float contour = smoothstep(0.0, 0.42, ffEdge(N, V));
     float edgeDarken = 1.0 - contour * 0.75;
 
     // Light cross-hatching in shadow only
@@ -56,8 +39,7 @@ void main() {
     }
 
     // Specular highlight
-    vec3 R = reflect(-L, N);
-    float spec = pow(max(dot(V, R), 0.0), max(uShininess, 25.0)) * 0.12;
+    float spec = ffSpecular(N, V, L, max(uShininess, 25.0)) * 0.12;
 
     vec3 finalColor = goochColor * edgeDarken * hm + vec3(spec);
     finalColor = clamp(finalColor, 0.0, 1.0);

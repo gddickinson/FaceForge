@@ -80,6 +80,9 @@ class SearchEntry:
     region: str = ""          # "head", "neck", "thorax", "arm", "leg", etc.
     keywords: list[str] = field(default_factory=list)
     joint_actions: list[str] = field(default_factory=list)  # "flex_elbow", etc.
+    # Anatomical provenance, from assets/config/fma_labels.json.
+    source_id: str = ""       # BodyParts3D mesh id, e.g. "FMA67944"
+    preferred_label: str = ""  # FMA preferred term, often != display_name
 
 
 @dataclass
@@ -134,12 +137,80 @@ class AnatomySearchIndex:
             )
             self._entries.append(entry)
 
+    @staticmethod
+    def _fma_by_display_name() -> dict[str, dict]:
+        """Crosswalk keyed by lower-cased display name.
+
+        The index is built from display names, but the crosswalk is keyed by
+        BodyParts3D mesh id, so invert it once per build.  Returns {} when the
+        crosswalk is unavailable, in which case categorisation falls back to
+        the substring heuristic and behaviour is unchanged.
+        """
+        try:
+            from faceforge.loaders.stl_batch_loader import load_fma_labels
+        except ImportError:          # pragma: no cover - circular-import guard
+            return {}
+        out: dict[str, dict] = {}
+        for mesh_id, meta in load_fma_labels().items():
+            disp = (meta.get("display_name") or "").lower()
+            if disp and disp not in out:
+                out[disp] = {**meta, "_mesh_id": mesh_id}
+        return out
+
+    # FMA body system -> the category vocabulary this index already uses.
+    _SYSTEM_TO_CATEGORY = {
+        "muscular": "muscle",
+        "skeletal": "bone",
+        "articular": "bone",
+        "nervous": "nerve",
+        "cardiovascular": "vessel",
+        "respiratory": "organ",
+        "digestive": "organ",
+        "urinary": "organ",
+        "endocrine": "organ",
+        "lymphatic": "organ",
+        "integumentary": "organ",
+    }
+
     def build_from_names(self, names: list[str]) -> None:
-        """Build index from a list of mesh names, auto-categorising each."""
+        """Build index from a list of mesh names, auto-categorising each.
+
+        Categorisation consults the FMA crosswalk first and only falls back to
+        the display-name substring heuristic below.  The heuristic alone left
+        784 of 923 structures (84.9%) uncategorised, because config display
+        names are abbreviated or colloquial: 89.2% differ from the FMA
+        preferred term, so `Ant. Commissure` matches none of the keyword
+        lists while `Anterior commissure` is unambiguous.
+        """
+        fma_by_display = self._fma_by_display_name()
+
         for name in names:
             keywords = self._tokenize(name)
             name_lower = name.lower()
-            # Auto-detect category
+
+            # --- provenance-driven categorisation (preferred) -------------
+            meta = fma_by_display.get(name_lower)
+            if meta is not None:
+                category = self._SYSTEM_TO_CATEGORY.get(meta.get("system") or "", "")
+                label = meta.get("preferred_label", "")
+                if label:
+                    # The standard term carries the discriminating words the
+                    # abbreviated display name dropped; index them too.
+                    keywords = sorted(set(keywords) | set(self._tokenize(label)))
+                if category:
+                    region = self._infer_region_from_name(f"{name} {label}")
+                    self._entries.append(SearchEntry(
+                        mesh_name=name,
+                        display_name=name,
+                        category=category,
+                        region=region,
+                        keywords=keywords,
+                        source_id=meta.get("_mesh_id", ""),
+                        preferred_label=label,
+                    ))
+                    continue
+
+            # --- fallback: display-name substring heuristic ---------------
             if "muscle" in name_lower or any(w in name_lower for w in
                     ("biceps", "triceps", "deltoid", "trapezius", "pectoralis")):
                 category = "muscle"

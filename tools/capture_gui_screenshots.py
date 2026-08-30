@@ -316,11 +316,39 @@ def main() -> None:
             app.processEvents()
             time.sleep(dt)
 
+    def _require_live_gl_context():
+        """Refuse to write screenshots when the GL context never came up.
+
+        This script previously ran to completion under
+        QT_QPA_PLATFORM=offscreen, printing "Done! 11 screenshots saved" and
+        exiting 0, while stderr quietly repeated "QOpenGLWidget: Failed to
+        create context".  Every grab was a blank viewport, and because the
+        output path is tracked documentation it silently destroyed 11 README
+        images (gui_main.png went from 2,130,613 bytes at 2800x1800 to 70,722
+        bytes at 1400x900).  Fail loudly instead.
+        """
+        ctx = gl_widget.context() if hasattr(gl_widget, "context") else None
+        if ctx is None or not ctx.isValid():
+            raise SystemExit(
+                "\nERROR: no valid OpenGL context — refusing to write "
+                "screenshots.\n"
+                "  Every image would be a blank viewport, and OUTPUT_DIR "
+                f"({OUTPUT_DIR}) holds tracked documentation images.\n"
+                "  Run this from a normal desktop session; it cannot work "
+                "under QT_QPA_PLATFORM=offscreen or over SSH."
+            )
+
     def grab(name: str):
         pump(5, 0.03)
         gl_widget.update()
         pump(3, 0.03)
+        _require_live_gl_context()
         pixmap = window.grab()
+        if pixmap.isNull() or pixmap.width() < 100 or pixmap.height() < 100:
+            raise SystemExit(
+                f"\nERROR: grabbed a {pixmap.width()}x{pixmap.height()} pixmap "
+                f"for {name} — refusing to overwrite {OUTPUT_DIR / name}."
+            )
         path = OUTPUT_DIR / name
         pixmap.save(str(path), "PNG")
         print(f"  Saved: {path} ({pixmap.width()}x{pixmap.height()})")

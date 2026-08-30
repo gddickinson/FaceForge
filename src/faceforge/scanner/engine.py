@@ -1,14 +1,18 @@
-"""Scanner engine: cross-section imaging via tiled ray-triangle intersection.
+"""Scanner engine: cross-section imaging via ray-triangle intersection.
 
 Pipeline:
 1. **Filter** — slab depth + 2D area test discards ~95%+ of triangles
-2. **Tile** — surviving triangles are assigned to 16×16 pixel tiles by
-   their projected 2D bounding box
-3. **Intersect** — per-tile vectorised Möller–Trumbore on (K_rays, T_tris)
-   with K ≈ 256, T typically 10–200, keeping intermediates small and
-   cache-friendly
+2. **Box** — each surviving triangle gets its projected pixel bounding box
+3. **Intersect** — triangles are grouped by box *shape* so each group is one
+   vectorised Möller–Trumbore batch of (T_tris, P_pixels), and hits are
+   accumulated with np.bincount over flat ray indices
 
-Complexity is O(sum of triangle × tile-overlap) instead of O(N_rays × M_tris).
+Each triangle is therefore tested only against the rays inside its own
+bounding box.  The earlier version binned triangles into 16×16-pixel tiles
+and tested every triangle against all 256 rays of each tile it touched; a
+BodyParts3D triangle projects to roughly 20 pixels, so that was a ~17-21x
+ray-triangle overtest.  Complexity is now O(sum of per-triangle pixel-box
+area) instead of O(sum of triangle × tile area).
 """
 
 from __future__ import annotations
@@ -22,7 +26,9 @@ from numpy.typing import NDArray
 from faceforge.scanner.tissue_map import TissueMapper
 
 
-TILE_SIZE = 16  # pixels per tile edge
+# Max (triangles x pixels) elements per Möller–Trumbore batch.  Keeps the
+# (T, P, 3) temporaries inside a few MB regardless of footprint size.
+BATCH_ELEMS = 1 << 21
 
 
 @dataclass
@@ -70,14 +76,20 @@ class ScannerEngine:
             if len(v0) == 0:
                 continue
 
-            all_v = np.concatenate([v0, v1, v2], axis=0)
+            # min/max over the three vertex arrays directly: the old
+            # np.concatenate materialised a 3x copy of every mesh's triangle
+            # data just to take an AABB.
+            aabb_min = np.minimum(np.minimum(v0.min(axis=0), v1.min(axis=0)),
+                                  v2.min(axis=0))
+            aabb_max = np.maximum(np.maximum(v0.max(axis=0), v1.max(axis=0)),
+                                  v2.max(axis=0))
             color = mesh_inst.material.color
             tissue = self.tissue_mapper.classify(mesh_inst.name, color)
 
             self._cache.append(_CachedMesh(
                 v0=v0, v1=v1, v2=v2,
                 tissue=tissue, color=color,
-                aabb_min=all_v.min(axis=0), aabb_max=all_v.max(axis=0),
+                aabb_min=aabb_min, aabb_max=aabb_max,
             ))
 
     # ── public entry point ───────────────────────────────────────────
@@ -132,8 +144,8 @@ class ScannerEngine:
 
         # ── Phase 1: filter triangles across all meshes ──────────────
         all_v0, all_v1, all_v2 = [], [], []
-        all_tissue_val: list[float] = []
-        all_color: list[tuple] = []
+        all_tissue_val: list[NDArray] = []
+        all_color: list[NDArray] = []
         # 2D projections for tile assignment (world units along right / up)
         all_u_min, all_u_max = [], []
         all_w_min, all_w_max = [], []
@@ -174,8 +186,11 @@ class ScannerEngine:
             all_v2.append(cm.v2[keep])
 
             tv = self.tissue_mapper.get_value(cm.tissue, mode)
-            all_tissue_val.extend([tv] * len(keep))
-            all_color.extend([cm.color] * len(keep))
+            # np.full/broadcast_to instead of building Python lists of up to
+            # 850k floats and 850k 3-tuples per scan.
+            all_tissue_val.append(np.full(len(keep), tv, dtype=np.float32))
+            all_color.append(np.broadcast_to(
+                np.asarray(cm.color, dtype=np.float32), (len(keep), 3)))
 
             all_u_min.append(tu_min[keep])
             all_u_max.append(tu_max[keep])
@@ -190,8 +205,8 @@ class ScannerEngine:
         v0_all = np.concatenate(all_v0)  # (M, 3)
         v1_all = np.concatenate(all_v1)
         v2_all = np.concatenate(all_v2)
-        tissue_arr = np.array(all_tissue_val, dtype=np.float32)  # (M,)
-        color_arr = np.array(all_color, dtype=np.float32)        # (M, 3)
+        tissue_arr = np.concatenate(all_tissue_val)  # (M,)
+        color_arr = np.concatenate(all_color)        # (M, 3)
         u_min_all = np.concatenate(all_u_min)
         u_max_all = np.concatenate(all_u_max)
         w_min_all = np.concatenate(all_w_min)
@@ -211,9 +226,9 @@ class ScannerEngine:
         inv_a_all = np.zeros(M, dtype=np.float32)
         inv_a_all[good_all] = np.float32(1.0) / a_all[good_all]
 
-        # ── Phase 2: tile coord ranges per triangle (vectorised) ───
-        n_tiles_x = (res + TILE_SIZE - 1) // TILE_SIZE
-        n_tiles_y = (res + TILE_SIZE - 1) // TILE_SIZE
+        # ── Phase 2: per-triangle pixel box (vectorised) ───────────
+        # Same padding (-1 / +2) as the tile version, so the candidate ray
+        # set per triangle is unchanged — only the *grouping* differs.
         inv_w, inv_h = 1.0 / w_f, 1.0 / h_f
         res_m1 = np.float32(res - 1)
 
@@ -222,15 +237,14 @@ class ScannerEngine:
         py_lo = np.clip(((0.5 - w_max_all * inv_h) * res_m1 - 1).astype(np.int32), 0, res - 1)
         py_hi = np.clip(((0.5 - w_min_all * inv_h) * res_m1 + 2).astype(np.int32), 0, res - 1)
 
-        tx_lo = px_lo // TILE_SIZE
-        tx_hi = px_hi // TILE_SIZE
-        ty_lo = py_lo // TILE_SIZE
-        ty_hi = py_hi // TILE_SIZE
+        box_w = (px_hi - px_lo + 1).astype(np.int64)
+        box_h = (py_hi - py_lo + 1).astype(np.int64)
 
         if progress_callback:
             progress_callback(0.35)
 
-        # ── Phase 3: tile-centric intersection with chunking ───────
+        # ── Phase 3: triangle-centric intersection ─────────────────
+        ray_flat = ray_grid.reshape(n_rays, 3)
         if is_anatomical:
             color_accum = np.zeros((n_rays, 3), dtype=np.float32)
         else:
@@ -239,91 +253,81 @@ class ScannerEngine:
             value_max_a = np.full(n_rays, -np.inf, dtype=np.float32)
         hit_count = np.zeros(n_rays, dtype=np.float32)
 
-        TRI_CHUNK = 256  # max triangles per intersection batch
-        total_tile_cells = n_tiles_x * n_tiles_y
-        done_tiles = 0
+        # Group triangles by pixel-box *shape* so each batch is a
+        # rectangular (T, W*H) problem.  Shapes are small integers, so the
+        # (h, w) pair packs into one int64 sort key.
+        shape_key = box_h * (res + 1) + box_w
+        order = np.argsort(shape_key, kind="stable")
+        sk = shape_key[order]
+        bounds = np.flatnonzero(np.r_[True, sk[1:] != sk[:-1], True])
+        n_groups = len(bounds) - 1
 
-        for tx in range(n_tiles_x):
-            # Reuse x-mask across all ty for this column
-            x_mask = (tx_lo <= tx) & (tx_hi >= tx)
-            if not x_mask.any():
-                done_tiles += n_tiles_y
-                continue
+        for gi in range(n_groups):
+            gidx = order[bounds[gi]:bounds[gi + 1]]
+            W = int(box_w[gidx[0]])
+            H = int(box_h[gidx[0]])
+            P = W * H
+            step = max(1, BATCH_ELEMS // max(P, 1))
 
-            ix_lo = tx * TILE_SIZE
-            ix_hi = min(res, (tx + 1) * TILE_SIZE)
+            # Pixel offsets within a box of this shape, relative to its
+            # top-left corner, as flat ray indices.
+            dy = np.arange(H, dtype=np.int64)[:, np.newaxis]
+            dx = np.arange(W, dtype=np.int64)[np.newaxis, :]
+            off = (dy * res + dx).ravel()  # (P,)
 
-            for ty in range(n_tiles_y):
-                done_tiles += 1
-                tri_idx = np.where(x_mask & (ty_lo <= ty) & (ty_hi >= ty))[0]
-                if len(tri_idx) == 0:
+            for b0 in range(0, len(gidx), step):
+                cidx = gidx[b0:b0 + step]
+
+                base = (py_lo[cidx].astype(np.int64) * res
+                        + px_lo[cidx].astype(np.int64))
+                flat = base[:, np.newaxis] + off[np.newaxis, :]  # (T, P)
+                origins = ray_flat[flat]                         # (T, P, 3)
+
+                # Pre-computed per-triangle data (indexed, not recomputed)
+                c_v0 = v0_all[cidx][:, np.newaxis, :]
+                c_h = h_all[cidx][:, np.newaxis, :]
+                c_edge1 = edge1_all[cidx][:, np.newaxis, :]
+                c_edge2 = edge2_all[cidx][:, np.newaxis, :]
+                c_inv_a = inv_a_all[cidx][:, np.newaxis]
+                c_good = good_all[cidx][:, np.newaxis]
+
+                # Broadcast Möller–Trumbore  (T, P)
+                s = origins - c_v0
+                u_par = np.sum(s * c_h, axis=2) * c_inv_a
+                q = np.cross(s, c_edge1)
+                v_par = np.sum(ray_dir * q, axis=2) * c_inv_a
+                t_par = np.sum(c_edge2 * q, axis=2) * c_inv_a
+
+                hit = (
+                    c_good
+                    & (u_par >= 0) & (u_par <= 1)
+                    & (v_par >= 0) & ((u_par + v_par) <= 1)
+                    & (t_par > EPSILON) & (t_par <= depth_f)
+                )
+                if not hit.any():
                     continue
 
-                T = len(tri_idx)
-                iy_lo = ty * TILE_SIZE
-                iy_hi = min(res, (ty + 1) * TILE_SIZE)
+                hf = flat[hit]  # flat ray index of every (triangle, hit) pair
+                hit_count += np.bincount(hf, minlength=n_rays).astype(np.float32)
 
-                tile_origins = ray_grid[iy_lo:iy_hi, ix_lo:ix_hi]
-                ny, nx = tile_origins.shape[:2]
-                K = ny * nx
-                origins = tile_origins.reshape(K, 3)
+                if is_anatomical:
+                    hc = np.broadcast_to(
+                        color_arr[cidx][:, np.newaxis, :], hit.shape + (3,))[hit]
+                    for c in range(3):
+                        color_accum[:, c] += np.bincount(
+                            hf, weights=hc[:, c], minlength=n_rays,
+                        ).astype(np.float32)
+                else:
+                    ht = np.broadcast_to(
+                        tissue_arr[cidx][:, np.newaxis], hit.shape)[hit]
+                    value_accum += np.bincount(
+                        hf, weights=ht, minlength=n_rays,
+                    ).astype(np.float32)
+                    np.maximum.at(value_max_a, hf, ht)
+                    np.minimum.at(value_min_a, hf, ht)
 
-                # Flat index mapping (once per tile)
-                iy_local = np.arange(ny, dtype=np.int32)
-                ix_local = np.arange(nx, dtype=np.int32)
-                iy_g, ix_g = np.meshgrid(iy_local, ix_local, indexing="ij")
-                flat_map = ((iy_g + iy_lo) * res + (ix_g + ix_lo)).ravel()
-
-                # Process triangles in cache-friendly chunks
-                for c0 in range(0, T, TRI_CHUNK):
-                    cidx = tri_idx[c0:min(c0 + TRI_CHUNK, T)]
-
-                    # Pre-computed per-triangle data (indexed, not recomputed)
-                    c_v0 = v0_all[cidx]
-                    c_h = h_all[cidx]
-                    c_edge1 = edge1_all[cidx]
-                    c_edge2 = edge2_all[cidx]
-                    c_inv_a = inv_a_all[cidx]
-                    c_good = good_all[cidx]
-
-                    # Broadcast Möller–Trumbore  (K, Tc)
-                    s = origins[:, np.newaxis, :] - c_v0[np.newaxis, :, :]
-                    u_par = np.sum(s * c_h[np.newaxis, :, :], axis=2) * c_inv_a
-                    q = np.cross(s, c_edge1[np.newaxis, :, :])
-                    v_par = np.sum(ray_dir * q, axis=2) * c_inv_a
-                    t_par = np.sum(c_edge2[np.newaxis, :, :] * q, axis=2) * c_inv_a
-
-                    hit = (
-                        c_good[np.newaxis, :]
-                        & (u_par >= 0) & (u_par <= 1)
-                        & (v_par >= 0) & ((u_par + v_par) <= 1)
-                        & (t_par > EPSILON) & (t_par <= depth_f)
-                    )
-
-                    any_hit = hit.any(axis=1)
-                    if not any_hit.any():
-                        continue
-
-                    ray_hit_count = hit.sum(axis=1).astype(np.float32)
-                    hit_rays = np.where(any_hit)[0]
-                    flat_idx = flat_map[hit_rays]
-                    hit_count[flat_idx] += ray_hit_count[hit_rays]
-
-                    if is_anatomical:
-                        hit_sub = hit[hit_rays]
-                        ray_color = hit_sub.astype(np.float32) @ color_arr[cidx]
-                        color_accum[flat_idx] += ray_color
-                    else:
-                        c_tissue = tissue_arr[cidx]
-                        hit_sub = hit[hit_rays]
-                        value_accum[flat_idx] += hit_sub.astype(np.float32) @ c_tissue
-                        masked_max = np.where(hit_sub, c_tissue[np.newaxis, :], -np.inf)
-                        masked_min = np.where(hit_sub, c_tissue[np.newaxis, :], np.inf)
-                        np.maximum.at(value_max_a, flat_idx, masked_max.max(axis=1))
-                        np.minimum.at(value_min_a, flat_idx, masked_min.min(axis=1))
-
-                if progress_callback and done_tiles % 8 == 0:
-                    progress_callback(0.35 + 0.65 * done_tiles / total_tile_cells)
+            if progress_callback and gi % 8 == 0:
+                progress_callback(0.35 + 0.65 * gi / max(n_groups, 1))
 
         if progress_callback:
             progress_callback(1.0)

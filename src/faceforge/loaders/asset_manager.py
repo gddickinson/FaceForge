@@ -21,9 +21,17 @@ class AssetManager:
     All loaded geometry is cached to avoid duplicate file I/O.
     """
 
-    def __init__(self, stl_dir: Optional[Path] = None):
+    def __init__(
+        self,
+        stl_dir: Optional[Path] = None,
+        mesh_cache_dir: Optional[Path] = None,
+        use_mesh_cache: bool = True,
+    ):
         self.stl_dir = stl_dir or STL_DIR
         self.transform = CoordinateTransform()
+        # Welded-geometry disk cache settings (see loaders.stl_parser).
+        self.use_mesh_cache = use_mesh_cache
+        self.mesh_cache_dir = mesh_cache_dir
 
         # Caches
         self._stl_cache: dict[str, BufferGeometry] = {}
@@ -41,11 +49,30 @@ class AssetManager:
             pass  # Use defaults
 
     def get_stl(self, stl_name: str, indexed: bool = True) -> BufferGeometry:
-        """Load and cache an STL file by name (without extension)."""
+        """Load and cache an STL file by name (without extension).
+
+        The returned geometry is shared with the cache and with any later
+        call for the same name — treat it as read-only and ``.copy()``
+        before transforming.
+
+        Two load paths exist for the same STL files: this one, and
+        ``load_stl_batch`` (used by every ``load_*`` method below), which
+        deliberately does *not* reuse these in-memory objects because it
+        applies the BP3D coordinate transform in place — sharing them would
+        double-transform whichever consumer ran second.  The two paths
+        instead share the on-disk welded-geometry cache in
+        ``loaders.stl_parser``, so a mesh welded by one path is never
+        welded again by the other.
+        """
         cache_key = f"{stl_name}:{'idx' if indexed else 'raw'}"
         if cache_key not in self._stl_cache:
             path = self.stl_dir / f"{stl_name}.stl"
-            self._stl_cache[cache_key] = load_stl_file(path, indexed=indexed)
+            self._stl_cache[cache_key] = load_stl_file(
+                path,
+                indexed=indexed,
+                use_cache=self.use_mesh_cache,
+                cache_dir=self.mesh_cache_dir,
+            )
         return self._stl_cache[cache_key]
 
     def load_skull(self) -> dict[str, MeshInstance]:

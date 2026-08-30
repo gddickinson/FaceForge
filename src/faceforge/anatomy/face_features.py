@@ -493,9 +493,13 @@ class FaceFeatureSystem:
             # (Y longest, Z shortest).  Using ellipsoidal geometry ensures
             # the iris/pupil/cornea conform to the actual sclera shape.
             local_pos_f64 = (new_positions - center).astype(np.float64)
-            semi_x = float(local_pos_f64[:, 0].ptp() / 2)
-            semi_y = float(local_pos_f64[:, 1].ptp() / 2)
-            semi_z = float(local_pos_f64[:, 2].ptp() / 2)
+            # np.ptp(a) rather than a.ptp(): the ndarray method was removed
+            # in NumPy 2.0, and calling it raised AttributeError here, which
+            # the caller's broad except silently turned into "face features
+            # unavailable" for the whole subsystem.
+            semi_x = float(np.ptp(local_pos_f64[:, 0]) / 2)
+            semi_y = float(np.ptp(local_pos_f64[:, 1]) / 2)
+            semi_z = float(np.ptp(local_pos_f64[:, 2]) / 2)
             semi_axes = (semi_x, semi_y, semi_z)
 
             # The "radius" for compatibility is the polar radius at +Z

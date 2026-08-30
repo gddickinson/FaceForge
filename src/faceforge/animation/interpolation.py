@@ -49,11 +49,25 @@ class StateInterpolator:
         face.ear_wiggle += (target - face.ear_wiggle) * t
 
     def _interpolate_body(self, body: BodyState, target: BodyState, dt: float) -> None:
+        """Advance body state toward ``target``.
+
+        Only the fields on ``BodyState.INTERPOLATED_FIELDS`` are lerped, and
+        only ``BodyState.FLAG_FIELDS`` are copied.  This is an explicit
+        allowlist rather than everything ``to_dict()`` happens to return: the
+        old form dragged the ``breath_phase_body`` accumulator, the ``gender``
+        slider and the six boolean ``auto_*`` toggles toward defaults that
+        nothing ever assigns (see ``defects.md``).
+        """
         t = min(1.0, self.BODY_SPEED * dt)
-        body_dict = body.to_dict()
-        target_dict = target.to_dict()
-        for key in body_dict:
-            if key in target_dict:
-                current = body_dict[key]
-                goal = target_dict[key]
-                setattr(body, key, current + (goal - current) * t)
+        for key in BodyState.INTERPOLATED_FIELDS:
+            current = getattr(body, key)
+            goal = getattr(target, key)
+            setattr(body, key, current + (goal - current) * t)
+
+        # Boolean toggles are state, not a trajectory: snap them so a path that
+        # writes only target_body (preset_manager, animation clips, BODY_POSE_SET)
+        # takes effect immediately and the field stays a real bool.
+        for key in BodyState.FLAG_FIELDS:
+            goal = bool(getattr(target, key))
+            if getattr(body, key) is not goal:
+                setattr(body, key, goal)

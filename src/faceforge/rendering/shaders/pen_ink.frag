@@ -3,38 +3,21 @@
 // Pure pen-and-ink rendering.
 // White fill with stark black outlines and stipple shading — no colour.
 
-in vec3 vNormal;
-in vec3 vViewPos;
-in vec3 vVertexColor;
-in vec3 vWorldPos;
+#include "_common.glsl"
+#include "_lighting.glsl"
 
-uniform vec3 uColor;
-uniform float uOpacity;
 uniform float uShininess;
-uniform vec3 uAmbientColor;
-uniform vec3 uLightDir;
-uniform vec3 uLightColor;
-uniform int uUseVertexColor;
-
-uniform int uClipEnabled;
-uniform vec4 uClipPlane;
-
-out vec4 fragColor;
 
 void main() {
-    if (uClipEnabled != 0 && dot(vWorldPos, uClipPlane.xyz) + uClipPlane.w < 0.0) discard;
-
-    vec3 N = normalize(vNormal);
-    vec3 V = normalize(-vViewPos);
-    vec3 L = normalize(uLightDir);
+    vec3 N = ffNormal();
+    vec3 V = ffViewDir();
+    vec3 L = ffLightDir();
 
     float NdotL = dot(N, L);
     float diff = clamp(NdotL, 0.0, 1.0);
 
     // Very strong edge detection — thick outlines
-    float facing = abs(dot(N, V));
-    float edge = 1.0 - facing;
-    float outline = smoothstep(0.0, 0.55, edge);
+    float outline = smoothstep(0.0, 0.55, ffEdge(N, V));
     // Hard black outline
     float ink = 1.0 - outline * 0.95;
 

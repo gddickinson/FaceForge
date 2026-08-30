@@ -59,6 +59,22 @@ class QuizDialog(QDialog):
         ])
         form.addRow("Category:", self._category_combo)
 
+        # Curriculum: a named, ordered study set (see anatomy/curricula.py).
+        # Index 0 is "None", which keeps the pre-existing search-index
+        # behaviour, so the category filter above still means something.
+        self._curriculum_combo = QComboBox()
+        self._curriculum_keys: list[str] = [""]
+        self._curriculum_combo.addItem("None (all structures)")
+        self._populate_curricula()
+        self._curriculum_combo.currentIndexChanged.connect(
+            self._on_curriculum_changed)
+        form.addRow("Curriculum:", self._curriculum_combo)
+
+        self._tier_combo = QComboBox()
+        self._tier_combo.addItem("By difficulty")
+        self._tier_combo.setEnabled(False)
+        form.addRow("Tier:", self._tier_combo)
+
         self._difficulty_combo = QComboBox()
         self._difficulty_combo.addItems(["Easy", "Medium", "Hard"])
         self._difficulty_combo.setCurrentIndex(1)
@@ -171,6 +187,50 @@ class QuizDialog(QDialog):
         self._countdown_timer.setInterval(1000)
         self._countdown_timer.timeout.connect(self._on_timer_tick)
 
+    def _populate_curricula(self) -> None:
+        """Fill the curriculum combo from the engine's curricula.
+
+        Wrapped: the curricula are derived from the asset configs, and a
+        checkout with no configs must still open the dialog (with the
+        curriculum list empty) rather than fail to construct it.
+        """
+        try:
+            keys = self._engine.curriculum_keys()
+            curricula = self._engine.curricula
+        except Exception:                          # noqa: BLE001 - diagnostic
+            return
+        for key in keys:
+            cur = curricula[key]
+            self._curriculum_keys.append(key)
+            self._curriculum_combo.addItem(f"{cur.title} ({len(cur)})")
+
+    def _selected_curriculum(self) -> str:
+        idx = self._curriculum_combo.currentIndex()
+        if 0 <= idx < len(self._curriculum_keys):
+            return self._curriculum_keys[idx]
+        return ""
+
+    def _on_curriculum_changed(self, index: int) -> None:
+        """Offer only the tiers the selected curriculum actually contains."""
+        self._tier_combo.clear()
+        self._tier_combo.addItem("By difficulty")
+        key = self._selected_curriculum()
+        if not key:
+            self._tier_combo.setEnabled(False)
+            return
+        try:
+            cur = self._engine.curricula[key]
+        except Exception:                          # noqa: BLE001 - diagnostic
+            self._tier_combo.setEnabled(False)
+            return
+        counts = cur.counts()
+        for tier in cur.tiers:
+            self._tier_combo.addItem(f"{tier} ({counts[tier]})", tier)
+        self._tier_combo.setEnabled(True)
+
+    def _selected_tier(self) -> str:
+        return self._tier_combo.currentData() or ""
+
     def _start_quiz(self) -> None:
         mode_map = {0: "identify", 1: "locate"}
         cat_map = {0: "", 1: "muscle", 2: "bone", 3: "organ", 4: "vessel"}
@@ -181,7 +241,11 @@ class QuizDialog(QDialog):
         difficulty = diff_map.get(self._difficulty_combo.currentIndex(), "medium")
         count = self._count_spin.value()
 
-        self._engine.start_quiz(mode, category, count, difficulty)
+        self._engine.start_quiz(
+            mode, category, count, difficulty,
+            curriculum=self._selected_curriculum(),
+            tier=self._selected_tier(),
+        )
 
         if mode == "locate":
             self.quiz_click_mode.emit(True)
@@ -258,8 +322,12 @@ class QuizDialog(QDialog):
                 "font-size: 13px; padding: 8px; color: #66ff66;"
             )
         else:
+            # Prefer the data-derived explanation (FMA preferred terms of both
+            # structures plus how they differ) over the bare correct name.
+            explanation = getattr(self._engine, "last_explanation", None)
+            detail = getattr(explanation, "text", "") if explanation else ""
             self._feedback_label.setText(
-                f"Incorrect. Answer: {correct_name}"
+                detail or f"Incorrect. Answer: {correct_name}"
             )
             self._feedback_label.setStyleSheet(
                 "font-size: 13px; padding: 8px; color: #ff6666;"
@@ -307,12 +375,38 @@ class QuizDialog(QDialog):
             f"Score: {score.correct}/{score.total} ({pct})\n"
             f"Best Streak: {score.best_streak}\n"
             f"Time: {elapsed:.0f}s\n"
+            f"{self._lifetime_text()}"
         )
         self._pages.setCurrentIndex(2)
 
+    def _lifetime_text(self) -> str:
+        """Cumulative history, when a progress store is attached."""
+        store = getattr(self._engine, "progress", None)
+        if store is None:
+            return ""
+        try:
+            summary = store.summary()
+        except Exception:                          # noqa: BLE001 - diagnostic
+            return ""
+        return (
+            f"\nAll time: {summary.correct}/{summary.attempts} correct "
+            f"({summary.accuracy * 100:.0f}%) over {summary.items_seen} "
+            f"structures; {summary.items_due} due for review."
+        )
+
     def set_quiz_engine(self, engine: QuizEngine) -> None:
-        """Replace the quiz engine (for late binding)."""
+        """Replace the quiz engine (for late binding).
+
+        The curriculum list belongs to the engine, so it is rebuilt here --
+        otherwise a dialog constructed before the configs were loaded would
+        keep an empty list forever.
+        """
         self._engine = engine
+        self._curriculum_combo.clear()
+        self._curriculum_keys = [""]
+        self._curriculum_combo.addItem("None (all structures)")
+        self._populate_curricula()
+        self._on_curriculum_changed(0)
 
     def on_mesh_clicked(self, mesh_name: str) -> None:
         """Handle a mesh click from the GL viewport (locate mode)."""

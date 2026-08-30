@@ -8,31 +8,15 @@
 //   3. Screen-space cross-hatching in shadowed regions
 //   4. Rim highlight on light-facing edges for depth
 
-in vec3 vNormal;
-in vec3 vViewPos;
-in vec3 vVertexColor;
-in vec3 vWorldPos;
+#include "_common.glsl"
+#include "_lighting.glsl"
 
-uniform vec3 uColor;
-uniform float uOpacity;
 uniform float uShininess;
-uniform vec3 uAmbientColor;
-uniform vec3 uLightDir;
-uniform vec3 uLightColor;
-uniform int uUseVertexColor;
-
-// Clip plane
-uniform int uClipEnabled;
-uniform vec4 uClipPlane;
-
-out vec4 fragColor;
 
 void main() {
-    if (uClipEnabled != 0 && dot(vWorldPos, uClipPlane.xyz) + uClipPlane.w < 0.0) discard;
-
-    vec3 N = normalize(vNormal);
-    vec3 V = normalize(-vViewPos);
-    vec3 L = normalize(uLightDir);
+    vec3 N = ffNormal();
+    vec3 V = ffViewDir();
+    vec3 L = ffLightDir();
 
     // ── 1. Diffuse (Lambertian) ──
     float NdotL = dot(N, L);
@@ -47,8 +31,7 @@ void main() {
     float gooch = mix(coolTone, warmTone, t);
 
     // ── 3. Fresnel edge darkening (ink contour) ──
-    float facing = abs(dot(N, V));
-    float edge = 1.0 - facing;
+    float edge = ffEdge(N, V);
     float contour = smoothstep(0.0, 0.45, edge);
     // Strong, dark contour lines at silhouette
     float edgeDarken = 1.0 - contour * 0.85;
@@ -79,14 +62,12 @@ void main() {
     }
 
     // ── 5. Specular highlight (subtle rim light) ──
-    vec3 R = reflect(-L, N);
-    float spec = pow(max(dot(V, R), 0.0), max(uShininess, 20.0));
+    float spec = ffSpecular(N, V, L, max(uShininess, 20.0));
     float highlight = spec * 0.15;
 
     // ── 6. Compose final greyscale value ──
     // Use base material lightness to vary structure tones slightly
-    vec3 baseColor = uUseVertexColor != 0 ? vVertexColor : uColor;
-    float baseLum = dot(baseColor, vec3(0.299, 0.587, 0.114));
+    float baseLum = ffLuma(ffBaseColor());
     // Subtle tone variation from material (keeps structures distinguishable)
     float materialTint = mix(0.85, 1.0, baseLum);
 

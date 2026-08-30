@@ -13,6 +13,10 @@ import pytest
 from faceforge.core.state import FaceState
 from faceforge.core.math_utils import quat_identity
 
+# `slow`: 3.30 s measured, all of it the module-scoped headless scene load,
+# which reads the full BP3D asset set.  Deselect with `pytest -m "not slow"`.
+pytestmark = pytest.mark.slow
+
 
 # ── Fixtures ─────────────────────────────────────────────────────────
 

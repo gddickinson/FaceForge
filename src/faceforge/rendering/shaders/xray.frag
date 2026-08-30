@@ -1,44 +1,28 @@
 #version 330 core
 
-in vec3 vNormal;
-in vec3 vViewPos;
-in vec3 vVertexColor;
-in vec3 vWorldPos;
+#include "_common.glsl"
+#include "_lighting.glsl"
 
-uniform vec3 uColor;
-uniform float uOpacity;
-uniform vec3 uAmbientColor;
-uniform vec3 uLightDir;
-uniform vec3 uLightColor;
-uniform int uUseVertexColor;
-
-// Clip plane
-uniform int uClipEnabled;
-uniform vec4 uClipPlane;
-
-out vec4 fragColor;
+// NOTE: this mode's alpha is a fraction of uOpacity, so it renders as a dark
+// solid unless GL_BLEND is on.  gl_material._MODE_NEEDS_BLENDING guarantees it.
 
 void main() {
-    if (uClipEnabled != 0 && dot(vWorldPos, uClipPlane.xyz) + uClipPlane.w < 0.0) discard;
-
-    vec3 N = normalize(vNormal);
-    vec3 V = normalize(-vViewPos);
+    vec3 N = ffNormal();
+    vec3 V = ffViewDir();
 
     // Fresnel-like effect: more transparent when facing camera, visible at edges.
-    // dot(N, V) ~ 1 when surface faces camera, ~ 0 at silhouette edges.
-    float facing = abs(dot(N, V));
-
-    // Invert so edges are bright and facing surfaces are faint
-    float edgeFactor = 1.0 - facing;
+    // ffEdge() is 0 when the surface faces the camera, 1 at silhouette edges.
+    float edgeFactor = ffEdge(N, V);
+    float facing = 1.0 - edgeFactor;
 
     // Raise to a power for a sharper falloff
     float fresnel = pow(edgeFactor, 1.5);
 
     // Subtle directional light for depth cue
-    vec3 L = normalize(uLightDir);
+    vec3 L = ffLightDir();
     float diff = max(dot(N, L), 0.0) * 0.3;
 
-    vec3 baseColor = uUseVertexColor != 0 ? vVertexColor : uColor;
+    vec3 baseColor = ffBaseColor();
     vec3 color = baseColor * (fresnel * 0.8 + diff + 0.1);
 
     // Opacity is strong at edges, faint when facing

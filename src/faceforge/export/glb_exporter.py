@@ -11,6 +11,24 @@ Each visible mesh becomes a glTF mesh primitive with:
 
 Scene hierarchy is flattened: each mesh gets its world transform baked
 into vertex positions/normals so Blender receives them in the correct pose.
+
+Provenance
+----------
+glTF 2.0 has two places for information the schema does not otherwise model:
+``asset.copyright`` and ``extras`` (free-form JSON, legal on any object).  Both
+are used here, because exported BodyParts3D geometry that has lost its
+attribution is a licence problem and not a missing nicety:
+
+* ``asset.copyright`` -- the BodyParts3D attribution string, verbatim.
+* ``asset.extras``    -- generator, dataset, licence and licence URL.
+* ``meshes[i].extras`` and ``nodes[i].extras`` -- per structure, the
+  BodyParts3D ``source_id``, the FMA ``ontology_id`` and the FMA preferred
+  label.  Mesh-level extras are the ones third-party readers surface most
+  reliably (trimesh, for one, hands them back as ``geometry.metadata``), so
+  both are written rather than picking one.
+
+Meshes with no ``source_id`` -- procedural geometry, the scan-plane quad -- get
+extras that say so instead of being labelled as BodyParts3D.
 """
 
 import json
@@ -23,6 +41,13 @@ import numpy as np
 from faceforge.core.scene_graph import Scene
 from faceforge.core.mesh import MeshInstance
 from faceforge.core.math_utils import Mat4
+from faceforge.export.baking import bake_world_geometry
+from faceforge.export.provenance import (
+    BODYPARTS3D_ATTRIBUTION,
+    GENERATOR,
+    asset_extras,
+    collect_provenance,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -105,8 +130,9 @@ def _build_gltf(
     material_cache: dict[tuple, int] = {}
 
     byte_offset = 0
+    provenance = collect_provenance(mesh_pairs)
 
-    for mesh, world_mat in mesh_pairs:
+    for record, (mesh, world_mat) in zip(provenance, mesh_pairs, strict=True):
         geom = mesh.geometry
         if geom.vertex_count == 0:
             continue
@@ -134,34 +160,13 @@ def _build_gltf(
 
         mat_index = material_cache[mat_key]
 
-        # Bake world transform into positions and normals
-        positions = geom.positions.reshape(-1, 3).copy()
-        normals = geom.normals.reshape(-1, 3).copy()
-
-        # Transform positions: P' = M * P (homogeneous)
-        rot_scale = world_mat[:3, :3]
-        translation = world_mat[:3, 3]
-        positions = (rot_scale @ positions.T).T + translation
-
-        # Transform normals: N' = (M^-T)[:3,:3] * N
-        try:
-            normal_mat = np.linalg.inv(rot_scale).T
-        except np.linalg.LinAlgError:
-            normal_mat = rot_scale  # fallback if singular
-        normals = (normal_mat @ normals.T).T
-        # Renormalize
-        lengths = np.linalg.norm(normals, axis=1, keepdims=True)
-        lengths = np.maximum(lengths, 1e-10)
-        normals = normals / lengths
-
-        positions = positions.astype(np.float32)
-        normals = normals.astype(np.float32)
-
-        # Build indices (generate sequential if non-indexed)
-        if geom.has_indices:
-            indices = geom.indices.astype(np.uint32)
-        else:
-            indices = np.arange(geom.vertex_count, dtype=np.uint32)
+        # Bake world transform into positions and normals.  Shared with the
+        # OBJ/PLY/STL exporters so the four formats cannot describe different
+        # geometry for the same scene.
+        world_geom = bake_world_geometry(mesh, world_mat)
+        positions = world_geom.positions
+        normals = world_geom.normals
+        indices = world_geom.indices.reshape(-1)
 
         # Compute bounds for positions
         pos_min = positions.min(axis=0).tolist()
@@ -231,6 +236,14 @@ def _build_gltf(
             "max": [int(indices.max())],
         })
 
+        # --- Provenance extras (glTF 2.0 §3.2: extras is legal on any object) ---
+        extras = record.extras()
+        if not record.is_bodyparts3d:
+            extras["provenance"] = (
+                "not from BodyParts3D: this mesh carries no source_id, so no "
+                "ontology term or attribution is claimed for it"
+            )
+
         # --- Mesh primitive ---
         mesh_idx = len(meshes)
         meshes.append({
@@ -243,12 +256,14 @@ def _build_gltf(
                 "indices": idx_acc_idx,
                 "material": mat_index,
             }],
+            "extras": dict(extras),
         })
 
         # --- Node ---
         nodes.append({
             "name": mesh.name or f"node_{mesh_idx}",
             "mesh": mesh_idx,
+            "extras": dict(extras),
         })
 
     # Assemble binary buffer
@@ -258,7 +273,11 @@ def _build_gltf(
     gltf = {
         "asset": {
             "version": "2.0",
-            "generator": "FaceForge Anatomical Viewer",
+            "generator": GENERATOR,
+            # A licence condition, not a nicety: geometry that leaves here
+            # without the attribution is a compliance problem.
+            "copyright": BODYPARTS3D_ATTRIBUTION,
+            "extras": asset_extras("glb"),
         },
         "scene": 0,
         "scenes": [{"nodes": list(range(len(nodes)))}],

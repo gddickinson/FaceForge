@@ -1,6 +1,7 @@
 """Compile and link GLSL shader programs for OpenGL 3.3 core profile."""
 
 import logging
+import re
 from pathlib import Path
 
 import numpy as np
@@ -40,10 +41,50 @@ logger = logging.getLogger(__name__)
 _SHADER_DIR = Path(__file__).parent / "shaders"
 
 
-def load_shader_source(filename: str) -> str:
-    """Load shader source from the shaders/ directory."""
+_INCLUDE_RE = re.compile(r'^[ \t]*#include[ \t]+"([^"]+)"[ \t]*$', re.MULTILINE)
+
+# How deep a chain of #includes may nest before we call it a cycle.
+_MAX_INCLUDE_DEPTH = 8
+
+
+def load_shader_source(filename: str, _depth: int = 0) -> str:
+    """Load shader source from the shaders/ directory, expanding ``#include``.
+
+    GLSL 3.30 core has no ``#include`` (``ARB_shading_language_include`` is an
+    extension few desktop drivers expose), so the directive is expanded here,
+    in Python, before the source ever reaches ``glShaderSource``.  Syntax::
+
+        #include "_common.glsl"
+
+    on a line of its own.  Include paths are resolved inside ``shaders/`` only.
+
+    Each included line is replaced by a ``#line`` directive pair so that a
+    driver's compile error still reports a line number in the *original* file
+    rather than an offset into the expanded text -- without this, the shared
+    prelude would make every compile error in every mode misleading.
+    """
+    if _depth > _MAX_INCLUDE_DEPTH:
+        raise RuntimeError(
+            f"#include nested more than {_MAX_INCLUDE_DEPTH} deep at "
+            f"{filename!r} -- probably a cycle"
+        )
+
     path = _SHADER_DIR / filename
-    return path.read_text(encoding="utf-8")
+    source = path.read_text(encoding="utf-8")
+
+    if "#include" not in source:
+        return source
+
+    def _expand(match: "re.Match[str]") -> str:
+        name = match.group(1)
+        if "/" in name or "\\" in name or name.startswith(".."):
+            raise RuntimeError(f"illegal #include path {name!r} in {filename!r}")
+        included = load_shader_source(name, _depth + 1)
+        # The line after the directive, in the including file.
+        resume = source[:match.start()].count("\n") + 2
+        return f"{included}\n#line {resume}"
+
+    return _INCLUDE_RE.sub(_expand, source)
 
 
 class ShaderProgram:

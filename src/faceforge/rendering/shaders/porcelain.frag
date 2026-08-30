@@ -4,35 +4,20 @@
 // Smooth, pale, subsurface-scatter approximation with soft light wrapping.
 // Evokes a porcelain figurine or anatomical doll.
 
-in vec3 vNormal;
-in vec3 vViewPos;
-in vec3 vVertexColor;
-in vec3 vWorldPos;
+#include "_common.glsl"
+#include "_lighting.glsl"
 
-uniform vec3 uColor;
-uniform float uOpacity;
 uniform float uShininess;
-uniform vec3 uAmbientColor;
-uniform vec3 uLightDir;
-uniform vec3 uLightColor;
-uniform int uUseVertexColor;
-
-uniform int uClipEnabled;
-uniform vec4 uClipPlane;
-
-out vec4 fragColor;
 
 void main() {
-    if (uClipEnabled != 0 && dot(vWorldPos, uClipPlane.xyz) + uClipPlane.w < 0.0) discard;
+    vec3 N = ffNormal();
+    vec3 V = ffViewDir();
+    vec3 L = ffLightDir();
 
-    vec3 N = normalize(vNormal);
-    vec3 V = normalize(-vViewPos);
-    vec3 L = normalize(uLightDir);
-
-    vec3 baseColor = uUseVertexColor != 0 ? vVertexColor : uColor;
+    vec3 baseColor = ffBaseColor();
 
     // Desaturate and lighten toward porcelain white
-    float lum = dot(baseColor, vec3(0.299, 0.587, 0.114));
+    float lum = ffLuma(baseColor);
     vec3 porcelainBase = mix(vec3(lum), baseColor, 0.35);  // mostly grey
     porcelainBase = mix(porcelainBase, vec3(0.92, 0.90, 0.88), 0.55);  // pull toward white
 

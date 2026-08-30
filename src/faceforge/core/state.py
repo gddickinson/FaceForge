@@ -1,7 +1,7 @@
 """Application state management for face and body parameters."""
 
 from dataclasses import dataclass, field, fields
-from typing import Any
+from typing import Any, ClassVar
 
 
 # All 12 Action Units
@@ -191,6 +191,70 @@ class BodyState:
 
     # Gender dimorphism (0=male, 1=female)
     gender: float = 0.0
+
+    # ------------------------------------------------------------------
+    # Field-class allowlists (see defects.md: interp-saturates-breath-phase,
+    # interp-clobbers-gender, interp-bools-become-floats).
+    #
+    # StateInterpolator used to lerp *every* key of to_dict() toward
+    # target_body.  Because bool subclasses int, that swept up the six auto_*
+    # toggles; it also swept up `breath_phase_body` (an accumulator owned by
+    # body_animation) and `gender` (which nothing ever writes on target_body).
+    # These tuples are an explicit ALLOWLIST so that adding a new BodyState
+    # field is inert until it is deliberately classified here.
+    # ------------------------------------------------------------------
+
+    #: Joint angles.  Driven by the UI/animation via target_body and smoothly
+    #: interpolated toward it.  Nothing else writes these on the live state.
+    POSE_FIELDS: ClassVar[tuple[str, ...]] = (
+        # Spine
+        "spine_flex", "spine_lat_bend", "spine_rotation",
+        # Shoulders
+        "shoulder_r_abduct", "shoulder_r_flex", "shoulder_r_rotate",
+        "shoulder_l_abduct", "shoulder_l_flex", "shoulder_l_rotate",
+        # Elbows
+        "elbow_r_flex", "elbow_l_flex",
+        # Forearms
+        "forearm_r_rotate", "forearm_l_rotate",
+        # Wrists
+        "wrist_r_flex", "wrist_r_deviate", "wrist_l_flex", "wrist_l_deviate",
+        # Hips
+        "hip_r_flex", "hip_r_abduct", "hip_r_rotate",
+        "hip_l_flex", "hip_l_abduct", "hip_l_rotate",
+        # Knees
+        "knee_r_flex", "knee_l_flex",
+        # Ankles
+        "ankle_r_flex", "ankle_r_invert", "ankle_l_flex", "ankle_l_invert",
+        # Hands
+        "finger_curl_r", "finger_spread_r", "thumb_op_r",
+        "finger_curl_l", "finger_spread_l", "thumb_op_l",
+        # Feet / toes
+        "toe_curl_r", "toe_spread_r", "toe_curl_l", "toe_spread_l",
+    )
+
+    #: Continuous physiology *settings* (not poses).  Slider-driven through
+    #: target_body exactly like poses, and read live off `state.body` by
+    #: body_animation / physiology, so they are interpolated too.
+    SETTING_FIELDS: ClassVar[tuple[str, ...]] = (
+        "breath_depth", "breath_rate", "heart_rate",
+        "peristalsis_rate", "fasciculation_intensity",
+    )
+
+    #: Boolean physiology toggles.  Copied (not lerped) from target_body, so a
+    #: preset or animation clip that only writes the target still takes effect
+    #: on the next frame and the field stays a real ``bool``.
+    FLAG_FIELDS: ClassVar[tuple[str, ...]] = (
+        "auto_breath_body", "auto_heartbeat", "auto_pulse_wave",
+        "auto_lung_expand", "auto_peristalsis", "auto_fasciculation",
+    )
+
+    #: Fields the interpolator lerps.  ``breath_phase_body`` (accumulator) and
+    #: ``gender`` (no target writer) are deliberately absent.
+    INTERPOLATED_FIELDS: ClassVar[tuple[str, ...]] = POSE_FIELDS + SETTING_FIELDS
+
+    #: Fields owned by the live state alone; the interpolator must not touch
+    #: them.  Kept for documentation and asserted against in tests.
+    LIVE_ONLY_FIELDS: ClassVar[tuple[str, ...]] = ("breath_phase_body", "gender")
 
     # Mapping from JS camelCase to Python snake_case
     _JS_KEY_MAP: dict[str, str] = field(default=None, init=False, repr=False)

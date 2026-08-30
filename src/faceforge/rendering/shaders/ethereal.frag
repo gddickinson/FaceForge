@@ -3,36 +3,24 @@
 // Ethereal / fantasy glow rendering.
 // Soft luminous aura with iridescent colour shifts and bloom edges.
 
-in vec3 vNormal;
-in vec3 vViewPos;
-in vec3 vVertexColor;
-in vec3 vWorldPos;
+#include "_common.glsl"
+#include "_lighting.glsl"
 
-uniform vec3 uColor;
-uniform float uOpacity;
 uniform float uShininess;
-uniform vec3 uAmbientColor;
-uniform vec3 uLightDir;
-uniform vec3 uLightColor;
-uniform int uUseVertexColor;
 
-uniform int uClipEnabled;
-uniform vec4 uClipPlane;
-
-out vec4 fragColor;
+// NOTE: this mode's alpha is a fraction of uOpacity, so it renders as a dark
+// solid unless GL_BLEND is on.  gl_material._MODE_NEEDS_BLENDING guarantees it.
 
 void main() {
-    if (uClipEnabled != 0 && dot(vWorldPos, uClipPlane.xyz) + uClipPlane.w < 0.0) discard;
+    vec3 N = ffNormal();
+    vec3 V = ffViewDir();
+    vec3 L = ffLightDir();
 
-    vec3 N = normalize(vNormal);
-    vec3 V = normalize(-vViewPos);
-    vec3 L = normalize(uLightDir);
-
-    vec3 baseColor = uUseVertexColor != 0 ? vVertexColor : uColor;
+    vec3 baseColor = ffBaseColor();
 
     // Iridescent colour shift based on view angle
-    float facing = abs(dot(N, V));
-    float edge = 1.0 - facing;
+    float edge = ffEdge(N, V);
+    float facing = 1.0 - edge;
 
     // Hue shift: rotate through pastel spectrum at edges
     float hueAngle = edge * 2.5 + dot(N, vec3(0.3, 0.6, 0.7)) * 1.5;

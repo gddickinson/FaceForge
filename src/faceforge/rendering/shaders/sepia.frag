@@ -3,30 +3,15 @@
 // Vintage sepia textbook illustration.
 // Warm brown tones with ink-line contours — aged anatomical atlas feel.
 
-in vec3 vNormal;
-in vec3 vViewPos;
-in vec3 vVertexColor;
-in vec3 vWorldPos;
+#include "_common.glsl"
+#include "_lighting.glsl"
 
-uniform vec3 uColor;
-uniform float uOpacity;
 uniform float uShininess;
-uniform vec3 uAmbientColor;
-uniform vec3 uLightDir;
-uniform vec3 uLightColor;
-uniform int uUseVertexColor;
-
-uniform int uClipEnabled;
-uniform vec4 uClipPlane;
-
-out vec4 fragColor;
 
 void main() {
-    if (uClipEnabled != 0 && dot(vWorldPos, uClipPlane.xyz) + uClipPlane.w < 0.0) discard;
-
-    vec3 N = normalize(vNormal);
-    vec3 V = normalize(-vViewPos);
-    vec3 L = normalize(uLightDir);
+    vec3 N = ffNormal();
+    vec3 V = ffViewDir();
+    vec3 L = ffLightDir();
 
     float NdotL = dot(N, L);
     float diff = clamp(NdotL, 0.0, 1.0);
@@ -36,8 +21,7 @@ void main() {
     float tone = mix(0.20, 0.88, t);
 
     // Contour edges
-    float facing = abs(dot(N, V));
-    float edge = 1.0 - facing;
+    float edge = ffEdge(N, V);
     float contour = smoothstep(0.0, 0.40, edge);
     float edgeDarken = 1.0 - contour * 0.80;
 
@@ -51,9 +35,7 @@ void main() {
     if (shadow > 0.60) hm *= mix(1.0, hatch2, smoothstep(0.60, 0.85, shadow) * 0.30);
 
     // Material tint
-    vec3 bc = uUseVertexColor != 0 ? vVertexColor : uColor;
-    float lum = dot(bc, vec3(0.299, 0.587, 0.114));
-    float mt = mix(0.85, 1.0, lum);
+    float mt = mix(0.85, 1.0, ffLuma(ffBaseColor()));
 
     float grey = tone * edgeDarken * hm * mt;
     grey = clamp(grey, 0.0, 1.0);

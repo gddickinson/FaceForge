@@ -4,35 +4,20 @@
 // High-contrast, saturated colours with sharp directional lighting.
 // Emulates modern full-colour medical textbook plates (Netter-style).
 
-in vec3 vNormal;
-in vec3 vViewPos;
-in vec3 vVertexColor;
-in vec3 vWorldPos;
+#include "_common.glsl"
+#include "_lighting.glsl"
 
-uniform vec3 uColor;
-uniform float uOpacity;
 uniform float uShininess;
-uniform vec3 uAmbientColor;
-uniform vec3 uLightDir;
-uniform vec3 uLightColor;
-uniform int uUseVertexColor;
-
-uniform int uClipEnabled;
-uniform vec4 uClipPlane;
-
-out vec4 fragColor;
 
 void main() {
-    if (uClipEnabled != 0 && dot(vWorldPos, uClipPlane.xyz) + uClipPlane.w < 0.0) discard;
+    vec3 N = ffNormal();
+    vec3 V = ffViewDir();
+    vec3 L = ffLightDir();
 
-    vec3 N = normalize(vNormal);
-    vec3 V = normalize(-vViewPos);
-    vec3 L = normalize(uLightDir);
-
-    vec3 baseColor = uUseVertexColor != 0 ? vVertexColor : uColor;
+    vec3 baseColor = ffBaseColor();
 
     // Boost saturation slightly
-    float lum = dot(baseColor, vec3(0.299, 0.587, 0.114));
+    float lum = ffLuma(baseColor);
     vec3 saturated = mix(vec3(lum), baseColor, 1.25);
     saturated = clamp(saturated, 0.0, 1.0);
 
@@ -48,8 +33,7 @@ void main() {
     float ao = 0.45 + 0.55 * diff;
 
     // Specular highlight (wet tissue look)
-    vec3 R = reflect(-L, N);
-    float spec = pow(max(dot(V, R), 0.0), max(uShininess, 40.0));
+    float spec = ffSpecular(N, V, L, max(uShininess, 40.0));
 
     // Rim light for edge definition
     float rim = 1.0 - max(dot(N, V), 0.0);
@@ -60,8 +44,7 @@ void main() {
                + vec3(rim);
 
     // Very subtle dark edge outline
-    float facing = abs(dot(N, V));
-    float edgeFade = smoothstep(0.0, 0.20, facing);
+    float edgeFade = smoothstep(0.0, 0.20, 1.0 - ffEdge(N, V));
     color *= edgeFade * 0.3 + 0.7;
 
     fragColor = vec4(clamp(color, 0.0, 1.0), uOpacity);

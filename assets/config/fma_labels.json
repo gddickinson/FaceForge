@@ -1,0 +1,6469 @@
+{
+ "_comment": "Crosswalk from BodyParts3D mesh id to Foundational Model of Anatomy (FMA) preferred terminology. Generated from the FMA.csv shipped with the BodyParts3D dataset (104,695 rows). 'category' is the owning config group; 'system' is derived by walking the FMA parent chain.",
+ "_generated_structures": 923,
+ "_source": "BodyParts3D/assets/BodyParts3D_data/FMA.csv",
+ "schema_version": 1,
+ "structures": {
+  "FMA10014": {
+   "category": "skeleton",
+   "display_name": "T9",
+   "fma_id": 10014,
+   "preferred_label": "Ninth thoracic vertebra",
+   "system": "skeletal"
+  },
+  "FMA10037": {
+   "category": "skeleton",
+   "display_name": "T10",
+   "fma_id": 10037,
+   "preferred_label": "Tenth thoracic vertebra",
+   "system": "skeletal"
+  },
+  "FMA10059": {
+   "category": "skeleton",
+   "display_name": "T11",
+   "fma_id": 10059,
+   "preferred_label": "Eleventh thoracic vertebra",
+   "system": "skeletal"
+  },
+  "FMA10081": {
+   "category": "skeleton",
+   "display_name": "T12",
+   "fma_id": 10081,
+   "preferred_label": "Twelfth thoracic vertebra",
+   "system": "skeletal"
+  },
+  "FMA10419": {
+   "category": "organs",
+   "display_name": "Pancreatic Duct",
+   "fma_id": 10419,
+   "preferred_label": "Pancreatic duct",
+   "system": null
+  },
+  "FMA10458": {
+   "category": "skeleton",
+   "display_name": "C7-T1 Disc",
+   "fma_id": 10458,
+   "preferred_label": "Intervertebral disk of first thoracic vertebra",
+   "system": "skeletal"
+  },
+  "FMA10951": {
+   "category": "vascular",
+   "display_name": "Inf. Vena Cava",
+   "fma_id": 10951,
+   "preferred_label": "Inferior vena cava",
+   "system": "cardiovascular"
+  },
+  "FMA11336": {
+   "category": "muscles",
+   "display_name": "Linea Alba",
+   "fma_id": 11336,
+   "preferred_label": "Linea alba",
+   "system": null
+  },
+  "FMA12513": {
+   "category": "face_features",
+   "display_name": "Eyeball",
+   "fma_id": 12513,
+   "preferred_label": "Eyeball",
+   "system": null
+  },
+  "FMA12519": {
+   "category": "skeleton",
+   "display_name": "Atlas (C1)",
+   "fma_id": 12519,
+   "preferred_label": "Atlas",
+   "system": "skeletal"
+  },
+  "FMA12520": {
+   "category": "skeleton",
+   "display_name": "Axis (C2)",
+   "fma_id": 12520,
+   "preferred_label": "Axis",
+   "system": "skeletal"
+  },
+  "FMA12521": {
+   "category": "skeleton",
+   "display_name": "C3",
+   "fma_id": 12521,
+   "preferred_label": "Third cervical vertebra",
+   "system": "skeletal"
+  },
+  "FMA12522": {
+   "category": "skeleton",
+   "display_name": "C4",
+   "fma_id": 12522,
+   "preferred_label": "Fourth cervical vertebra",
+   "system": "skeletal"
+  },
+  "FMA12523": {
+   "category": "skeleton",
+   "display_name": "C5",
+   "fma_id": 12523,
+   "preferred_label": "Fifth cervical vertebra",
+   "system": "skeletal"
+  },
+  "FMA12524": {
+   "category": "skeleton",
+   "display_name": "C6",
+   "fma_id": 12524,
+   "preferred_label": "Sixth cervical vertebra",
+   "system": "skeletal"
+  },
+  "FMA12525": {
+   "category": "skeleton",
+   "display_name": "C7",
+   "fma_id": 12525,
+   "preferred_label": "Seventh cervical vertebra",
+   "system": "skeletal"
+  },
+  "FMA13072": {
+   "category": "skeleton",
+   "display_name": "L1",
+   "fma_id": 13072,
+   "preferred_label": "First lumbar vertebra",
+   "system": "skeletal"
+  },
+  "FMA13073": {
+   "category": "skeleton",
+   "display_name": "L2",
+   "fma_id": 13073,
+   "preferred_label": "Second lumbar vertebra",
+   "system": "skeletal"
+  },
+  "FMA13074": {
+   "category": "skeleton",
+   "display_name": "L3",
+   "fma_id": 13074,
+   "preferred_label": "Third lumbar vertebra",
+   "system": "skeletal"
+  },
+  "FMA13075": {
+   "category": "skeleton",
+   "display_name": "L4",
+   "fma_id": 13075,
+   "preferred_label": "Fourth lumbar vertebra",
+   "system": "skeletal"
+  },
+  "FMA13076": {
+   "category": "skeleton",
+   "display_name": "L5",
+   "fma_id": 13076,
+   "preferred_label": "Fifth lumbar vertebra",
+   "system": "skeletal"
+  },
+  "FMA13295": {
+   "category": "muscles",
+   "display_name": "Diaphragm",
+   "fma_id": 13295,
+   "preferred_label": "Diaphragm",
+   "system": "muscular"
+  },
+  "FMA13322": {
+   "category": "skeleton",
+   "display_name": "Right Clavicle",
+   "fma_id": 13322,
+   "preferred_label": "Right clavicle",
+   "system": "skeletal"
+  },
+  "FMA13323": {
+   "category": "skeleton",
+   "display_name": "Left Clavicle",
+   "fma_id": 13323,
+   "preferred_label": "Left clavicle",
+   "system": "skeletal"
+  },
+  "FMA13336": {
+   "category": "muscles",
+   "display_name": "Ext. Oblique R",
+   "fma_id": 13336,
+   "preferred_label": "Right external oblique",
+   "system": "muscular"
+  },
+  "FMA13337": {
+   "category": "muscles",
+   "display_name": "Ext. Oblique L",
+   "fma_id": 13337,
+   "preferred_label": "Left external oblique",
+   "system": "muscular"
+  },
+  "FMA13346": {
+   "category": "muscles",
+   "display_name": "Sternohyoid R",
+   "fma_id": 13346,
+   "preferred_label": "Right sternohyoid",
+   "system": "muscular"
+  },
+  "FMA13347": {
+   "category": "muscles",
+   "display_name": "Sternohyoid L",
+   "fma_id": 13347,
+   "preferred_label": "Left sternohyoid",
+   "system": "muscular"
+  },
+  "FMA13348": {
+   "category": "muscles",
+   "display_name": "Omohyoid R",
+   "fma_id": 13348,
+   "preferred_label": "Right omohyoid",
+   "system": "muscular"
+  },
+  "FMA13349": {
+   "category": "muscles",
+   "display_name": "Omohyoid L",
+   "fma_id": 13349,
+   "preferred_label": "Left omohyoid",
+   "system": "muscular"
+  },
+  "FMA13350": {
+   "category": "muscles",
+   "display_name": "Sternothyroid R",
+   "fma_id": 13350,
+   "preferred_label": "Right sternothyroid",
+   "system": "endocrine"
+  },
+  "FMA13351": {
+   "category": "muscles",
+   "display_name": "Sternothyroid L",
+   "fma_id": 13351,
+   "preferred_label": "Left sternothyroid",
+   "system": "endocrine"
+  },
+  "FMA13352": {
+   "category": "muscles",
+   "display_name": "Thyrohyoid R",
+   "fma_id": 13352,
+   "preferred_label": "Right thyrohyoid",
+   "system": "muscular"
+  },
+  "FMA13353": {
+   "category": "muscles",
+   "display_name": "Thyrohyoid L",
+   "fma_id": 13353,
+   "preferred_label": "Left thyrohyoid",
+   "system": "muscular"
+  },
+  "FMA13358": {
+   "category": "muscles",
+   "display_name": "Latissimus Dorsi R",
+   "fma_id": 13358,
+   "preferred_label": "Right latissimus dorsi",
+   "system": "muscular"
+  },
+  "FMA13359": {
+   "category": "muscles",
+   "display_name": "Latissimus Dorsi L",
+   "fma_id": 13359,
+   "preferred_label": "Left latissimus dorsi",
+   "system": "muscular"
+  },
+  "FMA13375": {
+   "category": "muscles",
+   "display_name": "Pect. Minor R",
+   "fma_id": 13375,
+   "preferred_label": "Right pectoralis minor",
+   "system": "muscular"
+  },
+  "FMA13376": {
+   "category": "muscles",
+   "display_name": "Pect. Minor L",
+   "fma_id": 13376,
+   "preferred_label": "Left pectoralis minor",
+   "system": "muscular"
+  },
+  "FMA13377": {
+   "category": "muscles",
+   "display_name": "Rectus Abdominis R",
+   "fma_id": 13377,
+   "preferred_label": "Right rectus abdominis",
+   "system": "muscular"
+  },
+  "FMA13378": {
+   "category": "muscles",
+   "display_name": "Rectus Abdominis L",
+   "fma_id": 13378,
+   "preferred_label": "Left rectus abdominis",
+   "system": "muscular"
+  },
+  "FMA13381": {
+   "category": "muscles",
+   "display_name": "Rhomboid Major R",
+   "fma_id": 13381,
+   "preferred_label": "Right rhomboid major",
+   "system": "muscular"
+  },
+  "FMA13382": {
+   "category": "muscles",
+   "display_name": "Rhomboid Major L",
+   "fma_id": 13382,
+   "preferred_label": "Left rhomboid major",
+   "system": "muscular"
+  },
+  "FMA13383": {
+   "category": "muscles",
+   "display_name": "Rhomboid Minor R",
+   "fma_id": 13383,
+   "preferred_label": "Right rhomboid minor",
+   "system": "muscular"
+  },
+  "FMA13384": {
+   "category": "muscles",
+   "display_name": "Rhomboid Minor L",
+   "fma_id": 13384,
+   "preferred_label": "Left rhomboid minor",
+   "system": "muscular"
+  },
+  "FMA13388": {
+   "category": "muscles",
+   "display_name": "Scalene Posterior R",
+   "fma_id": 13388,
+   "preferred_label": "Right scalenus posterior",
+   "system": "muscular"
+  },
+  "FMA13389": {
+   "category": "muscles",
+   "display_name": "Scalene Posterior L",
+   "fma_id": 13389,
+   "preferred_label": "Left scalenus posterior",
+   "system": "muscular"
+  },
+  "FMA13390": {
+   "category": "muscles",
+   "display_name": "Scalene Medius R",
+   "fma_id": 13390,
+   "preferred_label": "Right scalenus medius",
+   "system": "muscular"
+  },
+  "FMA13391": {
+   "category": "muscles",
+   "display_name": "Scalene Medius L",
+   "fma_id": 13391,
+   "preferred_label": "Left scalenus medius",
+   "system": "muscular"
+  },
+  "FMA13392": {
+   "category": "muscles",
+   "display_name": "Scalene Anterior R",
+   "fma_id": 13392,
+   "preferred_label": "Right scalenus anterior",
+   "system": "muscular"
+  },
+  "FMA13393": {
+   "category": "muscles",
+   "display_name": "Scalene Anterior L",
+   "fma_id": 13393,
+   "preferred_label": "Left scalenus anterior",
+   "system": "muscular"
+  },
+  "FMA13395": {
+   "category": "skeleton",
+   "display_name": "Right Scapula",
+   "fma_id": 13395,
+   "preferred_label": "Right scapula",
+   "system": "skeletal"
+  },
+  "FMA13396": {
+   "category": "skeleton",
+   "display_name": "Left Scapula",
+   "fma_id": 13396,
+   "preferred_label": "Left scapula",
+   "system": "skeletal"
+  },
+  "FMA13398": {
+   "category": "muscles",
+   "display_name": "Serratus Ant. R",
+   "fma_id": 13398,
+   "preferred_label": "Right serratus anterior",
+   "system": "muscular"
+  },
+  "FMA13399": {
+   "category": "muscles",
+   "display_name": "Serratus Ant. L",
+   "fma_id": 13399,
+   "preferred_label": "Left serratus anterior",
+   "system": "muscular"
+  },
+  "FMA13403": {
+   "category": "muscles",
+   "display_name": "Serratus Post. Sup. R",
+   "fma_id": 13403,
+   "preferred_label": "Right serratus posterior superior",
+   "system": "muscular"
+  },
+  "FMA13404": {
+   "category": "muscles",
+   "display_name": "Serratus Post. Sup. L",
+   "fma_id": 13404,
+   "preferred_label": "Left serratus posterior superior",
+   "system": "muscular"
+  },
+  "FMA13405": {
+   "category": "muscles",
+   "display_name": "Serratus Post. Inf. R",
+   "fma_id": 13405,
+   "preferred_label": "Right serratus posterior inferior",
+   "system": "muscular"
+  },
+  "FMA13406": {
+   "category": "muscles",
+   "display_name": "Serratus Post. Inf. L",
+   "fma_id": 13406,
+   "preferred_label": "Left serratus posterior inferior",
+   "system": "muscular"
+  },
+  "FMA13408": {
+   "category": "muscles",
+   "display_name": "Sternocleidomastoid R",
+   "fma_id": 13408,
+   "preferred_label": "Right sternocleidomastoid",
+   "system": "muscular"
+  },
+  "FMA13409": {
+   "category": "muscles",
+   "display_name": "Sternocleidomastoid L",
+   "fma_id": 13409,
+   "preferred_label": "Left sternocleidomastoid",
+   "system": "muscular"
+  },
+  "FMA13411": {
+   "category": "muscles",
+   "display_name": "Subclavius L",
+   "fma_id": 13411,
+   "preferred_label": "Left subclavius",
+   "system": "muscular"
+  },
+  "FMA13412": {
+   "category": "muscles",
+   "display_name": "Subclavius R",
+   "fma_id": 13412,
+   "preferred_label": "Right subclavius",
+   "system": "muscular"
+  },
+  "FMA13414": {
+   "category": "muscles",
+   "display_name": "Subscapularis R",
+   "fma_id": 13414,
+   "preferred_label": "Right subscapularis",
+   "system": "muscular"
+  },
+  "FMA13415": {
+   "category": "muscles",
+   "display_name": "Subscapularis L",
+   "fma_id": 13415,
+   "preferred_label": "Left subscapularis",
+   "system": "muscular"
+  },
+  "FMA13495": {
+   "category": "skeleton",
+   "display_name": "T1-T2 Disc",
+   "fma_id": 13495,
+   "preferred_label": "Intervertebral disk of second thoracic vertebra",
+   "system": "skeletal"
+  },
+  "FMA13500": {
+   "category": "skeleton",
+   "display_name": "T2-T3 Disc",
+   "fma_id": 13500,
+   "preferred_label": "Intervertebral disk of third thoracic vertebra",
+   "system": "skeletal"
+  },
+  "FMA13501": {
+   "category": "skeleton",
+   "display_name": "T3-T4 Disc",
+   "fma_id": 13501,
+   "preferred_label": "Intervertebral disk of fourth thoracic vertebra",
+   "system": "skeletal"
+  },
+  "FMA13502": {
+   "category": "skeleton",
+   "display_name": "T4-T5 Disc",
+   "fma_id": 13502,
+   "preferred_label": "Intervertebral disk of fifth thoracic vertebra",
+   "system": "skeletal"
+  },
+  "FMA13503": {
+   "category": "skeleton",
+   "display_name": "T5-T6 Disc",
+   "fma_id": 13503,
+   "preferred_label": "Intervertebral disk of sixth thoracic vertebra",
+   "system": "skeletal"
+  },
+  "FMA13504": {
+   "category": "skeleton",
+   "display_name": "T6-T7 Disc",
+   "fma_id": 13504,
+   "preferred_label": "Intervertebral disk of seventh thoracic vertebra",
+   "system": "skeletal"
+  },
+  "FMA13505": {
+   "category": "skeleton",
+   "display_name": "T7-T8 Disc",
+   "fma_id": 13505,
+   "preferred_label": "Intervertebral disk of eighth thoracic vertebra",
+   "system": "skeletal"
+  },
+  "FMA13506": {
+   "category": "skeleton",
+   "display_name": "T8-T9 Disc",
+   "fma_id": 13506,
+   "preferred_label": "Intervertebral disk of ninth thoracic vertebra",
+   "system": "skeletal"
+  },
+  "FMA13507": {
+   "category": "skeleton",
+   "display_name": "T9-T10 Disc",
+   "fma_id": 13507,
+   "preferred_label": "Intervertebral disk of tenth thoracic vertebra",
+   "system": "skeletal"
+  },
+  "FMA13508": {
+   "category": "skeleton",
+   "display_name": "T10-T11 Disc",
+   "fma_id": 13508,
+   "preferred_label": "Intervertebral disk of eleventh thoracic vertebra",
+   "system": "skeletal"
+  },
+  "FMA13509": {
+   "category": "skeleton",
+   "display_name": "T11-T12 Disc",
+   "fma_id": 13509,
+   "preferred_label": "Intervertebral disk of twelfth thoracic vertebra",
+   "system": "skeletal"
+  },
+  "FMA13889": {
+   "category": "organs",
+   "display_name": "Pituitary Gland",
+   "fma_id": 13889,
+   "preferred_label": "Pituitary gland",
+   "system": "endocrine"
+  },
+  "FMA13892": {
+   "category": "muscles",
+   "display_name": "Int. Oblique R",
+   "fma_id": 13892,
+   "preferred_label": "Right internal oblique",
+   "system": "muscular"
+  },
+  "FMA13893": {
+   "category": "muscles",
+   "display_name": "Int. Oblique L",
+   "fma_id": 13893,
+   "preferred_label": "Left internal oblique",
+   "system": "muscular"
+  },
+  "FMA13896": {
+   "category": "skeleton",
+   "display_name": "C2-C3 Disc",
+   "fma_id": 13896,
+   "preferred_label": "Intervertebral disk of third cervical vertebra",
+   "system": "skeletal"
+  },
+  "FMA13897": {
+   "category": "skeleton",
+   "display_name": "C3-C4 Disc",
+   "fma_id": 13897,
+   "preferred_label": "Intervertebral disk of fourth cervical vertebra",
+   "system": "skeletal"
+  },
+  "FMA13898": {
+   "category": "skeleton",
+   "display_name": "C4-C5 Disc",
+   "fma_id": 13898,
+   "preferred_label": "Intervertebral disk of fifth cervical vertebra",
+   "system": "skeletal"
+  },
+  "FMA13899": {
+   "category": "skeleton",
+   "display_name": "C5-C6 Disc",
+   "fma_id": 13899,
+   "preferred_label": "Intervertebral disk of sixth cervical vertebra",
+   "system": "skeletal"
+  },
+  "FMA13900": {
+   "category": "skeleton",
+   "display_name": "C6-C7 Disc",
+   "fma_id": 13900,
+   "preferred_label": "Intervertebral disk of seventh cervical vertebra",
+   "system": "skeletal"
+  },
+  "FMA14331": {
+   "category": "vascular",
+   "display_name": "Splenic V.",
+   "fma_id": 14331,
+   "preferred_label": "Splenic vein",
+   "system": "cardiovascular"
+  },
+  "FMA14332": {
+   "category": "vascular",
+   "display_name": "Sup. Mesenteric V.",
+   "fma_id": 14332,
+   "preferred_label": "Superior mesenteric vein",
+   "system": "cardiovascular"
+  },
+  "FMA14335": {
+   "category": "vascular",
+   "display_name": "R Renal V.",
+   "fma_id": 14335,
+   "preferred_label": "Right renal vein",
+   "system": "cardiovascular"
+  },
+  "FMA14336": {
+   "category": "vascular",
+   "display_name": "L Renal V.",
+   "fma_id": 14336,
+   "preferred_label": "Left renal vein",
+   "system": "cardiovascular"
+  },
+  "FMA14542": {
+   "category": "organs",
+   "display_name": "Appendix",
+   "fma_id": 14542,
+   "preferred_label": "Appendix",
+   "system": null
+  },
+  "FMA14543nsn": {
+   "category": "organs",
+   "display_name": "Colon",
+   "fma_id": 14543,
+   "preferred_label": "Colon",
+   "system": "digestive"
+  },
+  "FMA14544": {
+   "category": "organs",
+   "display_name": "Rectum",
+   "fma_id": 14544,
+   "preferred_label": "Rectum",
+   "system": "digestive"
+  },
+  "FMA14749": {
+   "category": "vascular",
+   "display_name": "Sup. Mesenteric Art.",
+   "fma_id": 14749,
+   "preferred_label": "Superior mesenteric artery",
+   "system": "cardiovascular"
+  },
+  "FMA14750": {
+   "category": "vascular",
+   "display_name": "Inf. Mesenteric Art.",
+   "fma_id": 14750,
+   "preferred_label": "Inferior mesenteric artery",
+   "system": "cardiovascular"
+  },
+  "FMA14752": {
+   "category": "vascular",
+   "display_name": "R Renal Art.",
+   "fma_id": 14752,
+   "preferred_label": "Right renal artery",
+   "system": "cardiovascular"
+  },
+  "FMA14753": {
+   "category": "vascular",
+   "display_name": "L Renal Art.",
+   "fma_id": 14753,
+   "preferred_label": "Left renal artery",
+   "system": "cardiovascular"
+  },
+  "FMA14765": {
+   "category": "vascular",
+   "display_name": "R Common Iliac Art.",
+   "fma_id": 14765,
+   "preferred_label": "Right common iliac artery",
+   "system": "cardiovascular"
+  },
+  "FMA14766": {
+   "category": "vascular",
+   "display_name": "L Common Iliac Art.",
+   "fma_id": 14766,
+   "preferred_label": "Left common iliac artery",
+   "system": "cardiovascular"
+  },
+  "FMA14768": {
+   "category": "vascular",
+   "display_name": "L Gastric Art.",
+   "fma_id": 14768,
+   "preferred_label": "Left gastric artery",
+   "system": "cardiovascular"
+  },
+  "FMA14771": {
+   "category": "vascular",
+   "display_name": "Common Hepatic Art.",
+   "fma_id": 14771,
+   "preferred_label": "Common hepatic artery",
+   "system": "cardiovascular"
+  },
+  "FMA14773": {
+   "category": "vascular",
+   "display_name": "Splenic Art.",
+   "fma_id": 14773,
+   "preferred_label": "Splenic artery",
+   "system": "cardiovascular"
+  },
+  "FMA15571": {
+   "category": "organs",
+   "display_name": "Right Ureter",
+   "fma_id": 15571,
+   "preferred_label": "Right ureter",
+   "system": "urinary"
+  },
+  "FMA15572": {
+   "category": "organs",
+   "display_name": "Left Ureter",
+   "fma_id": 15572,
+   "preferred_label": "Left ureter",
+   "system": "urinary"
+  },
+  "FMA15629": {
+   "category": "organs",
+   "display_name": "R Adrenal Gland",
+   "fma_id": 15629,
+   "preferred_label": "Right adrenal gland",
+   "system": "endocrine"
+  },
+  "FMA15630": {
+   "category": "organs",
+   "display_name": "L Adrenal Gland",
+   "fma_id": 15630,
+   "preferred_label": "Left adrenal gland",
+   "system": "endocrine"
+  },
+  "FMA15900": {
+   "category": "organs",
+   "display_name": "Urinary Bladder",
+   "fma_id": 15900,
+   "preferred_label": "Urinary bladder",
+   "system": "urinary"
+  },
+  "FMA16033": {
+   "category": "skeleton",
+   "display_name": "T12-L1 Disc",
+   "fma_id": 16033,
+   "preferred_label": "Intervertebral disk of first lumbar vertebra",
+   "system": "skeletal"
+  },
+  "FMA16034": {
+   "category": "skeleton",
+   "display_name": "L1-L2 Disc",
+   "fma_id": 16034,
+   "preferred_label": "Intervertebral disk of second lumbar vertebra",
+   "system": "skeletal"
+  },
+  "FMA16035": {
+   "category": "skeleton",
+   "display_name": "L2-L3 Disc",
+   "fma_id": 16035,
+   "preferred_label": "Intervertebral disk of third lumbar vertebra",
+   "system": "skeletal"
+  },
+  "FMA16036": {
+   "category": "skeleton",
+   "display_name": "L3-L4 Disc",
+   "fma_id": 16036,
+   "preferred_label": "Intervertebral disk of fourth lumbar vertebra",
+   "system": "skeletal"
+  },
+  "FMA16037": {
+   "category": "skeleton",
+   "display_name": "L4-L5 Disc",
+   "fma_id": 16037,
+   "preferred_label": "Intervertebral disk of fifth lumbar vertebra",
+   "system": "skeletal"
+  },
+  "FMA16202": {
+   "category": "skeleton",
+   "display_name": "Sacrum",
+   "fma_id": 16202,
+   "preferred_label": "Sacrum",
+   "system": "skeletal"
+  },
+  "FMA16586": {
+   "category": "skeleton",
+   "display_name": "Right Hip Bone",
+   "fma_id": 16586,
+   "preferred_label": "Right hip bone",
+   "system": "skeletal"
+  },
+  "FMA16587": {
+   "category": "skeleton",
+   "display_name": "Left Hip Bone",
+   "fma_id": 16587,
+   "preferred_label": "Left hip bone",
+   "system": "skeletal"
+  },
+  "FMA18247": {
+   "category": "organs",
+   "display_name": "Glans Penis",
+   "fma_id": 18247,
+   "preferred_label": "Glans penis",
+   "system": null
+  },
+  "FMA18256": {
+   "category": "organs",
+   "display_name": "Right Epididymis",
+   "fma_id": 18256,
+   "preferred_label": "Right epididymis",
+   "system": null
+  },
+  "FMA18257": {
+   "category": "organs",
+   "display_name": "Left Epididymis",
+   "fma_id": 18257,
+   "preferred_label": "Left epididymis",
+   "system": null
+  },
+  "FMA18806": {
+   "category": "vascular",
+   "display_name": "R Ext. Iliac Art.",
+   "fma_id": 18806,
+   "preferred_label": "Right external iliac artery",
+   "system": "cardiovascular"
+  },
+  "FMA18807": {
+   "category": "vascular",
+   "display_name": "L Ext. Iliac Art.",
+   "fma_id": 18807,
+   "preferred_label": "Left external iliac artery",
+   "system": "cardiovascular"
+  },
+  "FMA18809": {
+   "category": "vascular",
+   "display_name": "R Int. Iliac Art.",
+   "fma_id": 18809,
+   "preferred_label": "Right internal iliac artery",
+   "system": "cardiovascular"
+  },
+  "FMA18810": {
+   "category": "vascular",
+   "display_name": "L Int. Iliac Art.",
+   "fma_id": 18810,
+   "preferred_label": "Left internal iliac artery",
+   "system": "cardiovascular"
+  },
+  "FMA18885": {
+   "category": "vascular",
+   "display_name": "R Ext. Iliac V.",
+   "fma_id": 18885,
+   "preferred_label": "Right external iliac vein",
+   "system": "cardiovascular"
+  },
+  "FMA18886": {
+   "category": "vascular",
+   "display_name": "L Ext. Iliac V.",
+   "fma_id": 18886,
+   "preferred_label": "Left external iliac vein",
+   "system": "cardiovascular"
+  },
+  "FMA18887": {
+   "category": "vascular",
+   "display_name": "R Int. Iliac V.",
+   "fma_id": 18887,
+   "preferred_label": "Right internal iliac vein",
+   "system": "cardiovascular"
+  },
+  "FMA18888": {
+   "category": "vascular",
+   "display_name": "L Int. Iliac V.",
+   "fma_id": 18888,
+   "preferred_label": "Left internal iliac vein",
+   "system": "cardiovascular"
+  },
+  "FMA19235": {
+   "category": "organs",
+   "display_name": "R Deferent Duct",
+   "fma_id": 19235,
+   "preferred_label": "Right deferent duct",
+   "system": null
+  },
+  "FMA19236": {
+   "category": "organs",
+   "display_name": "L Deferent Duct",
+   "fma_id": 19236,
+   "preferred_label": "Left deferent duct",
+   "system": null
+  },
+  "FMA19387": {
+   "category": "organs",
+   "display_name": "R Seminal Vesicle",
+   "fma_id": 19387,
+   "preferred_label": "Right seminal vesicle",
+   "system": "endocrine"
+  },
+  "FMA19388": {
+   "category": "organs",
+   "display_name": "L Seminal Vesicle",
+   "fma_id": 19388,
+   "preferred_label": "Left seminal vesicle",
+   "system": "endocrine"
+  },
+  "FMA19617nsn": {
+   "category": "organs",
+   "display_name": "Corpus Spongiosum",
+   "fma_id": 19617,
+   "preferred_label": "Corpus spongiosum of penis",
+   "system": null
+  },
+  "FMA19618": {
+   "category": "organs",
+   "display_name": "Corpus Cavernosum",
+   "fma_id": 19618,
+   "preferred_label": "Corpus cavernosum of penis",
+   "system": null
+  },
+  "FMA19667": {
+   "category": "organs",
+   "display_name": "Urethra",
+   "fma_id": 19667,
+   "preferred_label": "Urethra",
+   "system": "urinary"
+  },
+  "FMA21387": {
+   "category": "vascular",
+   "display_name": "R Common Iliac V.",
+   "fma_id": 21387,
+   "preferred_label": "Right common iliac vein",
+   "system": "cardiovascular"
+  },
+  "FMA21388": {
+   "category": "vascular",
+   "display_name": "L Common Iliac V.",
+   "fma_id": 21388,
+   "preferred_label": "Left common iliac vein",
+   "system": "cardiovascular"
+  },
+  "FMA21930": {
+   "category": "pelvic_floor",
+   "display_name": "External Anal Sphincter",
+   "fma_id": 21930,
+   "preferred_label": "External anal sphincter",
+   "system": "muscular"
+  },
+  "FMA21964": {
+   "category": "ligaments",
+   "display_name": "R Inguinal Ligament",
+   "fma_id": 21964,
+   "preferred_label": "Right inguinal ligament",
+   "system": "articular"
+  },
+  "FMA21965": {
+   "category": "ligaments",
+   "display_name": "L Inguinal Ligament",
+   "fma_id": 21965,
+   "preferred_label": "Left inguinal ligament",
+   "system": "articular"
+  },
+  "FMA22322": {
+   "category": "muscles",
+   "display_name": "Iliacus R",
+   "fma_id": 22322,
+   "preferred_label": "Right iliacus",
+   "system": "muscular"
+  },
+  "FMA22323": {
+   "category": "muscles",
+   "display_name": "Iliacus L",
+   "fma_id": 22323,
+   "preferred_label": "Left iliacus",
+   "system": "muscular"
+  },
+  "FMA22324": {
+   "category": "muscles",
+   "display_name": "Obt. Internus R",
+   "fma_id": 22324,
+   "preferred_label": "Right obturator internus",
+   "system": "muscular"
+  },
+  "FMA22325": {
+   "category": "muscles",
+   "display_name": "Obt. Internus L",
+   "fma_id": 22325,
+   "preferred_label": "Left obturator internus",
+   "system": "muscular"
+  },
+  "FMA22326": {
+   "category": "muscles",
+   "display_name": "Obt. Externus R",
+   "fma_id": 22326,
+   "preferred_label": "Right obturator externus",
+   "system": "muscular"
+  },
+  "FMA22327": {
+   "category": "muscles",
+   "display_name": "Obt. Externus L",
+   "fma_id": 22327,
+   "preferred_label": "Left obturator externus",
+   "system": "muscular"
+  },
+  "FMA22328": {
+   "category": "muscles",
+   "display_name": "Gluteus Max. R",
+   "fma_id": 22328,
+   "preferred_label": "Right gluteus maximus",
+   "system": "muscular"
+  },
+  "FMA22329": {
+   "category": "muscles",
+   "display_name": "Gluteus Max. L",
+   "fma_id": 22329,
+   "preferred_label": "Left gluteus maximus",
+   "system": "muscular"
+  },
+  "FMA22330": {
+   "category": "muscles",
+   "display_name": "Gluteus Med. R",
+   "fma_id": 22330,
+   "preferred_label": "Right gluteus medius",
+   "system": "muscular"
+  },
+  "FMA22331": {
+   "category": "muscles",
+   "display_name": "Gluteus Med. L",
+   "fma_id": 22331,
+   "preferred_label": "Left gluteus medius",
+   "system": "muscular"
+  },
+  "FMA22332": {
+   "category": "muscles",
+   "display_name": "Gluteus Min. R",
+   "fma_id": 22332,
+   "preferred_label": "Right gluteus minimus",
+   "system": "muscular"
+  },
+  "FMA22333": {
+   "category": "muscles",
+   "display_name": "Gluteus Min. L",
+   "fma_id": 22333,
+   "preferred_label": "Left gluteus minimus",
+   "system": "muscular"
+  },
+  "FMA22334": {
+   "category": "muscles",
+   "display_name": "Gem. Superior R",
+   "fma_id": 22334,
+   "preferred_label": "Right gemellus superior",
+   "system": "muscular"
+  },
+  "FMA22335": {
+   "category": "muscles",
+   "display_name": "Gem. Superior L",
+   "fma_id": 22335,
+   "preferred_label": "Left gemellus superior",
+   "system": "muscular"
+  },
+  "FMA22336": {
+   "category": "muscles",
+   "display_name": "Gem. Inferior R",
+   "fma_id": 22336,
+   "preferred_label": "Right gemellus inferior",
+   "system": "muscular"
+  },
+  "FMA22337": {
+   "category": "muscles",
+   "display_name": "Gem. Inferior L",
+   "fma_id": 22337,
+   "preferred_label": "Left gemellus inferior",
+   "system": "muscular"
+  },
+  "FMA22338": {
+   "category": "muscles",
+   "display_name": "Quad. Femoris R",
+   "fma_id": 22338,
+   "preferred_label": "Right quadratus femoris",
+   "system": "muscular"
+  },
+  "FMA22339": {
+   "category": "muscles",
+   "display_name": "Quad. Femoris L",
+   "fma_id": 22339,
+   "preferred_label": "Left quadratus femoris",
+   "system": "muscular"
+  },
+  "FMA22340": {
+   "category": "muscles",
+   "display_name": "Piriformis R",
+   "fma_id": 22340,
+   "preferred_label": "Right piriformis",
+   "system": "muscular"
+  },
+  "FMA22341": {
+   "category": "muscles",
+   "display_name": "Piriformis L",
+   "fma_id": 22341,
+   "preferred_label": "Left piriformis",
+   "system": "muscular"
+  },
+  "FMA22342": {
+   "category": "muscles",
+   "display_name": "Psoas Major R",
+   "fma_id": 22342,
+   "preferred_label": "Right psoas major",
+   "system": "muscular"
+  },
+  "FMA22343": {
+   "category": "muscles",
+   "display_name": "Psoas Major L",
+   "fma_id": 22343,
+   "preferred_label": "Left psoas major",
+   "system": "muscular"
+  },
+  "FMA22344": {
+   "category": "muscles",
+   "display_name": "Trans. Abdominis R",
+   "fma_id": 22344,
+   "preferred_label": "Right transversus abdominis",
+   "system": "muscular"
+  },
+  "FMA22345": {
+   "category": "muscles",
+   "display_name": "Trans. Abdominis L",
+   "fma_id": 22345,
+   "preferred_label": "Left transversus abdominis",
+   "system": "muscular"
+  },
+  "FMA22346": {
+   "category": "muscles",
+   "display_name": "Pyramidalis R",
+   "fma_id": 22346,
+   "preferred_label": "Right pyramidalis",
+   "system": "muscular"
+  },
+  "FMA22347": {
+   "category": "muscles",
+   "display_name": "Pyramidalis L",
+   "fma_id": 22347,
+   "preferred_label": "Left pyramidalis",
+   "system": "muscular"
+  },
+  "FMA22348": {
+   "category": "muscles",
+   "display_name": "Quadratus Lumb. R",
+   "fma_id": 22348,
+   "preferred_label": "Right quadratus lumborum",
+   "system": "muscular"
+  },
+  "FMA22349": {
+   "category": "muscles",
+   "display_name": "Quadratus Lumb. L",
+   "fma_id": 22349,
+   "preferred_label": "Left quadratus lumborum",
+   "system": "muscular"
+  },
+  "FMA22354": {
+   "category": "muscles",
+   "display_name": "Sartorius R",
+   "fma_id": 22354,
+   "preferred_label": "Right sartorius",
+   "system": "muscular"
+  },
+  "FMA22355": {
+   "category": "muscles",
+   "display_name": "Sartorius L",
+   "fma_id": 22355,
+   "preferred_label": "Left sartorius",
+   "system": "muscular"
+  },
+  "FMA22358": {
+   "category": "muscles",
+   "display_name": "Semitendinosus R",
+   "fma_id": 22358,
+   "preferred_label": "Right semitendinosus",
+   "system": "muscular"
+  },
+  "FMA22359": {
+   "category": "muscles",
+   "display_name": "Semitendinosus L",
+   "fma_id": 22359,
+   "preferred_label": "Left semitendinosus",
+   "system": "muscular"
+  },
+  "FMA22425": {
+   "category": "muscles",
+   "display_name": "Tensor Fasc. Lat. R",
+   "fma_id": 22425,
+   "preferred_label": "Right tensor fasciae latae",
+   "system": "muscular"
+  },
+  "FMA22426": {
+   "category": "muscles",
+   "display_name": "Tensor Fasc. Lat. L",
+   "fma_id": 22426,
+   "preferred_label": "Left tensor fasciae latae",
+   "system": "muscular"
+  },
+  "FMA22448": {
+   "category": "muscles",
+   "display_name": "Semimembranosus R",
+   "fma_id": 22448,
+   "preferred_label": "Right semimembranosus",
+   "system": "muscular"
+  },
+  "FMA22449": {
+   "category": "muscles",
+   "display_name": "Semimembranosus L",
+   "fma_id": 22449,
+   "preferred_label": "Left semimembranosus",
+   "system": "muscular"
+  },
+  "FMA22450": {
+   "category": "muscles",
+   "display_name": "Pectineus R",
+   "fma_id": 22450,
+   "preferred_label": "Right pectineus",
+   "system": "muscular"
+  },
+  "FMA22451": {
+   "category": "muscles",
+   "display_name": "Pectineus L",
+   "fma_id": 22451,
+   "preferred_label": "Left pectineus",
+   "system": "muscular"
+  },
+  "FMA22452": {
+   "category": "muscles",
+   "display_name": "Adductor Brevis R",
+   "fma_id": 22452,
+   "preferred_label": "Right adductor brevis",
+   "system": "muscular"
+  },
+  "FMA22454": {
+   "category": "muscles",
+   "display_name": "Adductor Brevis L",
+   "fma_id": 22454,
+   "preferred_label": "Left adductor brevis",
+   "system": "muscular"
+  },
+  "FMA22456": {
+   "category": "muscles",
+   "display_name": "Adductor Longus R",
+   "fma_id": 22456,
+   "preferred_label": "Right adductor longus",
+   "system": "muscular"
+  },
+  "FMA22457": {
+   "category": "muscles",
+   "display_name": "Adductor Longus L",
+   "fma_id": 22457,
+   "preferred_label": "Left adductor longus",
+   "system": "muscular"
+  },
+  "FMA22459": {
+   "category": "muscles",
+   "display_name": "Adductor Magnus R",
+   "fma_id": 22459,
+   "preferred_label": "Right adductor magnus",
+   "system": "muscular"
+  },
+  "FMA22460": {
+   "category": "muscles",
+   "display_name": "Adductor Magnus L",
+   "fma_id": 22460,
+   "preferred_label": "Left adductor magnus",
+   "system": "muscular"
+  },
+  "FMA22544": {
+   "category": "muscles",
+   "display_name": "Tibialis Ant. R",
+   "fma_id": 22544,
+   "preferred_label": "Right tibialis anterior",
+   "system": "muscular"
+  },
+  "FMA22545": {
+   "category": "muscles",
+   "display_name": "Tibialis Ant. L",
+   "fma_id": 22545,
+   "preferred_label": "Left tibialis anterior",
+   "system": "muscular"
+  },
+  "FMA22546": {
+   "category": "muscles",
+   "display_name": "Ext. Hall. Long. R",
+   "fma_id": 22546,
+   "preferred_label": "Right extensor hallucis longus",
+   "system": "muscular"
+  },
+  "FMA22547": {
+   "category": "muscles",
+   "display_name": "Ext. Hall. Long. L",
+   "fma_id": 22547,
+   "preferred_label": "Left extensor hallucis longus",
+   "system": "muscular"
+  },
+  "FMA22548": {
+   "category": "muscles",
+   "display_name": "Ext. Dig. Long. R",
+   "fma_id": 22548,
+   "preferred_label": "Right extensor digitorum longus",
+   "system": "muscular"
+  },
+  "FMA22549": {
+   "category": "muscles",
+   "display_name": "Ext. Dig. Long. L",
+   "fma_id": 22549,
+   "preferred_label": "Left extensor digitorum longus",
+   "system": "muscular"
+  },
+  "FMA22550": {
+   "category": "muscles",
+   "display_name": "Fibularis Tert. R",
+   "fma_id": 22550,
+   "preferred_label": "Right fibularis tertius",
+   "system": "muscular"
+  },
+  "FMA22551": {
+   "category": "muscles",
+   "display_name": "Fibularis Tert. L",
+   "fma_id": 22551,
+   "preferred_label": "Left fibularis tertius",
+   "system": "muscular"
+  },
+  "FMA22552": {
+   "category": "muscles",
+   "display_name": "Fibularis Long. R",
+   "fma_id": 22552,
+   "preferred_label": "Right fibularis longus",
+   "system": "muscular"
+  },
+  "FMA22553": {
+   "category": "muscles",
+   "display_name": "Fibularis Long. L",
+   "fma_id": 22553,
+   "preferred_label": "Left fibularis longus",
+   "system": "muscular"
+  },
+  "FMA22554": {
+   "category": "muscles",
+   "display_name": "Fibularis Brev. R",
+   "fma_id": 22554,
+   "preferred_label": "Right fibularis brevis",
+   "system": "muscular"
+  },
+  "FMA22555": {
+   "category": "muscles",
+   "display_name": "Fibularis Brev. L",
+   "fma_id": 22555,
+   "preferred_label": "Left fibularis brevis",
+   "system": "muscular"
+  },
+  "FMA22558": {
+   "category": "muscles",
+   "display_name": "Soleus R",
+   "fma_id": 22558,
+   "preferred_label": "Right soleus",
+   "system": "muscular"
+  },
+  "FMA22559": {
+   "category": "muscles",
+   "display_name": "Soleus L",
+   "fma_id": 22559,
+   "preferred_label": "Left soleus",
+   "system": "muscular"
+  },
+  "FMA22560": {
+   "category": "muscles",
+   "display_name": "Plantaris R",
+   "fma_id": 22560,
+   "preferred_label": "Right plantaris",
+   "system": "muscular"
+  },
+  "FMA22561": {
+   "category": "muscles",
+   "display_name": "Plantaris L",
+   "fma_id": 22561,
+   "preferred_label": "Left plantaris",
+   "system": "muscular"
+  },
+  "FMA22591": {
+   "category": "muscles",
+   "display_name": "Popliteus R",
+   "fma_id": 22591,
+   "preferred_label": "Right popliteus",
+   "system": "muscular"
+  },
+  "FMA22592": {
+   "category": "muscles",
+   "display_name": "Popliteus L",
+   "fma_id": 22592,
+   "preferred_label": "Left popliteus",
+   "system": "muscular"
+  },
+  "FMA22726": {
+   "category": "muscles",
+   "display_name": "Splenius Cervicis R",
+   "fma_id": 22726,
+   "preferred_label": "Right splenius cervicis",
+   "system": "muscular"
+  },
+  "FMA22727": {
+   "category": "muscles",
+   "display_name": "Splenius Cervicis L",
+   "fma_id": 22727,
+   "preferred_label": "Left splenius cervicis",
+   "system": "muscular"
+  },
+  "FMA22728": {
+   "category": "muscles",
+   "display_name": "Splenius Capitis R",
+   "fma_id": 22728,
+   "preferred_label": "Right splenius capitis",
+   "system": "muscular"
+  },
+  "FMA22729": {
+   "category": "muscles",
+   "display_name": "Splenius Capitis L",
+   "fma_id": 22729,
+   "preferred_label": "Left splenius capitis",
+   "system": "muscular"
+  },
+  "FMA22740": {
+   "category": "muscles",
+   "display_name": "Iliocostalis Lumb. R",
+   "fma_id": 22740,
+   "preferred_label": "Right iliocostalis lumborum",
+   "system": "muscular"
+  },
+  "FMA22741": {
+   "category": "muscles",
+   "display_name": "Iliocostalis Lumb. L",
+   "fma_id": 22741,
+   "preferred_label": "Left iliocostalis lumborum",
+   "system": "muscular"
+  },
+  "FMA22742": {
+   "category": "muscles",
+   "display_name": "Iliocostalis Thor. R",
+   "fma_id": 22742,
+   "preferred_label": "Right iliocostalis thoracis",
+   "system": "muscular"
+  },
+  "FMA22743": {
+   "category": "muscles",
+   "display_name": "Iliocostalis Thor. L",
+   "fma_id": 22743,
+   "preferred_label": "Left iliocostalis thoracis",
+   "system": "muscular"
+  },
+  "FMA22744": {
+   "category": "muscles",
+   "display_name": "Iliocostalis Cerv. R",
+   "fma_id": 22744,
+   "preferred_label": "Right iliocostalis cervicis",
+   "system": "muscular"
+  },
+  "FMA22745": {
+   "category": "muscles",
+   "display_name": "Iliocostalis Cerv. L",
+   "fma_id": 22745,
+   "preferred_label": "Left iliocostalis cervicis",
+   "system": "muscular"
+  },
+  "FMA22751": {
+   "category": "muscles",
+   "display_name": "Longissimus Thor. R",
+   "fma_id": 22751,
+   "preferred_label": "Right longissimus thoracis",
+   "system": "muscular"
+  },
+  "FMA22753": {
+   "category": "muscles",
+   "display_name": "Longissimus Thor. L",
+   "fma_id": 22753,
+   "preferred_label": "Left longissimus thoracis",
+   "system": "muscular"
+  },
+  "FMA22754": {
+   "category": "muscles",
+   "display_name": "Longissimus Cap. R",
+   "fma_id": 22754,
+   "preferred_label": "Right longissimus capitis",
+   "system": "muscular"
+  },
+  "FMA22756": {
+   "category": "muscles",
+   "display_name": "Longissimus Cap. L",
+   "fma_id": 22756,
+   "preferred_label": "Left longissimus capitis",
+   "system": "muscular"
+  },
+  "FMA22757": {
+   "category": "muscles",
+   "display_name": "Longissimus Cerv. R",
+   "fma_id": 22757,
+   "preferred_label": "Right longissimus cervicis",
+   "system": "muscular"
+  },
+  "FMA22758": {
+   "category": "muscles",
+   "display_name": "Longissimus Cerv. L",
+   "fma_id": 22758,
+   "preferred_label": "Left longissimus cervicis",
+   "system": "muscular"
+  },
+  "FMA22779": {
+   "category": "muscles",
+   "display_name": "Spinalis Thor. R",
+   "fma_id": 22779,
+   "preferred_label": "Right spinalis thoracis",
+   "system": "muscular"
+  },
+  "FMA22780": {
+   "category": "muscles",
+   "display_name": "Spinalis Thor. L",
+   "fma_id": 22780,
+   "preferred_label": "Left spinalis thoracis",
+   "system": "muscular"
+  },
+  "FMA22781": {
+   "category": "muscles",
+   "display_name": "Spinalis Cerv. R",
+   "fma_id": 22781,
+   "preferred_label": "Right spinalis cervicis",
+   "system": null
+  },
+  "FMA22782": {
+   "category": "muscles",
+   "display_name": "Spinalis Cerv. L",
+   "fma_id": 22782,
+   "preferred_label": "Left spinalis cervicis",
+   "system": null
+  },
+  "FMA22872": {
+   "category": "muscles",
+   "display_name": "Semispinalis Thor. R",
+   "fma_id": 22872,
+   "preferred_label": "Right semispinalis thoracis",
+   "system": "muscular"
+  },
+  "FMA22873": {
+   "category": "muscles",
+   "display_name": "Semispinalis Thor. L",
+   "fma_id": 22873,
+   "preferred_label": "Left semispinalis thoracis",
+   "system": "muscular"
+  },
+  "FMA22874": {
+   "category": "muscles",
+   "display_name": "Semispinalis Cerv. R",
+   "fma_id": 22874,
+   "preferred_label": "Right semispinalis cervicis",
+   "system": "muscular"
+  },
+  "FMA22875": {
+   "category": "muscles",
+   "display_name": "Semispinalis Cerv. L",
+   "fma_id": 22875,
+   "preferred_label": "Left semispinalis cervicis",
+   "system": "muscular"
+  },
+  "FMA22876": {
+   "category": "muscles",
+   "display_name": "Semispinalis Cap. R",
+   "fma_id": 22876,
+   "preferred_label": "Right semispinalis capitis",
+   "system": "muscular"
+  },
+  "FMA22877": {
+   "category": "muscles",
+   "display_name": "Semispinalis Cap. L",
+   "fma_id": 22877,
+   "preferred_label": "Left semispinalis capitis",
+   "system": "muscular"
+  },
+  "FMA22878": {
+   "category": "muscles",
+   "display_name": "Multifidus R",
+   "fma_id": 22878,
+   "preferred_label": "Right multifidus",
+   "system": "muscular"
+  },
+  "FMA22879": {
+   "category": "muscles",
+   "display_name": "Multifidus L",
+   "fma_id": 22879,
+   "preferred_label": "Left multifidus",
+   "system": "muscular"
+  },
+  "FMA23083": {
+   "category": "muscles",
+   "display_name": "Thoracic Rotator",
+   "fma_id": 23083,
+   "preferred_label": "Thoracic rotator",
+   "system": "muscular"
+  },
+  "FMA23089": {
+   "category": "muscles",
+   "display_name": "Lumbar Rotator R",
+   "fma_id": 23089,
+   "preferred_label": "Right lumbar rotator",
+   "system": "muscular"
+  },
+  "FMA23090": {
+   "category": "muscles",
+   "display_name": "Lumbar Rotator L",
+   "fma_id": 23090,
+   "preferred_label": "Left lumbar rotator",
+   "system": "muscular"
+  },
+  "FMA230986": {
+   "category": "skeleton",
+   "display_name": "R 5th Toe Mid.",
+   "fma_id": 230986,
+   "preferred_label": "Middle phalanx of right little toe",
+   "system": "skeletal"
+  },
+  "FMA230988": {
+   "category": "skeleton",
+   "display_name": "L 5th Toe Mid.",
+   "fma_id": 230988,
+   "preferred_label": "Middle phalanx of left little toe",
+   "system": "skeletal"
+  },
+  "FMA23130": {
+   "category": "skeleton",
+   "display_name": "Right Humerus",
+   "fma_id": 23130,
+   "preferred_label": "Right humerus",
+   "system": "skeletal"
+  },
+  "FMA23131": {
+   "category": "skeleton",
+   "display_name": "Left Humerus",
+   "fma_id": 23131,
+   "preferred_label": "Left humerus",
+   "system": "skeletal"
+  },
+  "FMA23464": {
+   "category": "skeleton",
+   "display_name": "Right Radius",
+   "fma_id": 23464,
+   "preferred_label": "Right radius",
+   "system": "skeletal"
+  },
+  "FMA23465": {
+   "category": "skeleton",
+   "display_name": "Left Radius",
+   "fma_id": 23465,
+   "preferred_label": "Left radius",
+   "system": "skeletal"
+  },
+  "FMA23467": {
+   "category": "skeleton",
+   "display_name": "Right Ulna",
+   "fma_id": 23467,
+   "preferred_label": "Right ulna",
+   "system": "skeletal"
+  },
+  "FMA23468": {
+   "category": "skeleton",
+   "display_name": "Left Ulna",
+   "fma_id": 23468,
+   "preferred_label": "Left ulna",
+   "system": "skeletal"
+  },
+  "FMA23707": {
+   "category": "ligaments",
+   "display_name": "R Interosseous Membrane of Forearm",
+   "fma_id": 23707,
+   "preferred_label": "Interosseous membrane of right forearm",
+   "system": null
+  },
+  "FMA23708": {
+   "category": "ligaments",
+   "display_name": "L Interosseous Membrane of Forearm",
+   "fma_id": 23708,
+   "preferred_label": "Interosseous membrane of left forearm",
+   "system": null
+  },
+  "FMA23725": {
+   "category": "skeleton",
+   "display_name": "R Trapezoid",
+   "fma_id": 23725,
+   "preferred_label": "Right trapezoid",
+   "system": "skeletal"
+  },
+  "FMA23938": {
+   "category": "skeleton",
+   "display_name": "L Index Mid.",
+   "fma_id": 23938,
+   "preferred_label": "Middle phalanx of left index finger",
+   "system": "skeletal"
+  },
+  "FMA23940": {
+   "category": "skeleton",
+   "display_name": "L Middle Mid.",
+   "fma_id": 23940,
+   "preferred_label": "Middle phalanx of left middle finger",
+   "system": "skeletal"
+  },
+  "FMA23942": {
+   "category": "skeleton",
+   "display_name": "L Ring Mid.",
+   "fma_id": 23942,
+   "preferred_label": "Middle phalanx of left ring finger",
+   "system": "skeletal"
+  },
+  "FMA23944": {
+   "category": "skeleton",
+   "display_name": "L Little Mid.",
+   "fma_id": 23944,
+   "preferred_label": "Middle phalanx of left little finger",
+   "system": "skeletal"
+  },
+  "FMA23951": {
+   "category": "skeleton",
+   "display_name": "L Thumb Dist.",
+   "fma_id": 23951,
+   "preferred_label": "Distal phalanx of left thumb",
+   "system": "skeletal"
+  },
+  "FMA23953": {
+   "category": "skeleton",
+   "display_name": "L Index Dist.",
+   "fma_id": 23953,
+   "preferred_label": "Distal phalanx of left index finger",
+   "system": "skeletal"
+  },
+  "FMA23955": {
+   "category": "skeleton",
+   "display_name": "L Middle Dist.",
+   "fma_id": 23955,
+   "preferred_label": "Distal phalanx of left middle finger",
+   "system": "skeletal"
+  },
+  "FMA23957": {
+   "category": "skeleton",
+   "display_name": "L Ring Dist.",
+   "fma_id": 23957,
+   "preferred_label": "Distal phalanx of left ring finger",
+   "system": "skeletal"
+  },
+  "FMA23959": {
+   "category": "skeleton",
+   "display_name": "L Little Dist.",
+   "fma_id": 23959,
+   "preferred_label": "Distal phalanx of left little finger",
+   "system": "skeletal"
+  },
+  "FMA24435": {
+   "category": "skeleton",
+   "display_name": "R Scaphoid",
+   "fma_id": 24435,
+   "preferred_label": "Right scaphoid",
+   "system": "skeletal"
+  },
+  "FMA24436": {
+   "category": "skeleton",
+   "display_name": "L Scaphoid",
+   "fma_id": 24436,
+   "preferred_label": "Left scaphoid",
+   "system": "skeletal"
+  },
+  "FMA24437": {
+   "category": "skeleton",
+   "display_name": "R Lunate",
+   "fma_id": 24437,
+   "preferred_label": "Right lunate",
+   "system": "skeletal"
+  },
+  "FMA24438": {
+   "category": "skeleton",
+   "display_name": "L Lunate",
+   "fma_id": 24438,
+   "preferred_label": "Left lunate",
+   "system": "skeletal"
+  },
+  "FMA24439": {
+   "category": "skeleton",
+   "display_name": "R Triquetral",
+   "fma_id": 24439,
+   "preferred_label": "Right triquetral",
+   "system": "skeletal"
+  },
+  "FMA24440": {
+   "category": "skeleton",
+   "display_name": "L Triquetral",
+   "fma_id": 24440,
+   "preferred_label": "Left triquetral",
+   "system": "skeletal"
+  },
+  "FMA24441": {
+   "category": "skeleton",
+   "display_name": "R Pisiform",
+   "fma_id": 24441,
+   "preferred_label": "Right pisiform",
+   "system": "skeletal"
+  },
+  "FMA24442": {
+   "category": "skeleton",
+   "display_name": "L Pisiform",
+   "fma_id": 24442,
+   "preferred_label": "Left pisiform",
+   "system": "skeletal"
+  },
+  "FMA24443": {
+   "category": "skeleton",
+   "display_name": "R Trapezium",
+   "fma_id": 24443,
+   "preferred_label": "Right trapezium",
+   "system": "skeletal"
+  },
+  "FMA24444": {
+   "category": "skeleton",
+   "display_name": "L Trapezium",
+   "fma_id": 24444,
+   "preferred_label": "Left trapezium",
+   "system": "skeletal"
+  },
+  "FMA24445": {
+   "category": "skeleton",
+   "display_name": "L Trapezoid",
+   "fma_id": 24445,
+   "preferred_label": "Left trapezoid",
+   "system": "skeletal"
+  },
+  "FMA24446": {
+   "category": "skeleton",
+   "display_name": "R Capitate",
+   "fma_id": 24446,
+   "preferred_label": "Right capitate",
+   "system": "skeletal"
+  },
+  "FMA24447": {
+   "category": "skeleton",
+   "display_name": "L Capitate",
+   "fma_id": 24447,
+   "preferred_label": "Left capitate",
+   "system": "skeletal"
+  },
+  "FMA24448": {
+   "category": "skeleton",
+   "display_name": "R Hamate",
+   "fma_id": 24448,
+   "preferred_label": "Right hamate",
+   "system": "skeletal"
+  },
+  "FMA24449": {
+   "category": "skeleton",
+   "display_name": "L Hamate",
+   "fma_id": 24449,
+   "preferred_label": "Left hamate",
+   "system": "skeletal"
+  },
+  "FMA24450": {
+   "category": "skeleton",
+   "display_name": "R Thumb Prox.",
+   "fma_id": 24450,
+   "preferred_label": "Proximal phalanx of right thumb",
+   "system": "skeletal"
+  },
+  "FMA24451": {
+   "category": "skeleton",
+   "display_name": "R Index Prox.",
+   "fma_id": 24451,
+   "preferred_label": "Proximal phalanx of right index finger",
+   "system": "skeletal"
+  },
+  "FMA24452": {
+   "category": "skeleton",
+   "display_name": "R Middle Prox.",
+   "fma_id": 24452,
+   "preferred_label": "Proximal phalanx of right middle finger",
+   "system": "skeletal"
+  },
+  "FMA24453": {
+   "category": "skeleton",
+   "display_name": "R Ring Prox.",
+   "fma_id": 24453,
+   "preferred_label": "Proximal phalanx of right ring finger",
+   "system": "skeletal"
+  },
+  "FMA24454": {
+   "category": "skeleton",
+   "display_name": "R Little Prox.",
+   "fma_id": 24454,
+   "preferred_label": "Proximal phalanx of right little finger",
+   "system": "skeletal"
+  },
+  "FMA24455": {
+   "category": "skeleton",
+   "display_name": "R Index Mid.",
+   "fma_id": 24455,
+   "preferred_label": "Middle phalanx of right index finger",
+   "system": "skeletal"
+  },
+  "FMA24456": {
+   "category": "skeleton",
+   "display_name": "R Middle Mid.",
+   "fma_id": 24456,
+   "preferred_label": "Middle phalanx of right middle finger",
+   "system": "skeletal"
+  },
+  "FMA24457": {
+   "category": "skeleton",
+   "display_name": "R Ring Mid.",
+   "fma_id": 24457,
+   "preferred_label": "Middle phalanx of right ring finger",
+   "system": "skeletal"
+  },
+  "FMA24458": {
+   "category": "skeleton",
+   "display_name": "R Little Mid.",
+   "fma_id": 24458,
+   "preferred_label": "Middle phalanx of right little finger",
+   "system": "skeletal"
+  },
+  "FMA24459": {
+   "category": "skeleton",
+   "display_name": "R Thumb Dist.",
+   "fma_id": 24459,
+   "preferred_label": "Distal phalanx of right thumb",
+   "system": "skeletal"
+  },
+  "FMA24460": {
+   "category": "skeleton",
+   "display_name": "R Index Dist.",
+   "fma_id": 24460,
+   "preferred_label": "Distal phalanx of right index finger",
+   "system": "skeletal"
+  },
+  "FMA24461": {
+   "category": "skeleton",
+   "display_name": "R Middle Dist.",
+   "fma_id": 24461,
+   "preferred_label": "Distal phalanx of right middle finger",
+   "system": "skeletal"
+  },
+  "FMA24462": {
+   "category": "skeleton",
+   "display_name": "R Ring Dist.",
+   "fma_id": 24462,
+   "preferred_label": "Distal phalanx of right ring finger",
+   "system": "skeletal"
+  },
+  "FMA24463": {
+   "category": "skeleton",
+   "display_name": "R Little Dist.",
+   "fma_id": 24463,
+   "preferred_label": "Distal phalanx of right little finger",
+   "system": "skeletal"
+  },
+  "FMA24464": {
+   "category": "skeleton",
+   "display_name": "R 1st Metacarpal",
+   "fma_id": 24464,
+   "preferred_label": "Right first metacarpal bone",
+   "system": "skeletal"
+  },
+  "FMA24465": {
+   "category": "skeleton",
+   "display_name": "L 1st Metacarpal",
+   "fma_id": 24465,
+   "preferred_label": "Left first metacarpal bone",
+   "system": "skeletal"
+  },
+  "FMA24466": {
+   "category": "skeleton",
+   "display_name": "R 2nd Metacarpal",
+   "fma_id": 24466,
+   "preferred_label": "Right second metacarpal bone",
+   "system": "skeletal"
+  },
+  "FMA24467": {
+   "category": "skeleton",
+   "display_name": "L 2nd Metacarpal",
+   "fma_id": 24467,
+   "preferred_label": "Left second metacarpal bone",
+   "system": "skeletal"
+  },
+  "FMA24468": {
+   "category": "skeleton",
+   "display_name": "R 3rd Metacarpal",
+   "fma_id": 24468,
+   "preferred_label": "Right third metacarpal bone",
+   "system": "skeletal"
+  },
+  "FMA24469": {
+   "category": "skeleton",
+   "display_name": "L 3rd Metacarpal",
+   "fma_id": 24469,
+   "preferred_label": "Left third metacarpal bone",
+   "system": "skeletal"
+  },
+  "FMA24470": {
+   "category": "skeleton",
+   "display_name": "R 4th Metacarpal",
+   "fma_id": 24470,
+   "preferred_label": "Right fourth metacarpal bone",
+   "system": "skeletal"
+  },
+  "FMA24471": {
+   "category": "skeleton",
+   "display_name": "L 4th Metacarpal",
+   "fma_id": 24471,
+   "preferred_label": "Left fourth metacarpal bone",
+   "system": "skeletal"
+  },
+  "FMA24472": {
+   "category": "skeleton",
+   "display_name": "R 5th Metacarpal",
+   "fma_id": 24472,
+   "preferred_label": "Right fifth metacarpal bone",
+   "system": "skeletal"
+  },
+  "FMA24473": {
+   "category": "skeleton",
+   "display_name": "L 5th Metacarpal",
+   "fma_id": 24473,
+   "preferred_label": "Left fifth metacarpal bone",
+   "system": "skeletal"
+  },
+  "FMA24474": {
+   "category": "skeleton",
+   "display_name": "Right Femur",
+   "fma_id": 24474,
+   "preferred_label": "Right femur",
+   "system": "skeletal"
+  },
+  "FMA24475": {
+   "category": "skeleton",
+   "display_name": "Left Femur",
+   "fma_id": 24475,
+   "preferred_label": "Left femur",
+   "system": "skeletal"
+  },
+  "FMA24477": {
+   "category": "skeleton",
+   "display_name": "Right Tibia",
+   "fma_id": 24477,
+   "preferred_label": "Right tibia",
+   "system": "skeletal"
+  },
+  "FMA24478": {
+   "category": "skeleton",
+   "display_name": "Left Tibia",
+   "fma_id": 24478,
+   "preferred_label": "Left tibia",
+   "system": "skeletal"
+  },
+  "FMA24480": {
+   "category": "skeleton",
+   "display_name": "Right Fibula",
+   "fma_id": 24480,
+   "preferred_label": "Right fibula",
+   "system": "skeletal"
+  },
+  "FMA24481": {
+   "category": "skeleton",
+   "display_name": "Left Fibula",
+   "fma_id": 24481,
+   "preferred_label": "Left fibula",
+   "system": "skeletal"
+  },
+  "FMA24482": {
+   "category": "skeleton",
+   "display_name": "R Talus",
+   "fma_id": 24482,
+   "preferred_label": "Right talus",
+   "system": "skeletal"
+  },
+  "FMA24483": {
+   "category": "skeleton",
+   "display_name": "L Talus",
+   "fma_id": 24483,
+   "preferred_label": "Left talus",
+   "system": "skeletal"
+  },
+  "FMA24486": {
+   "category": "skeleton",
+   "display_name": "Right Patella",
+   "fma_id": 24486,
+   "preferred_label": "Right patella",
+   "system": "skeletal"
+  },
+  "FMA24487": {
+   "category": "skeleton",
+   "display_name": "Left Patella",
+   "fma_id": 24487,
+   "preferred_label": "Left patella",
+   "system": "skeletal"
+  },
+  "FMA24497": {
+   "category": "skeleton",
+   "display_name": "R Calcaneus",
+   "fma_id": 24497,
+   "preferred_label": "Right calcaneus",
+   "system": "skeletal"
+  },
+  "FMA24498": {
+   "category": "skeleton",
+   "display_name": "L Calcaneus",
+   "fma_id": 24498,
+   "preferred_label": "Left calcaneus",
+   "system": "skeletal"
+  },
+  "FMA24500": {
+   "category": "skeleton",
+   "display_name": "R Navicular",
+   "fma_id": 24500,
+   "preferred_label": "Navicular bone of right foot",
+   "system": "skeletal"
+  },
+  "FMA24501": {
+   "category": "skeleton",
+   "display_name": "L Navicular",
+   "fma_id": 24501,
+   "preferred_label": "Navicular bone of left foot",
+   "system": "skeletal"
+  },
+  "FMA24507": {
+   "category": "skeleton",
+   "display_name": "R 1st Metatarsal",
+   "fma_id": 24507,
+   "preferred_label": "Right first metatarsal bone",
+   "system": "skeletal"
+  },
+  "FMA24508": {
+   "category": "skeleton",
+   "display_name": "L 1st Metatarsal",
+   "fma_id": 24508,
+   "preferred_label": "Left first metatarsal bone",
+   "system": "skeletal"
+  },
+  "FMA24509": {
+   "category": "skeleton",
+   "display_name": "R 2nd Metatarsal",
+   "fma_id": 24509,
+   "preferred_label": "Right second metatarsal bone",
+   "system": "skeletal"
+  },
+  "FMA24510": {
+   "category": "skeleton",
+   "display_name": "L 2nd Metatarsal",
+   "fma_id": 24510,
+   "preferred_label": "Left second metatarsal bone",
+   "system": "skeletal"
+  },
+  "FMA24511": {
+   "category": "skeleton",
+   "display_name": "R 3rd Metatarsal",
+   "fma_id": 24511,
+   "preferred_label": "Right third metatarsal bone",
+   "system": "skeletal"
+  },
+  "FMA24512": {
+   "category": "skeleton",
+   "display_name": "L 3rd Metatarsal",
+   "fma_id": 24512,
+   "preferred_label": "Left third metatarsal bone",
+   "system": "skeletal"
+  },
+  "FMA24513": {
+   "category": "skeleton",
+   "display_name": "R 4th Metatarsal",
+   "fma_id": 24513,
+   "preferred_label": "Right fourth metatarsal bone",
+   "system": "skeletal"
+  },
+  "FMA24514": {
+   "category": "skeleton",
+   "display_name": "L 4th Metatarsal",
+   "fma_id": 24514,
+   "preferred_label": "Left fourth metatarsal bone",
+   "system": "skeletal"
+  },
+  "FMA24515": {
+   "category": "skeleton",
+   "display_name": "R 5th Metatarsal",
+   "fma_id": 24515,
+   "preferred_label": "Right fifth metatarsal bone",
+   "system": "skeletal"
+  },
+  "FMA24516": {
+   "category": "skeleton",
+   "display_name": "L 5th Metatarsal",
+   "fma_id": 24516,
+   "preferred_label": "Left fifth metatarsal bone",
+   "system": "skeletal"
+  },
+  "FMA24521": {
+   "category": "skeleton",
+   "display_name": "R Med. Cuneiform",
+   "fma_id": 24521,
+   "preferred_label": "Right medial cuneiform bone",
+   "system": "skeletal"
+  },
+  "FMA24522": {
+   "category": "skeleton",
+   "display_name": "L Med. Cuneiform",
+   "fma_id": 24522,
+   "preferred_label": "Left medial cuneiform bone",
+   "system": "skeletal"
+  },
+  "FMA24523": {
+   "category": "skeleton",
+   "display_name": "R Int. Cuneiform",
+   "fma_id": 24523,
+   "preferred_label": "Right intermediate cuneiform bone",
+   "system": "skeletal"
+  },
+  "FMA24524": {
+   "category": "skeleton",
+   "display_name": "L Int. Cuneiform",
+   "fma_id": 24524,
+   "preferred_label": "Left intermediate cuneiform bone",
+   "system": "skeletal"
+  },
+  "FMA24525": {
+   "category": "skeleton",
+   "display_name": "R Lat. Cuneiform",
+   "fma_id": 24525,
+   "preferred_label": "Right lateral cuneiform bone",
+   "system": "skeletal"
+  },
+  "FMA24526": {
+   "category": "skeleton",
+   "display_name": "L Lat. Cuneiform",
+   "fma_id": 24526,
+   "preferred_label": "Left lateral cuneiform bone",
+   "system": "skeletal"
+  },
+  "FMA24528": {
+   "category": "skeleton",
+   "display_name": "R Cuboid",
+   "fma_id": 24528,
+   "preferred_label": "Right cuboid bone",
+   "system": "skeletal"
+  },
+  "FMA24529": {
+   "category": "skeleton",
+   "display_name": "L Cuboid",
+   "fma_id": 24529,
+   "preferred_label": "Left cuboid bone",
+   "system": "skeletal"
+  },
+  "FMA25058": {
+   "category": "skeleton",
+   "display_name": "C1-C2 Disc",
+   "fma_id": 25058,
+   "preferred_label": "Intervertebral disk of axis",
+   "system": "skeletal"
+  },
+  "FMA258714": {
+   "category": "brain",
+   "display_name": "R Thalamus",
+   "fma_id": 258714,
+   "preferred_label": "Right thalamus",
+   "system": null
+  },
+  "FMA258716": {
+   "category": "brain",
+   "display_name": "L Thalamus",
+   "fma_id": 258716,
+   "preferred_label": "Left thalamus",
+   "system": null
+  },
+  "FMA258847": {
+   "category": "ligaments",
+   "display_name": "R Calcaneal Tendon",
+   "fma_id": 258847,
+   "preferred_label": "Right calcaneal tendon",
+   "system": "articular"
+  },
+  "FMA258850": {
+   "category": "ligaments",
+   "display_name": "R Intermediate Tendon",
+   "fma_id": 258850,
+   "preferred_label": "Right intermediate tendon",
+   "system": null
+  },
+  "FMA264840": {
+   "category": "ligaments",
+   "display_name": "L Intermediate Tendon",
+   "fma_id": 264840,
+   "preferred_label": "Left intermediate tendon",
+   "system": null
+  },
+  "FMA264844": {
+   "category": "ligaments",
+   "display_name": "L Calcaneal Tendon",
+   "fma_id": 264844,
+   "preferred_label": "Left calcaneal tendon",
+   "system": "articular"
+  },
+  "FMA274027": {
+   "category": "cns_additional",
+   "display_name": "R Choroid Plexus",
+   "fma_id": 274027,
+   "preferred_label": "Choroid plexus of right cerebral hemisphere",
+   "system": null
+  },
+  "FMA274029": {
+   "category": "cns_additional",
+   "display_name": "L Choroid Plexus",
+   "fma_id": 274029,
+   "preferred_label": "Choroid plexus of left cerebral hemisphere",
+   "system": null
+  },
+  "FMA32530": {
+   "category": "muscles",
+   "display_name": "Rectus Cap. Post. Maj. R",
+   "fma_id": 32530,
+   "preferred_label": "Right rectus capitis posterior major",
+   "system": "muscular"
+  },
+  "FMA32531": {
+   "category": "muscles",
+   "display_name": "Rectus Cap. Post. Maj. L",
+   "fma_id": 32531,
+   "preferred_label": "Left rectus capitis posterior major",
+   "system": "muscular"
+  },
+  "FMA32532": {
+   "category": "muscles",
+   "display_name": "Rectus Cap. Post. Min. R",
+   "fma_id": 32532,
+   "preferred_label": "Right rectus capitis posterior minor",
+   "system": "muscular"
+  },
+  "FMA32533": {
+   "category": "muscles",
+   "display_name": "Rectus Cap. Post. Min. L",
+   "fma_id": 32533,
+   "preferred_label": "Left rectus capitis posterior minor",
+   "system": "muscular"
+  },
+  "FMA32534": {
+   "category": "muscles",
+   "display_name": "Obliquus Cap. Sup. R",
+   "fma_id": 32534,
+   "preferred_label": "Right obliquus capitis superior",
+   "system": "muscular"
+  },
+  "FMA32535": {
+   "category": "muscles",
+   "display_name": "Obliquus Cap. Sup. L",
+   "fma_id": 32535,
+   "preferred_label": "Left obliquus capitis superior",
+   "system": "muscular"
+  },
+  "FMA32536": {
+   "category": "muscles",
+   "display_name": "Obliquus Cap. Inf. R",
+   "fma_id": 32536,
+   "preferred_label": "Right obliquus capitis inferior",
+   "system": "muscular"
+  },
+  "FMA32537": {
+   "category": "muscles",
+   "display_name": "Obliquus Cap. Inf. L",
+   "fma_id": 32537,
+   "preferred_label": "Left obliquus capitis inferior",
+   "system": "muscular"
+  },
+  "FMA32540": {
+   "category": "muscles",
+   "display_name": "Levator Scapulae R",
+   "fma_id": 32540,
+   "preferred_label": "Right levator scapulae",
+   "system": "muscular"
+  },
+  "FMA32541": {
+   "category": "muscles",
+   "display_name": "Levator Scapulae L",
+   "fma_id": 32541,
+   "preferred_label": "Left levator scapulae",
+   "system": "muscular"
+  },
+  "FMA32544": {
+   "category": "muscles",
+   "display_name": "Supraspinatus R",
+   "fma_id": 32544,
+   "preferred_label": "Right supraspinatus",
+   "system": "muscular"
+  },
+  "FMA32545": {
+   "category": "muscles",
+   "display_name": "Supraspinatus L",
+   "fma_id": 32545,
+   "preferred_label": "Left supraspinatus",
+   "system": "muscular"
+  },
+  "FMA32547": {
+   "category": "muscles",
+   "display_name": "Infraspinatus R",
+   "fma_id": 32547,
+   "preferred_label": "Right infraspinatus",
+   "system": "muscular"
+  },
+  "FMA32548": {
+   "category": "muscles",
+   "display_name": "Infraspinatus L",
+   "fma_id": 32548,
+   "preferred_label": "Left infraspinatus",
+   "system": "muscular"
+  },
+  "FMA32551": {
+   "category": "muscles",
+   "display_name": "Teres Major R",
+   "fma_id": 32551,
+   "preferred_label": "Right teres major",
+   "system": "muscular"
+  },
+  "FMA32552": {
+   "category": "muscles",
+   "display_name": "Teres Major L",
+   "fma_id": 32552,
+   "preferred_label": "Left teres major",
+   "system": "muscular"
+  },
+  "FMA32553": {
+   "category": "muscles",
+   "display_name": "Teres Minor R",
+   "fma_id": 32553,
+   "preferred_label": "Right teres minor",
+   "system": "muscular"
+  },
+  "FMA32554": {
+   "category": "muscles",
+   "display_name": "Teres Minor L",
+   "fma_id": 32554,
+   "preferred_label": "Left teres minor",
+   "system": "muscular"
+  },
+  "FMA32634": {
+   "category": "skeleton",
+   "display_name": "R 2nd Toe Prox.",
+   "fma_id": 32634,
+   "preferred_label": "Proximal phalanx of right second toe",
+   "system": "skeletal"
+  },
+  "FMA32635": {
+   "category": "skeleton",
+   "display_name": "L 2nd Toe Prox.",
+   "fma_id": 32635,
+   "preferred_label": "Proximal phalanx of left second toe",
+   "system": "skeletal"
+  },
+  "FMA32636": {
+   "category": "skeleton",
+   "display_name": "R 3rd Toe Prox.",
+   "fma_id": 32636,
+   "preferred_label": "Proximal phalanx of right third toe",
+   "system": "skeletal"
+  },
+  "FMA32637": {
+   "category": "skeleton",
+   "display_name": "L 3rd Toe Prox.",
+   "fma_id": 32637,
+   "preferred_label": "Proximal phalanx of left third toe",
+   "system": "skeletal"
+  },
+  "FMA32638": {
+   "category": "skeleton",
+   "display_name": "R 4th Toe Prox.",
+   "fma_id": 32638,
+   "preferred_label": "Proximal phalanx of right fourth toe",
+   "system": "skeletal"
+  },
+  "FMA32639": {
+   "category": "skeleton",
+   "display_name": "L 4th Toe Prox.",
+   "fma_id": 32639,
+   "preferred_label": "Proximal phalanx of left fourth toe",
+   "system": "skeletal"
+  },
+  "FMA32640": {
+   "category": "skeleton",
+   "display_name": "R 5th Toe Prox.",
+   "fma_id": 32640,
+   "preferred_label": "Proximal phalanx of right little toe",
+   "system": "skeletal"
+  },
+  "FMA32641": {
+   "category": "skeleton",
+   "display_name": "L 5th Toe Prox.",
+   "fma_id": 32641,
+   "preferred_label": "Proximal phalanx of left little toe",
+   "system": "skeletal"
+  },
+  "FMA32642": {
+   "category": "skeleton",
+   "display_name": "R 2nd Toe Mid.",
+   "fma_id": 32642,
+   "preferred_label": "Middle phalanx of right second toe",
+   "system": "skeletal"
+  },
+  "FMA32643": {
+   "category": "skeleton",
+   "display_name": "L 2nd Toe Mid.",
+   "fma_id": 32643,
+   "preferred_label": "Middle phalanx of left second toe",
+   "system": "skeletal"
+  },
+  "FMA32644": {
+   "category": "skeleton",
+   "display_name": "R 3rd Toe Mid.",
+   "fma_id": 32644,
+   "preferred_label": "Middle phalanx of right third toe",
+   "system": "skeletal"
+  },
+  "FMA32645": {
+   "category": "skeleton",
+   "display_name": "L 3rd Toe Mid.",
+   "fma_id": 32645,
+   "preferred_label": "Middle phalanx of left third toe",
+   "system": "skeletal"
+  },
+  "FMA32646": {
+   "category": "skeleton",
+   "display_name": "R 4th Toe Mid.",
+   "fma_id": 32646,
+   "preferred_label": "Middle phalanx of right fourth toe",
+   "system": "skeletal"
+  },
+  "FMA32647": {
+   "category": "skeleton",
+   "display_name": "L 4th Toe Mid.",
+   "fma_id": 32647,
+   "preferred_label": "Middle phalanx of left fourth toe",
+   "system": "skeletal"
+  },
+  "FMA32650": {
+   "category": "skeleton",
+   "display_name": "R Big Toe Dist.",
+   "fma_id": 32650,
+   "preferred_label": "Distal phalanx of right big toe",
+   "system": "skeletal"
+  },
+  "FMA32651": {
+   "category": "skeleton",
+   "display_name": "L Big Toe Dist.",
+   "fma_id": 32651,
+   "preferred_label": "Distal phalanx of left big toe",
+   "system": "skeletal"
+  },
+  "FMA32652": {
+   "category": "skeleton",
+   "display_name": "R 2nd Toe Dist.",
+   "fma_id": 32652,
+   "preferred_label": "Distal phalanx of right second toe",
+   "system": "skeletal"
+  },
+  "FMA32653": {
+   "category": "skeleton",
+   "display_name": "L 2nd Toe Dist.",
+   "fma_id": 32653,
+   "preferred_label": "Distal phalanx of left second toe",
+   "system": "skeletal"
+  },
+  "FMA32654": {
+   "category": "skeleton",
+   "display_name": "R 3rd Toe Dist.",
+   "fma_id": 32654,
+   "preferred_label": "Distal phalanx of right third toe",
+   "system": "skeletal"
+  },
+  "FMA32655": {
+   "category": "skeleton",
+   "display_name": "L 3rd Toe Dist.",
+   "fma_id": 32655,
+   "preferred_label": "Distal phalanx of left third toe",
+   "system": "skeletal"
+  },
+  "FMA32656": {
+   "category": "skeleton",
+   "display_name": "R 4th Toe Dist.",
+   "fma_id": 32656,
+   "preferred_label": "Distal phalanx of right fourth toe",
+   "system": "skeletal"
+  },
+  "FMA32657": {
+   "category": "skeleton",
+   "display_name": "L 4th Toe Dist.",
+   "fma_id": 32657,
+   "preferred_label": "Distal phalanx of left fourth toe",
+   "system": "skeletal"
+  },
+  "FMA32658": {
+   "category": "skeleton",
+   "display_name": "R 5th Toe Dist.",
+   "fma_id": 32658,
+   "preferred_label": "Distal phalanx of right little toe",
+   "system": "skeletal"
+  },
+  "FMA32659": {
+   "category": "skeleton",
+   "display_name": "L 5th Toe Dist.",
+   "fma_id": 32659,
+   "preferred_label": "Distal phalanx of left little toe",
+   "system": "skeletal"
+  },
+  "FMA33581": {
+   "category": "muscles",
+   "display_name": "Asc. Trapezius R",
+   "fma_id": 33581,
+   "preferred_label": "Ascending part of right trapezius",
+   "system": null
+  },
+  "FMA33583": {
+   "category": "muscles",
+   "display_name": "Asc. Trapezius L",
+   "fma_id": 33583,
+   "preferred_label": "Ascending part of left trapezius",
+   "system": null
+  },
+  "FMA33584": {
+   "category": "muscles",
+   "display_name": "Trans. Trapezius R",
+   "fma_id": 33584,
+   "preferred_label": "Transverse part of right trapezius",
+   "system": "muscular"
+  },
+  "FMA33585": {
+   "category": "muscles",
+   "display_name": "Trans. Trapezius L",
+   "fma_id": 33585,
+   "preferred_label": "Transverse part of left trapezius",
+   "system": "muscular"
+  },
+  "FMA33586": {
+   "category": "muscles",
+   "display_name": "Desc. Trapezius R",
+   "fma_id": 33586,
+   "preferred_label": "Descending part of right trapezius",
+   "system": null
+  },
+  "FMA33587": {
+   "category": "muscles",
+   "display_name": "Desc. Trapezius L",
+   "fma_id": 33587,
+   "preferred_label": "Descending part of left trapezius",
+   "system": null
+  },
+  "FMA34680": {
+   "category": "muscles",
+   "display_name": "Deltoid Clav. R",
+   "fma_id": 34680,
+   "preferred_label": "Clavicular part of right deltoid",
+   "system": "muscular"
+  },
+  "FMA34681": {
+   "category": "muscles",
+   "display_name": "Deltoid Clav. L",
+   "fma_id": 34681,
+   "preferred_label": "Clavicular part of left deltoid",
+   "system": "muscular"
+  },
+  "FMA34682": {
+   "category": "muscles",
+   "display_name": "Deltoid Acr. R",
+   "fma_id": 34682,
+   "preferred_label": "Acromial part of right deltoid",
+   "system": "muscular"
+  },
+  "FMA34683": {
+   "category": "muscles",
+   "display_name": "Deltoid Acr. L",
+   "fma_id": 34683,
+   "preferred_label": "Acromial part of left deltoid",
+   "system": "muscular"
+  },
+  "FMA34684": {
+   "category": "muscles",
+   "display_name": "Deltoid Spin. R",
+   "fma_id": 34684,
+   "preferred_label": "Spinal part of right deltoid",
+   "system": "muscular"
+  },
+  "FMA34685": {
+   "category": "muscles",
+   "display_name": "Deltoid Spin. L",
+   "fma_id": 34685,
+   "preferred_label": "Spinal part of left deltoid",
+   "system": "muscular"
+  },
+  "FMA34690": {
+   "category": "muscles",
+   "display_name": "Pect. Major Clav. R",
+   "fma_id": 34690,
+   "preferred_label": "Clavicular part of right pectoralis major",
+   "system": "muscular"
+  },
+  "FMA34691": {
+   "category": "muscles",
+   "display_name": "Pect. Major Clav. L",
+   "fma_id": 34691,
+   "preferred_label": "Clavicular part of left pectoralis major",
+   "system": "muscular"
+  },
+  "FMA35192": {
+   "category": "ligaments",
+   "display_name": "R Interosseous Membrane of Leg",
+   "fma_id": 35192,
+   "preferred_label": "Interosseous membrane of right leg",
+   "system": null
+  },
+  "FMA35193": {
+   "category": "ligaments",
+   "display_name": "L Interosseous Membrane of Leg",
+   "fma_id": 35193,
+   "preferred_label": "Interosseous membrane of left leg",
+   "system": null
+  },
+  "FMA3736": {
+   "category": "vascular",
+   "display_name": "Ascending Aorta",
+   "fma_id": 3736,
+   "preferred_label": "Ascending aorta",
+   "system": "cardiovascular"
+  },
+  "FMA37386": {
+   "category": "muscles",
+   "display_name": "R Abductor Pollicis Brevis",
+   "fma_id": 37386,
+   "preferred_label": "Right abductor pollicis brevis",
+   "system": "muscular"
+  },
+  "FMA37387": {
+   "category": "muscles",
+   "display_name": "L Abductor Pollicis Brevis",
+   "fma_id": 37387,
+   "preferred_label": "Left abductor pollicis brevis",
+   "system": "muscular"
+  },
+  "FMA37390": {
+   "category": "muscles",
+   "display_name": "R Opponens Pollicis",
+   "fma_id": 37390,
+   "preferred_label": "Right opponens pollicis",
+   "system": "muscular"
+  },
+  "FMA37391": {
+   "category": "muscles",
+   "display_name": "L Opponens Pollicis",
+   "fma_id": 37391,
+   "preferred_label": "Left opponens pollicis",
+   "system": "muscular"
+  },
+  "FMA37396": {
+   "category": "muscles",
+   "display_name": "R Abductor Digiti Minimi",
+   "fma_id": 37396,
+   "preferred_label": "Abductor digiti minimi of right hand",
+   "system": "muscular"
+  },
+  "FMA37397": {
+   "category": "muscles",
+   "display_name": "L Abductor Digiti Minimi",
+   "fma_id": 37397,
+   "preferred_label": "Abductor digiti minimi of left hand",
+   "system": "muscular"
+  },
+  "FMA37398": {
+   "category": "muscles",
+   "display_name": "R Flexor Digiti Minimi Brevis",
+   "fma_id": 37398,
+   "preferred_label": "Flexor digiti minimi brevis of right hand",
+   "system": "muscular"
+  },
+  "FMA37399": {
+   "category": "muscles",
+   "display_name": "L Flexor Digiti Minimi Brevis",
+   "fma_id": 37399,
+   "preferred_label": "Flexor digiti minimi brevis of left hand",
+   "system": "muscular"
+  },
+  "FMA37400": {
+   "category": "muscles",
+   "display_name": "R Opponens Digiti Minimi",
+   "fma_id": 37400,
+   "preferred_label": "Opponens digiti minimi of right hand",
+   "system": "muscular"
+  },
+  "FMA37401": {
+   "category": "muscles",
+   "display_name": "L Opponens Digiti Minimi",
+   "fma_id": 37401,
+   "preferred_label": "Opponens digiti minimi of left hand",
+   "system": "muscular"
+  },
+  "FMA37459": {
+   "category": "muscles",
+   "display_name": "R Abductor Hallucis",
+   "fma_id": 37459,
+   "preferred_label": "Right abductor hallucis",
+   "system": "muscular"
+  },
+  "FMA37460": {
+   "category": "muscles",
+   "display_name": "L Abductor Hallucis",
+   "fma_id": 37460,
+   "preferred_label": "Left abductor hallucis",
+   "system": "muscular"
+  },
+  "FMA37461": {
+   "category": "muscles",
+   "display_name": "R Flexor Digitorum Brevis",
+   "fma_id": 37461,
+   "preferred_label": "Right flexor digitorum brevis",
+   "system": "muscular"
+  },
+  "FMA37462": {
+   "category": "muscles",
+   "display_name": "L Flexor Digitorum Brevis",
+   "fma_id": 37462,
+   "preferred_label": "Left flexor digitorum brevis",
+   "system": "muscular"
+  },
+  "FMA37463": {
+   "category": "muscles",
+   "display_name": "R Abductor Digiti Minimi",
+   "fma_id": 37463,
+   "preferred_label": "Abductor digiti minimi of right foot",
+   "system": "muscular"
+  },
+  "FMA37464": {
+   "category": "muscles",
+   "display_name": "L Abductor Digiti Minimi",
+   "fma_id": 37464,
+   "preferred_label": "Abductor digiti minimi of left foot",
+   "system": "muscular"
+  },
+  "FMA37465": {
+   "category": "muscles",
+   "display_name": "R Flexor Accessorius",
+   "fma_id": 37465,
+   "preferred_label": "Right flexor accessorius",
+   "system": "muscular"
+  },
+  "FMA37466": {
+   "category": "muscles",
+   "display_name": "L Flexor Accessorius",
+   "fma_id": 37466,
+   "preferred_label": "Left flexor accessorius",
+   "system": "muscular"
+  },
+  "FMA37471": {
+   "category": "muscles",
+   "display_name": "R Flexor Digiti Minimi Brevis",
+   "fma_id": 37471,
+   "preferred_label": "Flexor digiti minimi brevis of right foot",
+   "system": "muscular"
+  },
+  "FMA37472": {
+   "category": "muscles",
+   "display_name": "L Flexor Digiti Minimi Brevis",
+   "fma_id": 37472,
+   "preferred_label": "Flexor digiti minimi brevis of left foot",
+   "system": "muscular"
+  },
+  "FMA37483": {
+   "category": "muscles",
+   "display_name": "R Fourth Lumbrical",
+   "fma_id": 37483,
+   "preferred_label": "Fourth lumbrical of right foot",
+   "system": "muscular"
+  },
+  "FMA37484": {
+   "category": "muscles",
+   "display_name": "L Fourth Lumbrical",
+   "fma_id": 37484,
+   "preferred_label": "Fourth lumbrical of left foot",
+   "system": "muscular"
+  },
+  "FMA37485": {
+   "category": "muscles",
+   "display_name": "R Third Lumbrical",
+   "fma_id": 37485,
+   "preferred_label": "Third lumbrical of right foot",
+   "system": "muscular"
+  },
+  "FMA37486": {
+   "category": "muscles",
+   "display_name": "L Third Lumbrical",
+   "fma_id": 37486,
+   "preferred_label": "Third lumbrical of left foot",
+   "system": "muscular"
+  },
+  "FMA37665": {
+   "category": "muscles",
+   "display_name": "Coracobrachialis R",
+   "fma_id": 37665,
+   "preferred_label": "Right coracobrachialis",
+   "system": "muscular"
+  },
+  "FMA37666": {
+   "category": "muscles",
+   "display_name": "Coracobrachialis L",
+   "fma_id": 37666,
+   "preferred_label": "Left coracobrachialis",
+   "system": "muscular"
+  },
+  "FMA37668": {
+   "category": "muscles",
+   "display_name": "Brachialis R",
+   "fma_id": 37668,
+   "preferred_label": "Right brachialis",
+   "system": "muscular"
+  },
+  "FMA37669": {
+   "category": "muscles",
+   "display_name": "Brachialis L",
+   "fma_id": 37669,
+   "preferred_label": "Left brachialis",
+   "system": "muscular"
+  },
+  "FMA3768": {
+   "category": "vascular",
+   "display_name": "Arch of Aorta",
+   "fma_id": 3768,
+   "preferred_label": "Arch of aorta",
+   "system": "cardiovascular"
+  },
+  "FMA37684": {
+   "category": "muscles",
+   "display_name": "Biceps Short R",
+   "fma_id": 37684,
+   "preferred_label": "Short head of right biceps brachii",
+   "system": "muscular"
+  },
+  "FMA37685": {
+   "category": "muscles",
+   "display_name": "Biceps Short L",
+   "fma_id": 37685,
+   "preferred_label": "Short head of left biceps brachii",
+   "system": "muscular"
+  },
+  "FMA37686": {
+   "category": "muscles",
+   "display_name": "Biceps Long R",
+   "fma_id": 37686,
+   "preferred_label": "Long head of right biceps brachii",
+   "system": "muscular"
+  },
+  "FMA37687": {
+   "category": "muscles",
+   "display_name": "Biceps Long L",
+   "fma_id": 37687,
+   "preferred_label": "Long head of left biceps brachii",
+   "system": "muscular"
+  },
+  "FMA37695": {
+   "category": "muscles",
+   "display_name": "Triceps Med. R",
+   "fma_id": 37695,
+   "preferred_label": "Medial head of right triceps brachii",
+   "system": "muscular"
+  },
+  "FMA37696": {
+   "category": "muscles",
+   "display_name": "Triceps Med. L",
+   "fma_id": 37696,
+   "preferred_label": "Medial head of left triceps brachii",
+   "system": "muscular"
+  },
+  "FMA37697": {
+   "category": "muscles",
+   "display_name": "Triceps Lat. R",
+   "fma_id": 37697,
+   "preferred_label": "Lateral head of right triceps brachii",
+   "system": "muscular"
+  },
+  "FMA37698": {
+   "category": "muscles",
+   "display_name": "Triceps Lat. L",
+   "fma_id": 37698,
+   "preferred_label": "Lateral head of left triceps brachii",
+   "system": "muscular"
+  },
+  "FMA37699": {
+   "category": "muscles",
+   "display_name": "Triceps Long R",
+   "fma_id": 37699,
+   "preferred_label": "Long head of right triceps brachii",
+   "system": "muscular"
+  },
+  "FMA37700": {
+   "category": "muscles",
+   "display_name": "Triceps Long L",
+   "fma_id": 37700,
+   "preferred_label": "Long head of left triceps brachii",
+   "system": "muscular"
+  },
+  "FMA37705": {
+   "category": "muscles",
+   "display_name": "Anconeus R",
+   "fma_id": 37705,
+   "preferred_label": "Right anconeus",
+   "system": "muscular"
+  },
+  "FMA37706": {
+   "category": "muscles",
+   "display_name": "Anconeus L",
+   "fma_id": 37706,
+   "preferred_label": "Left anconeus",
+   "system": "muscular"
+  },
+  "FMA37717": {
+   "category": "muscles",
+   "display_name": "R First Lumbrical",
+   "fma_id": 37717,
+   "preferred_label": "First lumbrical of right foot",
+   "system": "muscular"
+  },
+  "FMA37718": {
+   "category": "muscles",
+   "display_name": "L First Lumbrical",
+   "fma_id": 37718,
+   "preferred_label": "First lumbrical of left foot",
+   "system": "muscular"
+  },
+  "FMA37719": {
+   "category": "muscles",
+   "display_name": "R Second Lumbrical",
+   "fma_id": 37719,
+   "preferred_label": "Second lumbrical of right foot",
+   "system": "muscular"
+  },
+  "FMA37720": {
+   "category": "muscles",
+   "display_name": "L Second Lumbrical",
+   "fma_id": 37720,
+   "preferred_label": "Second lumbrical of left foot",
+   "system": "muscular"
+  },
+  "FMA37741": {
+   "category": "muscles",
+   "display_name": "R Third Plantar Interosseous",
+   "fma_id": 37741,
+   "preferred_label": "Third plantar interosseous of right foot",
+   "system": "muscular"
+  },
+  "FMA37742": {
+   "category": "muscles",
+   "display_name": "L Third Plantar Interosseous",
+   "fma_id": 37742,
+   "preferred_label": "Third plantar interosseous of left foot",
+   "system": "muscular"
+  },
+  "FMA37743": {
+   "category": "muscles",
+   "display_name": "R Second Plantar Interosseous",
+   "fma_id": 37743,
+   "preferred_label": "Second plantar interosseous of right foot",
+   "system": "muscular"
+  },
+  "FMA37744": {
+   "category": "muscles",
+   "display_name": "L Second Plantar Interosseous",
+   "fma_id": 37744,
+   "preferred_label": "Second plantar interosseous of left foot",
+   "system": "muscular"
+  },
+  "FMA37745": {
+   "category": "muscles",
+   "display_name": "R First Plantar Interosseous",
+   "fma_id": 37745,
+   "preferred_label": "First plantar interosseous of right foot",
+   "system": "muscular"
+  },
+  "FMA37746": {
+   "category": "muscles",
+   "display_name": "L First Plantar Interosseous",
+   "fma_id": 37746,
+   "preferred_label": "First plantar interosseous of left foot",
+   "system": "muscular"
+  },
+  "FMA3784": {
+   "category": "vascular",
+   "display_name": "Descending Aorta",
+   "fma_id": 3784,
+   "preferred_label": "Descending aorta",
+   "system": "cardiovascular"
+  },
+  "FMA3802": {
+   "category": "vascular",
+   "display_name": "R Coronary Art.",
+   "fma_id": 3802,
+   "preferred_label": "Trunk of right coronary artery",
+   "system": "cardiovascular"
+  },
+  "FMA3818": {
+   "category": "vascular",
+   "display_name": "R Marginal Art.",
+   "fma_id": 3818,
+   "preferred_label": "Marginal branch of right coronary artery",
+   "system": "cardiovascular"
+  },
+  "FMA3840nsn": {
+   "category": "cardiac_additional",
+   "display_name": "Posterior Interventricular Branch",
+   "fma_id": 3840,
+   "preferred_label": "Posterior interventricular branch of right coronary artery",
+   "system": "cardiovascular"
+  },
+  "FMA38454": {
+   "category": "muscles",
+   "display_name": "Pronator Quadratus R",
+   "fma_id": 38454,
+   "preferred_label": "Right pronator quadratus",
+   "system": "muscular"
+  },
+  "FMA38455": {
+   "category": "muscles",
+   "display_name": "Pronator Quadratus L",
+   "fma_id": 38455,
+   "preferred_label": "Left pronator quadratus",
+   "system": "muscular"
+  },
+  "FMA38460": {
+   "category": "muscles",
+   "display_name": "Flex. Carpi Rad. R",
+   "fma_id": 38460,
+   "preferred_label": "Right flexor carpi radialis",
+   "system": "muscular"
+  },
+  "FMA38461": {
+   "category": "muscles",
+   "display_name": "Flex. Carpi Rad. L",
+   "fma_id": 38461,
+   "preferred_label": "Left flexor carpi radialis",
+   "system": "muscular"
+  },
+  "FMA38463": {
+   "category": "muscles",
+   "display_name": "Palmaris Longus R",
+   "fma_id": 38463,
+   "preferred_label": "Right palmaris longus",
+   "system": "muscular"
+  },
+  "FMA38464": {
+   "category": "muscles",
+   "display_name": "Palmaris Longus L",
+   "fma_id": 38464,
+   "preferred_label": "Left palmaris longus",
+   "system": "muscular"
+  },
+  "FMA38479": {
+   "category": "muscles",
+   "display_name": "Flex. Dig. Prof. R",
+   "fma_id": 38479,
+   "preferred_label": "Right flexor digitorum profundus",
+   "system": "muscular"
+  },
+  "FMA38480": {
+   "category": "muscles",
+   "display_name": "Flex. Dig. Prof. L",
+   "fma_id": 38480,
+   "preferred_label": "Left flexor digitorum profundus",
+   "system": "muscular"
+  },
+  "FMA38482": {
+   "category": "muscles",
+   "display_name": "Flex. Poll. Long. R",
+   "fma_id": 38482,
+   "preferred_label": "Right flexor pollicis longus",
+   "system": "muscular"
+  },
+  "FMA38484": {
+   "category": "muscles",
+   "display_name": "Flex. Poll. Long. L",
+   "fma_id": 38484,
+   "preferred_label": "Left flexor pollicis longus",
+   "system": "muscular"
+  },
+  "FMA38486": {
+   "category": "muscles",
+   "display_name": "Brachioradialis R",
+   "fma_id": 38486,
+   "preferred_label": "Right brachioradialis",
+   "system": "muscular"
+  },
+  "FMA38487": {
+   "category": "muscles",
+   "display_name": "Brachioradialis L",
+   "fma_id": 38487,
+   "preferred_label": "Left brachioradialis",
+   "system": "muscular"
+  },
+  "FMA38495": {
+   "category": "muscles",
+   "display_name": "Ext. Carpi Rad. Long. R",
+   "fma_id": 38495,
+   "preferred_label": "Right extensor carpi radialis longus",
+   "system": "muscular"
+  },
+  "FMA38496": {
+   "category": "muscles",
+   "display_name": "Ext. Carpi Rad. Long. L",
+   "fma_id": 38496,
+   "preferred_label": "Left extensor carpi radialis longus",
+   "system": "muscular"
+  },
+  "FMA38498": {
+   "category": "muscles",
+   "display_name": "Ext. Carpi Rad. Brev. R",
+   "fma_id": 38498,
+   "preferred_label": "Right extensor carpi radialis brevis",
+   "system": "muscular"
+  },
+  "FMA38499": {
+   "category": "muscles",
+   "display_name": "Ext. Carpi Rad. Brev. L",
+   "fma_id": 38499,
+   "preferred_label": "Left extensor carpi radialis brevis",
+   "system": "muscular"
+  },
+  "FMA38501": {
+   "category": "muscles",
+   "display_name": "Ext. Digitorum R",
+   "fma_id": 38501,
+   "preferred_label": "Right extensor digitorum",
+   "system": "muscular"
+  },
+  "FMA38502": {
+   "category": "muscles",
+   "display_name": "Ext. Digitorum L",
+   "fma_id": 38502,
+   "preferred_label": "Left extensor digitorum",
+   "system": "muscular"
+  },
+  "FMA38504": {
+   "category": "muscles",
+   "display_name": "Ext. Dig. Min. R",
+   "fma_id": 38504,
+   "preferred_label": "Right extensor digiti minimi",
+   "system": "muscular"
+  },
+  "FMA38505": {
+   "category": "muscles",
+   "display_name": "Ext. Dig. Min. L",
+   "fma_id": 38505,
+   "preferred_label": "Left extensor digiti minimi",
+   "system": "muscular"
+  },
+  "FMA38513": {
+   "category": "muscles",
+   "display_name": "Supinator R",
+   "fma_id": 38513,
+   "preferred_label": "Right supinator",
+   "system": "muscular"
+  },
+  "FMA38514": {
+   "category": "muscles",
+   "display_name": "Supinator L",
+   "fma_id": 38514,
+   "preferred_label": "Left supinator",
+   "system": "muscular"
+  },
+  "FMA38516": {
+   "category": "muscles",
+   "display_name": "Abd. Poll. Long. R",
+   "fma_id": 38516,
+   "preferred_label": "Right abductor pollicis longus",
+   "system": "muscular"
+  },
+  "FMA38517": {
+   "category": "muscles",
+   "display_name": "Abd. Poll. Long. L",
+   "fma_id": 38517,
+   "preferred_label": "Left abductor pollicis longus",
+   "system": "muscular"
+  },
+  "FMA38519": {
+   "category": "muscles",
+   "display_name": "Ext. Poll. Brev. R",
+   "fma_id": 38519,
+   "preferred_label": "Right extensor pollicis brevis",
+   "system": "muscular"
+  },
+  "FMA38520": {
+   "category": "muscles",
+   "display_name": "Ext. Poll. Brev. L",
+   "fma_id": 38520,
+   "preferred_label": "Left extensor pollicis brevis",
+   "system": "muscular"
+  },
+  "FMA38522": {
+   "category": "muscles",
+   "display_name": "Ext. Poll. Long. R",
+   "fma_id": 38522,
+   "preferred_label": "Right extensor pollicis longus",
+   "system": "muscular"
+  },
+  "FMA38523": {
+   "category": "muscles",
+   "display_name": "Ext. Poll. Long. L",
+   "fma_id": 38523,
+   "preferred_label": "Left extensor pollicis longus",
+   "system": "muscular"
+  },
+  "FMA38525": {
+   "category": "muscles",
+   "display_name": "Ext. Indicis R",
+   "fma_id": 38525,
+   "preferred_label": "Right extensor indicis",
+   "system": "muscular"
+  },
+  "FMA38526": {
+   "category": "muscles",
+   "display_name": "Ext. Indicis L",
+   "fma_id": 38526,
+   "preferred_label": "Left extensor indicis",
+   "system": "muscular"
+  },
+  "FMA38560": {
+   "category": "muscles",
+   "display_name": "Pronator Teres Hum. R",
+   "fma_id": 38560,
+   "preferred_label": "Humeral head of right pronator teres",
+   "system": "muscular"
+  },
+  "FMA38561": {
+   "category": "muscles",
+   "display_name": "Pronator Teres Hum. L",
+   "fma_id": 38561,
+   "preferred_label": "Humeral head of left pronator teres",
+   "system": "muscular"
+  },
+  "FMA38562": {
+   "category": "muscles",
+   "display_name": "Pronator Teres Uln. R",
+   "fma_id": 38562,
+   "preferred_label": "Ulnar head of right pronator teres",
+   "system": "muscular"
+  },
+  "FMA38563": {
+   "category": "muscles",
+   "display_name": "Pronator Teres Uln. L",
+   "fma_id": 38563,
+   "preferred_label": "Ulnar head of left pronator teres",
+   "system": "muscular"
+  },
+  "FMA38617": {
+   "category": "muscles",
+   "display_name": "Flex. Carpi Uln. Hum. R",
+   "fma_id": 38617,
+   "preferred_label": "Humeral head of right flexor carpi ulnaris",
+   "system": "muscular"
+  },
+  "FMA38618": {
+   "category": "muscles",
+   "display_name": "Flex. Carpi Uln. Hum. L",
+   "fma_id": 38618,
+   "preferred_label": "Humeral head of left flexor carpi ulnaris",
+   "system": "muscular"
+  },
+  "FMA38619": {
+   "category": "muscles",
+   "display_name": "Flex. Carpi Uln. Uln. R",
+   "fma_id": 38619,
+   "preferred_label": "Ulnar head of right flexor carpi ulnaris",
+   "system": "muscular"
+  },
+  "FMA38620": {
+   "category": "muscles",
+   "display_name": "Flex. Carpi Uln. Uln. L",
+   "fma_id": 38620,
+   "preferred_label": "Ulnar head of left flexor carpi ulnaris",
+   "system": "muscular"
+  },
+  "FMA3862nsn": {
+   "category": "cardiac_additional",
+   "display_name": "Anterior Interventricular Branch",
+   "fma_id": 3862,
+   "preferred_label": "Anterior interventricular branch of left coronary artery",
+   "system": "cardiovascular"
+  },
+  "FMA38638": {
+   "category": "muscles",
+   "display_name": "Flex. Dig. Sup. HU R",
+   "fma_id": 38638,
+   "preferred_label": "Humeroulnar head of right flexor digitorum superficialis",
+   "system": "muscular"
+  },
+  "FMA38639": {
+   "category": "muscles",
+   "display_name": "Flex. Dig. Sup. HU L",
+   "fma_id": 38639,
+   "preferred_label": "Humeroulnar head of left flexor digitorum superficialis",
+   "system": "muscular"
+  },
+  "FMA38640": {
+   "category": "muscles",
+   "display_name": "Flex. Dig. Sup. Rad. R",
+   "fma_id": 38640,
+   "preferred_label": "Radial head of right flexor digitorum superficialis",
+   "system": "muscular"
+  },
+  "FMA38641": {
+   "category": "muscles",
+   "display_name": "Flex. Dig. Sup. Rad. L",
+   "fma_id": 38641,
+   "preferred_label": "Radial head of left flexor digitorum superficialis",
+   "system": "muscular"
+  },
+  "FMA38928": {
+   "category": "muscles",
+   "display_name": "Rectus Femoris R",
+   "fma_id": 38928,
+   "preferred_label": "Right rectus femoris",
+   "system": "muscular"
+  },
+  "FMA38929": {
+   "category": "muscles",
+   "display_name": "Rectus Femoris L",
+   "fma_id": 38929,
+   "preferred_label": "Left rectus femoris",
+   "system": "muscular"
+  },
+  "FMA38930": {
+   "category": "muscles",
+   "display_name": "Vastus Lat. R",
+   "fma_id": 38930,
+   "preferred_label": "Right vastus lateralis",
+   "system": "muscular"
+  },
+  "FMA38931": {
+   "category": "muscles",
+   "display_name": "Vastus Lat. L",
+   "fma_id": 38931,
+   "preferred_label": "Left vastus lateralis",
+   "system": "muscular"
+  },
+  "FMA38932": {
+   "category": "muscles",
+   "display_name": "Vastus Med. R",
+   "fma_id": 38932,
+   "preferred_label": "Right vastus medialis",
+   "system": "muscular"
+  },
+  "FMA38933": {
+   "category": "muscles",
+   "display_name": "Vastus Med. L",
+   "fma_id": 38933,
+   "preferred_label": "Left vastus medialis",
+   "system": "muscular"
+  },
+  "FMA38934": {
+   "category": "muscles",
+   "display_name": "Vastus Inter. R",
+   "fma_id": 38934,
+   "preferred_label": "Right vastus intermedius",
+   "system": "muscular"
+  },
+  "FMA38935": {
+   "category": "muscles",
+   "display_name": "Vastus Inter. L",
+   "fma_id": 38935,
+   "preferred_label": "Left vastus intermedius",
+   "system": "muscular"
+  },
+  "FMA3895": {
+   "category": "vascular",
+   "display_name": "Circumflex Art.",
+   "fma_id": 3895,
+   "preferred_label": "Circumflex branch of left coronary artery",
+   "system": "cardiovascular"
+  },
+  "FMA3932nsn": {
+   "category": "vascular",
+   "display_name": "Brachiocephalic",
+   "fma_id": 3932,
+   "preferred_label": "Brachiocephalic artery",
+   "system": "cardiovascular"
+  },
+  "FMA3941": {
+   "category": "vascular",
+   "display_name": "R Common Carotid",
+   "fma_id": 3941,
+   "preferred_label": "Right common carotid artery",
+   "system": "cardiovascular"
+  },
+  "FMA3953": {
+   "category": "vascular",
+   "display_name": "R Subclavian Art.",
+   "fma_id": 3953,
+   "preferred_label": "Right subclavian artery",
+   "system": "cardiovascular"
+  },
+  "FMA40120": {
+   "category": "ligaments",
+   "display_name": "R Flexor Retinaculum of Wrist",
+   "fma_id": 40120,
+   "preferred_label": "Flexor retinaculum of right wrist",
+   "system": null
+  },
+  "FMA40121": {
+   "category": "ligaments",
+   "display_name": "L Flexor Retinaculum of Wrist",
+   "fma_id": 40121,
+   "preferred_label": "Flexor retinaculum of left wrist",
+   "system": null
+  },
+  "FMA4058": {
+   "category": "vascular",
+   "display_name": "L Common Carotid",
+   "fma_id": 4058,
+   "preferred_label": "Left common carotid artery",
+   "system": "cardiovascular"
+  },
+  "FMA42398": {
+   "category": "muscles",
+   "display_name": "R Lumbricals",
+   "fma_id": 42398,
+   "preferred_label": "Set of lumbricals of right hand",
+   "system": "muscular"
+  },
+  "FMA42399": {
+   "category": "muscles",
+   "display_name": "L Lumbricals",
+   "fma_id": 42399,
+   "preferred_label": "Set of lumbricals of left hand",
+   "system": "muscular"
+  },
+  "FMA42402": {
+   "category": "muscles",
+   "display_name": "R Palmar Interossei",
+   "fma_id": 42402,
+   "preferred_label": "Set of palmar interossei of right hand",
+   "system": "muscular"
+  },
+  "FMA42403": {
+   "category": "muscles",
+   "display_name": "L Palmar Interossei",
+   "fma_id": 42403,
+   "preferred_label": "Set of palmar interossei of left hand",
+   "system": "muscular"
+  },
+  "FMA42404": {
+   "category": "muscles",
+   "display_name": "R Dorsal Interossei",
+   "fma_id": 42404,
+   "preferred_label": "Set of dorsal interossei of right hand",
+   "system": "muscular"
+  },
+  "FMA42405": {
+   "category": "muscles",
+   "display_name": "L Dorsal Interossei",
+   "fma_id": 42405,
+   "preferred_label": "Set of dorsal interossei of left hand",
+   "system": "muscular"
+  },
+  "FMA43253": {
+   "category": "skeleton",
+   "display_name": "R Big Toe Prox.",
+   "fma_id": 43253,
+   "preferred_label": "Proximal phalanx of right big toe",
+   "system": "skeletal"
+  },
+  "FMA43254": {
+   "category": "skeleton",
+   "display_name": "L Big Toe Prox.",
+   "fma_id": 43254,
+   "preferred_label": "Proximal phalanx of left big toe",
+   "system": "skeletal"
+  },
+  "FMA43883": {
+   "category": "muscles",
+   "display_name": "Gracilis R",
+   "fma_id": 43883,
+   "preferred_label": "Right gracilis",
+   "system": "muscular"
+  },
+  "FMA43884": {
+   "category": "muscles",
+   "display_name": "Gracilis L",
+   "fma_id": 43884,
+   "preferred_label": "Left gracilis",
+   "system": "muscular"
+  },
+  "FMA43886": {
+   "category": "muscles",
+   "display_name": "Adductor Min. R",
+   "fma_id": 43886,
+   "preferred_label": "Right adductor minimus",
+   "system": "muscular"
+  },
+  "FMA43887": {
+   "category": "muscles",
+   "display_name": "Adductor Min. L",
+   "fma_id": 43887,
+   "preferred_label": "Left adductor minimus",
+   "system": "muscular"
+  },
+  "FMA44249": {
+   "category": "ligaments",
+   "display_name": "R Long Plantar Ligament",
+   "fma_id": 44249,
+   "preferred_label": "Right long plantar ligament",
+   "system": "articular"
+  },
+  "FMA44250": {
+   "category": "ligaments",
+   "display_name": "L Long Plantar Ligament",
+   "fma_id": 44250,
+   "preferred_label": "Left long plantar ligament",
+   "system": "articular"
+  },
+  "FMA45097": {
+   "category": "skeleton",
+   "display_name": "R Sesamoid",
+   "fma_id": 45097,
+   "preferred_label": "Sesamoid bone of right foot",
+   "system": "skeletal"
+  },
+  "FMA45098": {
+   "category": "skeleton",
+   "display_name": "L Sesamoid",
+   "fma_id": 45098,
+   "preferred_label": "Sesamoid bone of left foot",
+   "system": "skeletal"
+  },
+  "FMA45739": {
+   "category": "muscles",
+   "display_name": "Platysma R",
+   "fma_id": 45739,
+   "preferred_label": "Right platysma",
+   "system": "muscular"
+  },
+  "FMA45740": {
+   "category": "muscles",
+   "display_name": "Platysma L",
+   "fma_id": 45740,
+   "preferred_label": "Left platysma",
+   "system": "muscular"
+  },
+  "FMA45826": {
+   "category": "muscles",
+   "display_name": "Stylohyoid R",
+   "fma_id": 45826,
+   "preferred_label": "Right stylohyoid",
+   "system": "muscular"
+  },
+  "FMA45827": {
+   "category": "muscles",
+   "display_name": "Stylohyoid L",
+   "fma_id": 45827,
+   "preferred_label": "Left stylohyoid",
+   "system": "muscular"
+  },
+  "FMA45854": {
+   "category": "pelvic_floor",
+   "display_name": "R Pubococcygeus",
+   "fma_id": 45854,
+   "preferred_label": "Right pubococcygeus",
+   "system": "muscular"
+  },
+  "FMA45855": {
+   "category": "pelvic_floor",
+   "display_name": "L Pubococcygeus",
+   "fma_id": 45855,
+   "preferred_label": "Left pubococcygeus",
+   "system": "muscular"
+  },
+  "FMA45856": {
+   "category": "pelvic_floor",
+   "display_name": "R Puborectalis",
+   "fma_id": 45856,
+   "preferred_label": "Right puborectalis",
+   "system": "muscular"
+  },
+  "FMA45857": {
+   "category": "pelvic_floor",
+   "display_name": "L Puborectalis",
+   "fma_id": 45857,
+   "preferred_label": "Left puborectalis",
+   "system": "muscular"
+  },
+  "FMA45858": {
+   "category": "pelvic_floor",
+   "display_name": "R Iliococcygeus",
+   "fma_id": 45858,
+   "preferred_label": "Right iliococcygeus",
+   "system": "muscular"
+  },
+  "FMA45859": {
+   "category": "pelvic_floor",
+   "display_name": "L Iliococcygeus",
+   "fma_id": 45859,
+   "preferred_label": "Left iliococcygeus",
+   "system": "muscular"
+  },
+  "FMA45874": {
+   "category": "muscles",
+   "display_name": "Pect. Major Abd. R",
+   "fma_id": 45874,
+   "preferred_label": "Abdominal part of right pectoralis major",
+   "system": "muscular"
+  },
+  "FMA45875": {
+   "category": "muscles",
+   "display_name": "Pect. Major Abd. L",
+   "fma_id": 45875,
+   "preferred_label": "Abdominal part of left pectoralis major",
+   "system": "muscular"
+  },
+  "FMA45888": {
+   "category": "muscles",
+   "display_name": "Biceps Fem. Long R",
+   "fma_id": 45888,
+   "preferred_label": "Long head of right biceps femoris",
+   "system": "muscular"
+  },
+  "FMA45889": {
+   "category": "muscles",
+   "display_name": "Biceps Fem. Long L",
+   "fma_id": 45889,
+   "preferred_label": "Long head of left biceps femoris",
+   "system": "muscular"
+  },
+  "FMA45891": {
+   "category": "muscles",
+   "display_name": "Biceps Fem. Short R",
+   "fma_id": 45891,
+   "preferred_label": "Short head of right biceps femoris",
+   "system": "muscular"
+  },
+  "FMA45892": {
+   "category": "muscles",
+   "display_name": "Biceps Fem. Short L",
+   "fma_id": 45892,
+   "preferred_label": "Short head of left biceps femoris",
+   "system": "muscular"
+  },
+  "FMA45957": {
+   "category": "muscles",
+   "display_name": "Gastroc. Med. R",
+   "fma_id": 45957,
+   "preferred_label": "Medial head of right gastrocnemius",
+   "system": "muscular"
+  },
+  "FMA45958": {
+   "category": "muscles",
+   "display_name": "Gastroc. Med. L",
+   "fma_id": 45958,
+   "preferred_label": "Medial head of left gastrocnemius",
+   "system": "muscular"
+  },
+  "FMA45960": {
+   "category": "muscles",
+   "display_name": "Gastroc. Lat. R",
+   "fma_id": 45960,
+   "preferred_label": "Lateral head of right gastrocnemius",
+   "system": "muscular"
+  },
+  "FMA45961": {
+   "category": "muscles",
+   "display_name": "Gastroc. Lat. L",
+   "fma_id": 45961,
+   "preferred_label": "Lateral head of left gastrocnemius",
+   "system": "muscular"
+  },
+  "FMA45971": {
+   "category": "muscles",
+   "display_name": "R Flexor Hallucis Brevis Medial",
+   "fma_id": 45971,
+   "preferred_label": "Medial head of right flexor hallucis brevis",
+   "system": "muscular"
+  },
+  "FMA45972": {
+   "category": "muscles",
+   "display_name": "L Flexor Hallucis Brevis Medial",
+   "fma_id": 45972,
+   "preferred_label": "Medial head of left flexor hallucis brevis",
+   "system": "muscular"
+  },
+  "FMA45973": {
+   "category": "muscles",
+   "display_name": "R Flexor Hallucis Brevis Lateral",
+   "fma_id": 45973,
+   "preferred_label": "Lateral head of right flexor hallucis brevis",
+   "system": "muscular"
+  },
+  "FMA45974": {
+   "category": "muscles",
+   "display_name": "L Flexor Hallucis Brevis Lateral",
+   "fma_id": 45974,
+   "preferred_label": "Lateral head of left flexor hallucis brevis",
+   "system": "muscular"
+  },
+  "FMA46018": {
+   "category": "muscles",
+   "display_name": "R Adductor Hallucis Oblique",
+   "fma_id": 46018,
+   "preferred_label": "Oblique head of right adductor hallucis",
+   "system": "muscular"
+  },
+  "FMA46019": {
+   "category": "muscles",
+   "display_name": "L Adductor Hallucis Oblique",
+   "fma_id": 46019,
+   "preferred_label": "Oblique head of left adductor hallucis",
+   "system": "muscular"
+  },
+  "FMA46020": {
+   "category": "muscles",
+   "display_name": "R Adductor Hallucis Transverse",
+   "fma_id": 46020,
+   "preferred_label": "Transverse head of right adductor hallucis",
+   "system": "muscular"
+  },
+  "FMA46021": {
+   "category": "muscles",
+   "display_name": "L Adductor Hallucis Transverse",
+   "fma_id": 46021,
+   "preferred_label": "Transverse head of left adductor hallucis",
+   "system": "muscular"
+  },
+  "FMA46110": {
+   "category": "muscles",
+   "display_name": "R Flexor Pollicis Brevis Deep",
+   "fma_id": 46110,
+   "preferred_label": "Deep head of right flexor pollicis brevis",
+   "system": "muscular"
+  },
+  "FMA46111": {
+   "category": "muscles",
+   "display_name": "L Flexor Pollicis Brevis Deep",
+   "fma_id": 46111,
+   "preferred_label": "Deep head of left flexor pollicis brevis",
+   "system": "muscular"
+  },
+  "FMA46121": {
+   "category": "muscles",
+   "display_name": "R Adductor Pollicis Oblique",
+   "fma_id": 46121,
+   "preferred_label": "Oblique head of right adductor pollicis",
+   "system": "muscular"
+  },
+  "FMA46122": {
+   "category": "muscles",
+   "display_name": "L Adductor Pollicis Oblique",
+   "fma_id": 46122,
+   "preferred_label": "Oblique head of left adductor pollicis",
+   "system": "muscular"
+  },
+  "FMA46123": {
+   "category": "muscles",
+   "display_name": "R Adductor Pollicis Transverse",
+   "fma_id": 46123,
+   "preferred_label": "Transverse head of right adductor pollicis",
+   "system": "muscular"
+  },
+  "FMA46124": {
+   "category": "muscles",
+   "display_name": "L Adductor Pollicis Transverse",
+   "fma_id": 46124,
+   "preferred_label": "Transverse head of left adductor pollicis",
+   "system": "muscular"
+  },
+  "FMA46283": {
+   "category": "muscles",
+   "display_name": "Longus Colli Sup. Obl. R",
+   "fma_id": 46283,
+   "preferred_label": "Superior oblique part of right longus colli",
+   "system": "muscular"
+  },
+  "FMA46284": {
+   "category": "muscles",
+   "display_name": "Longus Colli Sup. Obl. L",
+   "fma_id": 46284,
+   "preferred_label": "Superior oblique part of left longus colli",
+   "system": "muscular"
+  },
+  "FMA46285": {
+   "category": "muscles",
+   "display_name": "Longus Colli Vert. R",
+   "fma_id": 46285,
+   "preferred_label": "Vertical intermediate part of right longus colli",
+   "system": "muscular"
+  },
+  "FMA46286": {
+   "category": "muscles",
+   "display_name": "Longus Colli Vert. L",
+   "fma_id": 46286,
+   "preferred_label": "Vertical intermediate part of left longus colli",
+   "system": "muscular"
+  },
+  "FMA46287": {
+   "category": "muscles",
+   "display_name": "Longus Colli Inf. Obl. R",
+   "fma_id": 46287,
+   "preferred_label": "Inferior oblique part of right longus colli",
+   "system": "muscular"
+  },
+  "FMA46288": {
+   "category": "muscles",
+   "display_name": "Longus Colli Inf. Obl. L",
+   "fma_id": 46288,
+   "preferred_label": "Inferior oblique part of left longus colli",
+   "system": "muscular"
+  },
+  "FMA46304": {
+   "category": "muscles",
+   "display_name": "Digastric Ant. R",
+   "fma_id": 46304,
+   "preferred_label": "Anterior belly of right digastric",
+   "system": "muscular"
+  },
+  "FMA46305": {
+   "category": "muscles",
+   "display_name": "Digastric Ant. L",
+   "fma_id": 46305,
+   "preferred_label": "Anterior belly of left digastric",
+   "system": "muscular"
+  },
+  "FMA46306": {
+   "category": "muscles",
+   "display_name": "Digastric Post. R",
+   "fma_id": 46306,
+   "preferred_label": "Posterior belly of right digastric",
+   "system": "muscular"
+  },
+  "FMA46307": {
+   "category": "muscles",
+   "display_name": "Digastric Post. L",
+   "fma_id": 46307,
+   "preferred_label": "Posterior belly of left digastric",
+   "system": "muscular"
+  },
+  "FMA46309": {
+   "category": "muscles",
+   "display_name": "Longus Capitis R",
+   "fma_id": 46309,
+   "preferred_label": "Right longus capitis",
+   "system": "muscular"
+  },
+  "FMA46310": {
+   "category": "muscles",
+   "display_name": "Longus Capitis L",
+   "fma_id": 46310,
+   "preferred_label": "Left longus capitis",
+   "system": "muscular"
+  },
+  "FMA46313": {
+   "category": "muscles",
+   "display_name": "Rectus Cap. Anterior R",
+   "fma_id": 46313,
+   "preferred_label": "Right rectus capitis anterior",
+   "system": "muscular"
+  },
+  "FMA46314": {
+   "category": "muscles",
+   "display_name": "Rectus Cap. Anterior L",
+   "fma_id": 46314,
+   "preferred_label": "Left rectus capitis anterior",
+   "system": "muscular"
+  },
+  "FMA46317": {
+   "category": "muscles",
+   "display_name": "Rectus Cap. Lateralis R",
+   "fma_id": 46317,
+   "preferred_label": "Right rectus capitis lateralis",
+   "system": "muscular"
+  },
+  "FMA46318": {
+   "category": "muscles",
+   "display_name": "Rectus Cap. Lateralis L",
+   "fma_id": 46318,
+   "preferred_label": "Left rectus capitis lateralis",
+   "system": "muscular"
+  },
+  "FMA46321": {
+   "category": "muscles",
+   "display_name": "Mylohyoid R",
+   "fma_id": 46321,
+   "preferred_label": "Right mylohyoid",
+   "system": "muscular"
+  },
+  "FMA46322": {
+   "category": "muscles",
+   "display_name": "Mylohyoid L",
+   "fma_id": 46322,
+   "preferred_label": "Left mylohyoid",
+   "system": "muscular"
+  },
+  "FMA46326": {
+   "category": "muscles",
+   "display_name": "Geniohyoid R",
+   "fma_id": 46326,
+   "preferred_label": "Right geniohyoid",
+   "system": "muscular"
+  },
+  "FMA46327": {
+   "category": "muscles",
+   "display_name": "Geniohyoid L",
+   "fma_id": 46327,
+   "preferred_label": "Left geniohyoid",
+   "system": "muscular"
+  },
+  "FMA46442": {
+   "category": "pelvic_floor",
+   "display_name": "Tendinous Arch of Levator Ani",
+   "fma_id": 46442,
+   "preferred_label": "Tendinous arch of levator ani",
+   "system": null
+  },
+  "FMA46443": {
+   "category": "pelvic_floor",
+   "display_name": "R Coccygeus",
+   "fma_id": 46443,
+   "preferred_label": "Right coccygeus",
+   "system": "muscular"
+  },
+  "FMA46444": {
+   "category": "pelvic_floor",
+   "display_name": "L Coccygeus",
+   "fma_id": 46444,
+   "preferred_label": "Left coccygeus",
+   "system": "muscular"
+  },
+  "FMA46759": {
+   "category": "muscles",
+   "display_name": "Frontalis R",
+   "fma_id": 46759,
+   "preferred_label": "Right frontalis",
+   "system": "muscular"
+  },
+  "FMA46760": {
+   "category": "muscles",
+   "display_name": "Frontalis L",
+   "fma_id": 46760,
+   "preferred_label": "Left frontalis",
+   "system": "muscular"
+  },
+  "FMA46761": {
+   "category": "muscles",
+   "display_name": "Occipitalis R",
+   "fma_id": 46761,
+   "preferred_label": "Right occipitalis",
+   "system": "muscular"
+  },
+  "FMA46762": {
+   "category": "muscles",
+   "display_name": "Occipitalis L",
+   "fma_id": 46762,
+   "preferred_label": "Left occipitalis",
+   "system": "muscular"
+  },
+  "FMA46763": {
+   "category": "muscles",
+   "display_name": "Temporoparietalis R",
+   "fma_id": 46763,
+   "preferred_label": "Right temporoparietalis",
+   "system": "muscular"
+  },
+  "FMA46764": {
+   "category": "muscles",
+   "display_name": "Temporoparietalis L",
+   "fma_id": 46764,
+   "preferred_label": "Left temporoparietalis",
+   "system": "muscular"
+  },
+  "FMA46782": {
+   "category": "muscles",
+   "display_name": "Orbic. Oculi Orb. R",
+   "fma_id": 46782,
+   "preferred_label": "Orbital part of right orbicularis oculi",
+   "system": "muscular"
+  },
+  "FMA46783": {
+   "category": "muscles",
+   "display_name": "Orbic. Oculi Orb. L",
+   "fma_id": 46783,
+   "preferred_label": "Orbital part of left orbicularis oculi",
+   "system": "muscular"
+  },
+  "FMA46785": {
+   "category": "muscles",
+   "display_name": "Orbic. Oculi Palp. R",
+   "fma_id": 46785,
+   "preferred_label": "Palpebral part of right orbicularis oculi",
+   "system": "muscular"
+  },
+  "FMA46786": {
+   "category": "muscles",
+   "display_name": "Orbic. Oculi Palp. L",
+   "fma_id": 46786,
+   "preferred_label": "Palpebral part of left orbicularis oculi",
+   "system": "muscular"
+  },
+  "FMA46796": {
+   "category": "muscles",
+   "display_name": "Corrugator Sup. R",
+   "fma_id": 46796,
+   "preferred_label": "Right corrugator supercilii",
+   "system": "muscular"
+  },
+  "FMA46797": {
+   "category": "muscles",
+   "display_name": "Corrugator Sup. L",
+   "fma_id": 46797,
+   "preferred_label": "Left corrugator supercilii",
+   "system": "muscular"
+  },
+  "FMA46803": {
+   "category": "muscles",
+   "display_name": "Lev. Labii Alae. R",
+   "fma_id": 46803,
+   "preferred_label": "Right levator labii superioris alaeque nasi",
+   "system": "muscular"
+  },
+  "FMA46804": {
+   "category": "muscles",
+   "display_name": "Lev. Labii Alae. L",
+   "fma_id": 46804,
+   "preferred_label": "Left levator labii superioris alaeque nasi",
+   "system": "muscular"
+  },
+  "FMA46806": {
+   "category": "muscles",
+   "display_name": "Lev. Labii Sup. R",
+   "fma_id": 46806,
+   "preferred_label": "Right levator labii superioris",
+   "system": "muscular"
+  },
+  "FMA46807": {
+   "category": "muscles",
+   "display_name": "Lev. Labii Sup. L",
+   "fma_id": 46807,
+   "preferred_label": "Left levator labii superioris",
+   "system": "muscular"
+  },
+  "FMA46812": {
+   "category": "muscles",
+   "display_name": "Zygomatic Maj. R",
+   "fma_id": 46812,
+   "preferred_label": "Right zygomaticus major",
+   "system": "muscular"
+  },
+  "FMA46813": {
+   "category": "muscles",
+   "display_name": "Zygomatic Maj. L",
+   "fma_id": 46813,
+   "preferred_label": "Left zygomaticus major",
+   "system": "muscular"
+  },
+  "FMA46814": {
+   "category": "muscles",
+   "display_name": "Zygomatic Min. R",
+   "fma_id": 46814,
+   "preferred_label": "Right zygomaticus minor",
+   "system": "muscular"
+  },
+  "FMA46815": {
+   "category": "muscles",
+   "display_name": "Zygomatic Min. L",
+   "fma_id": 46815,
+   "preferred_label": "Left zygomaticus minor",
+   "system": "muscular"
+  },
+  "FMA46817": {
+   "category": "muscles",
+   "display_name": "Depr. Labii Inf. R",
+   "fma_id": 46817,
+   "preferred_label": "Right depressor labii inferioris",
+   "system": "muscular"
+  },
+  "FMA46818": {
+   "category": "muscles",
+   "display_name": "Depr. Labii Inf. L",
+   "fma_id": 46818,
+   "preferred_label": "Left depressor labii inferioris",
+   "system": "muscular"
+  },
+  "FMA46823": {
+   "category": "muscles",
+   "display_name": "Lev. Anguli Oris R",
+   "fma_id": 46823,
+   "preferred_label": "Right levator anguli oris",
+   "system": "muscular"
+  },
+  "FMA46824": {
+   "category": "muscles",
+   "display_name": "Lev. Anguli Oris L",
+   "fma_id": 46824,
+   "preferred_label": "Left levator anguli oris",
+   "system": "muscular"
+  },
+  "FMA46826": {
+   "category": "muscles",
+   "display_name": "Mentalis R",
+   "fma_id": 46826,
+   "preferred_label": "Right mentalis",
+   "system": "muscular"
+  },
+  "FMA46827": {
+   "category": "muscles",
+   "display_name": "Mentalis L",
+   "fma_id": 46827,
+   "preferred_label": "Left mentalis",
+   "system": "muscular"
+  },
+  "FMA46829": {
+   "category": "muscles",
+   "display_name": "Depr. Anguli Oris R",
+   "fma_id": 46829,
+   "preferred_label": "Right depressor anguli oris",
+   "system": "muscular"
+  },
+  "FMA46830": {
+   "category": "muscles",
+   "display_name": "Depr. Anguli Oris L",
+   "fma_id": 46830,
+   "preferred_label": "Left depressor anguli oris",
+   "system": "muscular"
+  },
+  "FMA46835": {
+   "category": "muscles",
+   "display_name": "Buccinator R",
+   "fma_id": 46835,
+   "preferred_label": "Right buccinator",
+   "system": "muscular"
+  },
+  "FMA46836": {
+   "category": "muscles",
+   "display_name": "Buccinator L",
+   "fma_id": 46836,
+   "preferred_label": "Left buccinator",
+   "system": "muscular"
+  },
+  "FMA46839": {
+   "category": "muscles",
+   "display_name": "Risorius R",
+   "fma_id": 46839,
+   "preferred_label": "Right risorius",
+   "system": "muscular"
+  },
+  "FMA46840": {
+   "category": "muscles",
+   "display_name": "Risorius L",
+   "fma_id": 46840,
+   "preferred_label": "Left risorius",
+   "system": "muscular"
+  },
+  "FMA46841": {
+   "category": "muscles",
+   "display_name": "Orbicularis Oris",
+   "fma_id": 46841,
+   "preferred_label": "Orbicularis oris",
+   "system": "muscular"
+  },
+  "FMA4685": {
+   "category": "vascular",
+   "display_name": "L Coronary Stem",
+   "fma_id": 4685,
+   "preferred_label": "Stem of left coronary artery",
+   "system": "cardiovascular"
+  },
+  "FMA4694": {
+   "category": "vascular",
+   "display_name": "L Subclavian Art.",
+   "fma_id": 4694,
+   "preferred_label": "Left subclavian artery",
+   "system": "cardiovascular"
+  },
+  "FMA4706": {
+   "category": "vascular",
+   "display_name": "Coronary Sinus",
+   "fma_id": 4706,
+   "preferred_label": "Coronary sinus",
+   "system": "cardiovascular"
+  },
+  "FMA4707": {
+   "category": "vascular",
+   "display_name": "Great Cardiac V.",
+   "fma_id": 4707,
+   "preferred_label": "Great cardiac vein",
+   "system": "cardiovascular"
+  },
+  "FMA4713": {
+   "category": "vascular",
+   "display_name": "Middle Cardiac V.",
+   "fma_id": 4713,
+   "preferred_label": "Middle cardiac vein",
+   "system": "cardiovascular"
+  },
+  "FMA4720": {
+   "category": "vascular",
+   "display_name": "Sup. Vena Cava",
+   "fma_id": 4720,
+   "preferred_label": "Superior vena cava",
+   "system": "cardiovascular"
+  },
+  "FMA4751": {
+   "category": "vascular",
+   "display_name": "R Brachioceph. V.",
+   "fma_id": 4751,
+   "preferred_label": "Right brachiocephalic vein",
+   "system": "cardiovascular"
+  },
+  "FMA4754": {
+   "category": "vascular",
+   "display_name": "R Int. Jugular V.",
+   "fma_id": 4754,
+   "preferred_label": "Right internal jugular vein",
+   "system": "cardiovascular"
+  },
+  "FMA4755": {
+   "category": "vascular",
+   "display_name": "R Subclavian V.",
+   "fma_id": 4755,
+   "preferred_label": "Right subclavian vein",
+   "system": "cardiovascular"
+  },
+  "FMA4761": {
+   "category": "vascular",
+   "display_name": "L Brachioceph. V.",
+   "fma_id": 4761,
+   "preferred_label": "Left brachiocephalic vein",
+   "system": "cardiovascular"
+  },
+  "FMA4762": {
+   "category": "vascular",
+   "display_name": "L Int. Jugular V.",
+   "fma_id": 4762,
+   "preferred_label": "Left internal jugular vein",
+   "system": "cardiovascular"
+  },
+  "FMA4763": {
+   "category": "vascular",
+   "display_name": "L Subclavian V.",
+   "fma_id": 4763,
+   "preferred_label": "Left subclavian vein",
+   "system": "cardiovascular"
+  },
+  "FMA49001": {
+   "category": "muscles",
+   "display_name": "Masseter Sup. R",
+   "fma_id": 49001,
+   "preferred_label": "Superficial part of right masseter",
+   "system": "muscular"
+  },
+  "FMA49002": {
+   "category": "muscles",
+   "display_name": "Masseter Sup. L",
+   "fma_id": 49002,
+   "preferred_label": "Superficial part of left masseter",
+   "system": "muscular"
+  },
+  "FMA49004": {
+   "category": "muscles",
+   "display_name": "Masseter Deep R",
+   "fma_id": 49004,
+   "preferred_label": "Deep part of right masseter",
+   "system": "muscular"
+  },
+  "FMA49005": {
+   "category": "muscles",
+   "display_name": "Masseter Deep L",
+   "fma_id": 49005,
+   "preferred_label": "Deep part of left masseter",
+   "system": "muscular"
+  },
+  "FMA49007": {
+   "category": "muscles",
+   "display_name": "Temporalis R",
+   "fma_id": 49007,
+   "preferred_label": "Right temporalis",
+   "system": "muscular"
+  },
+  "FMA49008": {
+   "category": "muscles",
+   "display_name": "Temporalis L",
+   "fma_id": 49008,
+   "preferred_label": "Left temporalis",
+   "system": "muscular"
+  },
+  "FMA49012": {
+   "category": "muscles",
+   "display_name": "Med. Pterygoid R",
+   "fma_id": 49012,
+   "preferred_label": "Right medial pterygoid",
+   "system": "muscular"
+  },
+  "FMA49013": {
+   "category": "muscles",
+   "display_name": "Med. Pterygoid L",
+   "fma_id": 49013,
+   "preferred_label": "Left medial pterygoid",
+   "system": "muscular"
+  },
+  "FMA49022": {
+   "category": "muscles",
+   "display_name": "Lat. Pteryg. Lower R",
+   "fma_id": 49022,
+   "preferred_label": "Lower head of right lateral pterygoid",
+   "system": "muscular"
+  },
+  "FMA49023": {
+   "category": "muscles",
+   "display_name": "Lat. Pteryg. Lower L",
+   "fma_id": 49023,
+   "preferred_label": "Lower head of left lateral pterygoid",
+   "system": "muscular"
+  },
+  "FMA49024": {
+   "category": "muscles",
+   "display_name": "Lat. Pteryg. Upper R",
+   "fma_id": 49024,
+   "preferred_label": "Upper head of right lateral pterygoid",
+   "system": "muscular"
+  },
+  "FMA49025": {
+   "category": "muscles",
+   "display_name": "Lat. Pteryg. Upper L",
+   "fma_id": 49025,
+   "preferred_label": "Upper head of left lateral pterygoid",
+   "system": "muscular"
+  },
+  "FMA49041": {
+   "category": "muscles",
+   "display_name": "Lev. Palpebrae Sup. R",
+   "fma_id": 49041,
+   "preferred_label": "Levator palpebrae superioris",
+   "system": "muscular"
+  },
+  "FMA49042": {
+   "category": "muscles",
+   "display_name": "Lev. Palpebrae Sup. L",
+   "fma_id": 49042,
+   "preferred_label": "Right orbitalis",
+   "system": "muscular"
+  },
+  "FMA50737": {
+   "category": "vascular",
+   "display_name": "Celiac Art.",
+   "fma_id": 50737,
+   "preferred_label": "Celiac artery",
+   "system": "cardiovascular"
+  },
+  "FMA50875": {
+   "category": "brain",
+   "display_name": "R Optic Nerve",
+   "fma_id": 50875,
+   "preferred_label": "Right optic nerve",
+   "system": "nervous"
+  },
+  "FMA50878": {
+   "category": "brain",
+   "display_name": "L Optic Nerve",
+   "fma_id": 50878,
+   "preferred_label": "Left optic nerve",
+   "system": "nervous"
+  },
+  "FMA51142": {
+   "category": "muscles",
+   "display_name": "R Extensor Digitorum Brevis",
+   "fma_id": 51142,
+   "preferred_label": "Right extensor digitorum brevis",
+   "system": "muscular"
+  },
+  "FMA51143": {
+   "category": "muscles",
+   "display_name": "L Extensor Digitorum Brevis",
+   "fma_id": 51143,
+   "preferred_label": "Left extensor digitorum brevis",
+   "system": "muscular"
+  },
+  "FMA51144": {
+   "category": "muscles",
+   "display_name": "R Extensor Hallucis Brevis",
+   "fma_id": 51144,
+   "preferred_label": "Right extensor hallucis brevis",
+   "system": "muscular"
+  },
+  "FMA51145": {
+   "category": "muscles",
+   "display_name": "L Extensor Hallucis Brevis",
+   "fma_id": 51145,
+   "preferred_label": "Left extensor hallucis brevis",
+   "system": "muscular"
+  },
+  "FMA52734": {
+   "category": "skull_bones",
+   "display_name": "Frontal Bone",
+   "fma_id": 52734,
+   "preferred_label": "Frontal bone",
+   "system": "skeletal"
+  },
+  "FMA52735": {
+   "category": "skull_bones",
+   "display_name": "Occipital Bone",
+   "fma_id": 52735,
+   "preferred_label": "Occipital bone",
+   "system": "skeletal"
+  },
+  "FMA52736": {
+   "category": "skull_bones",
+   "display_name": "Sphenoid Bone",
+   "fma_id": 52736,
+   "preferred_label": "Sphenoid bone",
+   "system": "skeletal"
+  },
+  "FMA52738": {
+   "category": "skull_bones",
+   "display_name": "R Temporal Bone",
+   "fma_id": 52738,
+   "preferred_label": "Right temporal bone",
+   "system": "skeletal"
+  },
+  "FMA52739": {
+   "category": "skull_bones",
+   "display_name": "L Temporal Bone",
+   "fma_id": 52739,
+   "preferred_label": "Left temporal bone",
+   "system": "skeletal"
+  },
+  "FMA52740": {
+   "category": "skull_bones",
+   "display_name": "Ethmoid",
+   "fma_id": 52740,
+   "preferred_label": "Ethmoid",
+   "system": "skeletal"
+  },
+  "FMA52748": {
+   "category": "skull_bones",
+   "display_name": "Mandible",
+   "fma_id": 52748,
+   "preferred_label": "Mandible",
+   "system": "skeletal"
+  },
+  "FMA52749": {
+   "category": "face_features",
+   "display_name": "Hyoid Bone",
+   "fma_id": 52749,
+   "preferred_label": "Hyoid bone",
+   "system": "skeletal"
+  },
+  "FMA52780": {
+   "category": "face_features",
+   "display_name": "Ear",
+   "fma_id": 52780,
+   "preferred_label": "Ear",
+   "system": null
+  },
+  "FMA52788": {
+   "category": "skull_bones",
+   "display_name": "R Parietal Bone",
+   "fma_id": 52788,
+   "preferred_label": "Right parietal bone",
+   "system": "skeletal"
+  },
+  "FMA52789": {
+   "category": "skull_bones",
+   "display_name": "L Parietal Bone",
+   "fma_id": 52789,
+   "preferred_label": "Left parietal bone",
+   "system": "skeletal"
+  },
+  "FMA52892": {
+   "category": "skull_bones",
+   "display_name": "R Zygomatic Bone",
+   "fma_id": 52892,
+   "preferred_label": "Right zygomatic bone",
+   "system": "skeletal"
+  },
+  "FMA52893": {
+   "category": "skull_bones",
+   "display_name": "L Zygomatic Bone",
+   "fma_id": 52893,
+   "preferred_label": "Left zygomatic bone",
+   "system": "skeletal"
+  },
+  "FMA53645": {
+   "category": "skull_bones",
+   "display_name": "R Lacrimal Bone",
+   "fma_id": 53645,
+   "preferred_label": "Right lacrimal bone",
+   "system": "skeletal"
+  },
+  "FMA53646": {
+   "category": "skull_bones",
+   "display_name": "L Lacrimal Bone",
+   "fma_id": 53646,
+   "preferred_label": "Left lacrimal bone",
+   "system": "skeletal"
+  },
+  "FMA53647": {
+   "category": "face_features",
+   "display_name": "Right Nasal Bone",
+   "fma_id": 53647,
+   "preferred_label": "Right nasal bone",
+   "system": "skeletal"
+  },
+  "FMA53648": {
+   "category": "face_features",
+   "display_name": "Left Nasal Bone",
+   "fma_id": 53648,
+   "preferred_label": "Left nasal bone",
+   "system": "skeletal"
+  },
+  "FMA53649": {
+   "category": "skull_bones",
+   "display_name": "R Maxilla",
+   "fma_id": 53649,
+   "preferred_label": "Right maxilla",
+   "system": "skeletal"
+  },
+  "FMA53650": {
+   "category": "skull_bones",
+   "display_name": "L Maxilla",
+   "fma_id": 53650,
+   "preferred_label": "Left maxilla",
+   "system": "skeletal"
+  },
+  "FMA53655": {
+   "category": "skull_bones",
+   "display_name": "R Palatine Bone",
+   "fma_id": 53655,
+   "preferred_label": "Right palatine bone",
+   "system": "skeletal"
+  },
+  "FMA53656": {
+   "category": "skull_bones",
+   "display_name": "L Palatine Bone",
+   "fma_id": 53656,
+   "preferred_label": "Left palatine bone",
+   "system": "skeletal"
+  },
+  "FMA54737": {
+   "category": "skull_bones",
+   "display_name": "R Inferior Nasal Concha",
+   "fma_id": 54737,
+   "preferred_label": "Right inferior nasal concha",
+   "system": "skeletal"
+  },
+  "FMA54738": {
+   "category": "skull_bones",
+   "display_name": "L Inferior Nasal Concha",
+   "fma_id": 54738,
+   "preferred_label": "Left inferior nasal concha",
+   "system": "skeletal"
+  },
+  "FMA55099": {
+   "category": "face_features",
+   "display_name": "Thyroid Cartilage",
+   "fma_id": 55099,
+   "preferred_label": "Thyroid cartilage",
+   "system": "skeletal"
+  },
+  "FMA55606": {
+   "category": "teeth",
+   "display_name": "Lower R Canine",
+   "fma_id": 55606,
+   "preferred_label": "Right nasalis",
+   "system": "muscular"
+  },
+  "FMA55607": {
+   "category": "teeth",
+   "display_name": "Lower L Canine",
+   "fma_id": 55607,
+   "preferred_label": "Left nasalis",
+   "system": "muscular"
+  },
+  "FMA55608": {
+   "category": "teeth",
+   "display_name": "Lower R Lateral Incisor",
+   "fma_id": 55608,
+   "preferred_label": "Right depressor septi nasi",
+   "system": "muscular"
+  },
+  "FMA55609": {
+   "category": "teeth",
+   "display_name": "Lower L Lateral Incisor",
+   "fma_id": 55609,
+   "preferred_label": "Left depressor septi nasi",
+   "system": "muscular"
+  },
+  "FMA55610": {
+   "category": "teeth",
+   "display_name": "Lower R Central Incisor",
+   "fma_id": 55610,
+   "preferred_label": "Right procerus",
+   "system": "muscular"
+  },
+  "FMA55611": {
+   "category": "teeth",
+   "display_name": "Lower L Central Incisor",
+   "fma_id": 55611,
+   "preferred_label": "Left procerus",
+   "system": "muscular"
+  },
+  "FMA55680": {
+   "category": "teeth",
+   "display_name": "Upper R 3rd Molar",
+   "fma_id": 55680,
+   "preferred_label": "Right upper lateral incisor tooth",
+   "system": "digestive"
+  },
+  "FMA55681": {
+   "category": "teeth",
+   "display_name": "Upper R 2nd Molar",
+   "fma_id": 55681,
+   "preferred_label": "Right upper central incisor tooth",
+   "system": "digestive"
+  },
+  "FMA55682": {
+   "category": "teeth",
+   "display_name": "Upper R 1st Molar",
+   "fma_id": 55682,
+   "preferred_label": "Left upper central incisor tooth",
+   "system": "digestive"
+  },
+  "FMA55683": {
+   "category": "teeth",
+   "display_name": "Upper L 3rd Molar",
+   "fma_id": 55683,
+   "preferred_label": "Left upper lateral incisor tooth",
+   "system": "digestive"
+  },
+  "FMA55686": {
+   "category": "teeth",
+   "display_name": "Upper R Canine",
+   "fma_id": 55686,
+   "preferred_label": "Right lower canine tooth",
+   "system": "digestive"
+  },
+  "FMA55687": {
+   "category": "teeth",
+   "display_name": "Upper L Canine",
+   "fma_id": 55687,
+   "preferred_label": "Left lower canine tooth",
+   "system": "digestive"
+  },
+  "FMA55688": {
+   "category": "teeth",
+   "display_name": "Upper R 2nd Premolar",
+   "fma_id": 55688,
+   "preferred_label": "Right second upper premolar tooth",
+   "system": "digestive"
+  },
+  "FMA55689": {
+   "category": "teeth",
+   "display_name": "Upper R 1st Premolar",
+   "fma_id": 55689,
+   "preferred_label": "Right first upper premolar tooth",
+   "system": "digestive"
+  },
+  "FMA55690": {
+   "category": "teeth",
+   "display_name": "Upper L 2nd Premolar",
+   "fma_id": 55690,
+   "preferred_label": "Left first upper premolar tooth",
+   "system": "digestive"
+  },
+  "FMA55691": {
+   "category": "teeth",
+   "display_name": "Upper L 1st Premolar",
+   "fma_id": 55691,
+   "preferred_label": "Left second upper premolar tooth",
+   "system": "digestive"
+  },
+  "FMA55692": {
+   "category": "teeth",
+   "display_name": "Upper L 2nd Molar",
+   "fma_id": 55692,
+   "preferred_label": "Left second lower premolar tooth",
+   "system": "digestive"
+  },
+  "FMA55693": {
+   "category": "teeth",
+   "display_name": "Upper L 1st Molar",
+   "fma_id": 55693,
+   "preferred_label": "Left first lower premolar tooth",
+   "system": "digestive"
+  },
+  "FMA55694": {
+   "category": "teeth",
+   "display_name": "Upper R Lateral Incisor",
+   "fma_id": 55694,
+   "preferred_label": "Right first lower premolar tooth",
+   "system": "digestive"
+  },
+  "FMA55695": {
+   "category": "teeth",
+   "display_name": "Upper R Central Incisor",
+   "fma_id": 55695,
+   "preferred_label": "Right second lower premolar tooth",
+   "system": "digestive"
+  },
+  "FMA55697": {
+   "category": "teeth",
+   "display_name": "Lower R 3rd Molar",
+   "fma_id": 55697,
+   "preferred_label": "Right second upper molar tooth",
+   "system": "digestive"
+  },
+  "FMA55698": {
+   "category": "teeth",
+   "display_name": "Lower R 2nd Molar",
+   "fma_id": 55698,
+   "preferred_label": "Right first upper molar tooth",
+   "system": "digestive"
+  },
+  "FMA55699": {
+   "category": "teeth",
+   "display_name": "Lower R 1st Molar",
+   "fma_id": 55699,
+   "preferred_label": "Left first upper molar tooth",
+   "system": "digestive"
+  },
+  "FMA55700": {
+   "category": "teeth",
+   "display_name": "Lower L 3rd Molar",
+   "fma_id": 55700,
+   "preferred_label": "Left second upper molar tooth",
+   "system": "digestive"
+  },
+  "FMA55703": {
+   "category": "teeth",
+   "display_name": "Lower R 2nd Premolar",
+   "fma_id": 55703,
+   "preferred_label": "Left second lower molar tooth",
+   "system": "digestive"
+  },
+  "FMA55704": {
+   "category": "teeth",
+   "display_name": "Lower R 1st Premolar",
+   "fma_id": 55704,
+   "preferred_label": "Left first lower molar tooth",
+   "system": "digestive"
+  },
+  "FMA55705": {
+   "category": "teeth",
+   "display_name": "Lower L 2nd Premolar",
+   "fma_id": 55705,
+   "preferred_label": "Right first lower molar tooth",
+   "system": "digestive"
+  },
+  "FMA55706": {
+   "category": "teeth",
+   "display_name": "Lower L 1st Premolar",
+   "fma_id": 55706,
+   "preferred_label": "Right second lower molar tooth",
+   "system": "digestive"
+  },
+  "FMA55798": {
+   "category": "teeth",
+   "display_name": "Upper R Canine Alt",
+   "fma_id": 55798,
+   "preferred_label": "Right upper canine tooth",
+   "system": "digestive"
+  },
+  "FMA55799": {
+   "category": "teeth",
+   "display_name": "Upper L Canine Alt",
+   "fma_id": 55799,
+   "preferred_label": "Left upper canine tooth",
+   "system": "digestive"
+  },
+  "FMA57140": {
+   "category": "teeth",
+   "display_name": "Upper R Central Incisor Alt",
+   "fma_id": 57140,
+   "preferred_label": "Right lower lateral incisor tooth",
+   "system": "digestive"
+  },
+  "FMA57141": {
+   "category": "teeth",
+   "display_name": "Upper L Central Incisor Alt",
+   "fma_id": 57141,
+   "preferred_label": "Left lower lateral incisor tooth",
+   "system": "digestive"
+  },
+  "FMA57142": {
+   "category": "teeth",
+   "display_name": "Upper R Lateral Incisor Alt",
+   "fma_id": 57142,
+   "preferred_label": "Right lower central incisor tooth",
+   "system": "digestive"
+  },
+  "FMA57143": {
+   "category": "teeth",
+   "display_name": "Upper L Lateral Incisor Alt",
+   "fma_id": 57143,
+   "preferred_label": "Left lower central incisor tooth",
+   "system": "digestive"
+  },
+  "FMA58776": {
+   "category": "muscles",
+   "display_name": "Iliotibial Tract R",
+   "fma_id": 58776,
+   "preferred_label": "Right iliotibial tract",
+   "system": "nervous"
+  },
+  "FMA58777": {
+   "category": "muscles",
+   "display_name": "Iliotibial Tract L",
+   "fma_id": 58777,
+   "preferred_label": "Left iliotibial tract",
+   "system": "nervous"
+  },
+  "FMA59763": {
+   "category": "oral",
+   "display_name": "Upper Jaw Gingiva",
+   "fma_id": 59763,
+   "preferred_label": "Maxillary gingiva",
+   "system": "digestive"
+  },
+  "FMA59764": {
+   "category": "oral",
+   "display_name": "Lower Jaw Gingiva",
+   "fma_id": 59764,
+   "preferred_label": "Mandibular gingiva",
+   "system": "digestive"
+  },
+  "FMA59815nsn": {
+   "category": "oral",
+   "display_name": "Labial Part of Mouth",
+   "fma_id": 59815,
+   "preferred_label": "Labial part of mouth",
+   "system": null
+  },
+  "FMA61822": {
+   "category": "brain",
+   "display_name": "White Matter",
+   "fma_id": 61822,
+   "preferred_label": "White matter structure of cerebral hemisphere",
+   "system": null
+  },
+  "FMA61844": {
+   "category": "brain",
+   "display_name": "Septum Pellucidum",
+   "fma_id": 61844,
+   "preferred_label": "Septum pellucidum",
+   "system": null
+  },
+  "FMA61961": {
+   "category": "brain",
+   "display_name": "Ant. Commissure",
+   "fma_id": 61961,
+   "preferred_label": "Anterior commissure",
+   "system": null
+  },
+  "FMA61970": {
+   "category": "brain",
+   "display_name": "Commissure of Fornix",
+   "fma_id": 61970,
+   "preferred_label": "Commissure of fornix of forebrain",
+   "system": "nervous"
+  },
+  "FMA61975": {
+   "category": "brain",
+   "display_name": "Lamina Terminalis",
+   "fma_id": 61975,
+   "preferred_label": "Lamina terminalis",
+   "system": null
+  },
+  "FMA61993nsn": {
+   "category": "cns_additional",
+   "display_name": "Midbrain",
+   "fma_id": 61993,
+   "preferred_label": "Midbrain",
+   "system": "nervous"
+  },
+  "FMA62004": {
+   "category": "brain",
+   "display_name": "Medulla Oblongata",
+   "fma_id": 62004,
+   "preferred_label": "Medulla oblongata",
+   "system": "nervous"
+  },
+  "FMA62008nsn": {
+   "category": "cns_additional",
+   "display_name": "Hypothalamus",
+   "fma_id": 62008,
+   "preferred_label": "Hypothalamus",
+   "system": null
+  },
+  "FMA62032": {
+   "category": "brain",
+   "display_name": "Habenula",
+   "fma_id": 62032,
+   "preferred_label": "Habenula",
+   "system": null
+  },
+  "FMA62033": {
+   "category": "brain",
+   "display_name": "Pineal Body",
+   "fma_id": 62033,
+   "preferred_label": "Pineal body",
+   "system": null
+  },
+  "FMA62045": {
+   "category": "brain",
+   "display_name": "Optic Chiasm",
+   "fma_id": 62045,
+   "preferred_label": "Optic chiasm",
+   "system": "nervous"
+  },
+  "FMA62072": {
+   "category": "brain",
+   "display_name": "Post. Commissure",
+   "fma_id": 62072,
+   "preferred_label": "Posterior commissure",
+   "system": null
+  },
+  "FMA62327": {
+   "category": "brain",
+   "display_name": "Tuber Cinereum",
+   "fma_id": 62327,
+   "preferred_label": "Tuber cinereum",
+   "system": null
+  },
+  "FMA62382": {
+   "category": "brain",
+   "display_name": "R Optic Tract",
+   "fma_id": 62382,
+   "preferred_label": "Right optic tract",
+   "system": "nervous"
+  },
+  "FMA62394": {
+   "category": "brain",
+   "display_name": "Peduncle of Midbrain",
+   "fma_id": 62394,
+   "preferred_label": "Cerebral peduncle",
+   "system": null
+  },
+  "FMA65014": {
+   "category": "muscles",
+   "display_name": "Flex. Hall. Long. R",
+   "fma_id": 65014,
+   "preferred_label": "Right flexor hallucis longus",
+   "system": "muscular"
+  },
+  "FMA65015": {
+   "category": "muscles",
+   "display_name": "Flex. Hall. Long. L",
+   "fma_id": 65015,
+   "preferred_label": "Left flexor hallucis longus",
+   "system": "muscular"
+  },
+  "FMA65016": {
+   "category": "muscles",
+   "display_name": "Flex. Dig. Long. R",
+   "fma_id": 65016,
+   "preferred_label": "Right flexor digitorum longus",
+   "system": "muscular"
+  },
+  "FMA65017": {
+   "category": "muscles",
+   "display_name": "Flex. Dig. Long. L",
+   "fma_id": 65017,
+   "preferred_label": "Left flexor digitorum longus",
+   "system": "muscular"
+  },
+  "FMA65018": {
+   "category": "muscles",
+   "display_name": "Tibialis Post. R",
+   "fma_id": 65018,
+   "preferred_label": "Right tibialis posterior",
+   "system": "muscular"
+  },
+  "FMA65019": {
+   "category": "muscles",
+   "display_name": "Tibialis Post. L",
+   "fma_id": 65019,
+   "preferred_label": "Left tibialis posterior",
+   "system": "muscular"
+  },
+  "FMA65198": {
+   "category": "muscles",
+   "display_name": "R Flexor Pollicis Brevis Superficial",
+   "fma_id": 65198,
+   "preferred_label": "Superficial head of right flexor pollicis brevis",
+   "system": "muscular"
+  },
+  "FMA65199": {
+   "category": "muscles",
+   "display_name": "L Flexor Pollicis Brevis Superficial",
+   "fma_id": 65199,
+   "preferred_label": "Superficial head of left flexor pollicis brevis",
+   "system": "muscular"
+  },
+  "FMA65470": {
+   "category": "skeleton",
+   "display_name": "L Thumb Prox.",
+   "fma_id": 65470,
+   "preferred_label": "Proximal phalanx of left thumb",
+   "system": "skeletal"
+  },
+  "FMA66326": {
+   "category": "vascular",
+   "display_name": "Pulmonary Art.",
+   "fma_id": 66326,
+   "preferred_label": "Pulmonary artery",
+   "system": "cardiovascular"
+  },
+  "FMA66643": {
+   "category": "vascular",
+   "display_name": "Pulmonary V.",
+   "fma_id": 66643,
+   "preferred_label": "Pulmonary vein",
+   "system": "cardiovascular"
+  },
+  "FMA66791": {
+   "category": "skeleton",
+   "display_name": "L Little Prox.",
+   "fma_id": 66791,
+   "preferred_label": "Proximal phalanx of left little finger",
+   "system": "skeletal"
+  },
+  "FMA67936": {
+   "category": "brain",
+   "display_name": "L Optic Tract",
+   "fma_id": 67936,
+   "preferred_label": "Left optic tract",
+   "system": "nervous"
+  },
+  "FMA67943": {
+   "category": "brain",
+   "display_name": "Pons",
+   "fma_id": 67943,
+   "preferred_label": "Pons",
+   "system": null
+  },
+  "FMA67944": {
+   "category": "brain",
+   "display_name": "Cerebellum",
+   "fma_id": 67944,
+   "preferred_label": "Cerebellum",
+   "system": "nervous"
+  },
+  "FMA71098": {
+   "category": "face_features",
+   "display_name": "Eyebrows",
+   "fma_id": 71098,
+   "preferred_label": "Set of eyebrows",
+   "system": null
+  },
+  "FMA71194": {
+   "category": "organs",
+   "display_name": "R Thymus Lobe",
+   "fma_id": 71194,
+   "preferred_label": "Right lobe of thymus",
+   "system": "lymphatic"
+  },
+  "FMA71195": {
+   "category": "organs",
+   "display_name": "L Thymus Lobe",
+   "fma_id": 71195,
+   "preferred_label": "Left lobe of thymus",
+   "system": "lymphatic"
+  },
+  "FMA71307": {
+   "category": "muscles",
+   "display_name": "Interspinales Lumb.",
+   "fma_id": 71307,
+   "preferred_label": "Set of interspinales lumborum",
+   "system": "muscular"
+  },
+  "FMA71308": {
+   "category": "muscles",
+   "display_name": "Interspinales Thor.",
+   "fma_id": 71308,
+   "preferred_label": "Set of interspinales thoracis",
+   "system": "muscular"
+  },
+  "FMA71309": {
+   "category": "muscles",
+   "display_name": "Interspinales Cerv.",
+   "fma_id": 71309,
+   "preferred_label": "Set of interspinales cervicis",
+   "system": "muscular"
+  },
+  "FMA7131": {
+   "category": "organs",
+   "display_name": "Esophagus",
+   "fma_id": 7131,
+   "preferred_label": "Esophagus",
+   "system": "digestive"
+  },
+  "FMA71442": {
+   "category": "muscles",
+   "display_name": "Ant. Cerv. Intertrans.",
+   "fma_id": 71442,
+   "preferred_label": "Set of anterior cervical intertransversarii",
+   "system": "muscular"
+  },
+  "FMA71443": {
+   "category": "muscles",
+   "display_name": "Post. Cerv. Intertrans.",
+   "fma_id": 71443,
+   "preferred_label": "Set of posterior cervical intertransversarii",
+   "system": "muscular"
+  },
+  "FMA71444": {
+   "category": "muscles",
+   "display_name": "Lat. Lumb. Intertrans.",
+   "fma_id": 71444,
+   "preferred_label": "Set of lateral lumbar intertransversarius muscles",
+   "system": "muscular"
+  },
+  "FMA7148": {
+   "category": "organs",
+   "display_name": "Stomach",
+   "fma_id": 7148,
+   "preferred_label": "Stomach",
+   "system": "digestive"
+  },
+  "FMA71567": {
+   "category": "cardiac_additional",
+   "display_name": "Anterior Cardiac Veins",
+   "fma_id": 71567,
+   "preferred_label": "Set of anterior cardiac veins",
+   "system": "cardiovascular"
+  },
+  "FMA7163": {
+   "category": "skin",
+   "display_name": "Skin",
+   "fma_id": 7163,
+   "preferred_label": "Skin",
+   "system": "integumentary"
+  },
+  "FMA71669": {
+   "category": "cardiac_additional",
+   "display_name": "R Interventricular Septal Branches",
+   "fma_id": 71669,
+   "preferred_label": "Set of interventricular septal branches of right coronary artery",
+   "system": "cardiovascular"
+  },
+  "FMA71670": {
+   "category": "cardiac_additional",
+   "display_name": "L Interventricular Septal Branches",
+   "fma_id": 71670,
+   "preferred_label": "Set of interventricular septal branches of left coronary artery",
+   "system": "cardiovascular"
+  },
+  "FMA71704": {
+   "category": "face_features",
+   "display_name": "Nasal Cartilages",
+   "fma_id": 71704,
+   "preferred_label": "Set of nasal cartilages",
+   "system": "skeletal"
+  },
+  "FMA71908": {
+   "category": "skeleton",
+   "display_name": "L Middle Prox.",
+   "fma_id": 71908,
+   "preferred_label": "Proximal phalanx of left middle finger",
+   "system": "skeletal"
+  },
+  "FMA71915": {
+   "category": "skeleton",
+   "display_name": "L Index Prox.",
+   "fma_id": 71915,
+   "preferred_label": "Proximal phalanx of left index finger",
+   "system": "skeletal"
+  },
+  "FMA71916": {
+   "category": "skeleton",
+   "display_name": "L Ring Prox.",
+   "fma_id": 71916,
+   "preferred_label": "Proximal phalanx of left ring finger",
+   "system": "skeletal"
+  },
+  "FMA7196": {
+   "category": "organs",
+   "display_name": "Spleen",
+   "fma_id": 7196,
+   "preferred_label": "Spleen",
+   "system": "lymphatic"
+  },
+  "FMA7197": {
+   "category": "organs",
+   "display_name": "Liver",
+   "fma_id": 7197,
+   "preferred_label": "Liver",
+   "system": "digestive"
+  },
+  "FMA7198nsn": {
+   "category": "organs",
+   "display_name": "Pancreas",
+   "fma_id": 7198,
+   "preferred_label": "Pancreas",
+   "system": "digestive"
+  },
+  "FMA7202": {
+   "category": "organs",
+   "display_name": "Gallbladder",
+   "fma_id": 7202,
+   "preferred_label": "Gallbladder",
+   "system": "digestive"
+  },
+  "FMA7204": {
+   "category": "organs",
+   "display_name": "Right Kidney",
+   "fma_id": 7204,
+   "preferred_label": "Right kidney",
+   "system": "urinary"
+  },
+  "FMA7205": {
+   "category": "organs",
+   "display_name": "Left Kidney",
+   "fma_id": 7205,
+   "preferred_label": "Left kidney",
+   "system": "urinary"
+  },
+  "FMA7206": {
+   "category": "organs",
+   "display_name": "Duodenum",
+   "fma_id": 7206,
+   "preferred_label": "Duodenum",
+   "system": "digestive"
+  },
+  "FMA7207": {
+   "category": "organs",
+   "display_name": "Jejunum",
+   "fma_id": 7207,
+   "preferred_label": "Jejunum",
+   "system": "digestive"
+  },
+  "FMA7208": {
+   "category": "organs",
+   "display_name": "Ileum",
+   "fma_id": 7208,
+   "preferred_label": "Ileum",
+   "system": "digestive"
+  },
+  "FMA7211": {
+   "category": "organs",
+   "display_name": "Right Testis",
+   "fma_id": 7211,
+   "preferred_label": "Right testis",
+   "system": null
+  },
+  "FMA7212": {
+   "category": "organs",
+   "display_name": "Left Testis",
+   "fma_id": 7212,
+   "preferred_label": "Left testis",
+   "system": null
+  },
+  "FMA7234": {
+   "category": "organs",
+   "display_name": "Tricuspid Valve",
+   "fma_id": 7234,
+   "preferred_label": "Tricuspid valve",
+   "system": "cardiovascular"
+  },
+  "FMA7235": {
+   "category": "organs",
+   "display_name": "Mitral Valve",
+   "fma_id": 7235,
+   "preferred_label": "Mitral valve",
+   "system": "cardiovascular"
+  },
+  "FMA7246": {
+   "category": "organs",
+   "display_name": "Pulmonary Valve",
+   "fma_id": 7246,
+   "preferred_label": "Pulmonary valve",
+   "system": "cardiovascular"
+  },
+  "FMA7260": {
+   "category": "organs",
+   "display_name": "R Vent. Ant. Pap.",
+   "fma_id": 7260,
+   "preferred_label": "Anterior papillary muscle of right ventricle",
+   "system": "muscular"
+  },
+  "FMA7261": {
+   "category": "organs",
+   "display_name": "R Vent. Post. Pap.",
+   "fma_id": 7261,
+   "preferred_label": "Posterior papillary muscle of right ventricle",
+   "system": "muscular"
+  },
+  "FMA7262": {
+   "category": "organs",
+   "display_name": "R Vent. Sept. Pap.",
+   "fma_id": 7262,
+   "preferred_label": "Septal papillary muscle of right ventricle",
+   "system": "muscular"
+  },
+  "FMA72653": {
+   "category": "brain",
+   "display_name": "R Sup. Frontal Gyrus",
+   "fma_id": 72653,
+   "preferred_label": "Right superior frontal gyrus",
+   "system": "nervous"
+  },
+  "FMA72654": {
+   "category": "brain",
+   "display_name": "L Sup. Frontal Gyrus",
+   "fma_id": 72654,
+   "preferred_label": "Left superior frontal gyrus",
+   "system": "nervous"
+  },
+  "FMA72655": {
+   "category": "brain",
+   "display_name": "R Mid. Frontal Gyrus",
+   "fma_id": 72655,
+   "preferred_label": "Right middle frontal gyrus",
+   "system": "nervous"
+  },
+  "FMA72656": {
+   "category": "brain",
+   "display_name": "L Mid. Frontal Gyrus",
+   "fma_id": 72656,
+   "preferred_label": "Left middle frontal gyrus",
+   "system": "nervous"
+  },
+  "FMA7266": {
+   "category": "organs",
+   "display_name": "L Vent. Post. Pap.",
+   "fma_id": 7266,
+   "preferred_label": "Posterior papillary muscle of left ventricle",
+   "system": "muscular"
+  },
+  "FMA72661": {
+   "category": "brain",
+   "display_name": "R Precentral Gyrus",
+   "fma_id": 72661,
+   "preferred_label": "Right precentral gyrus",
+   "system": "nervous"
+  },
+  "FMA72662": {
+   "category": "brain",
+   "display_name": "L Precentral Gyrus",
+   "fma_id": 72662,
+   "preferred_label": "Left precentral gyrus",
+   "system": "nervous"
+  },
+  "FMA72665": {
+   "category": "brain",
+   "display_name": "R Postcentral Gyrus",
+   "fma_id": 72665,
+   "preferred_label": "Right postcentral gyrus",
+   "system": "nervous"
+  },
+  "FMA72666": {
+   "category": "brain",
+   "display_name": "L Postcentral Gyrus",
+   "fma_id": 72666,
+   "preferred_label": "Left postcentral gyrus",
+   "system": "nervous"
+  },
+  "FMA72667": {
+   "category": "brain",
+   "display_name": "R Supramarginal Gyrus",
+   "fma_id": 72667,
+   "preferred_label": "Right supramarginal gyrus",
+   "system": "nervous"
+  },
+  "FMA72668": {
+   "category": "brain",
+   "display_name": "L Supramarginal Gyrus",
+   "fma_id": 72668,
+   "preferred_label": "Left supramarginal gyrus",
+   "system": "nervous"
+  },
+  "FMA72669": {
+   "category": "brain",
+   "display_name": "R Angular Gyrus",
+   "fma_id": 72669,
+   "preferred_label": "Right angular gyrus",
+   "system": "nervous"
+  },
+  "FMA72670": {
+   "category": "brain",
+   "display_name": "L Angular Gyrus",
+   "fma_id": 72670,
+   "preferred_label": "Left angular gyrus",
+   "system": "nervous"
+  },
+  "FMA72685": {
+   "category": "brain",
+   "display_name": "R Mid. Temporal Gyrus",
+   "fma_id": 72685,
+   "preferred_label": "Right middle temporal gyrus",
+   "system": "nervous"
+  },
+  "FMA72686": {
+   "category": "brain",
+   "display_name": "L Mid. Temporal Gyrus",
+   "fma_id": 72686,
+   "preferred_label": "Left middle temporal gyrus",
+   "system": "nervous"
+  },
+  "FMA72687": {
+   "category": "brain",
+   "display_name": "R Inf. Temporal Gyrus",
+   "fma_id": 72687,
+   "preferred_label": "Right inferior temporal gyrus",
+   "system": "nervous"
+  },
+  "FMA72688": {
+   "category": "brain",
+   "display_name": "L Inf. Temporal Gyrus",
+   "fma_id": 72688,
+   "preferred_label": "Left inferior temporal gyrus",
+   "system": "nervous"
+  },
+  "FMA72689": {
+   "category": "brain",
+   "display_name": "R Fusiform Gyrus",
+   "fma_id": 72689,
+   "preferred_label": "Right fusiform gyrus",
+   "system": "nervous"
+  },
+  "FMA72690": {
+   "category": "brain",
+   "display_name": "L Fusiform Gyrus",
+   "fma_id": 72690,
+   "preferred_label": "Left fusiform gyrus",
+   "system": "nervous"
+  },
+  "FMA72701": {
+   "category": "brain",
+   "display_name": "R Short Gyrus",
+   "fma_id": 72701,
+   "preferred_label": "Right accessory short gyrus",
+   "system": "nervous"
+  },
+  "FMA72702": {
+   "category": "brain",
+   "display_name": "L Short Gyrus",
+   "fma_id": 72702,
+   "preferred_label": "Left accessory short gyrus",
+   "system": "nervous"
+  },
+  "FMA72705": {
+   "category": "brain",
+   "display_name": "R Parahippocampal",
+   "fma_id": 72705,
+   "preferred_label": "Right parahippocampal gyrus",
+   "system": "nervous"
+  },
+  "FMA72706": {
+   "category": "brain",
+   "display_name": "L Parahippocampal",
+   "fma_id": 72706,
+   "preferred_label": "Left parahippocampal gyrus",
+   "system": "nervous"
+  },
+  "FMA72713": {
+   "category": "brain",
+   "display_name": "R Hippocampus",
+   "fma_id": 72713,
+   "preferred_label": "Right hippocampus proper",
+   "system": "nervous"
+  },
+  "FMA72714": {
+   "category": "brain",
+   "display_name": "L Hippocampus",
+   "fma_id": 72714,
+   "preferred_label": "Left hippocampus proper",
+   "system": "nervous"
+  },
+  "FMA72717": {
+   "category": "brain",
+   "display_name": "R Cingulate Gyrus",
+   "fma_id": 72717,
+   "preferred_label": "Right cingulate gyrus",
+   "system": "nervous"
+  },
+  "FMA72718": {
+   "category": "brain",
+   "display_name": "L Cingulate Gyrus",
+   "fma_id": 72718,
+   "preferred_label": "Left cingulate gyrus",
+   "system": "nervous"
+  },
+  "FMA7274": {
+   "category": "organs",
+   "display_name": "Heart Wall",
+   "fma_id": 7274,
+   "preferred_label": "Wall of heart",
+   "system": "cardiovascular"
+  },
+  "FMA72800": {
+   "category": "brain",
+   "display_name": "R Ant. Sup. Temp.",
+   "fma_id": 72800,
+   "preferred_label": "Anterior part of right superior temporal gyrus",
+   "system": "nervous"
+  },
+  "FMA72801": {
+   "category": "brain",
+   "display_name": "L Ant. Sup. Temp.",
+   "fma_id": 72801,
+   "preferred_label": "Anterior part of left superior temporal gyrus",
+   "system": "nervous"
+  },
+  "FMA72804": {
+   "category": "brain",
+   "display_name": "R Post. Sup. Temp.",
+   "fma_id": 72804,
+   "preferred_label": "Posterior part of right superior temporal gyrus",
+   "system": "nervous"
+  },
+  "FMA72805": {
+   "category": "brain",
+   "display_name": "L Post. Sup. Temp.",
+   "fma_id": 72805,
+   "preferred_label": "Posterior part of left superior temporal gyrus",
+   "system": "nervous"
+  },
+  "FMA72826": {
+   "category": "brain",
+   "display_name": "R Caudate Nucleus",
+   "fma_id": 72826,
+   "preferred_label": "Right caudate nucleus",
+   "system": "nervous"
+  },
+  "FMA72827": {
+   "category": "brain",
+   "display_name": "L Caudate Nucleus",
+   "fma_id": 72827,
+   "preferred_label": "Left caudate nucleus",
+   "system": "nervous"
+  },
+  "FMA72828": {
+   "category": "brain",
+   "display_name": "R Putamen",
+   "fma_id": 72828,
+   "preferred_label": "Right putamen",
+   "system": "nervous"
+  },
+  "FMA72829": {
+   "category": "brain",
+   "display_name": "L Putamen",
+   "fma_id": 72829,
+   "preferred_label": "Left putamen",
+   "system": "nervous"
+  },
+  "FMA72830": {
+   "category": "brain",
+   "display_name": "R Globus Pallidus",
+   "fma_id": 72830,
+   "preferred_label": "Right globus pallidus",
+   "system": "nervous"
+  },
+  "FMA72831": {
+   "category": "brain",
+   "display_name": "L Globus Pallidus",
+   "fma_id": 72831,
+   "preferred_label": "Left globus pallidus",
+   "system": "nervous"
+  },
+  "FMA72832": {
+   "category": "brain",
+   "display_name": "R Amygdala",
+   "fma_id": 72832,
+   "preferred_label": "Right amygdala",
+   "system": "nervous"
+  },
+  "FMA72833": {
+   "category": "brain",
+   "display_name": "L Amygdala",
+   "fma_id": 72833,
+   "preferred_label": "Left amygdala",
+   "system": "nervous"
+  },
+  "FMA72908": {
+   "category": "cns_additional",
+   "display_name": "R Internal Capsule Anterior Limb",
+   "fma_id": 72908,
+   "preferred_label": "Anterior limb of right internal capsule",
+   "system": null
+  },
+  "FMA72909": {
+   "category": "cns_additional",
+   "display_name": "L Internal Capsule Anterior Limb",
+   "fma_id": 72909,
+   "preferred_label": "Anterior limb of left internal capsule",
+   "system": null
+  },
+  "FMA72924": {
+   "category": "brain",
+   "display_name": "R Fornix",
+   "fma_id": 72924,
+   "preferred_label": "Right fornix of forebrain",
+   "system": "nervous"
+  },
+  "FMA72925": {
+   "category": "brain",
+   "display_name": "L Fornix",
+   "fma_id": 72925,
+   "preferred_label": "Left fornix of forebrain",
+   "system": "nervous"
+  },
+  "FMA72939": {
+   "category": "cns_additional",
+   "display_name": "R Stria Terminalis",
+   "fma_id": 72939,
+   "preferred_label": "Right stria terminalis",
+   "system": null
+  },
+  "FMA72940": {
+   "category": "cns_additional",
+   "display_name": "L Stria Terminalis",
+   "fma_id": 72940,
+   "preferred_label": "Left stria terminalis",
+   "system": null
+  },
+  "FMA72975": {
+   "category": "brain",
+   "display_name": "R Occipital Lobe",
+   "fma_id": 72975,
+   "preferred_label": "Right occipital lobe",
+   "system": "nervous"
+  },
+  "FMA72976": {
+   "category": "brain",
+   "display_name": "L Occipital Lobe",
+   "fma_id": 72976,
+   "preferred_label": "Left occipital lobe",
+   "system": "nervous"
+  },
+  "FMA72977": {
+   "category": "brain",
+   "display_name": "R Insula",
+   "fma_id": 72977,
+   "preferred_label": "Right insula",
+   "system": "nervous"
+  },
+  "FMA72978": {
+   "category": "brain",
+   "display_name": "L Insula",
+   "fma_id": 72978,
+   "preferred_label": "Left insula",
+   "system": "nervous"
+  },
+  "FMA73303": {
+   "category": "cns_additional",
+   "display_name": "R Lateral Geniculate Body",
+   "fma_id": 73303,
+   "preferred_label": "Right lateral geniculate body",
+   "system": "nervous"
+  },
+  "FMA73304": {
+   "category": "cns_additional",
+   "display_name": "L Lateral Geniculate Body",
+   "fma_id": 73304,
+   "preferred_label": "Left lateral geniculate body",
+   "system": "nervous"
+  },
+  "FMA73309": {
+   "category": "cns_additional",
+   "display_name": "R Medial Geniculate Body",
+   "fma_id": 73309,
+   "preferred_label": "Right medial geniculate body",
+   "system": "nervous"
+  },
+  "FMA73310": {
+   "category": "cns_additional",
+   "display_name": "L Medial Geniculate Body",
+   "fma_id": 73310,
+   "preferred_label": "Left medial geniculate body",
+   "system": "nervous"
+  },
+  "FMA7333": {
+   "category": "organs",
+   "display_name": "R Lung Upper Lobe",
+   "fma_id": 7333,
+   "preferred_label": "Upper lobe of right lung",
+   "system": "respiratory"
+  },
+  "FMA7337": {
+   "category": "organs",
+   "display_name": "R Lung Lower Lobe",
+   "fma_id": 7337,
+   "preferred_label": "Lower lobe of right lung",
+   "system": "respiratory"
+  },
+  "FMA73413": {
+   "category": "cns_additional",
+   "display_name": "R Stria Medullaris of Thalamus",
+   "fma_id": 73413,
+   "preferred_label": "Right stria medullaris of thalamus",
+   "system": null
+  },
+  "FMA73414": {
+   "category": "cns_additional",
+   "display_name": "L Stria Medullaris of Thalamus",
+   "fma_id": 73414,
+   "preferred_label": "Left stria medullaris of thalamus",
+   "system": null
+  },
+  "FMA73422": {
+   "category": "brain",
+   "display_name": "R Sup. Colliculus",
+   "fma_id": 73422,
+   "preferred_label": "Right superior colliculus",
+   "system": "nervous"
+  },
+  "FMA73423": {
+   "category": "brain",
+   "display_name": "L Sup. Colliculus",
+   "fma_id": 73423,
+   "preferred_label": "Left superior colliculus",
+   "system": "nervous"
+  },
+  "FMA73434": {
+   "category": "brain",
+   "display_name": "R Inf. Colliculus",
+   "fma_id": 73434,
+   "preferred_label": "Right inferior colliculus",
+   "system": "nervous"
+  },
+  "FMA73435": {
+   "category": "brain",
+   "display_name": "L Inf. Colliculus",
+   "fma_id": 73435,
+   "preferred_label": "Left inferior colliculus",
+   "system": "nervous"
+  },
+  "FMA73461": {
+   "category": "cns_additional",
+   "display_name": "R Brachium of Superior Colliculus",
+   "fma_id": 73461,
+   "preferred_label": "Brachium of right superior colliculus",
+   "system": null
+  },
+  "FMA73462": {
+   "category": "cns_additional",
+   "display_name": "L Brachium of Superior Colliculus",
+   "fma_id": 73462,
+   "preferred_label": "Brachium of left superior colliculus",
+   "system": null
+  },
+  "FMA73463": {
+   "category": "cns_additional",
+   "display_name": "R Brachium of Inferior Colliculus",
+   "fma_id": 73463,
+   "preferred_label": "Brachium of right inferior colliculus",
+   "system": null
+  },
+  "FMA73464": {
+   "category": "cns_additional",
+   "display_name": "L Brachium of Inferior Colliculus",
+   "fma_id": 73464,
+   "preferred_label": "Brachium of left inferior colliculus",
+   "system": null
+  },
+  "FMA7370": {
+   "category": "organs",
+   "display_name": "L Lung Upper Lobe",
+   "fma_id": 7370,
+   "preferred_label": "Upper lobe of left lung",
+   "system": "respiratory"
+  },
+  "FMA7371": {
+   "category": "organs",
+   "display_name": "L Lung Lower Lobe",
+   "fma_id": 7371,
+   "preferred_label": "Lower lobe of left lung",
+   "system": "respiratory"
+  },
+  "FMA7383": {
+   "category": "organs",
+   "display_name": "R Lung Middle Lobe",
+   "fma_id": 7383,
+   "preferred_label": "Middle lobe of right lung",
+   "system": "respiratory"
+  },
+  "FMA7394": {
+   "category": "organs",
+   "display_name": "Trachea",
+   "fma_id": 7394,
+   "preferred_label": "Trachea",
+   "system": "respiratory"
+  },
+  "FMA74075": {
+   "category": "muscles",
+   "display_name": "Lev. Costarum Longi R",
+   "fma_id": 74075,
+   "preferred_label": "Set of right levatores costarum longi",
+   "system": "muscular"
+  },
+  "FMA74076": {
+   "category": "muscles",
+   "display_name": "Lev. Costarum Longi L",
+   "fma_id": 74076,
+   "preferred_label": "Set of left levatores costarum longi",
+   "system": "muscular"
+  },
+  "FMA74077": {
+   "category": "muscles",
+   "display_name": "Lev. Costarum Breves R",
+   "fma_id": 74077,
+   "preferred_label": "Set of right levatores costarum breves",
+   "system": "muscular"
+  },
+  "FMA74078": {
+   "category": "muscles",
+   "display_name": "Lev. Costarum Breves L",
+   "fma_id": 74078,
+   "preferred_label": "Set of left levatores costarum breves",
+   "system": "muscular"
+  },
+  "FMA7409": {
+   "category": "organs",
+   "display_name": "Bronchus",
+   "fma_id": 7409,
+   "preferred_label": "Bronchus",
+   "system": "respiratory"
+  },
+  "FMA74140": {
+   "category": "muscles",
+   "display_name": "R Dorsal Interossei",
+   "fma_id": 74140,
+   "preferred_label": "Set of dorsal interossei of right foot",
+   "system": "muscular"
+  },
+  "FMA74141": {
+   "category": "muscles",
+   "display_name": "L Dorsal Interossei",
+   "fma_id": 74141,
+   "preferred_label": "Set of dorsal interossei of left foot",
+   "system": "muscular"
+  },
+  "FMA7486": {
+   "category": "skeleton",
+   "display_name": "Manubrium",
+   "fma_id": 7486,
+   "preferred_label": "Manubrium",
+   "system": "skeletal"
+  },
+  "FMA7487": {
+   "category": "skeleton",
+   "display_name": "Body of Sternum",
+   "fma_id": 7487,
+   "preferred_label": "Body of sternum",
+   "system": "skeletal"
+  },
+  "FMA74877": {
+   "category": "brain",
+   "display_name": "Mammillary Body",
+   "fma_id": 74877,
+   "preferred_label": "Mammillary body",
+   "system": null
+  },
+  "FMA7488": {
+   "category": "skeleton",
+   "display_name": "Xiphoid Process",
+   "fma_id": 7488,
+   "preferred_label": "Xiphoid process",
+   "system": "skeletal"
+  },
+  "FMA75351": {
+   "category": "cns_additional",
+   "display_name": "Interventricular Foramen",
+   "fma_id": 75351,
+   "preferred_label": "Interventricular foramen",
+   "system": null
+  },
+  "FMA76751": {
+   "category": "cardiac_additional",
+   "display_name": "Posterior Veins of L Ventricle",
+   "fma_id": 76751,
+   "preferred_label": "Set of posterior veins of left ventricle",
+   "system": "cardiovascular"
+  },
+  "FMA76775": {
+   "category": "muscles",
+   "display_name": "Med. Lumb. Intertrans.",
+   "fma_id": 76775,
+   "preferred_label": "Set of medial lumbar intertransversarius muscles",
+   "system": "muscular"
+  },
+  "FMA76891": {
+   "category": "intestinal",
+   "display_name": "Mesocolic Taenia",
+   "fma_id": 76891,
+   "preferred_label": "Mesocolic taenia",
+   "system": null
+  },
+  "FMA76892": {
+   "category": "intestinal",
+   "display_name": "Omental Taenia",
+   "fma_id": 76892,
+   "preferred_label": "Omental taenia",
+   "system": null
+  },
+  "FMA76893": {
+   "category": "intestinal",
+   "display_name": "Free Taenia",
+   "fma_id": 76893,
+   "preferred_label": "Free taenia",
+   "system": null
+  },
+  "FMA76994": {
+   "category": "cardiac_additional",
+   "display_name": "R Posterolateral Branch",
+   "fma_id": 76994,
+   "preferred_label": "Right posterolateral branch of right coronary artery",
+   "system": "cardiovascular"
+  },
+  "FMA78449": {
+   "category": "brain",
+   "display_name": "R Lat. Ventricle",
+   "fma_id": 78449,
+   "preferred_label": "Right lateral ventricle",
+   "system": "cardiovascular"
+  },
+  "FMA78450": {
+   "category": "brain",
+   "display_name": "L Lat. Ventricle",
+   "fma_id": 78450,
+   "preferred_label": "Left lateral ventricle",
+   "system": "cardiovascular"
+  },
+  "FMA78454": {
+   "category": "brain",
+   "display_name": "Third Ventricle",
+   "fma_id": 78454,
+   "preferred_label": "Third ventricle",
+   "system": "cardiovascular"
+  },
+  "FMA78467": {
+   "category": "brain",
+   "display_name": "Cerebral Aqueduct",
+   "fma_id": 78467,
+   "preferred_label": "Cerebral aqueduct",
+   "system": "nervous"
+  },
+  "FMA78469": {
+   "category": "brain",
+   "display_name": "Fourth Ventricle",
+   "fma_id": 78469,
+   "preferred_label": "Fourth ventricle",
+   "system": "cardiovascular"
+  },
+  "FMA7857": {
+   "category": "skeleton",
+   "display_name": "Right 1st Rib",
+   "fma_id": 7857,
+   "preferred_label": "Right first rib",
+   "system": "skeletal"
+  },
+  "FMA7875": {
+   "category": "skeleton",
+   "display_name": "R 1st Costal Cart.",
+   "fma_id": 7875,
+   "preferred_label": "Right first costal cartilage",
+   "system": "skeletal"
+  },
+  "FMA7882": {
+   "category": "skeleton",
+   "display_name": "Right 2nd Rib",
+   "fma_id": 7882,
+   "preferred_label": "Right second rib",
+   "system": "skeletal"
+  },
+  "FMA7886": {
+   "category": "skeleton",
+   "display_name": "R 2nd Costal Cart.",
+   "fma_id": 7886,
+   "preferred_label": "Right second costal cartilage",
+   "system": "skeletal"
+  },
+  "FMA7909": {
+   "category": "skeleton",
+   "display_name": "Right 3rd Rib",
+   "fma_id": 7909,
+   "preferred_label": "Right third rib",
+   "system": "skeletal"
+  },
+  "FMA7913": {
+   "category": "skeleton",
+   "display_name": "R 3rd Costal Cart.",
+   "fma_id": 7913,
+   "preferred_label": "Right third costal cartilage",
+   "system": "skeletal"
+  },
+  "FMA7957": {
+   "category": "skeleton",
+   "display_name": "Right 4th Rib",
+   "fma_id": 7957,
+   "preferred_label": "Right fourth rib",
+   "system": "skeletal"
+  },
+  "FMA7976": {
+   "category": "skeleton",
+   "display_name": "R 4th Costal Cart.",
+   "fma_id": 7976,
+   "preferred_label": "Right fourth costal cartilage",
+   "system": "skeletal"
+  },
+  "FMA7987": {
+   "category": "skeleton",
+   "display_name": "Left 1st Rib",
+   "fma_id": 7987,
+   "preferred_label": "Left first rib",
+   "system": "skeletal"
+  },
+  "FMA79979": {
+   "category": "muscles",
+   "display_name": "Pect. Major Stern. R",
+   "fma_id": 79979,
+   "preferred_label": "Sternocostal part of right pectoralis major",
+   "system": "muscular"
+  },
+  "FMA79980": {
+   "category": "muscles",
+   "display_name": "Pect. Major Stern. L",
+   "fma_id": 79980,
+   "preferred_label": "Sternocostal part of left pectoralis major",
+   "system": "muscular"
+  },
+  "FMA8005": {
+   "category": "skeleton",
+   "display_name": "L 1st Costal Cart.",
+   "fma_id": 8005,
+   "preferred_label": "Left first costal cartilage",
+   "system": "skeletal"
+  },
+  "FMA8012": {
+   "category": "skeleton",
+   "display_name": "Left 2nd Rib",
+   "fma_id": 8012,
+   "preferred_label": "Left second rib",
+   "system": "skeletal"
+  },
+  "FMA8031": {
+   "category": "skeleton",
+   "display_name": "L 2nd Costal Cart.",
+   "fma_id": 8031,
+   "preferred_label": "Left second costal cartilage",
+   "system": "skeletal"
+  },
+  "FMA8039": {
+   "category": "skeleton",
+   "display_name": "Left 3rd Rib",
+   "fma_id": 8039,
+   "preferred_label": "Left third rib",
+   "system": "skeletal"
+  },
+  "FMA8058": {
+   "category": "skeleton",
+   "display_name": "L 3rd Costal Cart.",
+   "fma_id": 8058,
+   "preferred_label": "Left third costal cartilage",
+   "system": "skeletal"
+  },
+  "FMA8066": {
+   "category": "skeleton",
+   "display_name": "Right 5th Rib",
+   "fma_id": 8066,
+   "preferred_label": "Right fifth rib",
+   "system": "skeletal"
+  },
+  "FMA8070": {
+   "category": "skeleton",
+   "display_name": "R 5th Costal Cart.",
+   "fma_id": 8070,
+   "preferred_label": "Right fifth costal cartilage",
+   "system": "skeletal"
+  },
+  "FMA8093": {
+   "category": "skeleton",
+   "display_name": "Left 5th Rib",
+   "fma_id": 8093,
+   "preferred_label": "Left fifth rib",
+   "system": "skeletal"
+  },
+  "FMA8112": {
+   "category": "skeleton",
+   "display_name": "L 5th Costal Cart.",
+   "fma_id": 8112,
+   "preferred_label": "Left fifth costal cartilage",
+   "system": "skeletal"
+  },
+  "FMA8148": {
+   "category": "skeleton",
+   "display_name": "Left 4th Rib",
+   "fma_id": 8148,
+   "preferred_label": "Left fourth rib",
+   "system": "skeletal"
+  },
+  "FMA8167": {
+   "category": "skeleton",
+   "display_name": "L 4th Costal Cart.",
+   "fma_id": 8167,
+   "preferred_label": "Left fourth costal cartilage",
+   "system": "skeletal"
+  },
+  "FMA8175": {
+   "category": "skeleton",
+   "display_name": "Right 6th Rib",
+   "fma_id": 8175,
+   "preferred_label": "Right sixth rib",
+   "system": "skeletal"
+  },
+  "FMA81752": {
+   "category": "muscles",
+   "display_name": "Cervical Rotator R",
+   "fma_id": 81752,
+   "preferred_label": "Right cervical rotator",
+   "system": "muscular"
+  },
+  "FMA81753": {
+   "category": "muscles",
+   "display_name": "Cervical Rotator L",
+   "fma_id": 81753,
+   "preferred_label": "Left cervical rotator",
+   "system": "muscular"
+  },
+  "FMA8194": {
+   "category": "skeleton",
+   "display_name": "R 6th Costal Cart.",
+   "fma_id": 8194,
+   "preferred_label": "Right sixth costal cartilage",
+   "system": "skeletal"
+  },
+  "FMA8202": {
+   "category": "skeleton",
+   "display_name": "Left 6th Rib",
+   "fma_id": 8202,
+   "preferred_label": "Left sixth rib",
+   "system": "skeletal"
+  },
+  "FMA8221": {
+   "category": "skeleton",
+   "display_name": "L 6th Costal Cart.",
+   "fma_id": 8221,
+   "preferred_label": "Left sixth costal cartilage",
+   "system": "skeletal"
+  },
+  "FMA8229": {
+   "category": "skeleton",
+   "display_name": "Right 7th Rib",
+   "fma_id": 8229,
+   "preferred_label": "Right seventh rib",
+   "system": "skeletal"
+  },
+  "FMA8248": {
+   "category": "skeleton",
+   "display_name": "R 7th Costal Cart.",
+   "fma_id": 8248,
+   "preferred_label": "Right seventh costal cartilage",
+   "system": "skeletal"
+  },
+  "FMA8256": {
+   "category": "skeleton",
+   "display_name": "Left 7th Rib",
+   "fma_id": 8256,
+   "preferred_label": "Left seventh rib",
+   "system": "skeletal"
+  },
+  "FMA8275": {
+   "category": "skeleton",
+   "display_name": "L 7th Costal Cart.",
+   "fma_id": 8275,
+   "preferred_label": "Left seventh costal cartilage",
+   "system": "skeletal"
+  },
+  "FMA8283": {
+   "category": "skeleton",
+   "display_name": "Right 8th Rib",
+   "fma_id": 8283,
+   "preferred_label": "Right eighth rib",
+   "system": "skeletal"
+  },
+  "FMA8310": {
+   "category": "skeleton",
+   "display_name": "Left 8th Rib",
+   "fma_id": 8310,
+   "preferred_label": "Left eighth rib",
+   "system": "skeletal"
+  },
+  "FMA8364": {
+   "category": "skeleton",
+   "display_name": "Right 9th Rib",
+   "fma_id": 8364,
+   "preferred_label": "Right ninth rib",
+   "system": "skeletal"
+  },
+  "FMA83740": {
+   "category": "brain",
+   "display_name": "Interpeduncular Fossa",
+   "fma_id": 83740,
+   "preferred_label": "Interpeduncular fossa",
+   "system": null
+  },
+  "FMA8391": {
+   "category": "skeleton",
+   "display_name": "Left 9th Rib",
+   "fma_id": 8391,
+   "preferred_label": "Left ninth rib",
+   "system": "skeletal"
+  },
+  "FMA8445": {
+   "category": "skeleton",
+   "display_name": "Right 10th Rib",
+   "fma_id": 8445,
+   "preferred_label": "Right tenth rib",
+   "system": "skeletal"
+  },
+  "FMA8472": {
+   "category": "skeleton",
+   "display_name": "Left 10th Rib",
+   "fma_id": 8472,
+   "preferred_label": "Left tenth rib",
+   "system": "skeletal"
+  },
+  "FMA8531": {
+   "category": "skeleton",
+   "display_name": "Right 11th Rib",
+   "fma_id": 8531,
+   "preferred_label": "Right eleventh rib",
+   "system": "skeletal"
+  },
+  "FMA8532": {
+   "category": "skeleton",
+   "display_name": "Left 11th Rib",
+   "fma_id": 8532,
+   "preferred_label": "Left eleventh rib",
+   "system": "skeletal"
+  },
+  "FMA8533": {
+   "category": "skeleton",
+   "display_name": "Right 12th Rib",
+   "fma_id": 8533,
+   "preferred_label": "Right twelfth rib",
+   "system": "skeletal"
+  },
+  "FMA8534": {
+   "category": "skeleton",
+   "display_name": "Left 12th Rib",
+   "fma_id": 8534,
+   "preferred_label": "Left twelfth rib",
+   "system": "skeletal"
+  },
+  "FMA86034": {
+   "category": "muscles",
+   "display_name": "R Opponens Digiti Minimi",
+   "fma_id": 86034,
+   "preferred_label": "Opponens digiti minimi of right foot",
+   "system": "muscular"
+  },
+  "FMA86035": {
+   "category": "muscles",
+   "display_name": "L Opponens Digiti Minimi",
+   "fma_id": 86035,
+   "preferred_label": "Opponens digiti minimi of left foot",
+   "system": "muscular"
+  },
+  "FMA86464": {
+   "category": "brain",
+   "display_name": "Corpus Callosum",
+   "fma_id": 86464,
+   "preferred_label": "Corpus callosum",
+   "system": null
+  },
+  "FMA9165": {
+   "category": "skeleton",
+   "display_name": "T1",
+   "fma_id": 9165,
+   "preferred_label": "First thoracic vertebra",
+   "system": "skeletal"
+  },
+  "FMA9187": {
+   "category": "skeleton",
+   "display_name": "T2",
+   "fma_id": 9187,
+   "preferred_label": "Second thoracic vertebra",
+   "system": "skeletal"
+  },
+  "FMA9209": {
+   "category": "skeleton",
+   "display_name": "T3",
+   "fma_id": 9209,
+   "preferred_label": "Third thoracic vertebra",
+   "system": "skeletal"
+  },
+  "FMA9248": {
+   "category": "skeleton",
+   "display_name": "T4",
+   "fma_id": 9248,
+   "preferred_label": "Fourth thoracic vertebra",
+   "system": "skeletal"
+  },
+  "FMA9352nsn": {
+   "category": "cardiac_additional",
+   "display_name": "Papillary Muscle of L Ventricle",
+   "fma_id": 9352,
+   "preferred_label": "Papillary muscle of left ventricle",
+   "system": "muscular"
+  },
+  "FMA9600": {
+   "category": "organs",
+   "display_name": "Prostate",
+   "fma_id": 9600,
+   "preferred_label": "Prostate",
+   "system": null
+  },
+  "FMA9710": {
+   "category": "skull_bones",
+   "display_name": "Vomer",
+   "fma_id": 9710,
+   "preferred_label": "Vomer",
+   "system": "skeletal"
+  },
+  "FMA9756": {
+   "category": "muscles",
+   "display_name": "Ext. Intercostal",
+   "fma_id": 9756,
+   "preferred_label": "External intercostal muscle",
+   "system": "muscular"
+  },
+  "FMA9757": {
+   "category": "muscles",
+   "display_name": "Int. Intercostal",
+   "fma_id": 9757,
+   "preferred_label": "Internal intercostal muscle",
+   "system": "muscular"
+  },
+  "FMA9758": {
+   "category": "muscles",
+   "display_name": "Innermost Intercostal",
+   "fma_id": 9758,
+   "preferred_label": "Innermost intercostal muscle",
+   "system": "muscular"
+  },
+  "FMA9761": {
+   "category": "muscles",
+   "display_name": "Trans. Thoracis R",
+   "fma_id": 9761,
+   "preferred_label": "Right transversus thoracis",
+   "system": "muscular"
+  },
+  "FMA9762": {
+   "category": "muscles",
+   "display_name": "Trans. Thoracis L",
+   "fma_id": 9762,
+   "preferred_label": "Left transversus thoracis",
+   "system": "muscular"
+  },
+  "FMA9922": {
+   "category": "skeleton",
+   "display_name": "T5",
+   "fma_id": 9922,
+   "preferred_label": "Fifth thoracic vertebra",
+   "system": "skeletal"
+  },
+  "FMA9945": {
+   "category": "skeleton",
+   "display_name": "T6",
+   "fma_id": 9945,
+   "preferred_label": "Sixth thoracic vertebra",
+   "system": "skeletal"
+  },
+  "FMA9968": {
+   "category": "skeleton",
+   "display_name": "T7",
+   "fma_id": 9968,
+   "preferred_label": "Seventh thoracic vertebra",
+   "system": "skeletal"
+  },
+  "FMA9991": {
+   "category": "skeleton",
+   "display_name": "T8",
+   "fma_id": 9991,
+   "preferred_label": "Eighth thoracic vertebra",
+   "system": "skeletal"
+  }
+ }
+}

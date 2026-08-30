@@ -11,6 +11,11 @@ import pytest
 from faceforge.core.state import BodyState
 from faceforge.core.math_utils import quat_from_euler
 
+# `slow`: 15.65 s measured over three tests -- each one calls
+# `_try_load_headless()`, which loads the full BP3D asset set from scratch (the
+# loader is not fixture-cached here).  Deselect with `pytest -m "not slow"`.
+pytestmark = pytest.mark.slow
+
 
 def _try_load_headless():
     """Try to load the headless scene. Skip if assets not available."""

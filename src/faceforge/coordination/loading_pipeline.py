@@ -1,6 +1,7 @@
 """Sequential asset loading chain with progress reporting."""
 
 import logging
+from dataclasses import dataclass, field
 from typing import Optional
 
 from faceforge.core.scene_graph import SceneNode
@@ -29,6 +30,78 @@ from faceforge.constants import STL_DIR, set_jaw_pivot
 
 logger = logging.getLogger(__name__)
 
+#: Exceptions that mean "an asset or config is missing/unusable" — a degraded
+#: but survivable scene. Anything else (AttributeError, TypeError, ImportError)
+#: is a programming or dependency error and is deliberately NOT caught: a
+#: NumPy 2.0 removal (``ndarray.ptp``) once disabled the entire 938-line
+#: face-features subsystem behind a single WARNING line, and 218 passing tests
+#: noticed nothing. See defects.md.
+ASSET_ERRORS = (OSError, ValueError, KeyError)
+
+
+@dataclass
+class LoadReport:
+    """What loaded, what did not, and why.
+
+    A caller can distinguish a complete scene from a degraded one without
+    scraping the log: ``report.ok`` is the whole question, and
+    ``report.summary()`` is what to show a user.
+    """
+
+    #: subsystem/phase name -> "ExcType: message" for things that did not load.
+    failures: dict[str, str] = field(default_factory=dict)
+    #: subsystem name -> list of partially-failed sub-units (muscle regions,
+    #: skeleton batches), for loaders that load several independent groups.
+    partial: dict[str, dict[str, str]] = field(default_factory=dict)
+
+    @property
+    def ok(self) -> bool:
+        """True when every subsystem loaded completely."""
+        return not self.failures and not self.partial
+
+    @property
+    def degraded(self) -> bool:
+        return not self.ok
+
+    @property
+    def failed_names(self) -> list[str]:
+        return sorted(set(self.failures) | set(self.partial))
+
+    def record(self, name: str, exc: BaseException) -> None:
+        """Record that subsystem ``name`` failed to load."""
+        self.failures[name] = f"{type(exc).__name__}: {exc}"
+
+    def absorb(self, name: str, manager: object) -> None:
+        """Pull failure state off a loader/manager object.
+
+        Understands the three shapes in use: a ``load_failed``/``load_error``
+        pair (organs, brain, vasculature) and the per-unit dicts
+        ``failed_regions`` (body muscles) / ``failed_batches`` (skeleton).
+        """
+        if manager is None:
+            self.failures[name] = "not constructed"
+            return
+        for attr in ("failed_regions", "failed_batches"):
+            units = getattr(manager, attr, None)
+            if units:
+                self.partial[name] = dict(units)
+                return
+        if getattr(manager, "load_failed", False):
+            self.failures[name] = getattr(manager, "load_error", None) or "load failed"
+
+    def summary(self) -> str:
+        if self.ok:
+            return "Scene loaded completely."
+        parts = [f"{n}: {e}" for n, e in sorted(self.failures.items())]
+        # Group failures usually share one cause (a missing directory), so list
+        # the distinct reasons rather than repeating one per group.
+        parts += [
+            f"{n}: {len(u)} of its groups failed ({', '.join(sorted(u))}) "
+            f"— {'; '.join(sorted(set(u.values())))}"
+            for n, u in sorted(self.partial.items())
+        ]
+        return f"Scene is DEGRADED — {len(parts)} subsystem(s) incomplete: " + "; ".join(parts)
+
 
 class LoadingPipeline:
     """Orchestrates the sequential loading of all assets.
@@ -51,6 +124,10 @@ class LoadingPipeline:
         self.event_bus = event_bus
         self.nodes = named_nodes
         self.transform = assets.transform
+
+        #: Aggregated load outcome — see LoadReport. A caller can tell a
+        #: complete scene from a degraded one without scraping the log.
+        self.report = LoadReport()
 
         # Skull mode and dynamic pivot
         self.skull_mode: str = "original"
@@ -117,8 +194,9 @@ class LoadingPipeline:
         try:
             regions = load_config("face_regions.json")
             self.facs_engine = FACSEngine(self.face_mesh, regions)
-        except Exception as e:
-            logger.warning("FACS engine failed: %s", e)
+        except ASSET_ERRORS as e:
+            logger.exception("FACS engine failed")
+            self.report.record("facs_engine", e)
 
         # Phase 2a: Jaw muscles
         self._report("Loading jaw muscles...", 0.25)
@@ -127,8 +205,9 @@ class LoadingPipeline:
             self.jaw_muscles = JawMuscleSystem(defs, self.transform, jaw_pivot=self.jaw_pivot)
             jaw_group = self.jaw_muscles.load(stl_dir)
             self.nodes["stlMuscleGroup"].add(jaw_group)
-        except Exception as e:
-            logger.warning("Jaw muscles failed: %s", e)
+        except ASSET_ERRORS as e:
+            logger.exception("Jaw muscles failed")
+            self.report.record("jaw_muscles", e)
             self.jaw_muscles = None
 
         # Phase 2b: Expression muscles
@@ -147,8 +226,9 @@ class LoadingPipeline:
                     self.expression_muscles.muscle_data, platysma_group,
                 )
                 logger.info("Reparented %d Platysma muscle(s) to platysmaGroup", n)
-        except Exception as e:
-            logger.warning("Expression muscles failed: %s", e)
+        except ASSET_ERRORS as e:
+            logger.exception("Expression muscles failed")
+            self.report.record("expression_muscles", e)
             self.expression_muscles = None
 
         # Phase 2c: Face features
@@ -158,8 +238,9 @@ class LoadingPipeline:
             self.face_features = FaceFeatureSystem(defs, self.transform)
             feat_group = self.face_features.load(stl_dir)
             self.nodes["faceFeatureGroup"].add(feat_group)
-        except Exception as e:
-            logger.warning("Face features failed: %s", e)
+        except ASSET_ERRORS as e:
+            logger.exception("Face features failed")
+            self.report.record("face_features", e)
             self.face_features = None
 
         # Phase 2d: Neck muscles
@@ -169,8 +250,9 @@ class LoadingPipeline:
             self.neck_muscles = NeckMuscleSystem(defs, self.transform, jaw_pivot=self.jaw_pivot)
             neck_group = self.neck_muscles.load(stl_dir)
             self.nodes["neckMuscleGroup"].add(neck_group)
-        except Exception as e:
-            logger.warning("Neck muscles failed: %s", e)
+        except ASSET_ERRORS as e:
+            logger.exception("Neck muscles failed")
+            self.report.record("neck_muscles", e)
             self.neck_muscles = None
 
         # Phase 2e: Vertebrae
@@ -181,8 +263,9 @@ class LoadingPipeline:
             self.vertebrae = VertebraeSystem(vert_defs, vert_fracs, self.transform)
             vert_group, self.vertebrae_pivots = self.vertebrae.load(stl_dir)
             self.nodes["vertebraeGroup"].add(vert_group)
-        except Exception as e:
-            logger.warning("Vertebrae failed: %s", e)
+        except ASSET_ERRORS as e:
+            logger.exception("Vertebrae failed")
+            self.report.record("vertebrae", e)
             self.vertebrae = None
 
         # Head rotation system
@@ -200,8 +283,9 @@ class LoadingPipeline:
         try:
             limits_data = load_config("joint_limits.json")
             self.neck_constraints = NeckConstraintSolver(limits_data)
-        except Exception as e:
-            logger.warning("Neck constraints failed: %s", e)
+        except ASSET_ERRORS as e:
+            logger.exception("Neck constraints failed")
+            self.report.record("neck_constraints", e)
 
         self._report("Head complete", 1.0)
 
@@ -214,8 +298,12 @@ class LoadingPipeline:
 
         try:
             self.skeleton.load_all(body_root)
-        except Exception as e:
-            logger.warning("Body skeleton failed: %s", e)
+        except ASSET_ERRORS as e:
+            logger.exception("Body skeleton failed")
+            self.report.record("skeleton", e)
+        else:
+            # load_all handles per-batch failures itself; absorb them.
+            self.report.absorb("skeleton", self.skeleton)
 
         # Build bone_nodes dict mapping bone name → SceneNode for joint computation
         bone_nodes = self._collect_bone_nodes()
@@ -291,8 +379,9 @@ class LoadingPipeline:
                 if body_mesh_group is not None:
                     body_mesh_group.add(mesh_node)
                 logger.info("Gender morph system loaded")
-        except Exception as e:
-            logger.warning("Gender morph system failed: %s", e)
+        except ASSET_ERRORS as e:
+            logger.exception("Gender morph system failed")
+            self.report.record("gender_morph", e)
             self.gender_morph = None
 
         self._report("Skeleton complete", 1.0)

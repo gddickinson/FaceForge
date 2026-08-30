@@ -13,6 +13,7 @@ from faceforge.core.state import StateManager
 from faceforge.rendering.gl_widget import GLViewport
 from faceforge.ui.control_panel import ControlPanel
 from faceforge.ui.info_panel import InfoPanel
+from faceforge.ui.load_status import LoadStatusBadge
 from faceforge.ui.style import DARK_THEME
 from faceforge.ui.widgets.loading_overlay import LoadingOverlay
 
@@ -74,6 +75,13 @@ class MainWindow(QMainWindow):
         self.fps_label = QLabel("FPS: 0")
         self.fps_label.setFont(mono)
 
+        # Asset-load status: a quiet badge that opens a detail panel.  The
+        # loaders already produce a LoadReport; without this the user cannot
+        # tell a degraded scene from a complete one.  Non-modal by design --
+        # see faceforge.ui.load_status.
+        self.load_status_badge = LoadStatusBadge(self)
+
+        self.status_bar.addPermanentWidget(self.load_status_badge)
         self.status_bar.addPermanentWidget(self.vert_label)
         self.status_bar.addPermanentWidget(self.face_label)
         self.status_bar.addPermanentWidget(self.fps_label)
@@ -143,6 +151,17 @@ class MainWindow(QMainWindow):
             )
         except Exception as e:
             self.status_bar.showMessage(f"Export failed: {e}", 5000)
+
+    def set_load_report(self, report, loaded: int = 0, expected: int = 0) -> None:
+        """Show an asset ``LoadReport`` in the status bar.
+
+        The one call the application needs to make once loading finishes.
+        ``loaded``/``expected`` are optional mesh counts; supplying them turns
+        the badge into "930 of 932 structures loaded", which is what makes the
+        expected two-mesh gap unalarming rather than invisible.
+        """
+        self.load_status_badge.set_report(report, loaded=loaded,
+                                         expected=expected)
 
     def _on_loading_phase(self, phase: str = "", **kw):
         self.loading_overlay.show_loading(phase, 0.0)

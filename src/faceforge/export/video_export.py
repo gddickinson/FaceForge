@@ -38,6 +38,10 @@ class VideoExporter:
     def __init__(self, gl_widget):
         self._gl_widget = gl_widget
         self._ffmpeg_available = _check_ffmpeg()
+        #: Which path produced the last still: ``"offscreen-fbo"`` (rendered at
+        #: the requested size) or ``"window-grab-upscaled"`` (interpolated).
+        #: Recorded rather than inferred, so a caller can tell the difference.
+        self.last_screenshot_method: str | None = None
 
     @property
     def ffmpeg_available(self) -> bool:
@@ -166,18 +170,133 @@ class VideoExporter:
         return self._encode(frames, output_path, fps, on_progress)
 
     def export_screenshot(self, output_path: str,
-                          width: int = 0, height: int = 0) -> bool:
-        """Export a single frame as an image."""
+                          width: int = 0, height: int = 0,
+                          allow_upscale_fallback: bool = True) -> bool:
+        """Export a single frame as an image, at true resolution where possible.
+
+        The old behaviour of this method was to grab the widget's framebuffer at
+        whatever size the window happened to be and then ``QImage.scaled`` it up
+        to the requested size.  That produces a large file holding a small
+        image's worth of information: the geometry was rasterised once, at the
+        window's size, so nothing finer than a window pixel can be in the
+        result no matter how large the output.
+
+        It now renders *at* the requested size through an offscreen framebuffer
+        in the widget's own GL context -- same renderer, same scene, same
+        camera, four times the samples for a 4x still.  ``export_still`` does
+        the work and :attr:`last_screenshot_method` records which path ran.
+
+        The upscaling grab remains as a fallback for the cases the FBO path
+        cannot serve (a widget with no scene attached yet, a context that
+        refuses the allocation).  Pass ``allow_upscale_fallback=False`` to fail
+        instead, which is what a figure pipeline should do -- silently getting
+        an interpolated still is the failure worth being loud about.
+        """
+        if width > 0 and height > 0:
+            try:
+                self.export_still(output_path, width, height)
+                return True
+            except Exception as exc:                     # noqa: BLE001
+                if not allow_upscale_fallback:
+                    logger.error(
+                        "true-resolution still failed and upscaling is "
+                        "disabled: %s", exc)
+                    return False
+                logger.warning(
+                    "true-resolution still failed (%s); falling back to a "
+                    "window grab scaled to %dx%d, which is INTERPOLATED and "
+                    "not a %dx%d render", exc, width, height, width, height)
+
         frame = self._grab_frame(width, height)
         if frame is None:
             return False
 
+        self.last_screenshot_method = "window-grab-upscaled"
         try:
             frame.save(output_path)
             return True
         except Exception as e:
             logger.error("Screenshot failed: %s", e)
             return False
+
+    def export_still(self, output_path: str, width: int, height: int) -> tuple[int, int]:
+        """Render one frame at ``width x height`` through an offscreen FBO.
+
+        Uses the widget's existing GL context and existing
+        :class:`~faceforge.rendering.renderer.GLRenderer` -- there is no second
+        renderer and no second context anywhere in this path.  The requested
+        size is checked against ``GL_MAX_TEXTURE_SIZE``,
+        ``GL_MAX_RENDERBUFFER_SIZE`` and ``GL_MAX_VIEWPORT_DIMS`` before
+        anything is allocated, so an over-large request raises with the limit
+        named rather than producing a clamped image.
+
+        The renderer's viewport and the camera's aspect are restored afterwards,
+        because both are live state the on-screen view is using.
+
+        Returns ``(width, height)`` and raises on failure; callers wanting the
+        old lenient behaviour should use :meth:`export_screenshot`.
+        """
+        from faceforge.export.still import query_size_limits
+        from faceforge.session import Framebuffer, write_png
+
+        widget = self._gl_widget
+        scene = getattr(widget, "scene", None)
+        renderer = getattr(widget, "renderer", None)
+        camera = getattr(widget, "camera", None)
+        lights = getattr(widget, "lights", None)
+        if scene is None or renderer is None or camera is None or lights is None:
+            raise RuntimeError(
+                "the GL widget has no scene/renderer/camera/lights yet, so "
+                "there is nothing to render offscreen"
+            )
+
+        width, height = int(width), int(height)
+        make_current = getattr(widget, "makeCurrent", None)
+        done_current = getattr(widget, "doneCurrent", None)
+        if callable(make_current):
+            make_current()
+
+        previous_size = (int(widget.width()), int(widget.height()))
+        previous_aspect = getattr(camera, "aspect", None)
+        framebuffer = None
+        try:
+            query_size_limits().check(width, height)
+            framebuffer = Framebuffer(width, height)
+            renderer.resize(width, height)
+            if hasattr(renderer, "invalidate_state_cache"):
+                renderer.invalidate_state_cache()
+            camera.set_aspect(width, height)
+
+            framebuffer.bind()
+            renderer.render(scene, camera, lights)
+            image = framebuffer.read()
+        finally:
+            if framebuffer is not None:
+                try:
+                    from OpenGL.GL import GL_FRAMEBUFFER, glBindFramebuffer
+
+                    glBindFramebuffer(GL_FRAMEBUFFER, 0)
+                except Exception as exc:                 # noqa: BLE001
+                    logger.warning("could not unbind the FBO: %s", exc)
+                framebuffer.destroy()
+            # Put the live view back exactly as it was, whether or not the
+            # render succeeded.
+            try:
+                renderer.resize(*previous_size)
+                if hasattr(renderer, "invalidate_state_cache"):
+                    renderer.invalidate_state_cache()
+                if previous_aspect is not None:
+                    camera.set_aspect(*previous_size)
+            except Exception as exc:                     # noqa: BLE001
+                logger.warning("could not restore the live viewport: %s", exc)
+            if callable(done_current):
+                done_current()
+
+        write_png(output_path, image)
+        self.last_screenshot_method = "offscreen-fbo"
+        logger.info("wrote a %dx%d still rendered at full resolution to %s",
+                    width, height, output_path)
+        return (width, height)
 
     def _grab_frame(self, width: int = 0, height: int = 0):
         """Grab the current frame from the GL widget.

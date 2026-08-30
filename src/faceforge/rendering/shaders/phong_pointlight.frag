@@ -1,17 +1,9 @@
 #version 330 core
 
-in vec3 vNormal;
-in vec3 vViewPos;
-in vec3 vVertexColor;
-in vec3 vWorldPos;
+#include "_common.glsl"
+#include "_lighting.glsl"
 
-uniform vec3 uColor;
-uniform float uOpacity;
 uniform float uShininess;
-uniform vec3 uAmbientColor;
-uniform vec3 uLightDir;
-uniform vec3 uLightColor;
-uniform int uUseVertexColor;
 
 // Point light uniforms
 uniform int uHasPointLight;
@@ -20,25 +12,18 @@ uniform vec3 uPointLightColor;
 uniform float uPointLightIntensity;
 uniform float uPointLightRange;
 
-// Clip plane
-uniform int uClipEnabled;
-uniform vec4 uClipPlane;
-
-out vec4 fragColor;
+// Clipping is done in default.vert via gl_ClipDistance[0]; see _common.glsl.
 
 void main() {
-    if (uClipEnabled != 0 && dot(vWorldPos, uClipPlane.xyz) + uClipPlane.w < 0.0) discard;
+    vec3 baseColor = ffBaseColor();
 
-    vec3 baseColor = uUseVertexColor != 0 ? vVertexColor : uColor;
-
-    vec3 N = normalize(vNormal);
-    vec3 V = normalize(-vViewPos);
+    vec3 N = ffNormal();
+    vec3 V = ffViewDir();
 
     // --- Directional light ---
-    vec3 L = normalize(uLightDir);
+    vec3 L = ffLightDir();
     float diff = max(dot(N, L), 0.0);
-    vec3 R = reflect(-L, N);
-    float spec = pow(max(dot(V, R), 0.0), uShininess);
+    float spec = ffSpecular(N, V, L, uShininess);
 
     vec3 color = uAmbientColor * baseColor
                + diff * uLightColor * baseColor

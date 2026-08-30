@@ -3,33 +3,18 @@
 // Thermal / infrared imaging.
 // Maps surface angle and position to a heat-map colour ramp.
 
-in vec3 vNormal;
-in vec3 vViewPos;
-in vec3 vVertexColor;
-in vec3 vWorldPos;
+#include "_common.glsl"
+#include "_lighting.glsl"
 
-uniform vec3 uColor;
-uniform float uOpacity;
 uniform float uShininess;
-uniform vec3 uAmbientColor;
-uniform vec3 uLightDir;
-uniform vec3 uLightColor;
-uniform int uUseVertexColor;
-
-uniform int uClipEnabled;
-uniform vec4 uClipPlane;
-
-out vec4 fragColor;
 
 void main() {
-    if (uClipEnabled != 0 && dot(vWorldPos, uClipPlane.xyz) + uClipPlane.w < 0.0) discard;
-
-    vec3 N = normalize(vNormal);
-    vec3 V = normalize(-vViewPos);
-    vec3 L = normalize(uLightDir);
+    vec3 N = ffNormal();
+    vec3 V = ffViewDir();
+    vec3 L = ffLightDir();
 
     // Use facing angle + diffuse as "heat" proxy
-    float facing = abs(dot(N, V));
+    float facing = 1.0 - ffEdge(N, V);
     float NdotL = dot(N, L);
     float diff = clamp(NdotL, 0.0, 1.0);
 
@@ -37,8 +22,7 @@ void main() {
     float heat = facing * 0.6 + diff * 0.4;
 
     // Use material colour luminance to vary heat across structures
-    vec3 bc = uUseVertexColor != 0 ? vVertexColor : uColor;
-    float lum = dot(bc, vec3(0.299, 0.587, 0.114));
+    float lum = ffLuma(ffBaseColor());
     heat = heat * 0.7 + lum * 0.3;
     heat = clamp(heat, 0.0, 1.0);
 

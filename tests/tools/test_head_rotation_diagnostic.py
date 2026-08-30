@@ -18,10 +18,16 @@ from faceforge.core.state import FaceState, BodyState
 
 # Skip all tests in this module if STL directory is missing
 _has_stl_assets = STL_DIR.is_dir() and any(STL_DIR.glob("*.stl"))
-pytestmark = pytest.mark.skipif(
-    not _has_stl_assets,
-    reason="BP3D STL assets not found — skipping head rotation diagnostic tests",
-)
+
+# `slow`: 4.25 s measured, essentially all of it the module-scoped headless
+# scene load.  Asset-gated, so it cannot run in a dataset-free CI job anyway.
+pytestmark = [
+    pytest.mark.slow,
+    pytest.mark.skipif(
+        not _has_stl_assets,
+        reason="BP3D STL assets not found — skipping head rotation diagnostic tests",
+    ),
+]
 
 
 @pytest.fixture(scope="module")

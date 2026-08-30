@@ -72,12 +72,22 @@ class BufferGeometry:
         return pos.mean(axis=0).astype(np.float64)
 
     def clone(self) -> "BufferGeometry":
-        """Create a deep copy."""
+        """Create a deep copy.
+
+        ``vertex_colors`` and ``colors_dirty`` are part of the geometry and are
+        carried over: without them, cloning a COLOR_ATLAS or pathology-tinted
+        mesh silently produced an untinted copy.  ``colors_dirty`` is forced
+        True on the clone regardless of the source, because the clone has no GL
+        buffer yet and its colours have therefore never been uploaded.
+        """
+        colors = self.vertex_colors
         return BufferGeometry(
             positions=self.positions.copy(),
             normals=self.normals.copy(),
             indices=self.indices.copy() if self.indices is not None else None,
             vertex_count=self.vertex_count,
+            vertex_colors=colors.copy() if colors is not None else None,
+            colors_dirty=colors is not None,
         )
 
 
@@ -101,6 +111,21 @@ class MeshInstance:
     # to this mesh's model_view matrix.  Set False for environment meshes
     # (table, walls, lamp) that should stay fixed in world space.
     scene_affected: bool = True
+
+    # --- Anatomical provenance -------------------------------------------
+    # source_id       BodyParts3D mesh identifier the geometry was loaded
+    #                 from, e.g. "FMA67944".  Empty for procedural meshes
+    #                 (scan plane, environment, generated eye geometry).
+    # ontology_id     Canonical ontology term, e.g. "FMA:67944".
+    # preferred_label Foundational Model of Anatomy preferred term, which is
+    #                 frequently NOT the display `name`: 89.2% of configured
+    #                 structures use a shortened or colloquial display name.
+    #
+    # These make a rendered structure citable and let search, the quiz and
+    # exports key off standard terminology instead of guessing from `name`.
+    source_id: str = ""
+    ontology_id: str = ""
+    preferred_label: str = ""
 
     def store_rest_pose(self) -> None:
         """Save current positions/normals as rest pose for deformation."""

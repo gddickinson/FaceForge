@@ -63,6 +63,12 @@ class GLMesh:
         self._has_colors: bool = False
         self._uploaded: bool = False
 
+        # Allocated size of each VBO in bytes, so update_* can refuse to write
+        # past the end of the buffer.
+        self._pos_capacity: int = 0
+        self._norm_capacity: int = 0
+        self._color_capacity: int = 0
+
     # ------------------------------------------------------------------
     # Upload (create GL objects)
     # ------------------------------------------------------------------
@@ -71,6 +77,9 @@ class GLMesh:
         """Create VAO, VBOs (and optional EBO) and upload vertex data."""
         if self._uploaded:
             self.destroy()
+        self._pos_capacity = 0
+        self._norm_capacity = 0
+        self._color_capacity = 0
 
         usage = GL_DYNAMIC_DRAW if self._dynamic else GL_STATIC_DRAW
 
@@ -82,22 +91,26 @@ class GLMesh:
         glBindVertexArray(self._vao)
 
         # --- Positions (location 0) ---
-        pos_data = self._geometry.positions.astype(np.float32)
+        # ascontiguousarray, not astype: astype copies even when the array is
+        # already float32, which every geometry out of the STL loader is.
+        pos_data = np.ascontiguousarray(self._geometry.positions, dtype=np.float32)
         glBindBuffer(GL_ARRAY_BUFFER, self._vbo_pos)
         glBufferData(GL_ARRAY_BUFFER, pos_data.nbytes, pos_data, usage)
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, None)
         glEnableVertexAttribArray(0)
+        self._pos_capacity = pos_data.nbytes
 
         # --- Normals (location 1) ---
-        norm_data = self._geometry.normals.astype(np.float32)
+        norm_data = np.ascontiguousarray(self._geometry.normals, dtype=np.float32)
         glBindBuffer(GL_ARRAY_BUFFER, self._vbo_norm)
         glBufferData(GL_ARRAY_BUFFER, norm_data.nbytes, norm_data, usage)
         glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, None)
         glEnableVertexAttribArray(1)
+        self._norm_capacity = norm_data.nbytes
 
         # --- Index buffer (optional) ---
         if self._has_indices:
-            idx_data = self._geometry.indices.astype(np.uint32)
+            idx_data = np.ascontiguousarray(self._geometry.indices, dtype=np.uint32)
             self._index_count = len(idx_data)
             self._ebo = glGenBuffers(1)
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self._ebo)
@@ -121,7 +134,18 @@ class GLMesh:
         """Stream new position data into the existing VBO."""
         if not self._uploaded:
             return
-        data = positions.astype(np.float32)
+        data = np.ascontiguousarray(positions, dtype=np.float32)
+        if data.nbytes > self._pos_capacity:
+            # glBufferSubData past the end of the allocation is undefined
+            # behaviour (GL_INVALID_VALUE at best, a corrupt draw at worst).
+            logger.warning("position buffer grew from %d to %d bytes; "
+                           "reallocating", self._pos_capacity, data.nbytes)
+            glBindBuffer(GL_ARRAY_BUFFER, self._vbo_pos)
+            glBufferData(GL_ARRAY_BUFFER, data.nbytes, data, GL_DYNAMIC_DRAW)
+            glBindBuffer(GL_ARRAY_BUFFER, 0)
+            self._pos_capacity = data.nbytes
+            self._vertex_count = data.size // 3
+            return
         glBindBuffer(GL_ARRAY_BUFFER, self._vbo_pos)
         glBufferSubData(GL_ARRAY_BUFFER, 0, data.nbytes, data)
         glBindBuffer(GL_ARRAY_BUFFER, 0)
@@ -130,7 +154,15 @@ class GLMesh:
         """Stream new normal data into the existing VBO."""
         if not self._uploaded:
             return
-        data = normals.astype(np.float32)
+        data = np.ascontiguousarray(normals, dtype=np.float32)
+        if data.nbytes > self._norm_capacity:
+            logger.warning("normal buffer grew from %d to %d bytes; "
+                           "reallocating", self._norm_capacity, data.nbytes)
+            glBindBuffer(GL_ARRAY_BUFFER, self._vbo_norm)
+            glBufferData(GL_ARRAY_BUFFER, data.nbytes, data, GL_DYNAMIC_DRAW)
+            glBindBuffer(GL_ARRAY_BUFFER, 0)
+            self._norm_capacity = data.nbytes
+            return
         glBindBuffer(GL_ARRAY_BUFFER, self._vbo_norm)
         glBufferSubData(GL_ARRAY_BUFFER, 0, data.nbytes, data)
         glBindBuffer(GL_ARRAY_BUFFER, 0)
@@ -139,7 +171,7 @@ class GLMesh:
         """Create color VBO at attribute location 2 and upload data."""
         if not self._uploaded:
             return
-        data = colors.astype(np.float32)
+        data = np.ascontiguousarray(colors, dtype=np.float32)
         self._vbo_color = glGenBuffers(1)
         glBindVertexArray(self._vao)
         glBindBuffer(GL_ARRAY_BUFFER, self._vbo_color)
@@ -148,13 +180,22 @@ class GLMesh:
         glEnableVertexAttribArray(2)
         glBindVertexArray(0)
         glBindBuffer(GL_ARRAY_BUFFER, 0)
+        self._color_capacity = data.nbytes
         self._has_colors = True
 
     def update_colors(self, colors: np.ndarray) -> None:
         """Stream new color data into the existing color VBO."""
         if not self._uploaded or not self._has_colors:
             return
-        data = colors.astype(np.float32)
+        data = np.ascontiguousarray(colors, dtype=np.float32)
+        if data.nbytes > self._color_capacity:
+            logger.warning("colour buffer grew from %d to %d bytes; "
+                           "reallocating", self._color_capacity, data.nbytes)
+            glBindBuffer(GL_ARRAY_BUFFER, self._vbo_color)
+            glBufferData(GL_ARRAY_BUFFER, data.nbytes, data, GL_DYNAMIC_DRAW)
+            glBindBuffer(GL_ARRAY_BUFFER, 0)
+            self._color_capacity = data.nbytes
+            return
         glBindBuffer(GL_ARRAY_BUFFER, self._vbo_color)
         glBufferSubData(GL_ARRAY_BUFFER, 0, data.nbytes, data)
         glBindBuffer(GL_ARRAY_BUFFER, 0)
@@ -167,11 +208,17 @@ class GLMesh:
     # Drawing
     # ------------------------------------------------------------------
 
-    def draw(self, mode: RenderMode = RenderMode.SOLID) -> None:
+    def draw(self, mode: RenderMode = RenderMode.SOLID,
+             unbind: bool = True) -> None:
         """Bind the VAO and issue the appropriate draw call.
 
         The caller is responsible for binding the shader and setting uniforms
         before calling this method.
+
+        Pass ``unbind=False`` inside a batch of draws: the trailing
+        ``glBindVertexArray(0)`` is pure overhead when the next draw binds
+        another VAO anyway, and at 500 meshes it is 500 wasted driver calls per
+        frame.  The renderer restores VAO 0 once at the end of the frame.
         """
         if not self._uploaded:
             return
@@ -185,7 +232,12 @@ class GLMesh:
         else:
             glDrawArrays(gl_mode, 0, self._vertex_count)
 
-        glBindVertexArray(0)
+        if unbind:
+            glBindVertexArray(0)
+
+    @property
+    def vao(self) -> int:
+        return self._vao
 
     # ------------------------------------------------------------------
     # Cleanup

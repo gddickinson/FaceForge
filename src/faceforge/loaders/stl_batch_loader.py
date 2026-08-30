@@ -1,5 +1,8 @@
 """Batch STL loader with BodyParts3D coordinate transform."""
 
+import functools
+import json
+import logging
 from pathlib import Path
 from typing import Optional
 from dataclasses import dataclass
@@ -11,7 +14,39 @@ from faceforge.core.material import Material
 from faceforge.core.scene_graph import SceneNode
 from faceforge.core.config_loader import load_config
 from faceforge.loaders.stl_parser import load_stl_file
-from faceforge.constants import STL_DIR
+from faceforge.constants import STL_DIR, CONFIG_DIR
+
+logger = logging.getLogger(__name__)
+
+
+@functools.lru_cache(maxsize=1)
+def load_fma_labels() -> dict[str, dict]:
+    """BodyParts3D mesh id -> Foundational Model of Anatomy metadata.
+
+    Returns a mapping such as::
+
+        {"FMA67944": {"fma_id": 67944,
+                      "preferred_label": "Cerebellum",
+                      "display_name": "Cerebellum",
+                      "category": "brain",
+                      "system": "nervous"}, ...}
+
+    The crosswalk is generated from the FMA.csv shipped with the BodyParts3D
+    dataset.  A missing or unreadable file is not fatal: provenance is
+    additive, so the app degrades to empty labels rather than failing to
+    start.  It is logged, though -- silent degradation is what hid a broken
+    asset path across this whole project.
+    """
+    path = CONFIG_DIR / "fma_labels.json"
+    try:
+        with open(path, encoding="utf-8") as fh:
+            return json.load(fh).get("structures", {})
+    except FileNotFoundError:
+        logger.warning("FMA label crosswalk missing at %s; structures will "
+                       "carry no ontology metadata", path)
+    except (OSError, ValueError):
+        logger.exception("FMA label crosswalk at %s could not be read", path)
+    return {}
 
 
 @dataclass
@@ -108,6 +143,7 @@ def load_stl_batch(
     nodes = []
     pivot_groups: dict[int, SceneNode] = {}
     failed = []
+    fma = load_fma_labels()
 
     for defn in defs:
         stl_name = defn["stl"]
@@ -126,14 +162,36 @@ def load_stl_batch(
 
         # Create material
         color_int = defn.get("color", 0xcccccc)
+        # Default opacity 1.0, not 0.7.  Only 9 of ~950 configured structures
+        # set "opacity" explicitly, so the old default made 941 structures
+        # alpha-blended with glDepthMask(False) -- which disables early depth
+        # rejection across 13-26M triangles, the single largest fragment-side
+        # cost in the app, for a translucency nobody asked for.
+        # Modes whose shader needs blending on its own account (XRAY, HOLOGRAM,
+        # BLUEPRINT, ETHEREAL, POINTS) no longer depend on this accident: see
+        # gl_material._MODE_NEEDS_BLENDING.
+        opacity = float(defn.get("opacity", 1.0))
         mat = Material.from_hex(
             color_int,
-            opacity=defn.get("opacity", 0.7),
+            opacity=opacity,
             shininess=defn.get("shininess", 15.0),
-            transparent=defn.get("opacity", 0.7) < 1.0,
+            transparent=opacity < 1.0,
         )
 
-        mesh = MeshInstance(name=name, geometry=geom, material=mat)
+        # Anatomical provenance.  `stl_name` is the BodyParts3D identifier
+        # (e.g. "FMA67944"); it was previously used only to locate the file
+        # and then discarded, which left nothing on screen traceable to a
+        # standard term.  All 923 distinct configured ids resolve against
+        # assets/config/fma_labels.json.
+        entry = fma.get(stl_name, {})
+        mesh = MeshInstance(
+            name=name,
+            geometry=geom,
+            material=mat,
+            source_id=stl_name,
+            ontology_id=(f"FMA:{entry['fma_id']}" if entry.get("fma_id") else ""),
+            preferred_label=entry.get("preferred_label", ""),
+        )
         mesh.store_rest_pose()
         meshes.append(mesh)
 
