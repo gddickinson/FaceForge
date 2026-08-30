@@ -54,6 +54,48 @@ Loads all body skeleton groups from STL definition configs.
 - Creates pivot groups at each vertebra level for articulation
 - Loads spine distribution fractions from JSON config
 
+**Key function:** `nest_spine_pivots()`
+
+The STL batch loader parents every vertebral pivot to the batch group, so they
+arrive as *siblings*. `BodyAnimationSystem` rotates each by
+`fraction * total_angle`, and the fraction tables sum to exactly 1.0 — which
+only produces the intended bend if those rotations **accumulate down a chain**.
+As siblings they did not: each vertebra tilted a couple of degrees about its own
+centroid and the spine never curved. Measured on the real skeleton, the cranial
+end of the thoracic spine moved **0.000 units at full flexion**, and the skin
+displaced 2.48 units in total.
+
+`nest_spine_pivots()` chains each region parent-to-child after load. Two
+properties it must hold, both covered by `tests/body/test_spine_nesting.py`:
+
+- **Rooted at the caudal end**, so flexion carries the shoulders forward over a
+  fixed pelvis. The caudal end is found from the geometry, not from list order —
+  `pivots[0]` is the most *cranial* vertebra in this dataset, so nesting in list
+  order builds the chain upside down and swings the sacrum instead.
+- **List order untouched.** `BodyAnimationSystem` pairs `thoracic_fracs[i]` with
+  `pivots[i]` positionally, so reordering the list would silently hand every
+  vertebra a different fraction. Only the parenting changes.
+
+Note that `joint_pivots.py` already chains the limbs (shoulder → elbow → wrist);
+the spine was the one region built through the batch loader instead, which is
+how it ended up flat.
+
+**This nesting depends on a fix in `soft_tissue.update()`.** `SceneNode.
+update_world_matrix` propagates *downward* only — it multiplies by the parent's
+current world matrix without first ensuring the parent is up to date. Refreshing
+joints one at a time in list order is therefore correct only while every joint's
+ancestors are static, which was true by accident while the pivots were siblings
+of a group that never moves. Once chained, a joint whose ancestor appears later
+in `self.joints` reads a stale parent transform: measured, `spine_flex=0.3`
+displaced the skin *further* than `spine_flex=1.0`, and re-applying the rest pose
+left it 10.3 units adrift. `update()` now refreshes from the joint hierarchy's
+root before reading any joint.
+
+Current range: spinal articulation is correct and reversible, but the thoracic
+and lumbar chains are still independent, so the shoulders receive the thoracic
+share (40%) and not the lumbar (60%). Linking the thoracic root to the topmost
+lumbar vertebra would complete the curve.
+
 ### `body_constraints.py` -- Body Joint Limits
 
 Clamps body DOF values to physiological limits loaded from `body_joint_limits.json`.

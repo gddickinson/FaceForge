@@ -5,6 +5,11 @@ from typing import Optional
 
 import numpy as np
 
+try:  # scipy is optional; the CSR fast path degrades to np.add.at without it
+    from scipy import sparse as _sparse
+except ImportError:  # pragma: no cover - exercised only on scipy-less installs
+    _sparse = None
+
 from faceforge.core.math_utils import (
     Mat4,
     mat4_identity,
@@ -16,6 +21,8 @@ from faceforge.core.math_utils import (
 from faceforge.core.mesh import MeshInstance
 from faceforge.core.scene_graph import SceneNode
 from faceforge.core.state import BodyState
+
+from faceforge.body import skinning_cache as _skin_cache
 
 
 @dataclass
@@ -53,6 +60,84 @@ class SkinBinding:
     # Set True for muscles spanning into digit chains — these skip neighbor
     # clamping so finger curl tendons can move freely.
     skip_neighbor_clamp: bool = False
+    # ── How this mesh was bound ──────────────────────────────────────────
+    # These are the eligibility constraints handed to _solve_skin_binding.
+    # They are recorded because the solve has to be REDONE whenever the
+    # skeleton moves (gender scaling calls rebuild_skin_joints), and a
+    # re-solve without them silently rebinds vertices to whatever chain is
+    # nearest -- so a torso mesh constrained to the spine picks up the arm
+    # chain and torso geometry starts following arm motion.  Keeping them on
+    # the binding means "rebind this mesh the way it was bound" is expressible
+    # without the caller having to remember the original arguments.
+    allowed_chains: Optional[set] = None
+    spatial_limit: Optional[float] = None
+    chain_z_margin: Optional[float] = None
+    use_geodesic: bool = True
+
+    def rebind_kwargs(self) -> dict:
+        """The keyword arguments needed to reproduce this binding.
+
+        Used by the gender/skeleton rebuild path.  ``mesh`` is deliberately
+        excluded so the caller stays explicit about which mesh it is rebinding.
+        """
+        return {
+            "is_muscle": self.is_muscle,
+            "allowed_chains": self.allowed_chains,
+            "spatial_limit": self.spatial_limit,
+            "chain_z_margin": self.chain_z_margin,
+            "use_geodesic": self.use_geodesic,
+            "head_follow_config": self.head_follow_config,
+            "muscle_name": self.muscle_name,
+        }
+
+
+def _neighbor_adjacency(binding: "SkinBinding", V: int):
+    """Symmetric unweighted mesh adjacency for ``binding.edge_pairs``, cached.
+
+    Summing each vertex's neighbours is a sparse matrix-vector product
+    against a constant adjacency matrix.  ``edge_pairs`` is fixed for the
+    lifetime of a binding, so the CSR structure is built once and reused
+    every frame; ``np.add.at`` by contrast runs an unbuffered ufunc loop
+    over every edge on every frame.
+
+    Returns None when scipy is unavailable, so callers fall back to the
+    original ``np.add.at`` implementation.
+    """
+    if _sparse is None:
+        return None
+    edges = binding.edge_pairs
+    if edges is None:
+        return None
+    cached = getattr(binding, "_adj_csr", None)
+    if (
+        cached is not None
+        and cached.shape[0] == V
+        and getattr(binding, "_adj_edges", None) is edges
+    ):
+        return cached
+    src = np.concatenate([edges[:, 0], edges[:, 1]])
+    dst = np.concatenate([edges[:, 1], edges[:, 0]])
+    A = _sparse.csr_matrix(
+        (np.ones(len(src), dtype=np.float64), (src, dst)), shape=(V, V),
+    )
+    binding._adj_csr = A
+    # Identity check on the array object: replacing edge_pairs (a rebuild of
+    # the neighbour data) invalidates the cached operator.
+    binding._adj_edges = edges
+    return A
+
+
+def _safe_neighbor_counts(binding: "SkinBinding", counts: np.ndarray) -> np.ndarray:
+    """``counts`` as a (V, 1) float64 divisor with zeros replaced by 1.
+
+    A zero-neighbour row has a zero neighbour sum, so 0/1 == 0 — identical
+    to the original masked division, without the boolean-index copies.
+    """
+    sc = getattr(binding, "_safe_counts", None)
+    if sc is None or len(sc) != len(counts):
+        sc = np.where(counts > 0, counts, 1).astype(np.float64)[:, np.newaxis]
+        binding._safe_counts = sc
+    return sc
 
 
 class SoftTissueSkinning:
@@ -240,7 +325,76 @@ class SoftTissueSkinning:
         head_follow_config: dict | None = None,
         muscle_name: str | None = None,
     ) -> None:
+        """Bind *mesh* to the skeleton and append the result to ``bindings``.
+
+        The vertex-to-bone solve itself lives in ``_solve_skin_binding`` so
+        that it can be memoised on disk for large meshes (see
+        ``faceforge.body.skinning_cache``); this wrapper turns the solved
+        arrays into a ``SkinBinding``.  Parameters are documented on
+        ``_solve_skin_binding``.
+        """
+        solved = self._solve_skin_binding(
+            mesh,
+            is_muscle=is_muscle,
+            allowed_chains=allowed_chains,
+            spatial_limit=spatial_limit,
+            chain_z_margin=chain_z_margin,
+            use_geodesic=use_geodesic,
+        )
+        if solved is None:
+            return
+        joint_indices, secondary_indices, weights, precomputed_edges = solved
+
+        # Compute rest Y-span for activation coloring (top/bottom 25%)
+        rest_y_span = 1.0
+        if is_muscle:
+            positions = mesh.rest_positions.reshape(-1, 3)
+            vert_count = len(positions)
+            y_vals = positions[:, 1]
+            n25 = max(1, vert_count // 4)
+            top_idx = np.argpartition(y_vals, -n25)[-n25:]
+            bot_idx = np.argpartition(y_vals, n25)[:n25]
+            rest_y_span = max(1e-6, float(y_vals[top_idx].mean() - y_vals[bot_idx].mean()))
+
+        binding = SkinBinding(
+            mesh=mesh,
+            joint_indices=joint_indices,
+            weights=weights,
+            secondary_indices=secondary_indices,
+            is_muscle=is_muscle,
+            base_color=mesh.material.color,
+            rest_y_span=rest_y_span,
+            head_follow_config=head_follow_config,
+            muscle_name=muscle_name,
+            # Record the eligibility constraints so a later re-solve (gender
+            # scaling rebuilds every joint) can reproduce this binding rather
+            # than silently rebinding to the nearest chain.
+            allowed_chains=(set(allowed_chains)
+                            if allowed_chains is not None else None),
+            spatial_limit=spatial_limit,
+            chain_z_margin=chain_z_margin,
+            use_geodesic=use_geodesic,
+        )
+        self._build_neighbor_data(binding, precomputed_edges=precomputed_edges)
+        self.bindings.append(binding)
+
+    def _solve_skin_binding(
+        self,
+        mesh: MeshInstance,
+        is_muscle: bool = False,
+        allowed_chains: set[int] | None = None,
+        spatial_limit: float | None = None,
+        chain_z_margin: float | None = None,
+        use_geodesic: bool = True,
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray | None] | None:
         """Assign each vertex to nearest bone segment with blend weights.
+
+        Returns ``(joint_indices, secondary_indices, weights,
+        precomputed_edges)``, or ``None`` when the mesh cannot be bound.
+
+        For meshes above ``skinning_cache.MIN_VERTS`` the result is read
+        from / written to a disk cache, because the solve is deterministic
+        and costs tens of seconds on the full-body skin mesh.
 
         Parameters
         ----------
@@ -271,7 +425,7 @@ class SoftTissueSkinning:
             Defaults to True.  Disable for muscles or debugging.
         """
         if not self.joints or mesh.rest_positions is None:
-            return
+            return None
 
         positions = mesh.rest_positions.reshape(-1, 3)
         vert_count = len(positions)
@@ -297,7 +451,7 @@ class SoftTissueSkinning:
                     seg_chain_ids.append(joint.chain_id)
 
         if not seg_starts:
-            return
+            return None
 
         seg_starts_arr = np.array(seg_starts, dtype=np.float64)  # (S, 3)
         seg_ends_arr = np.array(seg_ends, dtype=np.float64)      # (S, 3)
@@ -305,6 +459,46 @@ class SoftTissueSkinning:
         seg_chain_arr = np.array(seg_chain_ids, dtype=np.int32)   # (S,)
         ab = seg_ends_arr - seg_starts_arr                        # (S, 3)
         ab_len_sq = np.sum(ab * ab, axis=1)                       # (S,)
+
+        # ── Disk cache for the solve ────────────────────────────────────
+        # Everything below this point is a deterministic function of the
+        # mesh geometry, the joint rest configuration, the call parameters
+        # and the tunables, and on the full-body skin mesh it costs tens of
+        # seconds on the main thread.  Memoise it.  Meshes below
+        # skinning_cache.MIN_VERTS skip the cache entirely: hashing their
+        # inputs would cost more than re-solving.
+        cache_key: str | None = None
+        if vert_count >= _skin_cache.MIN_VERTS and _skin_cache.enabled():
+            cache_key = _skin_cache.binding_key(
+                positions=positions,
+                indices=mesh.geometry.indices,
+                joint_rest=np.array(
+                    [j.rest_world[:3, 3] for j in self.joints], dtype=np.float64,
+                ),
+                joint_chains=np.array(
+                    [j.chain_id for j in self.joints], dtype=np.int32,
+                ),
+                seg_starts=seg_starts_arr,
+                seg_ends=seg_ends_arr,
+                seg_indices=seg_idx_arr,
+                seg_chains=seg_chain_arr,
+                params=(
+                    bool(is_muscle),
+                    None if allowed_chains is None else sorted(allowed_chains),
+                    spatial_limit,
+                    chain_z_margin,
+                    bool(use_geodesic),
+                ),
+                tunables=_skin_cache.scalar_tunables(self),
+            )
+            hit = _skin_cache.load(cache_key)
+            if hit is not None:
+                return (
+                    hit["joint_indices"],
+                    hit["secondary_indices"],
+                    hit["weights"],
+                    hit["edges"],
+                )
 
         # Vectorized: compute distance from each vertex to each segment
         p_exp = positions[:, np.newaxis, :].astype(np.float64)    # (V, 1, 3)
@@ -715,28 +909,16 @@ class SoftTissueSkinning:
                 joint_indices, secondary_indices, weights, mesh,
             )
 
-        # Compute rest Y-span for activation coloring (top/bottom 25%)
-        rest_y_span = 1.0
-        if is_muscle:
-            y_vals = positions[:, 1]
-            n25 = max(1, vert_count // 4)
-            top_idx = np.argpartition(y_vals, -n25)[-n25:]
-            bot_idx = np.argpartition(y_vals, n25)[:n25]
-            rest_y_span = max(1e-6, float(y_vals[top_idx].mean() - y_vals[bot_idx].mean()))
+        if cache_key is not None:
+            _skin_cache.store(
+                cache_key,
+                joint_indices=joint_indices,
+                secondary_indices=secondary_indices,
+                weights=weights,
+                edges=_precomputed_edges,
+            )
 
-        binding = SkinBinding(
-            mesh=mesh,
-            joint_indices=joint_indices,
-            weights=weights,
-            secondary_indices=secondary_indices,
-            is_muscle=is_muscle,
-            base_color=mesh.material.color,
-            rest_y_span=rest_y_span,
-            head_follow_config=head_follow_config,
-            muscle_name=muscle_name,
-        )
-        self._build_neighbor_data(binding, precomputed_edges=_precomputed_edges)
-        self.bindings.append(binding)
+        return joint_indices, secondary_indices, weights, _precomputed_edges
 
     def snap_hierarchy_blends(self, child_chain_ids: set[int]) -> None:
         """Remove cross-chain blending between child chains and parent chains.
@@ -1283,15 +1465,26 @@ class SoftTissueSkinning:
                 return
             unique_edges = result[0]
 
+        # Every accumulation below is a scatter-add of one value per edge
+        # ENDPOINT into a per-vertex total.  ``np.add.at`` does that with an
+        # unbuffered ufunc loop in Python-object space; ``np.bincount`` does
+        # the identical sum in C.  Concatenating [e0, e1] reproduces the
+        # exact accumulation ORDER of the two successive np.add.at calls it
+        # replaces, so the float64 results are bitwise identical.
+        e0 = unique_edges[:, 0]
+        e1 = unique_edges[:, 1]
+        endpoints = np.concatenate([e0, e1])          # (2E,) vertex per slot
+        opposite = np.concatenate([e1, e0])           # (2E,) its edge partner
+
         # Compute neighbor counts
-        neighbor_counts = np.zeros(V, dtype=np.int32)
-        np.add.at(neighbor_counts, unique_edges[:, 0], 1)
-        np.add.at(neighbor_counts, unique_edges[:, 1], 1)
+        neighbor_counts = np.bincount(endpoints, minlength=V).astype(np.int32)
 
         # Compute rest-pose neighbor average positions
-        neighbor_sum = np.zeros((V, 3), dtype=np.float64)
-        np.add.at(neighbor_sum, unique_edges[:, 0], rest[unique_edges[:, 1]])
-        np.add.at(neighbor_sum, unique_edges[:, 1], rest[unique_edges[:, 0]])
+        neighbor_sum = np.empty((V, 3), dtype=np.float64)
+        for _axis in range(3):
+            neighbor_sum[:, _axis] = np.bincount(
+                endpoints, weights=rest[opposite, _axis], minlength=V,
+            )
 
         has_neighbors = neighbor_counts > 0
         neighbor_avg = np.zeros_like(neighbor_sum)
@@ -1309,19 +1502,18 @@ class SoftTissueSkinning:
         # natural stretch at arm↔torso, leg↔pelvis transitions.
         ji = binding.joint_indices
         if ji is not None and len(ji) == V and self.joints:
-            vert_chains = np.array(
-                [self.joints[idx].chain_id for idx in ji], dtype=np.int32
+            # Table lookup, not a per-vertex Python loop over 800k joints.
+            chain_of_joint = np.array(
+                [j.chain_id for j in self.joints], dtype=np.int32,
             )
-            edge_same = (
-                vert_chains[unique_edges[:, 0]]
-                == vert_chains[unique_edges[:, 1]]
-            ).astype(np.float64)
-            same_count = np.zeros(V, dtype=np.float64)
-            total_count = np.zeros(V, dtype=np.float64)
-            np.add.at(same_count, unique_edges[:, 0], edge_same)
-            np.add.at(same_count, unique_edges[:, 1], edge_same)
-            np.add.at(total_count, unique_edges[:, 0], 1.0)
-            np.add.at(total_count, unique_edges[:, 1], 1.0)
+            vert_chains = chain_of_joint[ji]
+            edge_same = (vert_chains[e0] == vert_chains[e1]).astype(np.float64)
+            same_count = np.bincount(
+                endpoints, weights=np.concatenate([edge_same, edge_same]),
+                minlength=V,
+            )
+            # One unit per edge endpoint — identical to neighbor_counts.
+            total_count = neighbor_counts.astype(np.float64)
             boundary_blend = np.ones(V, dtype=np.float64)
             has_any = total_count > 0
             boundary_blend[has_any] = same_count[has_any] / total_count[has_any]
@@ -1334,13 +1526,18 @@ class SoftTissueSkinning:
         # smooth_zone = 1.0 at boundary, decaying outward over BOUNDARY_SMOOTH_RINGS.
         smooth_zone = 1.0 - boundary_blend  # 0 for interior, 1 for boundary
         for _ring in range(self.BOUNDARY_SMOOTH_RINGS):
-            zone_sum = np.zeros(V, dtype=np.float64)
-            np.add.at(zone_sum, unique_edges[:, 0], smooth_zone[unique_edges[:, 1]])
-            np.add.at(zone_sum, unique_edges[:, 1], smooth_zone[unique_edges[:, 0]])
+            zone_sum = np.bincount(
+                endpoints, weights=smooth_zone[opposite], minlength=V,
+            )
             zone_avg = np.zeros(V, dtype=np.float64)
             zone_avg[has_neighbors] = zone_sum[has_neighbors] / neighbor_counts[has_neighbors]
             # Expand: keep existing zone, propagate outward with decay
             smooth_zone = np.maximum(smooth_zone, zone_avg * 0.7)
+
+        # Drop cached per-frame operators derived from the old adjacency.
+        binding._adj_csr = None
+        binding._adj_edges = None
+        binding._safe_counts = None
 
         binding.edge_pairs = unique_edges
         binding.neighbor_counts = neighbor_counts
@@ -1371,19 +1568,24 @@ class SoftTissueSkinning:
         counts = binding.neighbor_counts
         rest_dist = binding.rest_neighbor_dist
 
-        # Compute current neighbor average positions (reuse buffer)
-        if not hasattr(binding, '_neighbor_sum_buf') or binding._neighbor_sum_buf is None or len(binding._neighbor_sum_buf) != V:
-            binding._neighbor_sum_buf = np.zeros((V, 3), dtype=np.float64)
-        neighbor_sum = binding._neighbor_sum_buf
-        neighbor_sum[:] = 0.0
-        np.add.at(neighbor_sum, edges[:, 0], current[edges[:, 1]])
-        np.add.at(neighbor_sum, edges[:, 1], current[edges[:, 0]])
-
+        # Compute current neighbor average positions.  Preferred path is a
+        # sparse matvec against the cached adjacency operator; the np.add.at
+        # path below is the scipy-less fallback and computes the same thing.
         has_neighbors = counts > 0
-        neighbor_avg = np.zeros_like(neighbor_sum)
-        neighbor_avg[has_neighbors] = (
-            neighbor_sum[has_neighbors] / counts[has_neighbors, np.newaxis]
-        )
+        A = _neighbor_adjacency(binding, V)
+        if A is not None:
+            neighbor_avg = (A @ current) / _safe_neighbor_counts(binding, counts)
+        else:
+            if not hasattr(binding, '_neighbor_sum_buf') or binding._neighbor_sum_buf is None or len(binding._neighbor_sum_buf) != V:
+                binding._neighbor_sum_buf = np.zeros((V, 3), dtype=np.float64)
+            neighbor_sum = binding._neighbor_sum_buf
+            neighbor_sum[:] = 0.0
+            np.add.at(neighbor_sum, edges[:, 0], current[edges[:, 1]])
+            np.add.at(neighbor_sum, edges[:, 1], current[edges[:, 0]])
+            neighbor_avg = np.zeros_like(neighbor_sum)
+            neighbor_avg[has_neighbors] = (
+                neighbor_sum[has_neighbors] / counts[has_neighbors, np.newaxis]
+            )
 
         # Distance from each vertex to its neighbor average
         diff = current - neighbor_avg
@@ -1475,20 +1677,29 @@ class SoftTissueSkinning:
         # Work on displacements, not absolute positions
         disp = positions.astype(np.float64) - rest
 
-        # Reuse pre-allocated buffer for disp_sum across passes
-        if not hasattr(binding, '_disp_sum_buf') or binding._disp_sum_buf is None or len(binding._disp_sum_buf) != V:
-            binding._disp_sum_buf = np.zeros((V, 3), dtype=np.float64)
-        disp_sum = binding._disp_sum_buf
+        A = _neighbor_adjacency(binding, V)
+        if A is not None:
+            safe_counts = _safe_neighbor_counts(binding, counts)
+            for _pass in range(self.BOUNDARY_SMOOTH_PASSES):
+                # One sparse matvec instead of two np.add.at calls per pass.
+                disp_avg = (A @ disp) / safe_counts
+                # Blend displacement toward neighbor average
+                disp[mask] = (1.0 - a) * disp[mask] + a * disp_avg[mask]
+        else:
+            # Reuse pre-allocated buffer for disp_sum across passes
+            if not hasattr(binding, '_disp_sum_buf') or binding._disp_sum_buf is None or len(binding._disp_sum_buf) != V:
+                binding._disp_sum_buf = np.zeros((V, 3), dtype=np.float64)
+            disp_sum = binding._disp_sum_buf
 
-        for _pass in range(self.BOUNDARY_SMOOTH_PASSES):
-            disp_sum[:] = 0.0
-            np.add.at(disp_sum, edges[:, 0], disp[edges[:, 1]])
-            np.add.at(disp_sum, edges[:, 1], disp[edges[:, 0]])
-            # In-place divide for neighbor average (only where has_neighbors)
-            disp_sum[has_neighbors] /= counts[has_neighbors, np.newaxis]
+            for _pass in range(self.BOUNDARY_SMOOTH_PASSES):
+                disp_sum[:] = 0.0
+                np.add.at(disp_sum, edges[:, 0], disp[edges[:, 1]])
+                np.add.at(disp_sum, edges[:, 1], disp[edges[:, 0]])
+                # In-place divide for neighbor average (only where has_neighbors)
+                disp_sum[has_neighbors] /= counts[has_neighbors, np.newaxis]
 
-            # Blend displacement toward neighbor average
-            disp[mask] = (1.0 - a) * disp[mask] + a * disp_sum[mask]
+                # Blend displacement toward neighbor average
+                disp[mask] = (1.0 - a) * disp[mask] + a * disp_sum[mask]
 
         # Write smoothed positions back
         disp += rest
@@ -1574,6 +1785,29 @@ class SoftTissueSkinning:
         if self.scene_wrapper is not None and self.scene_wrapper.parent is not None:
             self.scene_wrapper.update_world_matrix(force=True)
             cancel = mat4_inverse(self.scene_wrapper.world_matrix)
+
+        # Refresh the joint hierarchy from its root BEFORE reading any joint.
+        #
+        # ``update_world_matrix`` only pushes downward: it multiplies by the
+        # parent's CURRENT world matrix without first ensuring the parent is
+        # up to date.  Refreshing joints one at a time in list order is
+        # therefore correct only while every joint's ancestors are static.
+        # That held while the vertebral pivots were siblings of a fixed group;
+        # once they are chained (so spinal rotations accumulate), a joint whose
+        # ancestor appears later in ``self.joints`` reads a stale parent
+        # transform.  The symptom is not a crash but incoherent geometry:
+        # measured, spine_flex=0.3 displaced the skin further than
+        # spine_flex=1.0, and re-applying the rest pose left it 10.3 units away
+        # from where it started.
+        #
+        # Walking up costs a handful of pointer hops, and a clean subtree
+        # early-outs inside update_world_matrix, so this is not a per-frame
+        # matrix cost.
+        if self.joints:
+            root = self.joints[0].node
+            while root.parent is not None:
+                root = root.parent
+            root.update_world_matrix()
 
         deltas = []
         for joint in self.joints:
