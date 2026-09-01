@@ -176,6 +176,34 @@ class SoftTissueSkinning:
     #: Muscles keep their own full-range two-bone blend, which is tuned to
     #: make a muscle stretch between its endpoints rather than swing.
     SKIN_INFLUENCES = 4
+
+    #: Rotate skin vertices about a per-region centre rather than about
+    #: the blended bone frame (option 2 of the shoulder diagnosis; see
+    #: body/centres_of_rotation.py for what is and is not implemented of
+    #: Le & Hodgins 2016). Requires SKIN_INFLUENCES > 2.
+    #:
+    #: OFF by default: measured against the two shoulder poses it moved
+    #: separating edges by -0.3% and +0.1% and left max growth identical to
+    #: three decimals -- no benefit for its cost. The grouping is a
+    #: piecewise-constant stand-in for the paper's continuous similarity,
+    #: so this bounds the approximation, not the method.
+    USE_CENTRES_OF_ROTATION = False
+
+    #: Also give MUSCLES multi-influence weights. Forearm flexors and
+    #: extensors are bound across the arm chain and four digit chains at
+    #: once (Flex. Dig. Sup.: 59% arm, ~40% digits), which two influences
+    #: cannot represent; they also carry skip_neighbor_clamp, so nothing
+    #: catches the result. Measured at full shoulder flexion, 52 of 138
+    #: muscles distorted by more than 25% of their rest span.
+    #:
+    #: OFF: switching it on gave muscles genuine 4-influence weights
+    #: (measured: 3.99 distinct joints per vertex, slot-0 weight 0.687,
+    #: none pinned) and changed the distortion by ~0.01 units. So the
+    #: two-influence limit is NOT what tears these muscles; something
+    #: downstream overwrites the blend, and _apply_bone_follow -- which is
+    #: muscle-only and runs after this branch -- is the candidate. Left off
+    #: until that is established rather than shipping an inert code path.
+    MULTI_INFLUENCE_MUSCLES = False
     CROSS_CHAIN_RADIUS = 20.0  # distance threshold for cross-chain blending (gap-based)
     MAX_CROSS_WEIGHT_MUSCLE = 0.5  # max cross-chain blend for muscles (need to span joints)
     MAX_CROSS_WEIGHT_OTHER = 0.45  # max cross-chain blend for skin/organs
@@ -940,7 +968,12 @@ class SoftTissueSkinning:
 
         # ── Multi-influence weights for skin ──
         influences = influence_weights = None
-        if not is_muscle and self.SKIN_INFLUENCES > 2:
+        # Skin always; muscles only behind the flag. Widening this to
+        # muscles by REPLACING the `not is_muscle` test silently took
+        # skin off the multi-influence path when the flag went off --
+        # caught by the cache round-trip test's influence assertions.
+        if ((not is_muscle or self.MULTI_INFLUENCE_MUSCLES)
+                and self.SKIN_INFLUENCES > 2):
             influences, influence_weights = self._solve_multi_influence(
                 dists, seg_idx_arr,
             )
@@ -958,6 +991,22 @@ class SoftTissueSkinning:
 
         return (joint_indices, secondary_indices, weights, _precomputed_edges,
                 influences, influence_weights)
+
+    def _centres_for(self, binding, rest_pos):
+        """Per-vertex centres of rotation, computed once per binding.
+
+        Derived from the influence arrays, which the binding cache already
+        persists, so this needs no cache of its own -- it is an O(V)
+        grouping and runs once when a binding is first deformed.
+        """
+        centres = getattr(binding, "_cor", None)
+        if centres is None or len(centres) != len(rest_pos):
+            from faceforge.body.centres_of_rotation import compute_centres
+            centres = compute_centres(
+                rest_pos, binding.influences, binding.influence_weights,
+            )
+            binding._cor = centres
+        return centres
 
     def _solve_multi_influence(self, dists, seg_idx_arr):
         """Assign each vertex the K nearest bone segments with smooth weights.
@@ -1975,10 +2024,29 @@ class SoftTissueSkinning:
                 acc /= norm_r
                 q_r_all = acc[:, :4]
                 q_d_all = acc[:, 4:8]
-                q_r_conj_all = q_r_all.copy()
-                q_r_conj_all[:, :3] *= -1
-                t_all = 2.0 * batch_quat_multiply(q_d_all, q_r_conj_all)
-                result_pri = batch_quat_rotate(q_r_all, rest_pos) + t_all[:, :3]
+
+                if self.USE_CENTRES_OF_ROTATION:
+                    # Rotate each vertex about a point characteristic of its
+                    # weight region rather than about the blended bone frame.
+                    #   v' = R(w) (v - p*) + LBS(w, p*)
+                    # See body/centres_of_rotation.py, including how this
+                    # differs from Le & Hodgins (2016).
+                    centres = self._centres_for(binding, rest_pos)
+                    c_h = np.concatenate(
+                        [centres, np.ones((V, 1), dtype=np.float64)], axis=1)
+                    lbs_c = np.zeros((V, 3), dtype=np.float64)
+                    for k in range(inf.shape[1]):
+                        m_k = delta_stack[inf[:, k]]
+                        lbs_c += (np.einsum('vij,vj->vi', m_k, c_h)[:, :3]
+                                  * infw[:, k:k + 1])
+                    result_pri = (
+                        batch_quat_rotate(q_r_all, rest_pos - centres) + lbs_c)
+                else:
+                    q_r_conj_all = q_r_all.copy()
+                    q_r_conj_all[:, :3] *= -1
+                    t_all = 2.0 * batch_quat_multiply(q_d_all, q_r_conj_all)
+                    result_pri = (
+                        batch_quat_rotate(q_r_all, rest_pos) + t_all[:, :3])
 
                 # Hand the existing normal code the same rotation, so shading
                 # follows the positions instead of the discarded primary joint.

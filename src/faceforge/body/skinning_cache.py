@@ -46,7 +46,8 @@ import numpy as np
 # appears to do nothing.  The version is part of the filename, so
 # older entries are simply never read.
 #   v2: skin carries (V, K) multi-influence indices and weights.
-CACHE_VERSION = 2
+#   v3: muscles carry multi-influence arrays too.
+CACHE_VERSION = 3
 
 # Vertex count above which memoising beats solving.  The full-body skin mesh
 # is ~792k vertices; muscle meshes are typically 1k-30k.
