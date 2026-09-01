@@ -166,7 +166,8 @@ class NeckMuscleSystem:
 
         self._group = result.group
 
-        for mesh, node, defn in zip(result.meshes, result.nodes, self._defs):
+        for mesh, node, defn in zip(result.meshes, result.nodes,
+                                    result.defs_loaded, strict=True):
             rest_pos = mesh.geometry.positions.copy()
             rest_nrm = mesh.geometry.normals.copy()
             vert_count = mesh.geometry.vertex_count

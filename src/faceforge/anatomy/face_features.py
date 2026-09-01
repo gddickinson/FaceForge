@@ -422,7 +422,8 @@ class FaceFeatureSystem:
 
         self._group = result.group
 
-        for mesh, node, defn in zip(result.meshes, result.nodes, self._defs):
+        for mesh, node, defn in zip(result.meshes, result.nodes,
+                                    result.defs_loaded, strict=True):
             category = defn.get("category", "other")
             animated = defn.get("animated", False)
             feat_type = defn.get("type", "single")

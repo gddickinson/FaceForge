@@ -170,7 +170,8 @@ def build_bp3d_skull(
     temporal_nodes = []
     cranium_group = SceneNode(name="cranium_bones_group")
 
-    for node, defn in zip(bone_result.nodes, bone_defs):
+    for node, defn in zip(bone_result.nodes, bone_result.defs_loaded,
+                          strict=True):
         if defn.get("jaw_attached"):
             mandible_node = node
         else:
@@ -210,7 +211,8 @@ def build_bp3d_skull(
     lower_teeth_group = SceneNode(name="lower_teeth")
     lower_teeth_group.set_position(-jp[0], -jp[1], -jp[2])
 
-    for node, defn in zip(teeth_result.nodes, teeth_defs):
+    for node, defn in zip(teeth_result.nodes, teeth_result.defs_loaded,
+                          strict=True):
         if defn.get("jaw") == "lower":
             lower_teeth_group.add(node)
         else:

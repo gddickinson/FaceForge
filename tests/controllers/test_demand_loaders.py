@@ -156,8 +156,24 @@ def test_a_load_with_no_body_root_is_not_retried_either(ctx):
 # -- A full loader run -----------------------------------------------------
 
 class StubResult:
-    def __init__(self, meshes, nodes, group):
+    """Stands in for ``STLBatchResult``.
+
+    ``defs_loaded`` is part of that interface, not an optional extra: callers
+    must zip against it rather than against the definition list they passed in,
+    because a failed STL yields no mesh and would otherwise shift every later
+    structure onto another one's definition and flags.  A double that omits it
+    tests less than it appears to -- and here the omission surfaced only as a
+    swallowed AttributeError and a silently empty organ layer.
+    """
+
+    def __init__(self, meshes, nodes, group, defs_loaded=None):
         self.meshes, self.nodes, self.group = meshes, nodes, group
+        self.failed: list[str] = []
+        # Default mirrors the real loader: one definition per loaded mesh.
+        self.defs_loaded = (
+            defs_loaded if defs_loaded is not None
+            else [{"name": m.name} for m in meshes]
+        )
 
 
 class StubSkinning:
@@ -175,7 +191,14 @@ def test_organs_bind_to_the_spine_only(ctx, monkeypatch):
     meshes = [FakeMesh("Heart"), FakeMesh("Liver")]
     nodes = [FakeNode("Heart"), FakeNode("Liver")]
     group = FakeNode("organs")
-    ctx.assets = SimpleNamespace(load_organs=lambda: StubResult(meshes, nodes, group))
+    # The same definitions the loader would report as loaded.  They must carry
+    # every field the announcement copies through (here: category), because the
+    # loader zips its output against result.defs_loaded, not against the config.
+    organ_defs = [{"name": "Heart", "category": "cardiac"},
+                  {"name": "Liver", "category": "digestive"}]
+    ctx.assets = SimpleNamespace(
+        load_organs=lambda: StubResult(meshes, nodes, group,
+                                       defs_loaded=organ_defs))
     ctx.named_nodes["bodyRoot"] = FakeNode("bodyRoot")
     ctx.skin_chain_ids.update(CHAIN_IDS)
     skinning = StubSkinning()

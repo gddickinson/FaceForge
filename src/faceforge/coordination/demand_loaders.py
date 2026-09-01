@@ -228,9 +228,16 @@ class DemandLoaders:
                         defs: Iterable[dict], *,
                         toggle_prefix: str | None = None,
                         extra_keys: Iterable[str] = ()) -> list[dict]:
-        """Register per-structure visibility toggles; return the item dicts."""
+        """Register per-structure visibility toggles; return the item dicts.
+
+        ``strict=True`` is deliberate: callers must pass ``result.defs_loaded``,
+        not the definition list they handed to the loader.  A failed STL yields
+        no node, so the two lists differ in length and every structure after
+        the failure would otherwise be registered under another one's name.
+        Raising here is far better than silently mislabelling the anatomy.
+        """
         items: list[dict] = []
-        for node, defn in zip(nodes, defs):
+        for node, defn in zip(nodes, defs, strict=True):
             name = defn.get("name", node.name)
             tid = f"{toggle_prefix}{name}" if toggle_prefix else f"{layer}_{name}"
             self.ctx.visibility.register(tid, node)
@@ -273,14 +280,15 @@ class DemandLoaders:
             physiology = getattr(self.ctx.simulation, "physiology", None)
             if physiology is not None:
                 physiology.muscle_groups.append(result.group)
-                for mesh, defn in zip(result.meshes, defs):
+                for mesh, defn in zip(result.meshes, result.defs_loaded,
+                                      strict=True):
                     physiology.register_muscle(mesh, defn.get("name", mesh.name))
 
             if layer == "back_muscles" and skinning is not None:
                 self._wire_back_neck_muscles(defs, skinning)
 
             items = self._register_items(
-                layer, result.nodes, defs, toggle_prefix=f"muscle_{layer}_")
+                layer, result.nodes, result.defs_loaded, toggle_prefix=f"muscle_{layer}_")
             self._announce(layer, items)
             logger.info("Loaded body muscles: %s (%d meshes)",
                         layer, len(result.meshes))
@@ -291,7 +299,7 @@ class DemandLoaders:
     def _register_muscles(self, layer: str, result: Any, defs: list[dict],
                           default_chains: list[str], skinning: Any) -> None:
         chain_ids = self.ctx.skin_chain_ids
-        for mesh, defn in zip(result.meshes, defs):
+        for mesh, defn in zip(result.meshes, result.defs_loaded, strict=True):
             muscle_name = defn.get("name", mesh.name)
             chain_names = (MUSCLE_CHAIN_OVERRIDES.get(muscle_name)
                            or default_chains)
@@ -342,7 +350,7 @@ class DemandLoaders:
             self._attach(layer, result)
             defs = load_muscle_config(config_name)
             items = self._register_items(
-                layer, result.nodes, defs, toggle_prefix=f"muscle_{layer}_")
+                layer, result.nodes, result.defs_loaded, toggle_prefix=f"muscle_{layer}_")
             self._announce(layer, items)
 
             skinning = self._skinning
@@ -399,7 +407,7 @@ class DemandLoaders:
                         mesh, is_muscle=False, allowed_chains=allowed)
             defs = load_config(config_name)
             items = self._register_items(
-                layer, result.nodes, defs,
+                layer, result.nodes, result.defs_loaded,
                 toggle_prefix=("organ_" if layer == "organs" else "vasc_"),
                 extra_keys=extra_keys)
             self._announce(layer, items)
@@ -408,7 +416,8 @@ class DemandLoaders:
             if physiology is not None and physiology_group_attr:
                 setattr(physiology, physiology_group_attr, result.group)
                 register = getattr(physiology, physiology_register)
-                for mesh, defn in zip(result.meshes, defs):
+                for mesh, defn in zip(result.meshes, result.defs_loaded,
+                                      strict=True):
                     register(mesh, *(defn.get(k, "") for k in physiology_keys))
             logger.info("Loaded %s: %d meshes", layer, len(result.meshes))
             self.ctx.run_after_registration_hooks()
@@ -451,7 +460,7 @@ class DemandLoaders:
             apply_current_render_mode(self.ctx.scene, result.meshes)
             defs = load_config("brain.json")
             items = self._register_items(
-                "brain", result.nodes, defs, toggle_prefix="brain_")
+                "brain", result.nodes, result.defs_loaded, toggle_prefix="brain_")
             self._announce("brain", items)
             logger.info("Loaded brain: %d meshes", len(result.meshes))
         except Exception as e:  # noqa: BLE001
@@ -471,7 +480,8 @@ class DemandLoaders:
 
             skinning = self._skinning
             if skinning is not None:
-                for mesh, defn in zip(result.meshes, defs):
+                for mesh, defn in zip(result.meshes, result.defs_loaded,
+                                      strict=True):
                     lig_name = defn.get("name", mesh.name)
                     chain_names = LIGAMENT_CHAIN_MAP.get(
                         defn.get("category", "trunk"), ["spine"])
@@ -488,7 +498,7 @@ class DemandLoaders:
                             skinning.bindings[-1], origin, insertion)
 
             items = self._register_items(
-                "ligaments", result.nodes, defs,
+                "ligaments", result.nodes, result.defs_loaded,
                 toggle_prefix="ligaments_", extra_keys=("category",))
             self._announce("ligaments", items)
             logger.info("Loaded ligaments: %d meshes", len(result.meshes))
@@ -553,7 +563,8 @@ class DemandLoaders:
             apply_current_render_mode(self.ctx.scene, result.meshes)
             defs = config_loader(config_name)
             items: list[dict] = []
-            for node, defn in zip(result.nodes, defs):
+            for node, defn in zip(result.nodes, result.defs_loaded,
+                                  strict=True):
                 name = defn.get("name", node.name)
                 tid = f"{layer}_{name}"
                 self.ctx.visibility.register(tid, node)

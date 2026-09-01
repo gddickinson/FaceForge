@@ -107,7 +107,8 @@ class VertebraeSystem:
 
         # Build VertebraLevel entries from pivot groups
         level_meshes: dict[int, list[MeshInstance]] = {}
-        for mesh, defn in zip(result.meshes, self._defs):
+        for mesh, defn in zip(result.meshes, result.defs_loaded,
+                              strict=True):
             level = defn.get("level", 0)
             if level not in level_meshes:
                 level_meshes[level] = []

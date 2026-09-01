@@ -107,6 +107,19 @@ class STLBatchResult:
     nodes: list[SceneNode]
     pivot_groups: dict[int, SceneNode]  # level → pivot node (if createPivots)
     failed: list[str]  # Names of STLs that failed to load
+    #: The definition each loaded mesh/node came from, in the SAME order as
+    #: ``meshes`` and ``nodes``.
+    #:
+    #: Callers need this because a failed entry produces no mesh and no node,
+    #: so ``zip(result.nodes, defs)`` silently pairs every structure after the
+    #: first failure with ANOTHER structure's definition -- and those
+    #: definitions carry behavioural flags.  In the skull builder that meant a
+    #: bone could inherit the mandible's ``jaw_attached`` and rotate with the
+    #: jaw, and teeth could inherit the wrong ``jaw`` value.  Ten call sites
+    #: zipped against the input list this way.
+    #:
+    #: Always zip against ``defs_loaded``, never against the input ``defs``.
+    defs_loaded: list[dict]
 
 
 def load_stl_batch(
@@ -143,6 +156,7 @@ def load_stl_batch(
     nodes = []
     pivot_groups: dict[int, SceneNode] = {}
     failed = []
+    defs_loaded: list[dict] = []
     fma = load_fma_labels()
 
     for defn in defs:
@@ -194,6 +208,9 @@ def load_stl_batch(
         )
         mesh.store_rest_pose()
         meshes.append(mesh)
+        # Kept in lockstep with meshes/nodes so callers can recover which
+        # definition produced each one; see STLBatchResult.defs_loaded.
+        defs_loaded.append(defn)
 
         node = SceneNode(name=name)
         node.mesh = mesh
@@ -238,4 +255,5 @@ def load_stl_batch(
         nodes=nodes,
         pivot_groups=pivot_groups,
         failed=failed,
+        defs_loaded=defs_loaded,
     )
