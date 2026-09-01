@@ -192,7 +192,14 @@ class SoftTissueSkinning:
     #: is beneath it, so a fixed bone offset is the wrong invariant for it and
     #: enforcing one shrink-wraps it.  Organs are bound to the spine chain and
     #: measured unchanged either way.
-    USE_BONE_OFFSET_PROJECTION = True
+    #: OFF by default. The first wired version searched ALL chains for the
+    #: nearest bone, and at rest the arms hang alongside the trunk -- so
+    #: lateral torso vertices were assigned to the HUMERUS and dragged
+    #: along when the arm raised, which is the cross-region pulling this
+    #: whole effort exists to remove. The assignment below is now
+    #: restricted to bones that actually skin the mesh; re-enable only
+    #: after the per-layer harness and a reaching-pose check both pass.
+    USE_BONE_OFFSET_PROJECTION = False
 
     #: Deadband, model units.  A vertex may sit this far from its rest offset
     #: before any correction applies, so a muscle can still bulge and slide.
@@ -203,6 +210,27 @@ class SoftTissueSkinning:
 
     #: Fraction of the beyond-deadband excess removed per frame.
     BONE_OFFSET_OMEGA = 1.0
+
+    #: Recompute normals from the deformed surface instead of rotating the
+    #: rest normals.
+    #:
+    #: The rotation form is exact only while the deformation is rigid.  It also
+    #: reflects NONE of the position-correction passes -- bone follow, neighbour
+    #: clamp, boundary smoothing, collision resolution, bone-offset projection
+    #: all move vertices after the rotation is computed -- so wherever those act,
+    #: the normals belong to a surface that no longer exists.  The visible
+    #: symptom is dark, mottled shading with the silhouette left intact, which
+    #: is what appears on the forearm from about 0.2 of shoulder flexion.
+    #:
+    #: Costs a cross-product per triangle plus a scatter-add per deformed mesh.
+    #: OFF: measured INERT. With it on and off, normals on a 64,071-vertex
+    #: forearm muscle at full flexion were byte-identical -- 0 differing,
+    #: max difference exactly 0 -- so the block below either does not run
+    #: or its result is discarded downstream. The reasoning for wanting it
+    #: still holds (rotated normals reflect none of the position passes),
+    #: so this is left in place, disabled, pending that investigation
+    #: rather than presented as a working feature.
+    RECOMPUTE_NORMALS_FROM_GEOMETRY = False
 
     #: Rotate skin vertices about a per-region centre rather than about
     #: the blended bone frame (option 2 of the shoulder diagnosis; see
@@ -1760,8 +1788,22 @@ class SoftTissueSkinning:
         by_chain: dict[int, list] = {}
         for i, j in enumerate(self.joints):
             by_chain.setdefault(j.chain_id, []).append(i)
-        for idxs in by_chain.values():
-            segs.extend(zip(idxs[:-1], idxs[1:]))
+        # Only bones that actually skin this mesh are candidates. Searching
+        # every chain let a torso vertex be assigned to an arm bone purely
+        # because the arm hangs beside the trunk at rest, so the projection
+        # then moved torso geometry with the arm. The chains are derived from
+        # the mesh's own joint assignments rather than from configuration, and
+        # intersected with allowed_chains when the loader supplied one.
+        own = {self.joints[int(j)].chain_id
+               for j in np.unique(np.asarray(binding.joint_indices))}
+        if getattr(binding, "allowed_chains", None):
+            own &= set(binding.allowed_chains)
+        if not own:
+            own = {self.joints[int(j)].chain_id
+                   for j in np.unique(np.asarray(binding.joint_indices))}
+        for chain_id, idxs in by_chain.items():
+            if chain_id in own:
+                segs.extend(zip(idxs[:-1], idxs[1:]))
         if not segs:
             binding._bone_assign = (None, None, None)
             return binding._bone_assign
@@ -2351,7 +2393,8 @@ class SoftTissueSkinning:
                 nrm_pri /= lengths
                 mesh.geometry.normals = nrm_pri.ravel().astype(np.float32)
 
-            if projected and mesh.geometry.indices is not None:
+            if ((projected or self.RECOMPUTE_NORMALS_FROM_GEOMETRY)
+                    and mesh.geometry.indices is not None):
                 # Area-weighted normals from the corrected positions. Rotating
                 # rest normals is exact only while the deformation is rigid;
                 # after a positional correction the rotated normal no longer
