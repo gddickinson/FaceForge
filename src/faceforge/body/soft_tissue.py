@@ -2092,6 +2092,23 @@ class SoftTissueSkinning:
         mask = binding._smooth_mask
         a = binding._smooth_alpha
 
+        # Containment: zero the blend weight for vertices whose own driving
+        # joints are all unchanged, so this pass cannot move them while they
+        # still contribute to the neighbour average that pulls their moving
+        # neighbours back.
+        #
+        # The weight is zeroed rather than the MASK narrowed: `a` is
+        # precomputed as (sz * STRENGTH)[mask, newaxis], so it is indexed by
+        # the original mask and a narrower mask desynchronises the two shapes
+        # (measured: ValueError, 13 test errors). Zeroing keeps every shape
+        # intact and makes the blend an exact no-op for those vertices.
+        if self.CONTAIN_CORRECTIONS:
+            static = self._static_vertex_mask(binding)
+            if static is not None and len(static) >= len(mask):
+                keep = ~static[:len(mask)][mask]
+                if keep.shape[0] == a.shape[0]:
+                    a = a * keep[:, None]
+
         # Work on displacements, not absolute positions
         disp = positions.astype(np.float64) - rest
 

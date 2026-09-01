@@ -100,7 +100,30 @@ def test_clamping_reduces_the_stretch_tail(measured):
     edges.  Asserted on the 99.9th percentile and the count above 5x rather
     than on the single worst edge -- see the next test for why."""
     assert measured["clamped"]["p999"] <= measured["unclamped"]["p999"]
-    assert measured["clamped"]["over_5x"] <= measured["unclamped"]["over_5x"]
+
+    # The over-5x COUNT is no longer strictly reduced, and that is a recorded
+    # behaviour change rather than a regression being asserted away -- the same
+    # treatment the next test gives the single worst edge.
+    #
+    # SoftTissueSkinning.CONTAIN_CORRECTIONS forbids the clamp from moving a
+    # vertex whose own driving joints are all unchanged, because that pull was
+    # the entire cause of geometry crossing body regions: raising an arm moved
+    # trunk geometry by up to 42.6 units (skin) and 10.2 (transverse
+    # trapezius), traced by ablation to this pass and boundary smoothing alone.
+    # With containment enforced that motion is exactly 0.000.
+    #
+    # The cost is an overstretched edge spanning a static and a moving vertex,
+    # which can now only be corrected from one end. Measured on
+    # extreme_arm_raise: 19,426 edges over 5x with clamping against 19,395
+    # without -- 31 edges, 0.16%. The p999 assertion above still holds, so the
+    # clamp still shrinks the distribution; it no longer wins on this count.
+    unclamped = measured["unclamped"]["over_5x"]
+    assert measured["clamped"]["over_5x"] <= unclamped * 1.01, (
+        f'clamping left {measured["clamped"]["over_5x"]:,} edges over 5x '
+        f"against {unclamped:,} unclamped -- more than the 1% allowance for "
+        "containment-limited clamping, so this is a real loss of clamp "
+        "effectiveness rather than the measured 0.16% tie"
+    )
 
 
 def test_the_single_worst_edge_is_not_improved_by_clamping(measured):
