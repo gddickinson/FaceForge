@@ -1,10 +1,13 @@
 """Application state management for face and body parameters."""
 
+import logging
 from dataclasses import dataclass, field, fields
 from typing import Any, ClassVar
 
 
 # All 12 Action Units
+logger = logging.getLogger(__name__)
+
 AU_IDS = ["AU1", "AU2", "AU4", "AU5", "AU6", "AU9", "AU12", "AU15", "AU20", "AU22", "AU25", "AU26"]
 
 
@@ -61,6 +64,17 @@ class FaceState:
         return getattr(self, au_id, 0.0)
 
     def set_au(self, au_id: str, value: float) -> None:
+        """Set a declared AU, clamped to [0, 1]. Unknown ids are ignored.
+
+        See TargetAU.set: a bare setattr here accepted any id and stored
+        a value no consumer reads.
+        """
+        if au_id not in AU_IDS:
+            logger.warning(
+                "Ignoring unknown action unit %r: FaceForge implements %s.",
+                au_id, ", ".join(AU_IDS),
+            )
+            return
         setattr(self, au_id, max(0.0, min(1.0, value)))
 
     def get_au_dict(self) -> dict[str, float]:
@@ -92,6 +106,23 @@ class TargetAU:
         return getattr(self, au_id, 0.0)
 
     def set(self, au_id: str, value: float) -> None:
+        """Set a declared AU. An unknown id is reported and ignored.
+
+        This was a bare ``setattr``, so any string became an attribute: a
+        mistyped or unimplemented AU id was stored without complaint and then
+        read by nothing, so the face simply did not move and nothing said why.
+        ``set_aus_from_dict`` already gated on :data:`AU_IDS`; this path did
+        not, which is how six AUs offered by the timeline editor (AU7, AU10,
+        AU14, AU17, AU23, AU24) and AU46 in the wink preset came to be settable
+        but inert.
+        """
+        if au_id not in AU_IDS:
+            logger.warning(
+                "Ignoring unknown action unit %r: FaceForge implements %s. "
+                "Setting it would have stored a value that nothing reads.",
+                au_id, ", ".join(AU_IDS),
+            )
+            return
         setattr(self, au_id, value)
 
     def set_from_dict(self, aus: dict[str, float]) -> None:

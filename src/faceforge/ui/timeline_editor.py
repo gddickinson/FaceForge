@@ -17,6 +17,7 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt, Signal, QTimer
 from PySide6.QtGui import QFont, QAction
 
+from faceforge.core.state import AU_IDS
 from faceforge.scene.scene_animation import (
     AnimationClip, AnimationKeyframe, AnimationPlayer,
     clip_to_dict, load_clip_from_dict,
@@ -279,11 +280,14 @@ class TimelineEditor(QDialog):
             if val != 0.0:
                 body_dict[field] = val
 
-        # Build face AU dict
+        # Build face AU dict.
+        #
+        # Taken from AU_IDS rather than a literal list. The literal here named
+        # 18 AUs while the FACS engine reads 12: AU7, AU10, AU14, AU17, AU23
+        # and AU24 could be keyframed and stored, and were then read by
+        # nothing, so those six tracks silently had no effect on the face.
         au_dict = {}
-        for au_id in ("AU1", "AU2", "AU4", "AU5", "AU6", "AU7", "AU9",
-                       "AU10", "AU12", "AU14", "AU15", "AU17", "AU20",
-                       "AU22", "AU23", "AU24", "AU25", "AU26"):
+        for au_id in AU_IDS:
             val = face.get_au(au_id)
             if val > 0.01:
                 au_dict[au_id] = val

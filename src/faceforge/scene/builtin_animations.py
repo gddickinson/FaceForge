@@ -1094,7 +1094,13 @@ def make_tap_dance_clip() -> AnimationClip:
     cheerful = {"AU6": 0.4, "AU12": 0.5, "AU5": 0.15}
     grin = {"AU6": 0.6, "AU12": 0.7, "AU25": 0.2}
     cool = {"AU12": 0.2, "AU5": 0.1}
-    wink_r = {"AU6": 0.3, "AU12": 0.4, "AU46": 0.8}  # right eye close
+    # AU46 (wink) was set here and read by nothing, so this segment never
+    # closed an eye -- it played as a plain smile. The engine does implement
+    # eyelid closure, but through FaceState.blink_amount, which is bilateral
+    # and so cannot express a unilateral wink. Rather than leave a key that
+    # silently does nothing, the inert entry is dropped; restoring the wink
+    # needs per-eye eyelid control, which does not exist yet.
+    wink_r = {"AU6": 0.3, "AU12": 0.4}
 
     head_c = {"headYaw": 0, "headPitch": 0, "headRoll": 0}
     head_nod = {"headYaw": 0, "headPitch": 0.1, "headRoll": 0}
