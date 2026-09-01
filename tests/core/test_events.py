@@ -41,8 +41,19 @@ def test_different_events_independent():
 
 
 def test_clear():
+    """clear() must actually detach subscribers, not merely survive a publish.
+
+    The original test published after clear() and checked only that nothing
+    raised -- which would also have passed if clear() did nothing at all, since
+    the handler was a no-op lambda.
+    """
     bus = EventBus()
-    bus.subscribe(EventType.AU_CHANGED, lambda **kw: None)
+    received = []
+    bus.subscribe(EventType.AU_CHANGED, lambda **kw: received.append(kw))
+
+    bus.publish(EventType.AU_CHANGED, au_id="AU1", value=1.0)
+    assert len(received) == 1, "the subscriber was not wired up to begin with"
+
     bus.clear()
-    # Should not raise
-    bus.publish(EventType.AU_CHANGED)
+    bus.publish(EventType.AU_CHANGED, au_id="AU1", value=1.0)
+    assert len(received) == 1, "clear() left the subscriber attached"

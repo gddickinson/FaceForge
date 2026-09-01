@@ -170,10 +170,23 @@ class TestScoring:
             assert math.isfinite(ps.max_displacement)
 
     def test_to_dict_serializable(self, scored_result):
+        """The dict must survive a JSON round trip unchanged.
+
+        ``json.dumps`` alone only proves the types are encodable; it would pass
+        just as well on an empty dict, or one whose values were silently
+        stringified. Comparing the round trip checks that the payload is both
+        encodable and preserved.
+        """
         import json
+
         d = scored_result.to_dict()
-        # Should be JSON-serializable
-        json.dumps(d)
+        assert d, "to_dict() returned nothing to serialise"
+
+        round_tripped = json.loads(json.dumps(d))
+        assert round_tripped == d, (
+            "the dict did not survive a JSON round trip: "
+            f"{ {k: (d[k], round_tripped.get(k)) for k in d if round_tripped.get(k) != d[k]} }"
+        )
 
 
 class TestResetSkinning:

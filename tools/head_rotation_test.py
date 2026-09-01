@@ -54,7 +54,12 @@ def _extract_mesh_groups(hs) -> list[MeshGroup]:
         all_triangles = []
         vertex_offset = 0
 
-        def _collect(n):
+        def _collect(n,
+                     all_positions=all_positions,
+                     all_triangles=all_triangles):
+            # Loop variables bound as defaults rather than captured. The
+            # closure is invoked within the same iteration, so behaviour is
+            # unchanged -- this states that intent instead of relying on it.
             nonlocal vertex_offset
             if n.mesh is not None:
                 pos = n.mesh.geometry.positions

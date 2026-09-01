@@ -43,7 +43,23 @@ def test_an_unknown_field_is_ignored_not_created(ctx, state, body):
 
 
 def test_an_empty_field_name_is_ignored(ctx, state, body):
+    """An empty field name must write nothing, not write somewhere arbitrary.
+
+    Previously this only checked that publishing did not raise, which it would
+    also have passed had the handler created an attribute named "" or written
+    to an unrelated field.
+    """
+    before = {f: getattr(state.target_body, f)
+              for f in vars(state.target_body)}
+
     ctx.event_bus.publish(EventType.BODY_STATE_CHANGED, field="", value=1.0)
+
+    after = {f: getattr(state.target_body, f) for f in vars(state.target_body)}
+    assert after == before, (
+        "publishing an empty field name changed state: "
+        f"{ {k: (before[k], after[k]) for k in after if after[k] != before.get(k)} }"
+    )
+    assert not hasattr(state.target_body, ""), "an empty attribute was created"
 
 
 def test_a_bool_valued_flag_is_written_live_as_well_as_to_the_target(ctx, state,

@@ -542,9 +542,20 @@ class TestMultipleMovements:
         return rest_pos, curr_pos
 
     def _check_region_stable(self, rest_pos, curr_pos, mask, region_name, max_disp=3.0):
-        """Assert that masked region hasn't moved beyond threshold."""
-        if not np.any(mask):
-            return
+        """Assert that masked region hasn't moved beyond threshold.
+
+        An empty mask used to return here, so the caller passed having checked
+        nothing.  All six masks are non-empty against the current fixture, but
+        the fixture's Z extents and these thresholds are independent literals:
+        any edit to the fixture could empty a mask and turn a test permanently
+        green with no signal.  A region with no vertices means the test is not
+        testing what it says, so it fails.
+        """
+        assert np.any(mask), (
+            f"{region_name}: the region mask selected no vertices, so this "
+            f"check would pass without examining anything. The fixture's "
+            f"geometry and this mask's thresholds have drifted apart."
+        )
         disp = np.linalg.norm(curr_pos[mask] - rest_pos[mask], axis=1)
         md = float(disp.max())
         assert md < max_disp, (

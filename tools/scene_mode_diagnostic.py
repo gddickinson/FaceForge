@@ -79,7 +79,9 @@ def run_diagnostic() -> None:
         # Walk parent chain to see if this mesh's node is under wrapper
         node = None
         # Find the node for this mesh
-        def _find_mesh_node(n: SceneNode):
+        def _find_mesh_node(n: SceneNode, mesh=mesh):
+            # `mesh` bound as a default rather than captured from the loop;
+            # traverse() runs inside this iteration so behaviour is the same.
             nonlocal node
             if n.mesh is mesh:
                 node = n

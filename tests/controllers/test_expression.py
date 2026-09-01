@@ -46,9 +46,21 @@ def test_gaze_and_pupil_bypass_the_interpolator(ctx, state):
 
 
 def test_unknown_au_id_does_not_raise(ctx):
-    """An AU the state does not know is set and ignored, not an exception."""
-    wired(ctx)
+    """An unknown AU is ignored, and must not disturb the AUs that do exist.
+
+    Checking only that this does not raise would also pass if the handler
+    silently clobbered a real AU or accepted AU999 into the state.
+    """
+    controller = wired(ctx)
+    state = controller.state if hasattr(controller, "state") else ctx.state
+    state.target_au.set("AU12", 0.7)
+
     ctx.event_bus.publish(EventType.AU_CHANGED, au_id="AU999", value=1.0)
+
+    assert state.target_au.get("AU12") == 0.7, \
+        "an unknown AU id disturbed a known AU"
+    assert state.target_au.get("AU999") in (0.0, None), \
+        "AU999 was accepted into the state despite being unknown"
 
 
 # -- Expression presets ---------------------------------------------------
