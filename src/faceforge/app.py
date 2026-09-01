@@ -103,7 +103,13 @@ def main() -> None:
     """Launch the FaceForge application."""
     configure_logging()
     configure_gl_format()
-    app = QApplication(sys.argv)
+
+    # Reuse the running QApplication if there is one. Constructing a second is
+    # a hard RuntimeError from libshiboken, which made main() unusable in two
+    # legitimate situations: embedding FaceForge in a host Qt application, and
+    # any test that needs a QApplication before calling main() (pytest-qt's
+    # qapp fixture creates one, so mere test ordering could break the suite).
+    app = QApplication.instance() or QApplication(sys.argv)
 
     ctx = build_app_context()
     controllers = build_controllers(ctx)

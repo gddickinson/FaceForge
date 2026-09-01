@@ -5,7 +5,7 @@ import traceback
 from typing import Optional
 
 import numpy as np
-from PySide6.QtCore import QTimer, Qt
+from PySide6.QtCore import QTimer, Qt, Signal
 from PySide6.QtGui import QMouseEvent, QWheelEvent, QSurfaceFormat
 from PySide6.QtOpenGLWidgets import QOpenGLWidget
 
@@ -46,8 +46,23 @@ class GLViewport(QOpenGLWidget):
         Parent widget.
     """
 
+    #: Emitted with the failure count when rendering is disabled after
+    #: repeated consecutive failures, so a shell can surface it in the UI
+    #: rather than leaving a blank viewport with no explanation.
+    render_failed = Signal(int)
+
+    #: Consecutive failed frames tolerated before the render timer is stopped.
+    #: A handful absorbs a transient error (a resize mid-draw, a resource not
+    #: yet uploaded); beyond that the failure is structural and repeating it at
+    #: 60 Hz only floods the log.
+    MAX_CONSECUTIVE_PAINT_FAILURES = 10
+
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
+        #: Consecutive paintGL failures; reset by any frame that completes.
+        self._paint_failures = 0
+        #: Guards cleanup() against running twice.
+        self._cleaned_up = False
         self.setFormat(create_gl_format())
 
         # Rendering components (created lazily in initializeGL)
@@ -102,6 +117,15 @@ class GLViewport(QOpenGLWidget):
         try:
             logger.info("GLViewport: initialising OpenGL.")
             self.renderer.init_gl()
+
+            # Release GL resources when this context goes away.  cleanup() was
+            # previously unreachable, so everything it frees leaked instead.
+            # aboutToBeDestroyed is the last moment the context is still valid,
+            # which is what cleanup()'s makeCurrent() needs.
+            ctx = self.context()
+            if ctx is not None:
+                ctx.aboutToBeDestroyed.connect(self.cleanup)
+
             self._timer.start()
         except Exception:
             logger.error("initializeGL failed:\n%s", traceback.format_exc())
@@ -136,8 +160,31 @@ class GLViewport(QOpenGLWidget):
                 self._draw_selection_points()
                 # Render lasso / selection border overlay via GL_LINES
                 self._draw_lasso_overlay()
+                # A frame that got this far succeeded; forget earlier failures
+                # so a transient error does not eventually trip the cut-out.
+                self._paint_failures = 0
         except Exception:
-            logger.error("paintGL failed:\n%s", traceback.format_exc())
+            # Tolerating a failed frame is right -- one bad frame must not take
+            # the application down.  Repeating it 60 times a second is not: the
+            # window stays blank, the log fills with thousands of identical
+            # tracebacks, and nothing tells the user why. Report the first
+            # occurrence in full, then stop driving the loop so the state is
+            # diagnosable instead of merely silent.
+            self._paint_failures = getattr(self, "_paint_failures", 0) + 1
+            if self._paint_failures == 1:
+                logger.error("paintGL failed:\n%s", traceback.format_exc())
+            if self._paint_failures >= self.MAX_CONSECUTIVE_PAINT_FAILURES:
+                self._timer.stop()
+                logger.error(
+                    "Rendering disabled after %d consecutive failed frames. "
+                    "The viewport will not update until the cause is fixed and "
+                    "the application is restarted; the first traceback above is "
+                    "the diagnosis. Common cause: a shader that failed to "
+                    "compile or link, which otherwise presents only as a blank "
+                    "window.",
+                    self._paint_failures,
+                )
+                self.render_failed.emit(self._paint_failures)
 
     # ------------------------------------------------------------------
     # Selection overlay rendering (cached GL resources)
@@ -389,7 +436,19 @@ class GLViewport(QOpenGLWidget):
     # ------------------------------------------------------------------
 
     def cleanup(self) -> None:
-        """Explicitly release GL resources. Call before the widget is destroyed."""
+        """Release GL resources and stop the render timer.
+
+        Connected to the context's ``aboutToBeDestroyed`` signal in
+        ``initializeGL``, which is the only point Qt guarantees the context is
+        still alive and current.  Before that it was never called from
+        anywhere: every VAO, VBO and shader program leaked on teardown, and the
+        16 ms timer kept firing ``update()`` while the widget came apart.
+
+        Idempotent -- the signal can fire after an explicit call.
+        """
+        if getattr(self, "_cleaned_up", False):
+            return
+        self._cleaned_up = True
         self._timer.stop()
         self.makeCurrent()
         self.renderer.destroy()
