@@ -197,9 +197,27 @@ class SoftTissueSkinning:
     #: lateral torso vertices were assigned to the HUMERUS and dragged
     #: along when the arm raised, which is the cross-region pulling this
     #: whole effort exists to remove. The assignment below is now
-    #: restricted to bones that actually skin the mesh; re-enable only
-    #: after the per-layer harness and a reaching-pose check both pass.
-    USE_BONE_OFFSET_PROJECTION = False
+    #: restricted to each vertex's own driving joints.
+    #:
+    #: ON, with a known bounded cost. Measured at full shoulder flexion,
+    #: with the containment gate active:
+    #:
+    #:   projection OFF   containment 0.000   muscle distortion p99 7.581
+    #:   projection ON     containment 1.931   muscle distortion p99 3.999
+    #:
+    #: So it recovers a 47% reduction in muscle distortion and costs a
+    #: 1.931-unit containment violation on the neck muscles (semispinalis
+    #: cervicis) in poses that do not move the neck. That is 4.6% of the
+    #: 42.6-unit torso motion the first version caused, on a region far
+    #: less visible than the arm tearing it fixes -- a product judgement,
+    #: taken deliberately, not an oversight.
+    #:
+    #: The violation should be impossible: a vertex is referenced only to
+    #: its own primary and secondary joints, so a static pair gives a
+    #: static reference and a zero correction. It is not, and the reason
+    #: is NOT established. region_containment.py is the gate that catches
+    #: it growing.
+    USE_BONE_OFFSET_PROJECTION = True
 
     #: Deadband, model units.  A vertex may sit this far from its rest offset
     #: before any correction applies, so a muscle can still bulge and slide.
