@@ -1784,6 +1784,32 @@ class SoftTissueSkinning:
 
         rest = np.asarray(binding.mesh.rest_positions,
                           dtype=np.float64).reshape(-1, 3)
+
+        # Reference each vertex to the joints that actually DRIVE it: its
+        # primary and secondary joint indices.  Restricting per MESH to the
+        # chains it touches is not sufficient -- a chain contains joints a
+        # given vertex is not skinned to, so an arm movement pulled neck
+        # muscles whose own joints were static (29 violating bindings against
+        # 4 in the baseline).  Referencing a vertex only to its own driving
+        # joints makes that impossible by construction: if every joint driving
+        # a vertex is static, its reference is static, so the correction is
+        # exactly zero.
+        n_v = len(rest)
+        ji = np.asarray(binding.joint_indices)[:n_v].astype(np.int32)
+        si = np.asarray(binding.secondary_indices)[:n_v].astype(np.int32)
+        jp_rest = np.array([np.asarray(j.rest_world[:3, 3], dtype=np.float64)
+                            for j in self.joints])
+        a0, b0 = jp_rest[ji], jp_rest[si]
+        ab0 = b0 - a0
+        den0 = np.maximum(np.einsum('vj,vj->v', ab0, ab0), 1e-12)
+        t0 = np.clip(np.einsum('vj,vj->v', rest - a0, ab0) / den0, 0.0, 1.0)
+        # Where primary == secondary the segment degenerates to that joint's
+        # origin, which is still a valid reference driven only by that joint.
+        t0 = np.where(ji == si, 0.0, t0)
+        d_rest_v = np.linalg.norm(rest - (a0 + t0[:, None] * ab0), axis=1)
+        binding._bone_assign = (np.stack([ji, si], axis=1), None, d_rest_v)
+        return binding._bone_assign
+
         segs = []
         by_chain: dict[int, list] = {}
         for i, j in enumerate(self.joints):
@@ -1839,13 +1865,13 @@ class SoftTissueSkinning:
         """
         if not binding.is_muscle or binding.mesh.rest_positions is None:
             return 0
-        segs, seg_i, d_rest = self._bone_assignment(binding)
+        segs, _unused, d_rest = self._bone_assignment(binding)
         if segs is None:
             return 0
 
         pos = np.asarray(binding.mesh.geometry.positions,
                          dtype=np.float64).reshape(-1, 3)
-        n = min(len(pos), len(seg_i))
+        n = min(len(pos), len(segs))
         pos = pos[:n]
 
         jp = np.empty((len(self.joints), 3), dtype=np.float64)
@@ -1853,11 +1879,13 @@ class SoftTissueSkinning:
             j.node.update_world_matrix()
             jp[i] = j.node.world_matrix[:3, 3]
 
-        a = jp[segs[seg_i[:n], 0]]
-        b = jp[segs[seg_i[:n], 1]]
+        # segs is now (V, 2) joint indices per vertex, not a segment table.
+        a = jp[segs[:n, 0]]
+        b = jp[segs[:n, 1]]
         ab = b - a
         den = np.maximum(np.einsum('vj,vj->v', ab, ab), 1e-12)
         t = np.clip(np.einsum('vj,vj->v', pos - a, ab) / den, 0.0, 1.0)
+        t = np.where(segs[:n, 0] == segs[:n, 1], 0.0, t)
         closest = a + t[:, None] * ab
 
         dirv = pos - closest
