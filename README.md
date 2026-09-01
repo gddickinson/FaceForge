@@ -161,6 +161,29 @@ Built in Python with:
 - **NumPy** -- All vertex math, matrix operations, and skinning computations
 - **BodyParts3D STL files** -- 934 binary STL meshes for anatomical structures
 
+### Locating the dataset
+
+By default the STL dataset is read from `assets/stl`, which the repository ships
+as a symlink. The dataset is 1.32 GB and distributed separately, so the paths
+can be redirected by environment variable instead of symlinking:
+
+| Variable | Overrides | Default |
+|---|---|---|
+| `FACEFORGE_STL_DIR` | BodyParts3D STL directory | `assets/stl` |
+| `FACEFORGE_ASSETS_DIR` | whole assets tree | `<repo>/assets` |
+| `FACEFORGE_CONFIG_DIR` | anatomy JSON configs | `assets/config` |
+| `FACEFORGE_PROJECT_ROOT` | anchor for all of the above | the installed package's parent |
+
+```bash
+FACEFORGE_STL_DIR=/Volumes/data/BodyParts3D/stl faceforge
+```
+
+An unset or empty variable falls through to the default, so existing checkouts
+are unaffected. Note that the defaults are anchored on the *installed* package
+location, so with an editable install a copied tree still reads the original
+checkout's assets — `FACEFORGE_STL_DIR` is the way to point a copy elsewhere,
+and the only way to exercise the "no dataset present" path that CI runs in.
+
 ### GUI Layout
 
 ```

@@ -11,7 +11,8 @@ Two further things this locks down, both learned the hard way:
 
 * The chain must be rooted at the CAUDAL end.  ``pivots[0]`` is the most
   cranial vertebra in this dataset, so nesting in list order builds the chain
-  upside down and swings the sacrum instead of the shoulders.
+  upside down: the chain's caudal end swings while its cranial end -- the
+  vertebrae the shoulders and head ride on -- stays put.
 * Reparenting must not disturb the rest pose.
 """
 
@@ -61,7 +62,8 @@ def test_the_chain_is_rooted_at_the_caudal_end():
     z = [float(_world(n)[2]) for n in nodes]
     assert float(_world(chain_root[0])[2]) == pytest.approx(min(z)), (
         "chain is upside down: rotations would accumulate toward the pelvis "
-        "and flexion would swing the sacrum rather than the shoulders"
+        "and flexion would swing the chain's caudal end rather than the "
+        "cranial vertebrae the shoulders ride on"
     )
 
 

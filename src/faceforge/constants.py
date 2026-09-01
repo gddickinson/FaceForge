@@ -1,13 +1,41 @@
 """Shared constants and paths for FaceForge."""
 
+import os
 from pathlib import Path
 
-# Project paths
-PROJECT_ROOT = Path(__file__).parent.parent.parent
-ASSETS_DIR = PROJECT_ROOT / "assets"
-CONFIG_DIR = ASSETS_DIR / "config"
+
+def _env_path(var: str, default: Path) -> Path:
+    """Return ``$var`` as a path if set and non-empty, else *default*.
+
+    The paths below are anchored on this file's location, which is correct for
+    a source checkout but has two consequences worth overriding:
+
+    * The BodyParts3D dataset is 1.32 GB and ships separately (``assets/stl``
+      is a symlink in the repo).  Without an override, a user who keeps it on
+      another volume has to create that symlink rather than point at it.
+    * Because the anchor is the *installed* package, an editable install always
+      resolves to the original checkout's assets.  A copy of the tree therefore
+      reads the original's dataset, which makes the "no dataset present"
+      condition -- the one CI actually runs in -- untestable locally.  That is
+      not hypothetical: it silently invalidated two attempts to reproduce a CI
+      failure, each of which reported the with-dataset result instead.
+
+    An unset or empty variable falls through to the default, so existing
+    checkouts behave exactly as before.
+    """
+    value = os.environ.get(var, "").strip()
+    return Path(value).expanduser() if value else default
+
+
+# Project paths.  Each may be redirected by the matching FACEFORGE_* variable.
+PROJECT_ROOT = _env_path("FACEFORGE_PROJECT_ROOT",
+                         Path(__file__).parent.parent.parent)
+ASSETS_DIR = _env_path("FACEFORGE_ASSETS_DIR", PROJECT_ROOT / "assets")
+CONFIG_DIR = _env_path("FACEFORGE_CONFIG_DIR", ASSETS_DIR / "config")
 MESHDATA_DIR = ASSETS_DIR / "meshdata"
-STL_DIR = ASSETS_DIR / "stl"
+#: BodyParts3D STL directory.  Set FACEFORGE_STL_DIR to keep the 1.32 GB
+#: dataset outside the repository instead of symlinking it into assets/stl.
+STL_DIR = _env_path("FACEFORGE_STL_DIR", ASSETS_DIR / "stl")
 MUSCLE_CONFIG_DIR = CONFIG_DIR / "muscles"
 SKELETON_CONFIG_DIR = CONFIG_DIR / "skeleton"
 MAKEHUMAN_DIR = ASSETS_DIR / "makehuman"

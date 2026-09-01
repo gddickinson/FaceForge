@@ -24,6 +24,18 @@ from __future__ import annotations
 
 import platform
 import sys
+from pathlib import Path
+
+# Run as a script, sys.path[0] is this file's directory, so `import tools...`
+# fails with ModuleNotFoundError even though the repo root is the cwd -- which
+# is exactly how run 1 of the workflow failed (exit 2, "No module named
+# 'tools'"), reporting an import problem as though the probe itself had run.
+# Anchor on the repo root relative to this file so the script behaves the same
+# however it is invoked.
+_REPO_ROOT = Path(__file__).resolve().parents[2]
+for _p in (_REPO_ROOT, _REPO_ROOT / "src"):
+    if str(_p) not in sys.path:
+        sys.path.insert(0, str(_p))
 
 
 def main() -> int:

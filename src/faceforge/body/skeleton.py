@@ -28,7 +28,8 @@ def nest_spine_pivots(pivots: list[dict]) -> int:
     shoulders forward over a fixed pelvis.  The caudal end is found from the
     geometry, NOT from list order: in this dataset ``pivots[0]`` is the most
     cranial vertebra, so nesting in list order builds the chain upside down and
-    swings the sacrum instead (measured: caudal end 7.0 units, cranial 0.0).
+    inverts it: the chain's caudal end swings and its cranial end stays put
+    (measured on the thoracic chain: caudal end 7.0 units, cranial 0.0).
 
     List order is left untouched -- ``BodyAnimationSystem`` pairs
     ``thoracic_fracs[i]`` with ``pivots[i]`` positionally, so reordering the

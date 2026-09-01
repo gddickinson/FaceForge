@@ -1,10 +1,13 @@
 """A failed STL must not shift every later structure onto another's definition.
 
 ``load_stl_batch`` skips an entry it cannot load, so ``result.nodes`` and
-``result.meshes`` are shorter than the input ``defs``.  Twelve call sites zipped
-loader output against that input list, which pairs every structure after the
-first failure with a DIFFERENT structure's definition -- and those definitions
-carry behavioural flags, not just names:
+``result.meshes`` are shorter than the input ``defs``.  Thirteen loops were
+affected: twelve zipped loader output directly against that input list, and a
+thirteenth (``DemandLoaders._register_items``) received both lists as
+parameters, with all five of its callers passing the input list.  Either way the
+result is that every structure after the first failure is paired with a
+DIFFERENT structure's definition -- and those definitions carry behavioural
+flags, not just names:
 
   * ``skull_bones.json`` marks exactly one bone ``jaw_attached``, so a shifted
     pairing can rotate an arbitrary cranial bone with the mandible;
