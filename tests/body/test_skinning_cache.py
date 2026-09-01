@@ -108,11 +108,30 @@ def test_cache_round_trip_is_bitwise_identical(small_cache):
     hit = _solve(mesh)                          # hit: reads
     assert len(list(small_cache.glob("binding.*.npz"))) == 1
 
-    names = ("joint_indices", "secondary_indices", "weights", "edges")
+    names = ("joint_indices", "secondary_indices", "weights", "edges",
+             "influences", "influence_weights")
+    assert len(fresh) == len(names), (
+        f"the solve returns {len(fresh)} arrays but this test names "
+        f"{len(names)}; a new one was added without being covered here"
+    )
     for name, a, b, c in zip(names, fresh, stored, hit, strict=True):
         assert np.array_equal(a, b), f"{name}: uncached vs cache-miss differ"
         assert np.array_equal(a, c), f"{name}: uncached vs cache-hit differ"
         assert a.dtype == c.dtype, f"{name}: dtype changed through the cache"
+
+    # The multi-influence arrays are the reason CACHE_VERSION went to 2: a v1
+    # entry carries none, and serving one would silently deform with two
+    # influences while the solver believes it produced four.
+    inf, infw = fresh[4], fresh[5]
+    assert inf is not None and infw is not None, \
+        "skin solve produced no multi-influence arrays"
+    assert inf.shape == infw.shape, f"{inf.shape} vs {infw.shape}"
+    assert inf.shape[1] == _skinning().SKIN_INFLUENCES
+    np.testing.assert_allclose(
+        infw.sum(axis=1), 1.0, atol=1e-6,
+        err_msg="influence weights must form a partition of unity per vertex",
+    )
+    assert (infw >= 0.0).all(), "negative influence weight"
 
 
 def test_cache_is_skipped_below_min_verts(small_cache, monkeypatch):

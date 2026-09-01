@@ -45,6 +45,21 @@ class SkinBinding:
     joint_indices: np.ndarray  # per-vertex primary joint index
     weights: np.ndarray  # per-vertex blend weight (0..1) for two-bone blending
     secondary_indices: np.ndarray  # per-vertex secondary joint index
+    # ── Multi-influence skinning (skin meshes) ──
+    # (V, K) joint indices and matching normalised weights, K =
+    # SoftTissueSkinning.SKIN_INFLUENCES.  When present these SUPERSEDE the
+    # primary/secondary pair above for deformation; the pair is still
+    # maintained (primary = largest weight, secondary = second largest) because
+    # diagnostics, chain reassignment and the boundary passes address vertices
+    # through it.
+    #
+    # Two influences cannot preserve local distances where adjacent vertices
+    # are governed by bones whose rotations differ by a large angle -- measured
+    # at the axilla, where 74.9% of separating edges joined two vertices that
+    # were both already being blended.  Sharing the rotation across more bones
+    # is the standard remedy.
+    influences: Optional[np.ndarray] = None        # (V, K) int32
+    influence_weights: Optional[np.ndarray] = None  # (V, K) float32, rows sum to 1
     is_muscle: bool = False
     base_color: tuple[float, float, float] = (0.8, 0.8, 0.8)
     rest_y_span: float = 1.0  # rest-pose Y extent for activation ratio
@@ -152,6 +167,15 @@ class SoftTissueSkinning:
     """
 
     BLEND_ZONE = 0.15  # 15% of bone segment length for within-chain blending (non-muscle)
+
+    #: Bones influencing each SKIN vertex. Two cannot preserve local
+    #: distances where adjacent vertices are governed by bones whose
+    #: rotations differ by a large angle (the axilla under shoulder
+    #: abduction or flexion); sharing the rotation across more bones is the
+    #: standard remedy. Set to 2 to restore the previous behaviour.
+    #: Muscles keep their own full-range two-bone blend, which is tuned to
+    #: make a muscle stretch between its endpoints rather than swing.
+    SKIN_INFLUENCES = 4
     CROSS_CHAIN_RADIUS = 20.0  # distance threshold for cross-chain blending (gap-based)
     MAX_CROSS_WEIGHT_MUSCLE = 0.5  # max cross-chain blend for muscles (need to span joints)
     MAX_CROSS_WEIGHT_OTHER = 0.45  # max cross-chain blend for skin/organs
@@ -343,7 +367,8 @@ class SoftTissueSkinning:
         )
         if solved is None:
             return
-        joint_indices, secondary_indices, weights, precomputed_edges = solved
+        (joint_indices, secondary_indices, weights, precomputed_edges,
+         influences, influence_weights) = solved
 
         # Compute rest Y-span for activation coloring (top/bottom 25%)
         rest_y_span = 1.0
@@ -361,6 +386,8 @@ class SoftTissueSkinning:
             joint_indices=joint_indices,
             weights=weights,
             secondary_indices=secondary_indices,
+            influences=influences,
+            influence_weights=influence_weights,
             is_muscle=is_muscle,
             base_color=mesh.material.color,
             rest_y_span=rest_y_span,
@@ -498,6 +525,8 @@ class SoftTissueSkinning:
                     hit["secondary_indices"],
                     hit["weights"],
                     hit["edges"],
+                    hit["influences"],
+                    hit["influence_weights"],
                 )
 
         # Vectorized: compute distance from each vertex to each segment
@@ -909,6 +938,13 @@ class SoftTissueSkinning:
                 joint_indices, secondary_indices, weights, mesh,
             )
 
+        # ── Multi-influence weights for skin ──
+        influences = influence_weights = None
+        if not is_muscle and self.SKIN_INFLUENCES > 2:
+            influences, influence_weights = self._solve_multi_influence(
+                dists, seg_idx_arr,
+            )
+
         if cache_key is not None:
             _skin_cache.store(
                 cache_key,
@@ -916,9 +952,80 @@ class SoftTissueSkinning:
                 secondary_indices=secondary_indices,
                 weights=weights,
                 edges=_precomputed_edges,
+                influences=influences,
+                influence_weights=influence_weights,
             )
 
-        return joint_indices, secondary_indices, weights, _precomputed_edges
+        return (joint_indices, secondary_indices, weights, _precomputed_edges,
+                influences, influence_weights)
+
+    def _solve_multi_influence(self, dists, seg_idx_arr):
+        """Assign each vertex the K nearest bone segments with smooth weights.
+
+        ``dists`` is (V, S): the distance from every vertex to every candidate
+        segment, already carrying the eligibility rules applied upstream --
+        excluded chains are ``inf``, proximal overshoot is penalised -- so this
+        inherits all of them for free.
+
+        Weighting is inverse distance with compact support::
+
+            w_i = 1/d_i - 1/d_cut     (clamped at 0, then normalised)
+
+        where ``d_cut`` is the distance to the (K+1)-th nearest segment.  The
+        cutoff term is what makes this usable: the K-th influence's weight
+        reaches exactly zero as it drops out of the set, so the influence set
+        can change from vertex to vertex without the weights jumping.  Plain
+        1/d would give a departing bone a finite weight and reintroduce the
+        discontinuity this is meant to remove.
+
+        Returns ``(influences, influence_weights)`` shaped (V, K), rows summing
+        to 1.  A vertex with a single eligible segment gets weight 1 on it,
+        which reduces to rigid binding -- the previous behaviour.
+        """
+        K = self.SKIN_INFLUENCES
+        V, S = dists.shape
+        take = min(K + 1, S)
+
+        # Partial sort: the take smallest per row, then order just those.
+        idx = np.argpartition(dists, take - 1, axis=1)[:, :take]
+        rows = np.arange(V)[:, None]
+        d_take = dists[rows, idx]
+        order = np.argsort(d_take, axis=1)
+        idx = np.take_along_axis(idx, order, axis=1)
+        d_take = np.take_along_axis(d_take, order, axis=1)
+
+        d_k = d_take[:, :K]                       # (V, K) the K nearest
+        if take > K:
+            d_cut = d_take[:, K:K + 1]            # (V, 1) the (K+1)-th
+        else:
+            # Fewer than K+1 candidates: no outer bound available, so fall back
+            # to a multiple of the nearest distance. Only reachable on rigs with
+            # very few segments.
+            d_cut = d_take[:, :1] * 3.0
+
+        eps = 1e-9
+        finite = np.isfinite(d_k) & np.isfinite(d_cut)
+        inv = np.where(finite, 1.0 / np.maximum(d_k, eps), 0.0)
+        inv_cut = np.where(np.isfinite(d_cut), 1.0 / np.maximum(d_cut, eps), 0.0)
+        w = np.maximum(inv - inv_cut, 0.0)
+
+        # A vertex sitting exactly on a segment (d ~ 0) gets an enormous 1/d and
+        # collapses to that bone, which is correct; but if every weight
+        # underflows to 0 (all candidates at the cutoff distance) fall back to
+        # the nearest so the row is never all-zero.
+        total = w.sum(axis=1, keepdims=True)
+        dead = total[:, 0] <= 0.0
+        if np.any(dead):
+            w[dead] = 0.0
+            w[dead, 0] = 1.0
+            total[dead] = 1.0
+        w /= total
+
+        influences = seg_idx_arr[idx[:, :K]].astype(np.int32)
+        # Zero-weight slots must still hold a valid joint index: they are read
+        # unconditionally by the deformation and only then multiplied by 0.
+        influences = np.where(w > 0.0, influences, influences[:, :1])
+        return influences, w.astype(np.float32)
 
     def snap_hierarchy_blends(self, child_chain_ids: set[int]) -> None:
         """Remove cross-chain blending between child chains and parent chains.
@@ -1845,96 +1952,132 @@ class SoftTissueSkinning:
                 binding._pos_h = np.concatenate([rest_pos, ones], axis=1)
             pos_h = binding._pos_h
 
-            # Primary transform: delta[ji] @ pos for each vertex
-            d_pri = delta_stack[ji]
-            result_pri = np.einsum('vij,vj->vi', d_pri, pos_h)[:, :3]
+            # ── Multi-influence path (skin) ──
+            # K-way dual-quaternion blend. Accumulated over K rather than
+            # gathered into a (V, K, 8) array, which at ~790k vertices would be
+            # ~200 MB of temporaries per frame.
+            inf = binding.influences
+            infw = binding.influence_weights
+            if inf is not None and infw is not None:
+                ref = dq_stack[inf[:, 0]]                    # (V, 8)
+                acc = np.zeros_like(ref)
+                for k in range(inf.shape[1]):
+                    dq_k = dq_stack[inf[:, k]]
+                    # Shortest path: every quaternion is flipped to the same
+                    # hemisphere as the highest-weighted one before summing,
+                    # or the blend can cancel toward zero.
+                    dot_k = np.sum(ref[:, :4] * dq_k[:, :4], axis=1)
+                    dq_k = np.where((dot_k < 0.0)[:, None], -dq_k, dq_k)
+                    acc += dq_k * infw[:, k:k + 1]
 
-            # Check which vertices need blending
-            needs_blend = (w < 0.999) & (ji != si)
+                norm_r = np.maximum(
+                    np.linalg.norm(acc[:, :4], axis=1, keepdims=True), 1e-10)
+                acc /= norm_r
+                q_r_all = acc[:, :4]
+                q_d_all = acc[:, 4:8]
+                q_r_conj_all = q_r_all.copy()
+                q_r_conj_all[:, :3] *= -1
+                t_all = 2.0 * batch_quat_multiply(q_d_all, q_r_conj_all)
+                result_pri = batch_quat_rotate(q_r_all, rest_pos) + t_all[:, :3]
 
-            # Track DQS blend results for normal computation
-            blend_idx = None
-            q_r_blend = None
+                # Hand the existing normal code the same rotation, so shading
+                # follows the positions instead of the discarded primary joint.
+                blend_idx = np.arange(V)
+                q_r_blend = q_r_all
 
-            if np.any(needs_blend):
-                # Compute LBS secondary positions for divergence check
-                d_sec = delta_stack[si]
-                result_sec = np.einsum('vij,vj->vi', d_sec, pos_h)[:, :3]
+            else:
+                # ── Two-influence path (muscles, and skin when
+                # SKIN_INFLUENCES == 2) ──
+                    # Primary transform: delta[ji] @ pos for each vertex
+                d_pri = delta_stack[ji]
+                result_pri = np.einsum('vij,vj->vi', d_pri, pos_h)[:, :3]
 
-                # Divergence-based cross-chain blend clamping:
-                # When primary and secondary joints are on DIFFERENT chains
-                # and their transforms place the vertex far apart, reduce
-                # secondary influence to prevent extreme distortion.
-                w_eff = w.astype(np.float64)
-                if hasattr(self, '_joint_chain_ids') and len(self._joint_chain_ids) > 0:
-                    pri_chain = self._joint_chain_ids[ji]
-                    sec_chain = self._joint_chain_ids[si]
-                    cross_chain = (pri_chain != sec_chain) & needs_blend
-                    if np.any(cross_chain):
-                        divergence = np.linalg.norm(
-                            result_pri - result_sec, axis=1,
-                        )
-                        drange = self.DIVERGENCE_MAX - self.DIVERGENCE_MIN
-                        if drange > 0:
-                            scale = np.clip(
-                                1.0 - (divergence - self.DIVERGENCE_MIN) / drange,
-                                0.0, 1.0,
+                # Check which vertices need blending
+                needs_blend = (w < 0.999) & (ji != si)
+
+                # Track DQS blend results for normal computation
+                blend_idx = None
+                q_r_blend = None
+
+                if np.any(needs_blend):
+                    # Compute LBS secondary positions for divergence check
+                    d_sec = delta_stack[si]
+                    result_sec = np.einsum('vij,vj->vi', d_sec, pos_h)[:, :3]
+
+                    # Divergence-based cross-chain blend clamping:
+                    # When primary and secondary joints are on DIFFERENT chains
+                    # and their transforms place the vertex far apart, reduce
+                    # secondary influence to prevent extreme distortion.
+                    w_eff = w.astype(np.float64)
+                    if hasattr(self, '_joint_chain_ids') and len(self._joint_chain_ids) > 0:
+                        pri_chain = self._joint_chain_ids[ji]
+                        sec_chain = self._joint_chain_ids[si]
+                        cross_chain = (pri_chain != sec_chain) & needs_blend
+                        if np.any(cross_chain):
+                            divergence = np.linalg.norm(
+                                result_pri - result_sec, axis=1,
                             )
-                        else:
-                            scale = np.where(
-                                divergence <= self.DIVERGENCE_MIN, 1.0, 0.0,
+                            drange = self.DIVERGENCE_MAX - self.DIVERGENCE_MIN
+                            if drange > 0:
+                                scale = np.clip(
+                                    1.0 - (divergence - self.DIVERGENCE_MIN) / drange,
+                                    0.0, 1.0,
+                                )
+                            else:
+                                scale = np.where(
+                                    divergence <= self.DIVERGENCE_MIN, 1.0, 0.0,
+                                )
+                            w_eff = w_eff.copy()
+                            w_eff[cross_chain] = (
+                                1.0 - (1.0 - w[cross_chain]) * scale[cross_chain]
                             )
-                        w_eff = w_eff.copy()
-                        w_eff[cross_chain] = (
-                            1.0 - (1.0 - w[cross_chain]) * scale[cross_chain]
+
+                    # ── Dual Quaternion Skinning for blended vertices ──
+                    blend_idx = np.where(needs_blend)[0]
+                    dq_pri = dq_stack[ji[blend_idx]].copy()   # (B, 8)
+                    dq_sec = dq_stack[si[blend_idx]].copy()   # (B, 8)
+
+                    # Shortest-path: flip secondary if dot(real parts) < 0
+                    dot = np.sum(dq_pri[:, :4] * dq_sec[:, :4], axis=1)
+                    flip = dot < 0
+                    dq_sec[flip] *= -1.0
+
+                    # Weighted blend of dual quaternions
+                    w_b = w_eff[blend_idx, np.newaxis]  # (B, 1)
+                    dq_blend = w_b * dq_pri + (1.0 - w_b) * dq_sec  # (B, 8)
+
+                    # Normalize by real quaternion magnitude
+                    norm_r = np.linalg.norm(dq_blend[:, :4], axis=1, keepdims=True)
+                    norm_r = np.maximum(norm_r, 1e-10)
+                    dq_blend /= norm_r
+
+                    # Extract rotation quaternion and translation
+                    q_r_blend = dq_blend[:, :4]   # (B, 4) [x, y, z, w]
+                    q_d = dq_blend[:, 4:8]        # (B, 4)
+
+                    # Translation: t = 2 * q_d * conjugate(q_r)
+                    q_r_conj = q_r_blend.copy()
+                    q_r_conj[:, :3] *= -1
+                    t_quat = 2.0 * batch_quat_multiply(q_d, q_r_conj)
+                    t_vec = t_quat[:, :3]  # (B, 3)
+
+                    # Transform: rotate rest position then translate
+                    new_blend_pos = batch_quat_rotate(q_r_blend, rest_pos[blend_idx]) + t_vec
+
+                    # Save primary-only results for bone-follow correction
+                    # (before DQS overwrites them).
+                    pri_only_saved = result_pri[blend_idx].copy() if binding.is_muscle else None
+
+                    # Assemble: write DQS results into primary (already a fresh array)
+                    result_pri[blend_idx] = new_blend_pos
+
+                    # Bone-follow correction: blend DQS arc toward primary-only
+                    # (bone-hugging) positions for muscle blended vertices.
+                    if binding.is_muscle and pri_only_saved is not None:
+                        self._apply_bone_follow(
+                            binding, blend_idx, result_pri,
+                            pri_only_saved, new_blend_pos,
                         )
-
-                # ── Dual Quaternion Skinning for blended vertices ──
-                blend_idx = np.where(needs_blend)[0]
-                dq_pri = dq_stack[ji[blend_idx]].copy()   # (B, 8)
-                dq_sec = dq_stack[si[blend_idx]].copy()   # (B, 8)
-
-                # Shortest-path: flip secondary if dot(real parts) < 0
-                dot = np.sum(dq_pri[:, :4] * dq_sec[:, :4], axis=1)
-                flip = dot < 0
-                dq_sec[flip] *= -1.0
-
-                # Weighted blend of dual quaternions
-                w_b = w_eff[blend_idx, np.newaxis]  # (B, 1)
-                dq_blend = w_b * dq_pri + (1.0 - w_b) * dq_sec  # (B, 8)
-
-                # Normalize by real quaternion magnitude
-                norm_r = np.linalg.norm(dq_blend[:, :4], axis=1, keepdims=True)
-                norm_r = np.maximum(norm_r, 1e-10)
-                dq_blend /= norm_r
-
-                # Extract rotation quaternion and translation
-                q_r_blend = dq_blend[:, :4]   # (B, 4) [x, y, z, w]
-                q_d = dq_blend[:, 4:8]        # (B, 4)
-
-                # Translation: t = 2 * q_d * conjugate(q_r)
-                q_r_conj = q_r_blend.copy()
-                q_r_conj[:, :3] *= -1
-                t_quat = 2.0 * batch_quat_multiply(q_d, q_r_conj)
-                t_vec = t_quat[:, :3]  # (B, 3)
-
-                # Transform: rotate rest position then translate
-                new_blend_pos = batch_quat_rotate(q_r_blend, rest_pos[blend_idx]) + t_vec
-
-                # Save primary-only results for bone-follow correction
-                # (before DQS overwrites them).
-                pri_only_saved = result_pri[blend_idx].copy() if binding.is_muscle else None
-
-                # Assemble: write DQS results into primary (already a fresh array)
-                result_pri[blend_idx] = new_blend_pos
-
-                # Bone-follow correction: blend DQS arc toward primary-only
-                # (bone-hugging) positions for muscle blended vertices.
-                if binding.is_muscle and pri_only_saved is not None:
-                    self._apply_bone_follow(
-                        binding, blend_idx, result_pri,
-                        pri_only_saved, new_blend_pos,
-                    )
 
             mesh.geometry.positions = result_pri.ravel().astype(np.float32)
 

@@ -40,7 +40,13 @@ from pathlib import Path
 import numpy as np
 
 # Bump when the meaning of a stored array changes.
-CACHE_VERSION = 1
+# Bump whenever the binding SOLVER changes, not just this file's
+# format: entries hold solver OUTPUT, so a stale entry silently
+# serves weights from the previous algorithm and a solver change
+# appears to do nothing.  The version is part of the filename, so
+# older entries are simply never read.
+#   v2: skin carries (V, K) multi-influence indices and weights.
+CACHE_VERSION = 2
 
 # Vertex count above which memoising beats solving.  The full-body skin mesh
 # is ~792k vertices; muscle meshes are typically 1k-30k.
@@ -146,16 +152,27 @@ def load(key: str) -> dict[str, np.ndarray] | None:
             secondary_indices = z["si"]
             weights = z["w"]
             edges = z["e"]
+            # Multi-influence arrays. Absent in v1 entries, but the version
+            # is part of the filename so a v1 entry is never read here.
+            influences = z["inf"]
+            influence_weights = z["infw"]
     except (OSError, ValueError, KeyError, EOFError, zipfile.BadZipFile):
         return None
     if not (len(joint_indices) == len(secondary_indices) == len(weights)):
         return None                      # truncated / mismatched entry
+    if influences.size and len(influences) != len(joint_indices):
+        return None                      # influence arrays out of step
     return {
         "joint_indices": joint_indices,
         "secondary_indices": secondary_indices,
         "weights": weights,
         # A zero-row edge array means "the solve had no precomputed edges".
         "edges": edges if edges.size else None,
+        # Likewise zero-size means "this solve had no multi-influence data"
+        # (a muscle, or SKIN_INFLUENCES == 2).
+        "influences": influences if influences.size else None,
+        "influence_weights": (influence_weights if influence_weights.size
+                              else None),
     }
 
 
@@ -166,6 +183,8 @@ def store(
     secondary_indices: np.ndarray,
     weights: np.ndarray,
     edges: np.ndarray | None,
+    influences: np.ndarray | None = None,
+    influence_weights: np.ndarray | None = None,
 ) -> bool:
     """Write a cache entry atomically.  Returns False if the FS says no."""
     target = _path(key)
@@ -182,6 +201,11 @@ def store(
             w=weights,
             e=(np.empty((0, 2), dtype=np.int32) if edges is None
                else np.ascontiguousarray(edges)),
+            inf=(np.empty((0, 0), dtype=np.int32) if influences is None
+                 else np.ascontiguousarray(influences)),
+            infw=(np.empty((0, 0), dtype=np.float32)
+                  if influence_weights is None
+                  else np.ascontiguousarray(influence_weights)),
         )
         # os.replace is atomic within a filesystem, so a process killed
         # mid-write leaves a temp file behind, never a partial entry.
