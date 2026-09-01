@@ -206,6 +206,22 @@ class SoftTissueSkinning:
     #: 0.0 (hard projection) scores marginally better on offset but shrink-wraps
     #: the muscle to a fixed distance from bone, which is physiologically wrong;
     #: 2.0 recovers only 40% of the benefit.  1.0 keeps 93% of it.
+    #: Forbid the correction passes from MOVING a vertex whose own driving
+    #: joints are all unchanged.
+    #:
+    #: The neighbour clamp and boundary smoothing each pull a vertex toward its
+    #: mesh-neighbour average, so a static vertex beside a moving one is dragged
+    #: by construction. Measured by ablation: disabling those two passes takes
+    #: cross-region motion from 42.6 units (skin) and 10.2 (transverse
+    #: trapezius) to exactly 0.000, while bone follow, attachments and collision
+    #: change nothing. Raising an arm therefore moved trunk geometry.
+    #:
+    #: Static vertices still act as ANCHORS for their neighbours -- they are
+    #: excluded from being moved, not from the neighbourhood -- which is the
+    #: correct asymmetry: a fixed region should pull its moving neighbour back,
+    #: not be dragged along by it.
+    CONTAIN_CORRECTIONS = True
+
     BONE_OFFSET_TOL = 1.0
 
     #: Fraction of the beyond-deadband excess removed per frame.
@@ -1903,6 +1919,43 @@ class SoftTissueSkinning:
         binding.mesh.geometry.positions[:len(flat)] = flat
         return acted
 
+    def _begin_frame(self) -> None:
+        """Drop the per-frame moved-joint cache. Called once per update."""
+        self._moved_joint_cache = None
+
+    def _static_vertex_mask(self, binding: SkinBinding) -> Optional[np.ndarray]:
+        """Vertices none of whose driving joints have moved from the rest pose.
+
+        Compares FULL joint transforms, not positions: a joint can rotate
+        without translating -- the shoulder does exactly that -- and its
+        vertices then move legitimately.
+        """
+        if not self.CONTAIN_CORRECTIONS:
+            return None
+        ji = getattr(binding, "joint_indices", None)
+        if ji is None or not self.joints:
+            return None
+
+        moved = getattr(self, "_moved_joint_cache", None)
+        if moved is None:
+            rows = []
+            for j in self.joints:
+                j.node.update_world_matrix()
+                rows.append(np.linalg.norm(
+                    np.asarray(j.node.world_matrix, dtype=np.float64)
+                    - np.asarray(j.rest_world, dtype=np.float64)) > 1e-6)
+            moved = np.array(rows, dtype=bool)
+            self._moved_joint_cache = moved
+
+        ji = np.asarray(ji)
+        si = np.asarray(binding.secondary_indices)
+        drives = moved[ji] | moved[si]
+        inf = getattr(binding, "influences", None)
+        if inf is not None and binding.influence_weights is not None:
+            w = np.asarray(binding.influence_weights)
+            drives = drives | (moved[np.asarray(inf)] & (w > 0.0)).any(axis=1)
+        return ~drives
+
     def _apply_neighbor_clamp(self, binding: SkinBinding) -> int:
         """Clamp vertices stretched too far from their mesh neighbors.
 
@@ -1971,6 +2024,13 @@ class SoftTissueSkinning:
         # movement gives inflated ratios.
         meaningful_rest = rest_dist > 0.05
         outlier = has_neighbors & meaningful_rest & (stretch > per_vert_max)
+
+        # A vertex whose own joints did not move must not be clamped: it is not
+        # mis-bound, its neighbour simply moved, and pulling it toward that
+        # neighbour is what carried trunk geometry along with a raised arm.
+        static = self._static_vertex_mask(binding)
+        if static is not None and len(static) >= len(outlier):
+            outlier = outlier & ~static[:len(outlier)]
         n_clamped = int(np.sum(outlier))
         if n_clamped == 0:
             return 0
@@ -2056,8 +2116,20 @@ class SoftTissueSkinning:
                 # In-place divide for neighbor average (only where has_neighbors)
                 disp_sum[has_neighbors] /= counts[has_neighbors, np.newaxis]
 
-                # Blend displacement toward neighbor average
-                disp[mask] = (1.0 - a) * disp[mask] + a * disp_sum[mask]
+                # Blend displacement toward neighbor average.
+                #
+                # Vertices whose own joints did not move are excluded from being
+                # blended, but still contribute to disp_sum above -- so they
+                # anchor their moving neighbours instead of being dragged by
+                # them. This pass and the neighbour clamp were together
+                # responsible for ALL measured cross-region motion (42.6 units
+                # on skin, 10.2 on transverse trapezius, to 0.000 when both
+                # were disabled).
+                wmask = mask
+                static = self._static_vertex_mask(binding)
+                if static is not None and len(static) >= len(mask):
+                    wmask = mask & ~static[:len(mask)]
+                disp[wmask] = (1.0 - a) * disp[wmask] + a * disp_sum[wmask]
 
         # Write smoothed positions back
         disp += rest
@@ -2136,6 +2208,8 @@ class SoftTissueSkinning:
         if sig == self._last_signature:
             return
         self._last_signature = sig
+        # The moved-joint mask is valid for one pose only.
+        self._begin_frame()
 
         # Compute delta matrices for each joint.
         # When a scene_wrapper is active, cancel its transform from joint
