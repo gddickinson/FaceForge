@@ -49,6 +49,23 @@ class MuscleAttachmentData:
     origin_frac_threshold: float = 0.8
     insertion_frac_threshold: float = 0.2
 
+    # Per-muscle overrides for the module globals; None means "use the global".
+    #
+    # A single global cannot be right for every muscle: physiological
+    # excursion depends on optimal fibre length relative to moment arm and on
+    # how many joints the muscle spans, and it varies several-fold across the
+    # body.  Measured evidence from this model, too -- raising PIN_STRENGTH
+    # from 0.6 to 1.0 moved deltoid acromial +5% but pectoralis major sternal
+    # +67%, and lowering MAX_STRETCH improved deltoid acromial while degrading
+    # deltoid clavicular, i.e. opposite directions from one change.
+    #
+    # Left as None unless a value has a source. Measured excursion across the
+    # six authored poses (tools-side, muscle_excursion.json) shows only 1 of
+    # 112 muscles reaching the 1.35 global, so populating these from guesses
+    # would start clamping muscles that are currently unclamped.
+    max_stretch: float | None = None
+    pin_strength: float | None = None
+
 
 # Pinning strength (matching neck muscle pattern)
 PIN_STRENGTH = 0.6
@@ -74,6 +91,8 @@ class MuscleAttachmentSystem:
         origin_bones: list[str],
         insertion_bones: list[str],
         fascia_regions: list[str] | None = None,
+        max_stretch: float | None = None,
+        pin_strength: float | None = None,
     ) -> None:
         """Register a muscle binding for bone-pinning constraints.
 
@@ -113,6 +132,8 @@ class MuscleAttachmentSystem:
             origin_mask=frac > 0.8,
             insertion_mask=frac < 0.2,
             fascia_regions=fascia_regions or [],
+            max_stretch=max_stretch,
+            pin_strength=pin_strength,
         )
 
         # Compute rest-pose length (centroid of top 15% to centroid of bottom 15%)
@@ -153,6 +174,9 @@ class MuscleAttachmentSystem:
             self._pin_zone(
                 positions, rest_pos, data.origin_mask, data.attachment_frac,
                 bone_delta, data.origin_frac_threshold, towards_high=True,
+                pin_strength=(data.pin_strength
+                              if data.pin_strength is not None
+                              else PIN_STRENGTH),
             )
 
         # Get current and rest bone positions for insertion
@@ -164,6 +188,9 @@ class MuscleAttachmentSystem:
             self._pin_zone(
                 positions, rest_pos, data.insertion_mask, data.attachment_frac,
                 bone_delta, data.insertion_frac_threshold, towards_high=False,
+                pin_strength=(data.pin_strength
+                              if data.pin_strength is not None
+                              else PIN_STRENGTH),
             )
 
     def apply_stretch_clamp(self, binding: SkinBinding) -> float:
@@ -192,13 +219,14 @@ class MuscleAttachmentSystem:
         ratio = current_length / data.rest_length
         data.current_stretch = ratio
 
-        excess = max(0.0, ratio - MAX_STRETCH)
+        limit = data.max_stretch if data.max_stretch is not None else MAX_STRETCH
+        excess = max(0.0, ratio - limit)
         if excess <= 0.0:
             return 0.0
 
         # Clamp: blend positions back toward rest + limited stretch
         # The amount to pull back is proportional to how much we exceed
-        scale = MAX_STRETCH / ratio  # < 1.0 when over-stretched
+        scale = limit / ratio  # < 1.0 when over-stretched
         pull_back = 1.0 - scale
         # Blend deformed positions back toward rest positions
         current_f64 = positions.astype(np.float64)
@@ -210,7 +238,8 @@ class MuscleAttachmentSystem:
     def get_total_tension_excess(self) -> float:
         """Sum of all muscles' stretch excess above MAX_STRETCH."""
         return sum(
-            max(0.0, d.current_stretch - MAX_STRETCH)
+            max(0.0, d.current_stretch
+                - (d.max_stretch if d.max_stretch is not None else MAX_STRETCH))
             for d in self._attachments.values()
         )
 
@@ -227,6 +256,7 @@ class MuscleAttachmentSystem:
         bone_delta: np.ndarray,
         threshold: float,
         towards_high: bool,
+        pin_strength: float = PIN_STRENGTH,
     ) -> None:
         """Pin vertices in a zone toward bone displacement.
 
@@ -255,7 +285,9 @@ class MuscleAttachmentSystem:
             zone_t = (threshold - frac[idx]) / (threshold + 1e-6)
 
         zone_t = np.clip(zone_t, 0.0, 1.0)
-        strength = PIN_STRENGTH * zone_t * zone_t  # quadratic falloff
+        # Per-muscle override, resolved by the caller (this helper has no
+        # access to the attachment record).
+        strength = pin_strength * zone_t * zone_t  # quadratic falloff
 
         # Target: rest position + bone displacement
         target = rest_pos[idx] + bone_delta[np.newaxis, :]

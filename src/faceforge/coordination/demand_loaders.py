@@ -319,6 +319,11 @@ class DemandLoaders:
                 skinning.attachment_system.register_muscle(
                     skinning.bindings[-1], origin, insertion,
                     fascia_regions=defn.get("fasciaRegions", []),
+                    # Optional per-muscle overrides; absent means the module
+                    # global applies, so an unsourced muscle keeps today's
+                    # behaviour rather than getting an invented value.
+                    max_stretch=defn.get("maxStretch"),
+                    pin_strength=defn.get("pinStrength"),
                 )
 
         # Arm and leg muscles: remove digit/limb cross-chain blending.  Digit
