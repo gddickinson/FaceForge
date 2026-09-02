@@ -152,6 +152,18 @@ class MuscleAttachmentSystem:
             data.rest_length, data.origin_mask.sum(), data.insertion_mask.sum(),
         )
 
+    def origin_zone_mask(self, binding: SkinBinding) -> "NDArray[np.bool_] | None":
+        """Boolean mask of the muscle's origin-end vertices, or None.
+
+        Exposed for the physics pass, which holds the origin zone fixed while
+        relaxing edge lengths: bone pinning has already moved those vertices
+        toward their bone, and the relaxation must not undo it.
+        """
+        data = self._attachments.get(id(binding))
+        if data is None or data.origin_mask.size == 0:
+            return None
+        return data.origin_mask
+
     def apply_bone_pinning(self, binding: SkinBinding) -> None:
         """Pin muscle endpoints toward their attachment bones.
 

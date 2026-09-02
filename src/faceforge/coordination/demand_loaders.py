@@ -312,6 +312,10 @@ class DemandLoaders:
                 # allowed_chains cannot express this on its own.
                 side=("R" if muscle_name.endswith(" R")
                       else "L" if muscle_name.endswith(" L") else None),
+                # Opt-in per muscle: the physics pass costs sweeps over the
+                # mesh edges, and only the few fan-shaped muscles spanning a
+                # static origin and a moving insertion need it.
+                physics_deform=bool(defn.get("physicsDeform", False)),
             )
             origin = defn.get("originBones")
             insertion = defn.get("insertionBones")

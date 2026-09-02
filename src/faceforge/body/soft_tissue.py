@@ -18,6 +18,7 @@ from faceforge.core.math_utils import (
     batch_quat_multiply,
     batch_quat_rotate,
 )
+from faceforge.body.edge_relaxation import relax_edges
 from faceforge.core.mesh import MeshInstance
 from faceforge.core.scene_graph import SceneNode
 from faceforge.core.state import BodyState
@@ -88,6 +89,8 @@ class SkinBinding:
     spatial_limit: Optional[float] = None
     chain_z_margin: Optional[float] = None
     use_geodesic: bool = True
+    #: Opt in to the per-muscle physics pass (config "physicsDeform").
+    physics_deform: bool = False
     #: ``"R"``/``"L"`` to forbid binding to opposite-side bones, else None.
     #: Chain eligibility cannot express this: ``ribs`` is ONE unsided chain
     #: holding every rib, so a right-side muscle was free to bind to a left
@@ -108,6 +111,7 @@ class SkinBinding:
             "chain_z_margin": self.chain_z_margin,
             "use_geodesic": self.use_geodesic,
             "side": self.side,
+            "physics_deform": self.physics_deform,
             "head_follow_config": self.head_follow_config,
             "muscle_name": self.muscle_name,
         }
@@ -426,6 +430,24 @@ class SoftTissueSkinning:
     #: -- it is not the defect. The switch stays so the experiment need
     #: not be repeated.
     BONE_FOLLOW = True
+    #: Per-muscle physics pass: edge-length relaxation with the origin zone
+    #: held fixed, run after the correctives and BEFORE the hull bound so the
+    #: provable containment guarantee still wraps the result.
+    #:
+    #: Opt-in per muscle (config "physicsDeform"), not global. It exists for
+    #: the few fan-shaped muscles that span a static origin and a moving
+    #: insertion -- pectoralis major above all -- where no per-vertex WEIGHTING
+    #: can work: a spike is a RELATION between adjacent vertices, and closed-
+    #: form weights cannot express "these two stay a fixed distance apart".
+    #: Measured evidence that weighting is the wrong tool: four influences,
+    #: bone-follow, centres of rotation and an origin-to-insertion axial blend
+    #: were each either bit-identical or a regression.
+    MUSCLE_PHYSICS_SWEEPS = 8
+    #: Fractional edge extension tolerated before the constraint acts. Muscle
+    #: legitimately changes shape, so this is deliberately looser than a rigid
+    #: bound; measured whole-muscle excursion is under 36% for every muscle.
+    MUSCLE_PHYSICS_SLACK = 0.15
+
     CROSS_CHAIN_RADIUS = 20.0  # distance threshold for cross-chain blending (gap-based)
     MAX_CROSS_WEIGHT_MUSCLE = 0.5  # max cross-chain blend for muscles (need to span joints)
     MAX_CROSS_WEIGHT_OTHER = 0.45  # max cross-chain blend for skin/organs
@@ -612,6 +634,7 @@ class SoftTissueSkinning:
         head_follow_config: dict | None = None,
         muscle_name: str | None = None,
         side: str | None = None,
+        physics_deform: bool = False,
     ) -> None:
         """Bind *mesh* to the skeleton and append the result to ``bindings``.
 
@@ -659,6 +682,7 @@ class SoftTissueSkinning:
             head_follow_config=head_follow_config,
             muscle_name=muscle_name,
             side=side,
+            physics_deform=physics_deform,
             # Record the eligibility constraints so a later re-solve (gender
             # scaling rebuilds every joint) can reproduce this binding rather
             # than silently rebinding to the nearest chain.
@@ -2246,6 +2270,60 @@ class SoftTissueSkinning:
         binding._resolved_ref = work.reshape(-1, 3).astype(np.float64)
         return binding._resolved_ref
 
+    def _apply_muscle_physics(self, binding) -> int:
+        """Relax edge lengths with the origin zone pinned. Returns sweeps run.
+
+        Alternating projection between two constraint sets: the edge-length
+        constraints (Jacobi sweeps, ``edge_relaxation.relax_edges``) and the
+        attachment constraint (origin-zone vertices restored after each sweep).
+        Bone pinning has already placed the origin vertices, so holding them
+        fixed both preserves that work and gives the relaxation something to
+        pull against -- without a fixed set the whole mesh drifts instead of
+        the stretch being distributed.
+
+        Edge rest lengths come from the COLLISION-RESOLVED neutral state, not
+        the raw asset: the deep muscles interpenetrate bone at rest in this
+        dataset and the engine pushes them out by up to 2.6 units, so the asset
+        is not the rest pose.
+        """
+        if not binding.is_muscle or not binding.physics_deform:
+            return 0
+        edges = binding.edge_pairs
+        if edges is None or len(edges) == 0:
+            return 0
+        rest = self._resolved_reference(binding)
+        mesh = binding.mesh
+        flat = mesh.geometry.positions
+        n = min(len(rest), len(flat) // 3)
+        if n == 0:
+            return 0
+        pos = np.asarray(flat, dtype=np.float64).reshape(-1, 3)[:n].copy()
+
+        keep = (edges[:, 0] < n) & (edges[:, 1] < n)
+        e = edges[keep]
+        if len(e) == 0:
+            return 0
+        rl = np.linalg.norm(rest[e[:, 0]] - rest[e[:, 1]], axis=1)
+
+        fixed = None
+        if self.attachment_system is not None:
+            m = self.attachment_system.origin_zone_mask(binding)
+            if m is not None and len(m) >= n:
+                fixed = np.asarray(m[:n], dtype=bool)
+
+        sweeps = 0
+        for _ in range(self.MUSCLE_PHYSICS_SWEEPS):
+            held = pos[fixed].copy() if fixed is not None else None
+            relax_edges(pos, e, rl, slack=self.MUSCLE_PHYSICS_SLACK,
+                        iterations=1, omega=1.0)
+            if held is not None:
+                pos[fixed] = held
+            sweeps += 1
+
+        flat[:n * 3] = np.ascontiguousarray(
+            pos.ravel(), dtype=np.float32)
+        return sweeps
+
     def _apply_hull_bound(self, binding: SkinBinding) -> int:
         """Clamp vertices to the bounding sphere of their own bones' images."""
         if binding.mesh.rest_positions is None:
@@ -2899,6 +2977,13 @@ class SoftTissueSkinning:
             # pull raised skin distortion 74-142% by shrink-wrapping it. A
             # bound only acts on vertices outside the hull, so legitimate skin
             # sliding passes through untouched.
+            # Per-muscle physics, BEFORE the hull bound so the provable
+            # containment guarantee still wraps the result. Deliberately not
+            # inside the hull conditional: the two are independent, and
+            # gating one on the other's flag would make the physics pass
+            # silently inert whenever the hull bound is disabled.
+            self._apply_muscle_physics(binding)
+
             if self.USE_HULL_BOUND:
                 projected += self._apply_hull_bound(binding)
 
