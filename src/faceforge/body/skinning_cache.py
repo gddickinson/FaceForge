@@ -47,7 +47,11 @@ import numpy as np
 # older entries are simply never read.
 #   v2: skin carries (V, K) multi-influence indices and weights.
 #   v3: muscles carry multi-influence arrays too.
-CACHE_VERSION = 3
+# 4: influence weights may now be diffused over the mesh graph
+# (SoftTissueSkinning.DIFFUSE_WEIGHTS). Entries hold solver OUTPUT,
+# so a stale one serves weights from the previous algorithm and the
+# change appears to do nothing -- that has cost this project twice.
+CACHE_VERSION = 4
 
 # Vertex count above which memoising beats solving.  The full-body skin mesh
 # is ~792k vertices; muscle meshes are typically 1k-30k.
