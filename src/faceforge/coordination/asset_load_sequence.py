@@ -439,7 +439,21 @@ class AssetLoadSequence:
         if pipeline.joint_setup is not None:
             pivots = pipeline.joint_setup.pivots
             for side in ("R", "L"):
-                for name, joints in (("arm", ("shoulder", "elbow", "wrist")),
+                # The arm chain starts at the SCAPULA, not the shoulder.
+                # scapula_R/L pivots already exist in the rig but were in no
+                # chain, so muscles attaching to the shoulder girdle had no
+                # proximal joint to bind to and were bound to the shoulder
+                # (arm) pivot instead: measured, 100% of both deltoid
+                # divisions' vertices followed the humerus, and pectoralis
+                # minor's coracoid insertion was dragged up with the arm.
+                #
+                # Extending the existing chain rather than adding a separate
+                # "girdle" chain is deliberate: segments and secondary joints
+                # are only built WITHIN a chain, so a separate chain would
+                # give a hard partition with no blending across the girdle ->
+                # arm boundary -- trading detachment for tearing.
+                for name, joints in (("arm", ("scapula", "shoulder", "elbow",
+                                              "wrist")),
                                      ("leg", ("hip", "knee", "ankle"))):
                     chain = [(f"{j}_{side}", pivots[f"{j}_{side}"])
                              for j in joints if pivots.get(f"{j}_{side}") is not None]
