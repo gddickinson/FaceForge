@@ -353,8 +353,23 @@ class SoftTissueSkinning:
     #: downstream overwrites the blend, and _apply_bone_follow -- which is
     #: muscle-only and runs after this branch -- is the candidate. Left off
     #: until that is established rather than shipping an inert code path.
-    #: ON. Measured across all 119 bindings at full shoulder flexion, on the
-    #: stretch of edges whose endpoints have different primary joints:
+    #: OFF -- enabled in c74f439 and reverted here. It trades seam quality
+    #: for bulk quality, and the seam-only measurement that justified
+    #: enabling it did not look at bulk:
+    #:
+    #:            bulk p99   seam p99   seam max
+    #:   off        0.1028     44.719     664.99
+    #:   on         4.4375      5.113     184.19
+    #:
+    #: So the seam tail collapses 89% while 1% of ALL edges go from 0.10x
+    #: to 4.44x stretch -- a 43x regression in the bulk metric. The median
+    #: is unchanged either way, so it is a tail effect, but it is a large
+    #: population of moderately stretched geometry traded for a small
+    #: population of severely stretched geometry. Which looks better on
+    #: screen is a judgement the metrics cannot settle.
+    #:
+    #: Original seam measurement, across all 119 bindings at full shoulder
+    #: flexion, on edges whose endpoints have different primary joints:
     #:
     #:   two-influence   seam p99 44.72   max 664.99   edges >50  1182
     #:   multi-influence seam p99  5.11   max 184.19   edges >50  2545
@@ -371,7 +386,7 @@ class SoftTissueSkinning:
     #: seam population -- 94.5% of extreme edges have endpoints on different
     #: primary joints -- had not been identified yet, so the measurement could
     #: not see the effect.
-    MULTI_INFLUENCE_MUSCLES = True
+    MULTI_INFLUENCE_MUSCLES = False
 
     #: Blend muscle vertices back toward a single-joint rigid transform.
     #: Under test: it discards the blend entirely for every vertex with
