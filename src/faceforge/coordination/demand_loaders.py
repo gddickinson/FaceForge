@@ -308,6 +308,10 @@ class DemandLoaders:
                 mesh, is_muscle=True, allowed_chains=allowed,
                 head_follow_config=defn.get("headFollow"),
                 muscle_name=muscle_name,
+                # Forbid opposite-side bones. `ribs` is one unsided chain, so
+                # allowed_chains cannot express this on its own.
+                side=("R" if muscle_name.endswith(" R")
+                      else "L" if muscle_name.endswith(" L") else None),
             )
             origin = defn.get("originBones")
             insertion = defn.get("insertionBones")

@@ -88,6 +88,12 @@ class SkinBinding:
     spatial_limit: Optional[float] = None
     chain_z_margin: Optional[float] = None
     use_geodesic: bool = True
+    #: ``"R"``/``"L"`` to forbid binding to opposite-side bones, else None.
+    #: Chain eligibility cannot express this: ``ribs`` is ONE unsided chain
+    #: holding every rib, so a right-side muscle was free to bind to a left
+    #: one -- measured, ~600 vertices of the right pectoralis major clavicular
+    #: head were bound to the LEFT 12th rib.
+    side: Optional[str] = None
 
     def rebind_kwargs(self) -> dict:
         """The keyword arguments needed to reproduce this binding.
@@ -101,9 +107,30 @@ class SkinBinding:
             "spatial_limit": self.spatial_limit,
             "chain_z_margin": self.chain_z_margin,
             "use_geodesic": self.use_geodesic,
+            "side": self.side,
             "head_follow_config": self.head_follow_config,
             "muscle_name": self.muscle_name,
         }
+
+
+def _joint_side(name: str) -> Optional[str]:
+    """``"R"``/``"L"`` if this bone name identifies a side, else ``None``.
+
+    Joint names in this rig are inconsistent -- "Left 12th Rib_breath_pivot",
+    "R 1st Costal Cart._breath_pivot", "shoulder_R_pivot" -- so tokenise and
+    look for a side word rather than matching one spelling.  A midline bone
+    (sternum, a vertebra) has no side, returns ``None``, and stays eligible
+    for muscles of either side.
+    """
+    low = name.lower()
+    for ch in "_.-":
+        low = low.replace(ch, " ")
+    toks = set(low.split())
+    if "right" in toks or "r" in toks:
+        return "R"
+    if "left" in toks or "l" in toks:
+        return "L"
+    return None
 
 
 def _neighbor_adjacency(binding: "SkinBinding", V: int):
@@ -584,6 +611,7 @@ class SoftTissueSkinning:
         use_geodesic: bool = True,
         head_follow_config: dict | None = None,
         muscle_name: str | None = None,
+        side: str | None = None,
     ) -> None:
         """Bind *mesh* to the skeleton and append the result to ``bindings``.
 
@@ -600,6 +628,7 @@ class SoftTissueSkinning:
             spatial_limit=spatial_limit,
             chain_z_margin=chain_z_margin,
             use_geodesic=use_geodesic,
+            side=side,
         )
         if solved is None:
             return
@@ -629,6 +658,7 @@ class SoftTissueSkinning:
             rest_y_span=rest_y_span,
             head_follow_config=head_follow_config,
             muscle_name=muscle_name,
+            side=side,
             # Record the eligibility constraints so a later re-solve (gender
             # scaling rebuilds every joint) can reproduce this binding rather
             # than silently rebinding to the nearest chain.
@@ -649,6 +679,7 @@ class SoftTissueSkinning:
         spatial_limit: float | None = None,
         chain_z_margin: float | None = None,
         use_geodesic: bool = True,
+        side: str | None = None,
     ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray | None] | None:
         """Assign each vertex to nearest bone segment with blend weights.
 
@@ -705,6 +736,11 @@ class SoftTissueSkinning:
         for ji, joint in enumerate(self.joints):
             if allowed_chains is not None and joint.chain_id not in allowed_chains:
                 continue
+            if side is not None:
+                jside = _joint_side(
+                    getattr(getattr(joint, "node", None), "name", "") or "")
+                if jside is not None and jside != side:
+                    continue
             if joint.segment_start is not None and joint.segment_end is not None:
                 ab = joint.segment_end - joint.segment_start
                 if np.dot(ab, ab) >= 1e-10:
@@ -751,6 +787,7 @@ class SoftTissueSkinning:
                     spatial_limit,
                     chain_z_margin,
                     bool(use_geodesic),
+                    side,
                 ),
                 tunables=_skin_cache.scalar_tunables(self),
             )

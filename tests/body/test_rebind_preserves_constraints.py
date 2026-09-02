@@ -137,7 +137,7 @@ def test_rebind_kwargs_round_trips_every_constraint(chains,
                           allowed_chains={SPINE_CHAIN}, spatial_limit=25.0,
                           chain_z_margin=15.0, use_geodesic=False,
                           head_follow_config={"upperFrac": 0.3},
-                          muscle_name="test_muscle")
+                          muscle_name="test_muscle", side="R")
     kw = sk.bindings[0].rebind_kwargs()
     assert kw == {
         "is_muscle": True,
@@ -147,4 +147,10 @@ def test_rebind_kwargs_round_trips_every_constraint(chains,
         "use_geodesic": False,
         "head_follow_config": {"upperFrac": 0.3},
         "muscle_name": "test_muscle",
+        # Side eligibility joined the constraint set when `ribs` turned out to
+        # be one unsided chain: chain filtering could not express "right ribs
+        # only", and ~600 vertices of the right pectoralis major clavicular
+        # head were bound to the LEFT 12th rib. It has to survive a rebuild
+        # like the others, or a gender change silently restores the bug.
+        "side": "R",
     }
