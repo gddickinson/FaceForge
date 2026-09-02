@@ -217,7 +217,11 @@ class SoftTissueSkinning:
     #: static reference and a zero correction. It is not, and the reason
     #: is NOT established. region_containment.py is the gate that catches
     #: it growing.
-    USE_BONE_OFFSET_PROJECTION = True
+    #: OFF: superseded by the hull bound, and now actively harmful. Measured
+    #: with the hull active, removing it IMPROVES muscle distortion p99 from
+    #: 0.1500 to 0.1218 and saves 159 ms per update -- it pulls vertices toward
+    #: a fixed bone offset the hull has already bounded correctly.
+    USE_BONE_OFFSET_PROJECTION = False
 
     #: Deadband, model units.  A vertex may sit this far from its rest offset
     #: before any correction applies, so a muscle can still bulge and slide.
@@ -263,7 +267,11 @@ class SoftTissueSkinning:
     #: is what distinguishes a bound from a tuned parameter.
     HULL_SLACK = 0.25
 
-    CONTAIN_CORRECTIONS = True
+    #: OFF: redundant once the hull bound is active. The hull gives containment
+    #: geometrically -- static bones collapse it to a point -- so masking the
+    #: correction passes adds nothing. Measured: containment stays 0.000 with
+    #: this off, distortion p99 0.1218 -> 0.1204, ~96 ms saved.
+    CONTAIN_CORRECTIONS = False
 
     BONE_OFFSET_TOL = 1.0
 
@@ -351,6 +359,19 @@ class SoftTissueSkinning:
     # transition stretch (arm raise pulling away from torso, etc).
     MAX_NEIGHBOR_STRETCH = 2.0    # tight: catches interior mis-binding spikes
     BOUNDARY_RELAX_FACTOR = 1.5   # boundary verts allow up to MAX * (1 + factor) = 5× stretch
+    #: OFF: superseded by the hull bound. The neighbour clamp and boundary
+    #: smoothing were implicated in three measured defects -- non-convergence
+    #: (13 passes, still clamping ~2,400 edges on the last), manufacturing ~16%
+    #: of the separation they existed to remove, and dragging static vertices
+    #: across body regions by up to 42.6 units. With the hull active, disabling
+    #: both IMPROVES distortion p99 from 0.1204 to 0.0949 and saves 1,271 ms
+    #: per update, with containment unchanged at 0.000.
+    #:
+    #: The code is retained, disabled, rather than deleted: it is the only
+    #: mechanism that acts on mesh-neighbour relationships, so it is the
+    #: natural place to start if a future artefact needs that.
+    USE_NEIGHBOR_CLAMP = False
+
     CLAMP_PASSES = 10  # iterations per frame for cascade convergence
 
     # Boundary displacement smoothing: iterative Laplacian smoothing of
@@ -2105,8 +2126,9 @@ class SoftTissueSkinning:
         without translating -- the shoulder does exactly that -- and its
         vertices then move legitimately.
         """
-        if not self.CONTAIN_CORRECTIONS:
-            return None
+        # Deliberately NOT gated on CONTAIN_CORRECTIONS: this answers "which
+        # vertices are provably static", which diagnostics need whether or not
+        # the correction passes act on the answer.
         ji = getattr(binding, "joint_indices", None)
         if ji is None or not self.joints:
             return None
@@ -2132,6 +2154,8 @@ class SoftTissueSkinning:
         return ~drives
 
     def _apply_neighbor_clamp(self, binding: SkinBinding) -> int:
+        if not self.USE_NEIGHBOR_CLAMP:
+            return 0
         """Clamp vertices stretched too far from their mesh neighbors.
 
         After delta-matrix skinning, some vertices may be pulled far from
@@ -2224,6 +2248,8 @@ class SoftTissueSkinning:
         return n_clamped
 
     def _smooth_boundary_displacements(self, binding: SkinBinding) -> None:
+        if not self.USE_NEIGHBOR_CLAMP:
+            return
         """Smooth displacement discontinuities at chain-boundary vertices.
 
         After delta-matrix skinning and neighbor clamping, adjacent vertices

@@ -22,6 +22,35 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
+from faceforge.body.soft_tissue import SoftTissueSkinning
+
+
+@pytest.fixture(scope="module", autouse=True)
+def _enable_neighbour_passes():
+    """Unit tests OF the neighbour clamp and boundary smoothing.
+
+    Both are disabled by default now that the hull bound supersedes them
+    (measured: distortion p99 0.1204 -> 0.0949 and 1,271 ms saved per update),
+    but the code is retained, so this module enables it explicitly.
+
+    MODULE scope, set manually rather than via monkeypatch: ``measured`` is a
+    module-scoped fixture, so a function-scoped patch is applied only after it
+    has been built and cached, and the flag then has no effect on the numbers
+    under test.
+
+    The hull bound is disabled here too. This module asserts that smoothing
+    REDUCES a cross-chain discontinuity, and the hull removes that
+    discontinuity geometrically, which would make the comparison vacuous.
+    """
+    prev_clamp = SoftTissueSkinning.USE_NEIGHBOR_CLAMP
+    prev_hull = SoftTissueSkinning.USE_HULL_BOUND
+    SoftTissueSkinning.USE_NEIGHBOR_CLAMP = True
+    SoftTissueSkinning.USE_HULL_BOUND = False
+    yield
+    SoftTissueSkinning.USE_NEIGHBOR_CLAMP = prev_clamp
+    SoftTissueSkinning.USE_HULL_BOUND = prev_hull
+
+
 # `slow`: the module-scoped fixture loads the full BodyParts3D skin and
 # skeleton through the headless loader.  Deselect with `pytest -m "not slow"`.
 pytestmark = pytest.mark.slow
