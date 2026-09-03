@@ -488,6 +488,49 @@ class SoftTissueSkinning:
     #: it there.
     MUSCLE_BALLOON_CORRIDOR = 6.0
 
+    #: Damp a vertex's coupling to its primary joint as its REST distance from
+    #: that joint's pivot grows, shifting the freed weight to its secondary.
+    #:
+    #: Rationale, from attribution of the reported spike: a vertex rigidly
+    #: bound to a rotating pivot sweeps an arc of radius x angle, so a vertex
+    #: 15 units from the shoulder pivot travels ~16 units under the reaching
+    #: pose -- which is how pectoralis major geometry gets above the clavicle
+    #: at all. Anatomically, tissue near the trunk does not rigidly follow the
+    #: distal bone. Beyond this radius the coupling falls off, and because
+    #: these muscles' secondaries are the static trunk attachment, the freed
+    #: weight goes somewhere anatomically correct rather than nowhere.
+    #:
+    #: Rest-based, so it is computed once at bind time, not per frame.
+    LEVER_DAMP = True
+    LEVER_DAMP_RADIUS = 10.0
+    LEVER_DAMP_FLOOR = 0.25          # minimum primary weight retained
+
+    #: Absolute superior envelope: a muscle vertex may not rise more than this
+    #: far above the muscle's OWN REST-POSE superior extent, carried with its
+    #: origin bone so the whole body may still move.
+    #:
+    #: The first version limited to the top of the origin BONE, which is wrong
+    #: for any muscle that ascends from a low origin to a high insertion. It
+    #: clamped 320,465 vertices in the REST pose across 134 muscles --
+    #: semispinalis capitis 100% of its vertices and 28 units over, multifidus
+    #: 63% and 46 units over, descending trapezius 81%. Measuring against the
+    #: muscle's own rest extent is self-calibrating: nothing is clamped at rest
+    #: by construction, for every muscle, and it still forbids a muscle rising
+    #: above where it starts.
+    #:
+    #: The deformation gate did NOT catch that error: its rest-deviation
+    #: control compares against a reference captured WITH this pass active, so
+    #: a uniformly clamped rest state reads as correct. The check that found it
+    #: measured the clamp count directly, with the pass disabled.
+    #:
+    #: This is deliberately different from MUSCLE_BALLOON_CORRIDOR, which
+    #: bounds distance from a vertex's own RIGID IMAGE -- a vertex whose bone
+    #: legitimately swings upward rises with it and stays inside that
+    #: corridor, which is why it did not catch the reported defect. This one
+    #: is a limit in world space on the axis the defect actually occurs on.
+    SUPERIOR_ENVELOPE = True
+    SUPERIOR_ENVELOPE_MARGIN = 2.0
+
     CROSS_CHAIN_RADIUS = 20.0  # distance threshold for cross-chain blending (gap-based)
     MAX_CROSS_WEIGHT_MUSCLE = 0.5  # max cross-chain blend for muscles (need to span joints)
     MAX_CROSS_WEIGHT_OTHER = 0.45  # max cross-chain blend for skin/organs
@@ -2478,6 +2521,79 @@ class SoftTissueSkinning:
         flat[:n * 3] = np.ascontiguousarray(pos.ravel(), dtype=np.float32)
         return report
 
+    def apply_lever_damping(self, binding) -> int:
+        """Shift weight from primary to secondary for far-from-pivot vertices.
+
+        Returns the number of vertices whose weight changed. Rest-based and
+        idempotent, so calling it twice on one binding is harmless.
+        """
+        # Opted-in muscles only. Applied to every muscle it improved the seam
+        # tail markedly (gate seam p99 37.65 -> 21.51) but pushed bulk
+        # distortion 0.0900 -> 0.1613, breaching the gate's 0.15 ratchet: a
+        # global weight rewrite is too broad for a defect localised to four
+        # muscles. Scoped, the deltoid benefit is retained without it.
+        if (not self.LEVER_DAMP or not binding.is_muscle
+                or not binding.physics_deform):
+            return 0
+        rest = binding.mesh.rest_positions
+        if rest is None or not len(self.joints):
+            return 0
+        rest = np.asarray(rest, dtype=np.float64).reshape(-1, 3)
+        ji = np.asarray(binding.joint_indices)
+        si = np.asarray(binding.secondary_indices)
+        n = min(len(rest), len(ji))
+        if n == 0:
+            return 0
+        # A vertex with no distinct secondary has nowhere to shift weight to;
+        # damping it would just detach it from everything.
+        movable = ji[:n] != si[:n]
+        if not movable.any():
+            return 0
+        pivots = np.array([j.rest_world[:3, 3] for j in self.joints])
+        lever = np.linalg.norm(rest[:n] - pivots[ji[:n]], axis=1)
+        excess = np.clip(
+            (lever - self.LEVER_DAMP_RADIUS) / self.LEVER_DAMP_RADIUS,
+            0.0, 1.0)
+        scale = 1.0 - (1.0 - self.LEVER_DAMP_FLOOR) * excess
+        w = np.asarray(binding.weights, dtype=np.float64)[:n]
+        new = np.where(movable, w * scale, w)
+        changed = int((np.abs(new - w) > 1e-9).sum())
+        binding.weights[:n] = new.astype(binding.weights.dtype)
+        return changed
+
+    def _apply_superior_envelope(self, binding) -> int:
+        """Clamp vertices rising above the muscle's own rest extent."""
+        if (not self.SUPERIOR_ENVELOPE or self.attachment_system is None
+                or not binding.is_muscle or not binding.physics_deform):
+            return 0
+        top = self.attachment_system.origin_bone_top(binding)
+        if top is None:
+            return 0
+        # Offset of the muscle's own rest top from its origin bone's rest top,
+        # cached per binding: it is a property of the mesh, not of the frame.
+        if getattr(binding, "_env_bone_rest_top", None) is None:
+            binding._env_bone_rest_top = top
+        off = getattr(binding, "_env_offset", None)
+        if off is None:
+            rest = binding.mesh.rest_positions
+            base = getattr(binding, "_env_bone_rest_top", None)
+            if rest is None or base is None:
+                return 0
+            off = float(np.asarray(rest, dtype=np.float64).reshape(-1, 3)[:, 2]
+                        .max() - base)
+            binding._env_offset = off
+        limit = top + off + self.SUPERIOR_ENVELOPE_MARGIN
+        flat = binding.mesh.geometry.positions
+        pos = np.asarray(flat, dtype=np.float64).reshape(-1, 3)
+        over = pos[:, 2] > limit
+        n_over = int(over.sum())
+        if n_over == 0:
+            return 0
+        pos = pos.copy()
+        pos[over, 2] = limit
+        flat[:] = np.ascontiguousarray(pos.ravel(), dtype=np.float32)
+        return n_over
+
     def _rigid_reference(self, binding, rest, n):
         """Where each vertex's own primary bone alone would place it.
 
@@ -3159,6 +3275,8 @@ class SoftTissueSkinning:
             # edge relaxation, plus volume, both attachments and the corridor,
             # alternating to convergence. Kept switchable so the two can be
             # measured against each other rather than swapped on assertion.
+            self._apply_superior_envelope(binding)
+
             if self.MUSCLE_BALLOON:
                 rep = self._apply_muscle_balloon(binding)
                 if rep and not rep.get("converged", True):

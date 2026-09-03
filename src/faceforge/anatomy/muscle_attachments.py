@@ -309,6 +309,29 @@ class MuscleAttachmentSystem:
         return ((data.attachment_frac > data.origin_frac_threshold)
                 | (data.attachment_frac < data.insertion_frac_threshold))
 
+    def origin_bone_top(self, binding: SkinBinding) -> float | None:
+        """Superior extent of this muscle's origin bones in the CURRENT frame.
+
+        Current rather than rest, so the envelope travels with the body: a
+        whole-body translation must not clamp anything.
+        """
+        data = self._attachments.get(id(binding))
+        if data is None or not data.origin_bones:
+            return None
+        tops = []
+        store = getattr(self._bones, "_bone_nodes", {})
+        for bn in data.origin_bones:
+            node = store.get(bn)
+            geo = getattr(getattr(node, "mesh", None), "geometry", None)
+            if geo is None or geo.positions is None:
+                continue
+            v = np.asarray(geo.positions, dtype=np.float64).reshape(-1, 3)
+            v = v[:getattr(geo, "vertex_count", len(v))]
+            node.update_world_matrix()
+            m = np.asarray(node.world_matrix, dtype=np.float64)
+            tops.append(float(((v @ m[:3, :3].T) + m[:3, 3])[:, 2].max()))
+        return max(tops) if tops else None
+
     def apply_bone_pinning(self, binding: SkinBinding) -> None:
         """Pin muscle endpoints toward their attachment bones.
 

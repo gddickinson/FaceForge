@@ -359,6 +359,10 @@ class DemandLoaders:
                     skinning.attachment_system.reassign_by_footprints(
                         skinning.bindings[-1], skinning.joints, fp,
                     )
+                    # Lever-arm damping is REST-based, so it runs once here rather
+                    # than per frame. After footprint reassignment, because it
+                    # scales the weights that reassignment sets.
+                    skinning.apply_lever_damping(skinning.bindings[-1])
 
         # Arm and leg muscles: remove digit/limb cross-chain blending.  Digit
         # pivots are children of wrist/ankle pivots, so a digit chain's delta
