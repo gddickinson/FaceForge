@@ -268,11 +268,46 @@ class MuscleAttachmentSystem:
         grade = np.where(to_ins, zone, 1.0 - zone)
         binding.weights[:n] = np.clip(
             grade, 0.5, 1.0).astype(binding.weights.dtype)
+        # Record the authored sets as this muscle's attachment masks, so
+        # every consumer (pinning zones, the balloon solve's anchors) uses the
+        # real footprints rather than a Y-extent threshold.
+        om = np.zeros(len(data.attachment_frac), dtype=bool)
+        im = np.zeros(len(data.attachment_frac), dtype=bool)
+        om[o_idx[o_idx < len(om)]] = True
+        im[i_idx[i_idx < len(im)]] = True
+        data.origin_mask = om
+        data.insertion_mask = im
+
         changed = int((before != ji[:n]).sum())
         logger.info("Footprint reassignment for %s: %d/%d vertices "
                     "(origin joint %d, insertion joint %d, %d unreached)",
                     name, changed, n, j_o, j_i, int((~both).sum()))
         return changed
+
+    def anchor_mask(self, binding: SkinBinding) -> "NDArray[np.bool_] | None":
+        """Vertices that must be held during a constrained solve, or None.
+
+        Both attachments, not just the origin: a balloon is positioned by its
+        ends, and holding only one lets the other wander -- which is the
+        "pulled away from the attachment" failure. Authored footprints are used
+        when present because they are the real attachment sets; otherwise the
+        threshold zones are the best available.
+        """
+        data = self._attachments.get(id(binding))
+        if data is None:
+            return None
+        n = len(data.attachment_frac)
+        if n == 0:
+            return None
+        # origin_mask / insertion_mask are the authored footprints when
+        # reassign_by_footprints has run, and the threshold zones otherwise --
+        # it overwrites them, so this needs no separate lookup.
+        om = np.asarray(data.origin_mask, dtype=bool)
+        im = np.asarray(data.insertion_mask, dtype=bool)
+        if len(om) >= n and len(im) >= n:
+            return om[:n] | im[:n]
+        return ((data.attachment_frac > data.origin_frac_threshold)
+                | (data.attachment_frac < data.insertion_frac_threshold))
 
     def apply_bone_pinning(self, binding: SkinBinding) -> None:
         """Pin muscle endpoints toward their attachment bones.

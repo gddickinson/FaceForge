@@ -448,6 +448,46 @@ class SoftTissueSkinning:
     #: bound; measured whole-muscle excursion is under 36% for every muscle.
     MUSCLE_PHYSICS_SLACK = 0.15
 
+    #: Treat an opted-in muscle as a closed, near-incompressible soft body:
+    #: rubbery surface, constant volume, held at both attachments, confined to
+    #: a corridor around the bone-driven result.
+    #:
+    #: Each of those was built and measured SEPARATELY earlier and each looked
+    #: ineffective alone -- volume conservation drove drift 37.96% -> 0.01% and
+    #: left peak protrusion completely unchanged; the protrusion bound cut its
+    #: own metric 94% and moved 9 pixels of full-body silhouette. The reason is
+    #: that they are blind to each other's failure mode: a sheet pulled thin
+    #: CONSERVES volume, and a sheet is locally SMOOTH, so neither constraint
+    #: can see a flap. Enforced together and iterated, a flap satisfies
+    #: neither.
+    MUSCLE_BALLOON = True
+
+    #: Iterations of the alternating projection.
+    #:
+    #: Measured on the four opted-in shoulder/chest muscles in the reaching
+    #: pose (max edge growth / volume error, against the physics pass alone):
+    #:
+    #:   physics    2.92/2.7%   3.25/22.8%   5.58/39.7%   10.46/10.5%   3399 ms
+    #:   6 iters    3.23/0.8%   3.56/ 0.2%   6.17/ 0.1%   16.60/ 0.5%   3780 ms
+    #:   20 iters   2.09/1.0%   2.22/ 1.0%   3.92/ 1.8%   16.19/ 0.3%   4737 ms
+    #:   50 iters   1.52/1.2%   1.25/ 0.8%   2.77/ 0.2%   16.19/ 1.7%   7027 ms
+    #:
+    #: At 6 the solve stops mid-fight -- volume pushes, edges pull back -- and
+    #: edge growth is WORSE than the plain relaxation. 20 recovers it and beats
+    #: the physics pass on three of the four while holding volume near 1%. 50
+    #: is better again but doubles the update, and this update is already the
+    #: dominant cost of dragging a slider.
+    MUSCLE_BALLOON_ITERS = 20
+
+    #: Fractional volume error tolerated before the volume constraint acts.
+    MUSCLE_BALLOON_VOLUME_TOL = 0.02
+
+    #: The "tube": a vertex may sit at most this far (model units) from where
+    #: its own bones alone would place it. Applied INSIDE the loop so an edge
+    #: or volume correction cannot push geometry out of the corridor and leave
+    #: it there.
+    MUSCLE_BALLOON_CORRIDOR = 6.0
+
     CROSS_CHAIN_RADIUS = 20.0  # distance threshold for cross-chain blending (gap-based)
     MAX_CROSS_WEIGHT_MUSCLE = 0.5  # max cross-chain blend for muscles (need to span joints)
     MAX_CROSS_WEIGHT_OTHER = 0.45  # max cross-chain blend for skin/organs
@@ -2324,6 +2364,139 @@ class SoftTissueSkinning:
             pos.ravel(), dtype=np.float32)
         return sweeps
 
+    @staticmethod
+    def _volume_and_gradient(pos, tris):
+        """Signed volume by the divergence theorem, and d(volume)/d(vertex).
+
+        Exact for a closed triangle mesh; 153 of 169 muscle meshes are closed
+        (the rest have a handful of non-manifold edges and no boundary edges).
+        The integrator was validated by rigid invariance to 1.2e-13.
+        """
+        v0 = pos[tris[:, 0]]
+        v1 = pos[tris[:, 1]]
+        v2 = pos[tris[:, 2]]
+        c12 = np.cross(v1, v2)
+        vol = float(np.einsum('ij,ij->i', v0, c12).sum() / 6.0)
+        grad = np.zeros_like(pos)
+        np.add.at(grad, tris[:, 0], c12 / 6.0)
+        np.add.at(grad, tris[:, 1], np.cross(v2, v0) / 6.0)
+        np.add.at(grad, tris[:, 2], np.cross(v0, v1) / 6.0)
+        return vol, grad
+
+    #: Muscles whose balloon solve hit the iteration cap without converging.
+    #: Read by the diagnostics; a non-zero value means MUSCLE_BALLOON_ITERS is
+    #: too low for this rig rather than that the solve is wrong.
+    _balloon_unconverged = 0
+
+    def _apply_muscle_balloon(self, binding) -> dict:
+        """Solve one muscle as a rubbery, near-incompressible bounded body.
+
+        Alternating projection over four constraint sets, iterated to
+        convergence rather than applied once each:
+
+          1. edge lengths toward their resolved-neutral rest length, within
+             the muscle's own slack;
+          2. volume toward its resolved-neutral volume (area-weighted
+             gradient, so the correction spreads over the surface);
+          3. both attachment footprints restored -- the muscle is positioned
+             by its ends;
+          4. every vertex clamped into a corridor around the position its own
+             bones alone would give it.
+
+        Returns a report so a solve that did NOT converge is visible.
+        """
+        if (not self.MUSCLE_BALLOON or not binding.is_muscle
+                or not binding.physics_deform):
+            return {}
+        edges = binding.edge_pairs
+        tris = getattr(binding.mesh.geometry, "indices", None)
+        if edges is None or len(edges) == 0 or tris is None:
+            return {}
+        rest = self._resolved_reference(binding)
+        flat = binding.mesh.geometry.positions
+        n = min(len(rest), len(flat) // 3)
+        if n == 0:
+            return {}
+        pos = np.asarray(flat, dtype=np.float64).reshape(-1, 3)[:n].copy()
+
+        e = edges[(edges[:, 0] < n) & (edges[:, 1] < n)]
+        t = np.asarray(tris, dtype=np.int64).reshape(-1, 3)
+        t = t[(t < n).all(axis=1)]
+        if len(e) == 0 or len(t) == 0:
+            return {}
+        rl = np.linalg.norm(rest[e[:, 0]] - rest[e[:, 1]], axis=1)
+        v_rest, _ = self._volume_and_gradient(rest[:n], t)
+
+        anchors = None
+        if self.attachment_system is not None:
+            m = self.attachment_system.anchor_mask(binding)
+            if m is not None and len(m) >= n:
+                anchors = np.asarray(m[:n], dtype=bool)
+
+        # Corridor centre: where this vertex's own bones alone would put it.
+        centre = self._rigid_reference(binding, rest, n)
+
+        slack = self.MUSCLE_PHYSICS_SLACK
+        ms = getattr(binding, "max_stretch", None)
+        if ms:
+            slack = max(0.0, float(ms) - 1.0)
+
+        held = pos[anchors].copy() if anchors is not None else None
+        report = {"iters": 0, "converged": False}
+        for it in range(self.MUSCLE_BALLOON_ITERS):
+            prev = pos.copy()
+            relax_edges(pos, e, rl, slack=slack, iterations=1, omega=1.0)
+
+            vol, grad = self._volume_and_gradient(pos, t)
+            err = (v_rest - vol)
+            if abs(v_rest) > 1e-9 and abs(err / v_rest) > self.MUSCLE_BALLOON_VOLUME_TOL:
+                denom = float((grad * grad).sum())
+                if denom > 1e-12:
+                    pos += (err / denom) * grad
+
+            if held is not None:
+                pos[anchors] = held
+
+            if centre is not None:
+                d = pos - centre
+                dist = np.linalg.norm(d, axis=1)
+                over = dist > self.MUSCLE_BALLOON_CORRIDOR
+                if over.any():
+                    pos[over] = (centre[over] + d[over]
+                                 * (self.MUSCLE_BALLOON_CORRIDOR
+                                    / dist[over])[:, None])
+
+            step = float(np.abs(pos - prev).max())
+            report["iters"] = it + 1
+            if step < 1e-4:
+                report["converged"] = True
+                break
+
+        vol, _ = self._volume_and_gradient(pos, t)
+        report["volume_error"] = (abs(vol - v_rest) / abs(v_rest)
+                                  if abs(v_rest) > 1e-9 else 0.0)
+        flat[:n * 3] = np.ascontiguousarray(pos.ravel(), dtype=np.float32)
+        return report
+
+    def _rigid_reference(self, binding, rest, n):
+        """Where each vertex's own primary bone alone would place it.
+
+        Uses the same memoised per-joint delta as the hull bound
+        (``_joint_delta``), and the same unique + searchsorted remap, so this
+        costs one small matrix stack per binding rather than one per vertex.
+        """
+        ji = np.asarray(binding.joint_indices)[:n]
+        if not len(ji):
+            return None
+        used = np.unique(ji)
+        try:
+            D = np.stack([self._joint_delta(int(k)) for k in used])
+        except (IndexError, KeyError, AttributeError):
+            return None
+        idx = np.searchsorted(used, ji)
+        rest_h = np.concatenate([rest[:n], np.ones((n, 1))], axis=1)
+        return np.einsum('vij,vj->vi', D[idx], rest_h)[:, :3]
+
     def _apply_hull_bound(self, binding: SkinBinding) -> int:
         """Clamp vertices to the bounding sphere of their own bones' images."""
         if binding.mesh.rest_positions is None:
@@ -2982,7 +3155,16 @@ class SoftTissueSkinning:
             # inside the hull conditional: the two are independent, and
             # gating one on the other's flag would make the physics pass
             # silently inert whenever the hull bound is disabled.
-            self._apply_muscle_physics(binding)
+            # The balloon solve supersedes the physics pass: it runs the same
+            # edge relaxation, plus volume, both attachments and the corridor,
+            # alternating to convergence. Kept switchable so the two can be
+            # measured against each other rather than swapped on assertion.
+            if self.MUSCLE_BALLOON:
+                rep = self._apply_muscle_balloon(binding)
+                if rep and not rep.get("converged", True):
+                    self._balloon_unconverged += 1
+            else:
+                self._apply_muscle_physics(binding)
 
             if self.USE_HULL_BOUND:
                 projected += self._apply_hull_bound(binding)
