@@ -47,7 +47,11 @@ extrapolated wrist segment fight the digit joints across the palm.
 
 from __future__ import annotations
 
+import functools
+import json
 import logging
+
+from faceforge.constants import CONFIG_DIR
 from typing import Any, Callable, Iterable
 
 from faceforge.coordination.render_mode_sync import apply_current_render_mode
@@ -143,6 +147,25 @@ def resolve_chain_set(chain_names: Iterable[str],
     """
     chains = {chain_ids[name] for name in chain_names if name in chain_ids}
     return chains or None
+
+
+@functools.lru_cache(maxsize=1)
+def _muscle_footprints() -> dict:
+    """Authored attachment footprints, keyed by muscle name.
+
+    Absent file or unreadable content yields an empty mapping: every muscle
+    then keeps the solver's own assignment, which is the documented behaviour
+    rather than a silent proxy.
+    """
+    path = CONFIG_DIR / "muscle_footprints.json"
+    try:
+        with open(path) as fh:
+            return json.load(fh)
+    except FileNotFoundError:
+        logger.info("No authored muscle footprints at %s", path)
+    except (OSError, ValueError):
+        logger.exception("Muscle footprints at %s could not be read", path)
+    return {}
 
 
 def resolve_sided_chains(chain_names: Iterable[str], structure_name: str,
@@ -329,6 +352,13 @@ class DemandLoaders:
                     max_stretch=defn.get("maxStretch"),
                     pin_strength=defn.get("pinStrength"),
                 )
+                fp = _muscle_footprints()
+                if fp:
+                    # MUST follow register_muscle, which creates the
+                    # attachment record this reads.
+                    skinning.attachment_system.reassign_by_footprints(
+                        skinning.bindings[-1], skinning.joints, fp,
+                    )
 
         # Arm and leg muscles: remove digit/limb cross-chain blending.  Digit
         # pivots are children of wrist/ankle pivots, so a digit chain's delta

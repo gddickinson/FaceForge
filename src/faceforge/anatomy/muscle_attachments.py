@@ -15,6 +15,8 @@ from dataclasses import dataclass, field
 from typing import Optional
 
 import numpy as np
+from scipy.sparse import csr_matrix
+from scipy.sparse.csgraph import dijkstra
 from numpy.typing import NDArray
 
 from faceforge.anatomy.bone_anchors import BoneAnchorRegistry
@@ -163,6 +165,100 @@ class MuscleAttachmentSystem:
         if data is None or data.origin_mask.size == 0:
             return None
         return data.origin_mask
+
+    def reassign_by_footprints(self, binding: SkinBinding, joints: list,
+                               footprints: dict) -> int:
+        """Assign primary joints from AUTHORED attachment footprints.
+
+        Footprints have to be authored; they cannot be inferred. Four measured
+        attempts to infer them all failed the same way -- an along-muscle axis
+        from attachment_frac (a mesh Y-extent) sent serratus anterior 0.04 ->
+        7.10, and nearest-joint-to-centroid, centroid-distance and
+        bone-surface-distance rules each sent both deltoid divisions to 100%
+        humerus against the 71.8%/48.8% they were meant to reduce. The reason
+        is structural: these muscles WRAP the humerus, so it is the nearest
+        bone to most of their mass by every distance measure. Contact is not
+        attachment.
+
+        Registering published attachment points was tried as well: the
+        licence-compatible source ships no bone geometry to register against,
+        and a three-landmark similarity fit (RMS 2.70) placed 18 of 19 points
+        4-36 units off the muscle surface.
+
+        What survives from that work is the INTERPOLATION -- geodesic distance
+        between the two footprints along the muscle's own edges, which is
+        immune to wrapping. This consumes authored footprints and interpolates
+        exactly that way.
+
+        There is deliberately NO fallback: a muscle without footprints keeps
+        the solver's own assignment. Substituting a proxy is what produced
+        every regression above.
+        """
+        data = self._attachments.get(id(binding))
+        name = (data.muscle_name if data else None) or ""
+        fp = footprints.get(name)
+        if data is None or fp is None or not joints:
+            return 0
+        rest = binding.mesh.rest_positions
+        edges = binding.edge_pairs
+        if rest is None or edges is None or len(edges) == 0:
+            return 0
+        rest = np.asarray(rest, dtype=np.float64).reshape(-1, 3)
+        n = min(len(rest), len(binding.joint_indices))
+        o_idx = np.asarray(fp.get("origin_indices", []), dtype=np.int64)
+        i_idx = np.asarray(fp.get("insertion_indices", []), dtype=np.int64)
+        o_idx = o_idx[o_idx < n]
+        i_idx = i_idx[i_idx < n]
+        if not len(o_idx) or not len(i_idx):
+            return 0
+
+        joint_of_node = {id(j.node): k for k, j in enumerate(joints)}
+        bone_nodes = getattr(self._bones, "_bone_nodes", {})
+
+        def resolve_end(bones):
+            for bn in bones:
+                node = bone_nodes.get(bn)
+                hops = 0
+                while node is not None and hops < 12:
+                    if id(node) in joint_of_node:
+                        return joint_of_node[id(node)]
+                    node = getattr(node, "parent", None)
+                    hops += 1
+            return None
+
+        j_o = resolve_end(data.origin_bones)
+        j_i = resolve_end(data.insertion_bones)
+        if j_o is None or j_i is None or j_o == j_i:
+            return 0
+
+        e = edges[(edges[:, 0] < n) & (edges[:, 1] < n)]
+        if len(e) == 0:
+            return 0
+        w = np.linalg.norm(rest[e[:, 0]] - rest[e[:, 1]], axis=1)
+        g = csr_matrix((np.concatenate([w, w]),
+                        (np.concatenate([e[:, 0], e[:, 1]]),
+                         np.concatenate([e[:, 1], e[:, 0]]))), shape=(n, n))
+        g_o = dijkstra(g, indices=o_idx, min_only=True)
+        g_i = dijkstra(g, indices=i_idx, min_only=True)
+        both = np.isfinite(g_o) & np.isfinite(g_i)
+        if not both.any():
+            return 0
+        zone = np.full(n, 0.5)
+        zone[both] = g_o[both] / np.maximum(g_o[both] + g_i[both], 1e-9)
+
+        ji = np.asarray(binding.joint_indices)
+        before = ji[:n].copy()
+        to_ins = zone > 0.5
+        ji[:n] = np.where(to_ins, j_i, j_o)
+        binding.secondary_indices[:n] = np.where(to_ins, j_o, j_i)
+        grade = np.where(to_ins, zone, 1.0 - zone)
+        binding.weights[:n] = np.clip(
+            2.0 * (grade - 0.5), 0.0, 1.0).astype(binding.weights.dtype)
+        changed = int((before != ji[:n]).sum())
+        logger.info("Footprint reassignment for %s: %d/%d vertices "
+                    "(origin joint %d, insertion joint %d, %d unreached)",
+                    name, changed, n, j_o, j_i, int((~both).sum()))
+        return changed
 
     def apply_bone_pinning(self, binding: SkinBinding) -> None:
         """Pin muscle endpoints toward their attachment bones.
