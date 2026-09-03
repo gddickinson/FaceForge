@@ -251,9 +251,23 @@ class MuscleAttachmentSystem:
         to_ins = zone > 0.5
         ji[:n] = np.where(to_ins, j_i, j_o)
         binding.secondary_indices[:n] = np.where(to_ins, j_o, j_i)
+        # Primary weight: 1.0 at a vertex's OWN footprint, falling to 0.5 at
+        # the muscle's midline -- NOT to 0.0.
+        #
+        # The first version wrote 2*(grade-0.5), which is 0.0 at the midline,
+        # and zero primary weight means the vertex is driven ENTIRELY by its
+        # secondary, i.e. by the opposite attachment. Measured on pectoralis
+        # major sternal in the reaching pose, that put 3,305 vertices nominally
+        # assigned to rib_40 -- a STATIC joint -- 17.9 units higher than rest
+        # with a residual of 18.71 against their own joint's rigid image: none
+        # of their motion came from the joint they were assigned to. The
+        # user saw it as geometry spiking up past the clavicle.
+        #
+        # `grade` is already max(zone, 1-zone) in [0.5, 1], so it IS the
+        # correct primary weight and needs no rescaling.
         grade = np.where(to_ins, zone, 1.0 - zone)
         binding.weights[:n] = np.clip(
-            2.0 * (grade - 0.5), 0.0, 1.0).astype(binding.weights.dtype)
+            grade, 0.5, 1.0).astype(binding.weights.dtype)
         changed = int((before != ji[:n]).sum())
         logger.info("Footprint reassignment for %s: %d/%d vertices "
                     "(origin joint %d, insertion joint %d, %d unreached)",
