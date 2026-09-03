@@ -452,8 +452,12 @@ class AssetLoadSequence:
                 # are only built WITHIN a chain, so a separate chain would
                 # give a hard partition with no blending across the girdle ->
                 # arm boundary -- trading detachment for tearing.
-                for name, joints in (("arm", ("scapula", "shoulder", "elbow",
-                                              "wrist")),
+                # Clavicle first: it is the most proximal girdle bone and
+                # the declared origin of deltoid clavicular and pectoralis
+                # major clavicular, which had no proximal joint before it
+                # existed.
+                for name, joints in (("arm", ("clavicle", "scapula",
+                                              "shoulder", "elbow", "wrist")),
                                      ("leg", ("hip", "knee", "ankle"))):
                     chain = [(f"{j}_{side}", pivots[f"{j}_{side}"])
                              for j in joints if pivots.get(f"{j}_{side}") is not None]

@@ -181,6 +181,7 @@ class JointPivotSetup:
         hand_group: SceneNode | None,
     ) -> None:
         scapula = bones.get(f"{label} Scapula")
+        clavicle = bones.get(f"{label} Clavicle")
         humerus = bones.get(f"{label} Humerus")
         radius = bones.get(f"{label} Radius")
         ulna = bones.get(f"{label} Ulna")
@@ -270,6 +271,41 @@ class JointPivotSetup:
             self.pivots[f"scapula_{side}"] = scap_pivot
             self.joint_positions[f"scapula_{side}"] = vec3(
                 float(scap_center[0]), float(scap_center[1]), float(scap_center[2]),
+            )
+
+        # Sternoclavicular pivot.
+        #
+        # The clavicle had NO joint in the rig, which is why muscles declaring
+        # it as their origin had no proximal joint to bind to: measured, the
+        # bone -> joint lookup resolved every other declared bone in one hop
+        # (Right Humerus -> shoulder_R, Right Scapula -> scapula_R, Manubrium
+        # -> rib_40, Right 3rd Rib -> rib_2) and returned nothing for Right
+        # Clavicle.  Their origin vertices therefore bound to the nearest joint
+        # that did exist -- the humerus -- giving 48.8% of deltoid clavicular
+        # and 45.6% of pectoralis major clavicular following the humerus where
+        # their own insertion zones are 16.1% and 21.9%.
+        #
+        # Positioned at the MEDIAL end, not the centroid: the clavicle
+        # articulates with the sternum at the sternoclavicular joint, so that
+        # is the point it rotates about.  (The scapula pivot above uses the
+        # centroid, which is a coarser approximation for a flat blade.)
+        if clavicle and clavicle.mesh:
+            cl_geo = clavicle.mesh.geometry
+            cl_pts = cl_geo.positions.reshape(-1, 3)[:cl_geo.vertex_count]
+            # Medial = nearest the midline; the clavicle runs mediolaterally.
+            medial = cl_pts[np.argmin(np.abs(cl_pts[:, 0]))]
+            cl_pivot = SceneNode(name=f"clavicle_{side}_pivot")
+            cl_pivot.set_position(
+                float(medial[0]), float(medial[1]), float(medial[2]),
+            )
+            parent = clavicle.parent
+            if parent is not None:
+                parent.remove(clavicle)
+                parent.add(cl_pivot)
+            reparent_under_pivot(clavicle, cl_pivot, medial)
+            self.pivots[f"clavicle_{side}"] = cl_pivot
+            self.joint_positions[f"clavicle_{side}"] = vec3(
+                float(medial[0]), float(medial[1]), float(medial[2]),
             )
 
         if radius:
