@@ -85,8 +85,9 @@ See `docs/exercise_animation.md` for the design and `docs/exercises.md` for the 
 window into a viewer: the whole body with every muscle layer and the skeleton
 in the gym, camera buttons all round the room (front, three-quarter, both
 sides, back, low, overhead) plus free orbit, and the exercise list with its
-playback controls. Run it on its own with
-`PYTHONPATH=src python -m faceforge.exercise_viewer --exercise pull_up`.
+playback controls. Run it on its own with `./start_exercise_viewer.sh --exercise pull_up`
+(`./start_faceforge.sh` starts the full GUI; both launchers pick the
+interpreter that has the dependencies and can be run from any folder).
 Muscles are coloured by exertion, including the ones no catalogue entry
 lists: gripping a bar lights the hands and forearms, carrying a load the
 deltoids, upper trapezius and rotator cuff, standing under it the trunk brace

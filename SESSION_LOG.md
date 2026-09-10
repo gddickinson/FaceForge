@@ -171,3 +171,8 @@ hand and foot intrinsic groups added (side-prefixed names); the exercise
 controller's `all_muscles` option loads every body layer. Tests: implied
 stabilisers, group expansion, controller option, the panel headless, and a
 slow end-to-end viewer-mode test on the real application.
+
+Launchers added at the project root: `start_faceforge.sh` (the full GUI) and
+`start_exercise_viewer.sh` (the standalone viewer; forwards `--exercise` /
+`--list`), both choosing `$FACEFORGE_PYTHON`, then the flika environment, then
+`python3`, and setting `PYTHONPATH=src`.

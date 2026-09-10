@@ -9,6 +9,10 @@ assumed, live in `docs/exercise_animation.md`.
 ## Running and testing
 
 ```bash
+# Launchers (pick the interpreter with FaceForge's dependencies; run from anywhere):
+./start_faceforge.sh                                          # the full GUI
+./start_exercise_viewer.sh --exercise pull_up                 # the standalone exercise viewer
+
 # The editable install lives in the `flika` conda environment (Python 3.11).
 /opt/anaconda3/envs/flika/bin/python -m faceforge.app        # GUI
 /opt/anaconda3/envs/flika/bin/python -m faceforge.cli --help # headless render/scan/export
@@ -32,6 +36,8 @@ FaceForge/
 ├── tests/                pytest; `slow` marks asset-heavy and whole-app tests
 ├── docs/                 headless_cli.md, exercise_animation.md, exercises.md (generated), research/
 ├── results/              generated outputs (exercise demo frames live in results/exercise_demo/)
+├── start_faceforge.sh    launcher: the full GUI
+├── start_exercise_viewer.sh  launcher: the standalone exercise viewer (--exercise ID, --list)
 ├── INTERFACE.md          ← you are here
 ├── SESSION_LOG.md        work log
 └── CLAUDE.md             project instructions (refs @INTERFACE.md)
