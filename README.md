@@ -80,6 +80,18 @@ python -m tools.render_exercise_demo --exercise barbell_back_squat --frames 36
 
 See `docs/exercise_animation.md` for the design and `docs/exercises.md` for the catalogue.
 
+
+**Exercise viewer.** *View ▸ Exercise viewer* (Ctrl+Shift+V) turns the
+window into a viewer: the whole body with every muscle layer and the skeleton
+in the gym, camera buttons all round the room (front, three-quarter, both
+sides, back, low, overhead) plus free orbit, and the exercise list with its
+playback controls. Run it on its own with
+`PYTHONPATH=src python -m faceforge.exercise_viewer --exercise pull_up`.
+Muscles are coloured by exertion, including the ones no catalogue entry
+lists: gripping a bar lights the hands and forearms, carrying a load the
+deltoids, upper trapezius and rotator cuff, standing under it the trunk brace
+and feet (`faceforge/exercise/stabilisers.py`).
+
 ### Virtual Scanner
 
 The built-in virtual scanner generates cross-section images using tiled ray-triangle intersection with Moller-Trumbore testing. It supports 5 imaging modes (CT, MRI T1, MRI T2, X-ray, Anatomical) and 3 anatomical orientations (axial, coronal, sagittal).

@@ -152,3 +152,22 @@ Fast tier 1748 passed; gate passing (seam p99 0.14).
 **Open.** Rhomboid major 5.5× at the dead hang (the medial border glides far
 from T2–T5); C7/T1 unregistered; the pull-up top's flexion axis 18° off
 after the width correction.
+
+## 2026-09-11 — Exercise viewer, whole-body display, implied stabilisers
+
+**Asked.** A viewer, reachable from the main GUI or standalone, showing the
+model in the 3D gym from any angle with a menu of exercises to play; every
+muscle and the skeleton in every exercise; colour by exertion including the
+muscles that stabilise or grip (a deadlift lights the hands, arms and back).
+
+**Built.** `ui/exercise_viewer.py` + `MainWindow.set_viewer_mode` (View menu,
+Ctrl+Shift+V): the control panel's exercise tab is moved into a viewer panel
+with eight gym camera views (four new presets: back, two back quarters, low
+front) and whole-body toggles; `faceforge/exercise_viewer.py` opens the app
+straight into that mode (`--exercise ID`, `--list`). `exercise/stabilisers.py`
+derives grip / carry / brace / stance / racked-bar stabilisers from the
+equipment, anchor and orientation and appends them at clip-build time;
+hand and foot intrinsic groups added (side-prefixed names); the exercise
+controller's `all_muscles` option loads every body layer. Tests: implied
+stabilisers, group expansion, controller option, the panel headless, and a
+slow end-to-end viewer-mode test on the real application.

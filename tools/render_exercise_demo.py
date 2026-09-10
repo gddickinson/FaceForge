@@ -41,7 +41,8 @@ import numpy as np
 from faceforge.body.muscle_activation import MuscleActivationSystem
 from faceforge.core.state import BodyState
 from faceforge.exercise.catalog import get_exercise_catalog
-from faceforge.exercise.muscle_groups import regions_for_groups
+from faceforge.exercise.muscle_groups import ALL_MUSCLE_REGIONS, regions_for_groups
+from faceforge.exercise.stabilisers import with_implied_stabilisers
 from faceforge.exercise.runtime import ExerciseRuntime
 from faceforge.scene.scene_animation import AnimationPlayer
 from faceforge.scene.scene_mode_controller import SceneModeController
@@ -287,6 +288,7 @@ def main(argv=None) -> int:
     ap.add_argument("--layers", default=None, help="comma list; default: the exercise's")
     ap.add_argument("--skin", action="store_true")
     ap.add_argument("--no-equipment", action="store_true")
+    ap.add_argument("--all-muscles", action="store_true", help="load every body muscle layer")
     ap.add_argument("-v", "--verbose", action="store_true")
     args = ap.parse_args(argv)
     logging.basicConfig(level=logging.INFO if args.verbose else logging.WARNING,
@@ -309,8 +311,12 @@ def main(argv=None) -> int:
         return 0
 
     defn = catalog[ids[0]]
-    layers = (regions_for_groups(defn.muscle_groups) if args.layers is None
-              else args.layers.split(","))
+    if args.layers is not None:
+        layers = args.layers.split(",")
+    elif args.all_muscles:
+        layers = list(ALL_MUSCLE_REGIONS)
+    else:
+        layers = regions_for_groups(with_implied_stabilisers(defn).muscle_groups)
     demo = DemoScene(layers, with_skin=args.skin)
     result = render(defn, demo, Path(args.out), args.frames, parse_size(args.size),
                     args.camera, args.reps or defn.default_reps, args.tempo)

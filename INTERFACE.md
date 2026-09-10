@@ -12,6 +12,7 @@ assumed, live in `docs/exercise_animation.md`.
 # The editable install lives in the `flika` conda environment (Python 3.11).
 /opt/anaconda3/envs/flika/bin/python -m faceforge.app        # GUI
 /opt/anaconda3/envs/flika/bin/python -m faceforge.cli --help # headless render/scan/export
+PYTHONPATH=src /opt/anaconda3/envs/flika/bin/python -m faceforge.exercise_viewer --exercise conventional_deadlift  # exercise viewer only
 export QT_QPA_PLATFORM=offscreen
 /opt/anaconda3/envs/flika/bin/python -m pytest -m "not slow"  # fast tier, no assets needed (~20 s)
 /opt/anaconda3/envs/flika/bin/python -m pytest                # full tier (needs assets/stl)
@@ -97,6 +98,7 @@ flat when ankle dorsiflexion = pitch − hip + knee.
 | `app.py` | FaceForge application entry point. |
 | `appcontext.py` | The collaborators an assembled FaceForge application is made of. |
 | `cli.py` | ``faceforge-cli`` -- the scriptable half of FaceForge. |
+| `exercise_viewer.py` | `python -m faceforge.exercise_viewer [--exercise ID]`: the application opened straight into the exercise-viewer mode (skeleton preset, then every muscle layer). |
 | `constants.py` | Shared constants and paths for FaceForge. |
 | `session.py` | A headless, scriptable FaceForge render session. |
 
@@ -245,9 +247,10 @@ flat when ankle dorsiflexion = pitch − hip + knee.
 | `grip_lock.py` | `GripWidthLock`: hands anchored to a fixed bar stop sliding along it; per frame, shoulder abduction is solved (2x2 finite-difference Newton) so each hand's offset from the trunk holds its calibrated value. |
 | `model.py` | The data model for an exercise demonstration. |
 | `motion_description.py` | Turn a change of pose into the words a physiotherapist would use. |
-| `muscle_groups.py` | Functional muscle groups -> the muscle mesh names in ``assets/config/muscles``. |
+| `muscle_groups.py` | Functional muscle groups -> the muscle mesh names in ``assets/config/muscles``; hand/foot intrinsics (side-prefixed names) and `ALL_MUSCLE_REGIONS`. |
 | `pose_library.py` | Pose authoring for exercises: degrees in, normalised BodyState DOFs out. |
 | `runtime.py` | The exercise runtime: drives a built clip through the existing animation player. |
+| `stabilisers.py` | Implied stabilisers: grip, carry, brace and stance muscles derived from the equipment, anchor and orientation, appended at clip-build time so a deadlift colours the hands, arms and back. |
 
 ### `faceforge/exercise/catalog/`
 
@@ -338,7 +341,8 @@ flat when ankle dorsiflexion = pitch − hip + knee.
 | `illustration_presets.py` | Grey's Anatomy-style illustration presets. |
 | `info_panel.py` | Left info panel showing active AUs and expression name. |
 | `load_status.py` | Non-modal surface for asset-load failures. |
-| `main_window.py` | Main window: assembles all UI components around GL viewport. |
+| `exercise_viewer.py` | `ExerciseViewerPanel`: gym camera views, whole-body display toggles, and the adopted exercise tab; the main window's viewer mode swaps it in for the control panel. |
+| `main_window.py` | Main window: assembles all UI components around GL viewport; `set_viewer_mode()` (View menu, Ctrl+Shift+V) moves the exercise tab into the viewer panel and enters the gym. |
 | `quiz_dialog.py` | Interactive anatomy quiz dialog. |
 | `startup_dialog.py` | Startup dialog for choosing an initial layer configuration preset. |
 | `style.py` | QSS dark theme stylesheet matching the HTML version's design. |
@@ -392,6 +396,6 @@ flat when ankle dorsiflexion = pitch − hip + knee.
 `anatomy` (attachments, fibre field, bone collision, bone anchors), `animation`, `app` (wiring), `body` (skinning, skinning under the
 scene wrapper, ground lock, DOF axes, hand grip, shoulder-girdle rhythm, heatmap), `controllers` (handlers on a
 stub `AppContext`; `fakes.py`),
-`core`, `exercise` (catalogue, activation, equipment, runtime), `export`,
+`core`, `exercise` (catalogue, activation, implied stabilisers, equipment, runtime, grip lock), `export`,
 `integration`, `loaders`, `rendering`, `scanner`, `session`, `tools`, `ui`
-(whole-app smoke test, slow).
+(the viewer panel headless; whole-app smoke test and the viewer mode end to end, slow).

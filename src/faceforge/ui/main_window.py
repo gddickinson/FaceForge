@@ -2,7 +2,7 @@
 
 from PySide6.QtWidgets import (
     QMainWindow, QWidget, QHBoxLayout, QVBoxLayout,
-    QStatusBar, QLabel, QSizePolicy, QFileDialog, QMenuBar,
+    QStatusBar, QLabel, QSizePolicy, QFileDialog, QMenuBar, QStackedWidget
 )
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QFont, QAction
@@ -12,6 +12,7 @@ from faceforge.core.events import EventBus, EventType
 from faceforge.core.state import StateManager
 from faceforge.rendering.gl_widget import GLViewport
 from faceforge.ui.control_panel import ControlPanel
+from faceforge.ui.exercise_viewer import ExerciseViewerPanel
 from faceforge.ui.info_panel import InfoPanel
 from faceforge.ui.load_status import LoadStatusBadge
 from faceforge.ui.style import DARK_THEME
@@ -59,9 +60,18 @@ class MainWindow(QMainWindow):
         gl_widget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         main_layout.addWidget(gl_widget)
 
-        # Right control panel
+        # Right-hand side: the control panel, or the exercise viewer's panel.
+        # A stacked widget rather than a second window because the GL viewport
+        # can live in one place only (see faceforge.ui.exercise_viewer).
         self.control_panel = ControlPanel(event_bus, state)
-        main_layout.addWidget(self.control_panel)
+        self.viewer_panel = ExerciseViewerPanel(event_bus)
+        self.viewer_panel.exit_requested.connect(lambda: self.set_viewer_mode(False))
+        self.right_stack = QStackedWidget()
+        self.right_stack.addWidget(self.control_panel)
+        self.right_stack.addWidget(self.viewer_panel)
+        self.right_stack.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Expanding)
+        main_layout.addWidget(self.right_stack)
+        self._viewer_mode = False
 
         # Status bar
         self.status_bar = QStatusBar()
@@ -118,6 +128,15 @@ class MainWindow(QMainWindow):
         export_glb_action.triggered.connect(self._export_glb)
         file_menu.addAction(export_glb_action)
 
+        # ── View menu ──
+        view_menu = menu_bar.addMenu("&View")
+        self.viewer_action = QAction("Exercise viewer", self)
+        self.viewer_action.setCheckable(True)
+        self.viewer_action.setShortcut("Ctrl+Shift+V")
+        self.viewer_action.setStatusTip("The whole body performing an exercise, from any angle")
+        self.viewer_action.toggled.connect(self.set_viewer_mode)
+        view_menu.addAction(self.viewer_action)
+
         # ── Tools menu ──
         tools_menu = menu_bar.addMenu("&Tools")
 
@@ -125,6 +144,51 @@ class MainWindow(QMainWindow):
         scanner_action.setShortcut("Ctrl+Shift+S")
         scanner_action.triggered.connect(self.scanner_requested.emit)
         tools_menu.addAction(scanner_action)
+
+    # -- exercise viewer mode ---------------------------------------------------------
+
+    EXERCISE_TAB_INDEX = 2
+
+    @property
+    def viewer_mode(self) -> bool:
+        return self._viewer_mode
+
+    def set_viewer_mode(self, enabled: bool) -> None:
+        """Swap the control panel for the exercise viewer (and back).
+
+        Entering the mode moves the control panel's exercise tab into the
+        viewer panel, enters the gym scene, asks for every muscle layer and
+        sets a three-quarter view.  Leaving puts the tab back in its place.
+        """
+        enabled = bool(enabled)
+        if enabled == self._viewer_mode:
+            return
+        self._viewer_mode = enabled
+        panel = self.control_panel
+        tabs = panel.tabs
+        if enabled:
+            idx = tabs.indexOf(panel.exercise_tab)
+            if idx >= 0:
+                tabs.removeTab(idx)
+            self.viewer_panel.adopt_tab(panel.exercise_tab)
+            self.right_stack.setCurrentWidget(self.viewer_panel)
+            self.info_panel.hide()
+            self.event_bus.publish(EventType.SCENE_MODE_TOGGLED, enabled=True, scene_type="gym")
+            panel.display_tab.sync_scene_state(True, "gym")
+            self.viewer_panel.request_all_muscles()
+            self.viewer_panel.select_view("three_quarter")
+        else:
+            tab = self.viewer_panel.release_tab()
+            if tab is not None:
+                tabs.insertTab(self.EXERCISE_TAB_INDEX, tab, "EXERCISE")
+            self.right_stack.setCurrentWidget(panel)
+            self.info_panel.show()
+            self.event_bus.publish(EventType.EXERCISE_OPTION_CHANGED, option="all_muscles",
+                                   value=False)
+        if hasattr(self, "viewer_action") and self.viewer_action.isChecked() != enabled:
+            self.viewer_action.blockSignals(True)
+            self.viewer_action.setChecked(enabled)
+            self.viewer_action.blockSignals(False)
 
     def _export_glb(self) -> None:
         """Export visible meshes to a GLB file."""

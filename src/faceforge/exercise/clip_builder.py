@@ -37,6 +37,7 @@ from faceforge.exercise.activation import ActivationTrack, build_activation_trac
 from faceforge.exercise.model import ExerciseDefinition, Phase, PhaseKind
 from faceforge.exercise.motion_description import JointMotion, describe_transition
 from faceforge.exercise.pose_library import neutral
+from faceforge.exercise.stabilisers import with_implied_stabilisers
 from faceforge.scene.scene_animation import AnimationClip, AnimationKeyframe
 
 #: Keys inside a keyframe's body dict that carry the authored lift and floor
@@ -190,6 +191,10 @@ def build_exercise_clip(defn: ExerciseDefinition, reps: int | None = None,
 
     ``tempo`` scales every phase duration: 0.5 is twice as slow, for teaching.
     """
+    # The built clip colours what the body is doing, not only what the
+    # catalogue lists as movers: grip, carry and brace are implied from the
+    # equipment, anchor and orientation (exercise/stabilisers.py).
+    defn = with_implied_stabilisers(defn)
     reps = defn.default_reps if reps is None else max(1, int(reps))
     tempo = max(0.05, float(tempo))
     base_q, base_pos = orientation_base(defn.orientation)

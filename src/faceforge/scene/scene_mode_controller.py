@@ -103,6 +103,11 @@ _GYM_CAMERA_PRESETS: dict[str, tuple[tuple, tuple]] = {
     "side_left":     ((-235, 110, 10),      _GYM_TARGET),
     "low_side":      ((225, 45, 60),        _GYM_TARGET),
     "overhead":      ((0, 290, 40),         _GYM_TARGET),
+    # The room is 500 x 400 (x, z); every preset stays inside its walls.
+    "back":          ((0, 110, -185),       _GYM_TARGET),
+    "back_quarter":  ((-200, 150, -170),    _GYM_TARGET),
+    "back_quarter_r": ((200, 150, -170),    _GYM_TARGET),
+    "low_front":     ((0, 40, 300),         _GYM_TARGET),
 }
 
 #: Scene types in which the body stands on the floor rather than lying supine.

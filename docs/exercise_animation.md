@@ -330,6 +330,34 @@ along the line between the hands; one-handed items follow their wrist; static
 items are placed in the room. The jump rope spins about the hand axis at
 2 rev/s. Units: 1 ≈ 0.78 cm, so an Olympic bar is 280 long with 58-unit plates.
 
+## The exercise viewer and implied stabilisers
+
+The viewer is a *mode* of the main window (View ▸ Exercise viewer,
+Ctrl+Shift+V; or `python -m faceforge.exercise_viewer`), not a second window:
+a QOpenGLWidget can live in one place, so the right-hand control panel is
+swapped for `ui/exercise_viewer.py`, which adopts the control panel's exercise
+tab (the same instance, so the transport, status and progress plumbing keep
+working) and adds camera buttons all round the gym, a whole-body toggle and a
+way back. Entering the mode enters the gym scene, loads every muscle layer
+(`muscle_groups.ALL_MUSCLE_REGIONS`, hands and feet included) and sets the
+three-quarter view. The catalogue, playback and heatmap are the ones the
+EXERCISE tab already had.
+
+**Implied stabilisers.** A catalogue entry lists the movers. What the body
+is also doing follows from the definition — what is held, what it is
+anchored by, how it is oriented — and `exercise/stabilisers.py` adds those
+groups at the stabiliser role when a clip is built, so they colour without
+being authored: a held load implies the grip (forearm flexors and the hand
+intrinsics at 0.55), the wrist extensors, the elbow flexors holding the
+elbow, the deltoids, upper trapezius and rotator cuff carrying it, and the
+trunk brace (erector spinae 0.45 down to quadratus lumborum 0.3); hanging
+from a bar implies the grip at 0.6 with the scapular stabilisers; hands on
+the floor a lighter grip with serratus anterior; standing the bodyweight
+brace, hip abductors, ankle and foot muscles; a bar racked at the shoulders
+the upper and middle trapezius, rhomboids and erectors. Authored groups are
+never overridden. The hand and foot intrinsic muscles gained functional
+groups for this (their config names carry the side as a prefix).
+
 ## Using it
 
 **In the app**: Exercise tab → filter by category / equipment → Demonstrate.

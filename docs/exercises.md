@@ -1123,9 +1123,9 @@ Hanging from a bar with a pronated grip wider than the shoulders, the body is pu
 
 | phase | kind | s | moving joints | cues |
 |---|---|---|---|---|
-| Pull | concentric | 1.50 | Elbows: flexion 5° → 130°; Shoulders: adduction 165° → 50°; Shoulders: extension 10° → 0° | Depress the shoulder blades first, then drive the elbows down and back Chin over the bar, chest to the bar |
+| Pull | concentric | 1.50 | Elbows: flexion 5° → 145°; Shoulders: adduction 165° → 40°; Shoulders: extension 10° → 0° | Depress the shoulder blades first, then drive the elbows down and back Chin over the bar, chest to the bar |
 | Top | isometric | 0.40 | hold | Hold; shoulders down away from the ears |
-| Lower | eccentric | 2.00 | Elbows: extension 130° → 5°; Shoulders: abduction 50° → 165°; Shoulders: flexion 0° → 10° | Lower under control to straight arms |
+| Lower | eccentric | 2.00 | Elbows: extension 145° → 5°; Shoulders: abduction 40° → 165°; Shoulders: flexion 0° → 10° | Lower under control to straight arms |
 | Dead hang | isometric | 0.50 | hold | Shoulders relaxed up; re-brace |
 
 **Muscles**

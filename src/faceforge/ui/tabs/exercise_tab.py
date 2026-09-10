@@ -12,6 +12,7 @@ from faceforge.core.events import EventBus, EventType
 from faceforge.core.state import StateManager
 from faceforge.exercise.catalog import get_exercise_catalog
 from faceforge.exercise.model import Category
+from faceforge.exercise.stabilisers import with_implied_stabilisers
 from faceforge.ui.widgets.muscle_activation_list import MuscleActivationList
 from faceforge.ui.widgets.section_label import SectionLabel
 from faceforge.ui.widgets.toggle_row import ToggleRow
@@ -199,7 +200,7 @@ class ExerciseTab(QScrollArea):
         self._errors.setText("\n".join(f"• {c}" for c in defn.errors))
         self._notes.setText("\n".join(f"• {c}" for c in defn.physio_notes))
         self._sources.setText("\n".join(f"• {s}" for s in defn.sources))
-        self._muscles.set_muscles(defn.muscles)
+        self._muscles.set_muscles(with_implied_stabilisers(defn).muscles)
         self._reps.blockSignals(True)
         self._reps.setValue(defn.default_reps)
         self._reps.blockSignals(False)

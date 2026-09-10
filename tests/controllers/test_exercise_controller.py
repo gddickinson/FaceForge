@@ -74,7 +74,8 @@ def test_selecting_enters_the_gym_loads_muscles_and_starts(exercise_ctx):
     scene_events = [kw for kind, kw in events if kind == "scene"]
     assert scene_events == [{"enabled": True, "scene_type": "gym"}]
     layers = [kw["layer"] for kind, kw in events if kind == "layer"]
-    assert layers == ["back_muscles", "torso_muscles", "hip_muscles", "leg_muscles"]
+    # The movers' regions plus the implied stance stabilisers (foot intrinsics).
+    assert layers == ["back_muscles", "torso_muscles", "hip_muscles", "leg_muscles", "foot_muscles"]
     assert ctx.control_panel.display_tab.synced == [(True, "gym")]
     assert controller.runtime.active and ctx.anim_player.is_playing
     assert ctx.control_panel.display_tab.transport.playing is True
@@ -121,3 +122,16 @@ def test_options_change_palette_heatmap_and_restart_for_reps(exercise_ctx):
     assert ctx.anim_player.duration == pytest.approx(3 * d1)
     ctx.event_bus.publish(EventType.EXERCISE_OPTION_CHANGED, option="heatmap", value=False)
     assert not ctx.muscle_activation.enabled
+
+
+def test_all_muscles_option_loads_every_body_layer(exercise_ctx):
+    from faceforge.exercise.muscle_groups import ALL_MUSCLE_REGIONS
+
+    ctx, controller, events = exercise_ctx
+    ctx.event_bus.publish(EventType.EXERCISE_OPTION_CHANGED, option="all_muscles", value=True)
+    layers = [kw["layer"] for kind, kw in events if kind == "layer"]
+    assert layers == list(ALL_MUSCLE_REGIONS)
+    events.clear()
+    ctx.event_bus.publish(EventType.EXERCISE_SELECTED, exercise_id="pull_up")
+    layers = [kw["layer"] for kind, kw in events if kind == "layer"]
+    assert layers == list(ALL_MUSCLE_REGIONS), "selecting an exercise keeps the whole body loaded"

@@ -16,8 +16,9 @@ from typing import Any
 
 from faceforge.core.events import EventType
 from faceforge.exercise.catalog import get_exercise_catalog
-from faceforge.exercise.muscle_groups import regions_for_groups
+from faceforge.exercise.muscle_groups import ALL_MUSCLE_REGIONS, regions_for_groups
 from faceforge.exercise.runtime import ExerciseRuntime
+from faceforge.exercise.stabilisers import with_implied_stabilisers
 
 logger = logging.getLogger(__name__)
 
@@ -35,6 +36,9 @@ class ExerciseController:
         self.options: dict[str, Any] = {
             "reps": None, "tempo": 1.0, "heatmap": True, "equipment": True,
             "palette": "classic", "load_muscles": True,
+            # Load every body muscle layer, not only the exercise's regions
+            # (the exercise viewer shows the whole body in every exercise).
+            "all_muscles": False,
         }
         self._frames = 0
         self._hooked = False
@@ -62,6 +66,8 @@ class ExerciseController:
             self._start(defn)
         elif option == "equipment" and self.runtime is not None and self.runtime.active:
             self._start(self.runtime.definition)
+        elif option == "all_muscles" and value:
+            self.load_all_muscles()
 
     def on_exercise_selected(self, exercise_id: str = "", reps: int | None = None,
                              tempo: float | None = None, **kw) -> None:
@@ -103,7 +109,20 @@ class ExerciseController:
             sync(True, "gym")
 
     def _load_muscle_regions(self, defn) -> None:
-        for region in regions_for_groups(defn.muscle_groups):
+        if self.options.get("all_muscles"):
+            regions = list(ALL_MUSCLE_REGIONS)
+        else:
+            # The implied stabilisers (grip, brace) colour regions the
+            # catalogue's mover list alone would not load.
+            regions = regions_for_groups(with_implied_stabilisers(defn).muscle_groups)
+        self._show_regions(regions)
+
+    def load_all_muscles(self) -> None:
+        """Load and show every body muscle layer (the exercise viewer's default)."""
+        self._show_regions(list(ALL_MUSCLE_REGIONS))
+
+    def _show_regions(self, regions) -> None:
+        for region in regions:
             self.ctx.event_bus.publish(EventType.LAYER_TOGGLED, layer=region, visible=True)
             layers_tab = getattr(self.ctx.control_panel, "layers_tab", None)
             setter = getattr(layers_tab, "set_layer_visible", None)

@@ -68,7 +68,29 @@ MUSCLE_GROUPS: dict[str, tuple[str, ...]] = {
                           "Ext. Carpi Uln. Uln.", "Ext. Digitorum", "Ext. Dig. Min."),
     "pronators": ("Pronator Teres Hum.", "Pronator Teres Uln.", "Pronator Quadratus"),
     "supinator": ("Supinator",),
+    # Intrinsic hand and foot muscles: the configs name these "R Lumbricals",
+    # side first (see SIDE_PREFIX_GROUPS).
+    "hand_intrinsics": ("Abductor Pollicis Brevis", "Opponens Pollicis",
+                        "Flexor Pollicis Brevis Deep", "Flexor Pollicis Brevis Superficial",
+                        "Adductor Pollicis Oblique", "Adductor Pollicis Transverse",
+                        "Abductor Digiti Minimi", "Flexor Digiti Minimi Brevis",
+                        "Opponens Digiti Minimi", "Lumbricals", "Palmar Interossei",
+                        "Dorsal Interossei"),
+    "foot_intrinsics": ("Abductor Hallucis", "Flexor Digitorum Brevis", "Abductor Digiti Minimi",
+                        "Flexor Accessorius", "First Lumbrical", "Second Lumbrical",
+                        "Third Lumbrical", "Fourth Lumbrical", "Flexor Digiti Minimi Brevis",
+                        "Flexor Hallucis Brevis Medial", "Flexor Hallucis Brevis Lateral",
+                        "Adductor Hallucis Oblique", "Adductor Hallucis Transverse"),
 }
+
+#: Groups whose mesh names carry the side as a PREFIX ("R Lumbricals").
+SIDE_PREFIX_GROUPS: frozenset[str] = frozenset({"hand_intrinsics", "foot_intrinsics"})
+
+#: Every body muscle layer, in load order -- what "show all muscles" loads.
+ALL_MUSCLE_REGIONS: tuple[str, ...] = (
+    "back_muscles", "shoulder_muscles", "arm_muscles", "torso_muscles",
+    "hip_muscles", "leg_muscles", "hand_muscles", "foot_muscles",
+)
 
 #: Midline muscles that carry no side suffix in the configs.
 UNSIDED_MUSCLES: frozenset[str] = frozenset({
@@ -98,6 +120,7 @@ GROUP_REGION: dict[str, str] = {
     "biceps_brachii": "arm_muscles", "brachialis": "arm_muscles", "brachioradialis": "arm_muscles",
     "triceps_brachii": "arm_muscles", "forearm_flexors": "arm_muscles",
     "forearm_extensors": "arm_muscles", "pronators": "arm_muscles", "supinator": "arm_muscles",
+    "hand_intrinsics": "hand_muscles", "foot_intrinsics": "foot_muscles",
 }
 
 #: Groups whose members are split between two configs (Tensor fasciae latae
@@ -130,6 +153,7 @@ GROUP_LABELS: dict[str, str] = {
     "brachialis": "Brachialis", "brachioradialis": "Brachioradialis",
     "triceps_brachii": "Triceps brachii", "forearm_flexors": "Forearm flexors (grip)",
     "forearm_extensors": "Forearm extensors", "pronators": "Pronators", "supinator": "Supinator",
+    "hand_intrinsics": "Hand (intrinsic grip muscles)", "foot_intrinsics": "Foot intrinsics",
 }
 
 
@@ -144,19 +168,19 @@ def group_label(group: str) -> str:
 def expand_group(group: str, side: str | None = None) -> list[str]:
     """Mesh names for *group*: both sides, or only ``side`` (``"R"``/``"L"``)."""
     names: list[str] = []
+    prefixed = group in SIDE_PREFIX_GROUPS
     for base in MUSCLE_GROUPS[group]:
         if base in UNSIDED_MUSCLES:
             names.append(base)
             continue
         for s in (("R", "L") if side is None else (side,)):
-            names.append(f"{base} {s}")
+            names.append(f"{s} {base}" if prefixed else f"{base} {s}")
     return names
 
 
 def regions_for_groups(groups) -> list[str]:
     """The muscle layers that must be loaded to colour *groups*, in load order."""
-    order = ["back_muscles", "shoulder_muscles", "arm_muscles", "torso_muscles",
-             "hip_muscles", "leg_muscles"]
+    order = list(ALL_MUSCLE_REGIONS)
     wanted: set[str] = set()
     for g in groups:
         wanted.add(GROUP_REGION[g])

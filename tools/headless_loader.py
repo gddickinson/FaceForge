@@ -50,6 +50,10 @@ _LAYER_INFO: dict[str, dict] = {
     "leg_muscles":       {"loader": "load_body_muscles", "config": "leg_muscles.json",        "type": "muscle"},
     "organs":            {"loader": "load_organs",      "type": "organ"},
     "vasculature":       {"loader": "load_vasculature", "type": "vascular"},
+    # Intrinsic hand and foot muscles bind to the digit chains, as the app's
+    # DemandLoaders._load_digit_muscles does.
+    "hand_muscles":      {"loader": "load_hand_muscles", "config": "hand_muscles.json", "type": "digit", "prefix": "hand"},
+    "foot_muscles":      {"loader": "load_foot_muscles", "config": "foot_muscles.json", "type": "digit", "prefix": "foot"},
 }
 
 
@@ -174,7 +178,8 @@ def load_layer(hs: HeadlessScene, layer_name: str) -> list[MeshInstance]:
     layer_name : str
         One of: ``"skin"``, ``"back_muscles"``, ``"shoulder_muscles"``,
         ``"arm_muscles"``, ``"torso_muscles"``, ``"hip_muscles"``,
-        ``"leg_muscles"``, ``"organs"``, ``"vasculature"``.
+        ``"leg_muscles"``, ``"hand_muscles"``, ``"foot_muscles"``,
+        ``"organs"``, ``"vasculature"``.
 
     Returns
     -------
@@ -274,6 +279,15 @@ def register_layer(
         if not defs or len(defs) != len(meshes):
             defs = load_muscle_config(info["config"])[:len(meshes)]
         register_muscle_layer(skinning, layer_name, meshes, defs, chain_ids)
+
+    elif layer_type == "digit":
+        # The app's registration for the intrinsic hand/foot muscles: each
+        # mesh is a muscle bound to that limb's digit chains only.
+        from faceforge.coordination.demand_loaders import digit_chain_ids
+
+        chains = digit_chain_ids(info["prefix"], chain_ids)
+        for mesh in meshes:
+            skinning.register_skin_mesh(mesh, is_muscle=True, allowed_chains=chains or None)
 
     elif layer_type == "organ":
         spine_id = chain_ids.get("spine")
