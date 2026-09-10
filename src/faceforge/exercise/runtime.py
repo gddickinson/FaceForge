@@ -28,6 +28,7 @@ from dataclasses import dataclass, field
 from typing import Any, Callable
 
 from faceforge.body.ground_contact import GroundLock
+from faceforge.exercise.grip_lock import GripWidthLock
 from faceforge.exercise.clip_builder import (
     LIFT_KEY, TRAVEL_X_KEY, TRAVEL_Z_KEY, ExerciseClip, build_exercise_clip,
 )
@@ -80,11 +81,15 @@ class ExerciseRuntime:
     joint_positions: dict
     muscle_activation: Any = None
     apply_live_body: Callable[[dict], None] | None = None
+    #: The body animation system, for the grip-width lock's forward kinematics
+    #: (optional: without it hands anchored to a bar may slide along it).
+    body_animation: Any = None
     show_equipment: bool = True
     floor_y: float = 0.0
 
     built: ExerciseClip | None = None
     ground_lock: GroundLock | None = None
+    grip_lock: GripWidthLock | None = None
     rig: EquipmentRig = field(default_factory=EquipmentRig)
     _lift: float = 0.0
     _travel: tuple[float, float] = (0.0, 0.0)
@@ -121,6 +126,12 @@ class ExerciseRuntime:
         if self.show_equipment:
             self._build_equipment(defn)
 
+        # Hands gripping a fixed point (a pull-up bar) must not slide along it.
+        self.grip_lock = None
+        if (defn.anchor == "hands" and defn.anchor_point is not None
+                and self.body_animation is not None):
+            self.grip_lock = GripWidthLock(self.body_animation, self.scene, self.pivots)
+
         if self.muscle_activation is not None:
             self.muscle_activation.set_levels({})
 
@@ -151,6 +162,7 @@ class ExerciseRuntime:
             self.muscle_activation.set_levels(None)
         self.built = None
         self.ground_lock = None
+        self.grip_lock = None
 
     def _build_equipment(self, defn: ExerciseDefinition) -> None:
         for spec in defn.equipment:
@@ -170,6 +182,8 @@ class ExerciseRuntime:
         self._lift = float(state_dict.get(LIFT_KEY, 0.0))
         self._travel = (float(state_dict.get(TRAVEL_X_KEY, 0.0)),
                         float(state_dict.get(TRAVEL_Z_KEY, 0.0)))
+        if self.grip_lock is not None:
+            self.grip_lock.apply(state_dict)
         if self._orig_on_body is not None:
             self._orig_on_body(state_dict)
         if self.apply_live_body is not None:

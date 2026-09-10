@@ -152,7 +152,7 @@ flat when ankle dorsiflexion = pitch − hip + knee.
 | module | purpose |
 |---|---|
 | `blood_flow.py` | Blood flow particle effect module. |
-| `body_animation.py` | Body animation: spine flex/bend/rotation, limb articulation, breathing. |
+| `body_animation.py` | Body animation: spine flex/bend/rotation, limb articulation, breathing; scapulohumeral rhythm as a glide on the thorax with clavicle elevation (`_apply_girdle`); pronation is the outermost wrist rotation. |
 | `body_constraints.py` | Body joint limit enforcement via simple clamping. |
 | `body_muscles.py` | On-demand body muscle loading and management. |
 | `bone_scaling.py` | Per-bone affine scaling for gender dimorphism. |
@@ -242,6 +242,7 @@ flat when ankle dorsiflexion = pitch − hip + knee.
 | `clip_builder.py` | ExerciseDefinition -> a playable clip with phase spans and an activation track. |
 | `equipment.py` | Procedural gym equipment, built from the scene's own primitives. |
 | `equipment_rig.py` | Keep hand-held equipment in the hands, every frame: the bar's axis passes through the ring of closed finger joints (`grip_point`). |
+| `grip_lock.py` | `GripWidthLock`: hands anchored to a fixed bar stop sliding along it; per frame, shoulder abduction is solved (2x2 finite-difference Newton) so each hand's offset from the trunk holds its calibrated value. |
 | `model.py` | The data model for an exercise demonstration. |
 | `motion_description.py` | Turn a change of pose into the words a physiotherapist would use. |
 | `muscle_groups.py` | Functional muscle groups -> the muscle mesh names in ``assets/config/muscles``. |
@@ -389,7 +390,7 @@ flat when ankle dorsiflexion = pitch − hip + knee.
 ### `tests/` layout
 
 `anatomy` (attachments, fibre field, bone collision, bone anchors), `animation`, `app` (wiring), `body` (skinning, skinning under the
-scene wrapper, ground lock, DOF axes, hand grip, heatmap), `controllers` (handlers on a
+scene wrapper, ground lock, DOF axes, hand grip, shoulder-girdle rhythm, heatmap), `controllers` (handlers on a
 stub `AppContext`; `fakes.py`),
 `core`, `exercise` (catalogue, activation, equipment, runtime), `export`,
 `integration`, `loaders`, `rendering`, `scanner`, `session`, `tools`, `ui`

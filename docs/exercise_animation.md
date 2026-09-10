@@ -217,11 +217,60 @@ with containment still exactly 0; bulk p99 rose 0.090 → 0.26 because bellies
 now stretch instead of tearing, and the thresholds were re-ratcheted from
 that measurement.
 
-What remains: the deltoids sit at 3–4× at a 165° dead hang because the
-scapula pivot moves the acromion too little, so the deltoid is asked to
-lengthen where it should shorten; the transverse trapezius has no footprints
-and tears at its scapular seam (max 45×, 215 vertices); proximity-seeded
-footprints would all tighten with hand-authored ones.
+What remained after that round is covered by the next section.
+
+### Grips on bars, a winged scapula, and hands that slid (2026-09-10, third pass)
+
+The third review: in the back squat the bar passed between the fingers; in
+the bench press the hands were supinated; at the pull-up's dead hang
+something still stood out from the back; and the hands slid along the bar
+during the pull. Measured causes and fixes:
+
+1. **The "wing" was the scapula, not the lats.** At 165° of abduction the
+   scapulohumeral rhythm rotated the blade about an anterior–posterior axis
+   through its centroid, which put the inferior angle at x = 28, seven units
+   outside the ribcage's lateral extent; teres major, infraspinatus and
+   subscapularis (2,200 / 1,300 / 900 vertices displaced outward by more
+   than 8 units) followed it as a wing. The latissimus had 0. The blade now
+   rotates about the thorax's surface normal at the scapula, so the inferior
+   angle glides laterally and forward round the ribcage (r = 21.1 at rest
+   and at 165°, was 28.3), the clavicle elevates 30° at the sternoclavicular
+   joint and carries the acromion up 11.5 units (was 3), and the
+   acromioclavicular joint stays together. Outward displacement of the three
+   muscles after: 0. The spine-to-scapula muscles then needed attachment
+   footprints of their own (trapezius parts, rhomboids; their config
+   origins had been the scapula itself and the first ribs): rhomboid minor
+   11.1× → 3.7×, transverse trapezius 6.2× → off the list.
+2. **Palms could not face a bar.** The wrist quaternion composed
+   flexion, deviation and pronation as XYZ, which applies pronation *first*:
+   the flexion axis stayed fixed in the forearm, so extending a pronated
+   wrist acted as deviation. Pronation is now the outermost rotation and the
+   fingers' flexion axis turns with it (`tests/body/test_hand_grip.py`).
+3. **Grips were authored by measuring the hand frame.** A probe reads the
+   wrist pivot's frame (X = finger flexion axis, −Y = palm normal) — the
+   digit pivots carry the grip curl and are useless for this — and scores a
+   pose by the angle between the flexion axis and the bar, the palm's angle
+   to where the bar is, and the hand's position. Back squat: elbows out and
+   down, forearms up to a bar 16 units behind the neck, flexion axis 0.9°
+   from the bar, palm 21° from vertical (the earlier pose had the forearms
+   nearly parallel to the bar). Bench press: arms abducted 75°, elbows 80°,
+   forearm pronated with the wrist extended 70°, flexion axis 15° / 13° from
+   the bar at the bottom / lockout, palm 19° from the bar. Pull-up: humerus
+   externally rotated 90°, forearm pronated 90°, flexion axis 10° from the
+   bar at the hang.
+4. **Hands stayed put.** `exercise/grip_lock.py` re-poses the skeleton after
+   each frame's joint angles and solves the two shoulder abductions so each
+   hand's offset from the trunk along the bar holds the value calibrated at
+   the first frame (a 2×2 finite-difference Newton step, twice). Grip width
+   through the pull-up: 54.5–68.7 before, 55.1–55.1 after. It is armed only
+   for exercises whose hands are anchored to a point.
+
+Still open: the deltoids remain over-stretched at full elevation; the
+rhomboid major reaches 5.5× at the dead hang because the scapula's medial
+border glides 20 units from its spinous processes; C7 and T1 are not
+registered attachment bones (the rhomboid minor and descending trapezius
+attach to T2 for now); the pull-up top's flexion axis is 18° off after the
+grip lock adjusts abduction, because abduction also turns the hand.
 
 ## The animation model
 
@@ -329,6 +378,6 @@ definitions kept outside the code. Then `python -m tools.export_exercise_docs`.
 - Muscle length change ("extent of movement") is computed but not yet drawn.
 - Fingers close with a fixed grip pose; the bar passes through the ring of
   closed finger joints but the fingers are not wrapped to its radius.
-- The scapula pivot's placement under-moves the acromion, so the deltoids
-  are over-stretched at full elevation; the transverse trapezius has no
-  attachment footprints.
+- The shoulder girdle glides on a cylinder-like thorax with a fixed 2:1
+  rhythm; there is no scapular tilt, no elevation DOF for shrugs, and C7 / T1
+  are not registered attachment bones.

@@ -6,7 +6,7 @@ import numpy as np
 
 from faceforge.core.math_utils import (
     Vec3, Quat, deg_to_rad, quat_from_euler, quat_from_axis_angle,
-    quat_identity, vec3,
+    quat_identity, quat_multiply, quat_rotate_vec3, vec3,
 )
 from faceforge.core.state import BodyState
 from faceforge.core.scene_graph import SceneNode
@@ -171,13 +171,11 @@ class BodyAnimationSystem:
                 q = quat_from_euler(fl_rad, ab_rad, rot_rad, "XYZ")
                 shoulder.set_quaternion(q)
 
-            # ── Scapulohumeral rhythm: scapula rotates ~1° per 2° abduction ──
-            # Upward rotation is in the coronal plane, i.e. about the same
-            # anterior-posterior axis as abduction.
+            # ── Scapulohumeral rhythm ──
             scapula = pivots.get(f"scapula_{side}")
-            if scapula is not None and abs(ab_val) > 0.01:
-                q = quat_from_euler(0.0, ab_rad / 3.0, 0.0, "XYZ")
-                scapula.set_quaternion(q)
+            if scapula is not None:
+                self._apply_girdle(side, mirror, ab_rad, scapula,
+                                   pivots.get(f"clavicle_{side}"))
 
             # ── Elbow: flexion about X ──
             elbow = pivots.get(f"elbow_{side}")
@@ -228,7 +226,14 @@ class BodyAnimationSystem:
                 wr_fl_rad = -_rad("wrist_{s}_flex", wr_flex)
                 wr_dev_rad = _rad("wrist_{s}_deviate", wr_dev) * mirror
                 fa_rot_rad = _rad("forearm_{s}_rotate", fa_rot) * mirror
-                q = quat_from_euler(wr_fl_rad, wr_dev_rad, fa_rot_rad, "XYZ")
+                # Pronation happens in the forearm, proximal to the wrist, so
+                # it is the OUTERMOST rotation: the wrist's flexion axis (and
+                # the fingers') turns with it.  Composed as XYZ it was the
+                # innermost, which left the flexion axis fixed in the forearm
+                # and made "wrist extension" of a pronated hand act as
+                # deviation -- no grip pose could face the palm at a bar.
+                q = quat_multiply(quat_from_euler(0.0, 0.0, fa_rot_rad, "XYZ"),
+                                  quat_from_euler(wr_fl_rad, wr_dev_rad, 0.0, "XYZ"))
                 wrist.set_quaternion(q)
 
     # ── Digit animation ──────────────────────────────────────────────
@@ -262,6 +267,86 @@ class BodyAnimationSystem:
 
     # Toe spread: fan at MTP joints
     _TOE_SPREAD = {1: 0.0, 2: 5.0, 3: 0.0, 4: -5.0, 5: -8.0}
+
+    #: Scapulothoracic share of arm elevation: 1 deg per 2 deg of glenohumeral
+    #: motion (Inman 1944), i.e. a third of the total.
+    _SCAPULA_SHARE = 1.0 / 3.0
+    #: Clavicle elevation at the sternoclavicular joint per degree of arm
+    #: elevation: about 30 deg at a full 165.
+    _CLAVICLE_ELEVATION = 30.0 / 165.0
+
+    def _girdle_rest(self, side: str, scapula: SceneNode, clavicle: SceneNode | None):
+        """Rest geometry of one side's girdle, read once from the pivots' own frames."""
+        cache = getattr(self, "_girdle_cache", None)
+        if cache is None:
+            cache = self._girdle_cache = {}
+        hit = cache.get(side)
+        if hit is not None:
+            return hit
+        scap_pos = np.asarray(scapula.position, dtype=np.float64).copy()
+        clav_pos = None
+        ac = None
+        if clavicle is not None:
+            clav_pos = np.asarray(clavicle.position, dtype=np.float64).copy()
+            for child in clavicle.children:
+                geo = getattr(getattr(child, "mesh", None), "geometry", None)
+                if geo is None or geo.positions is None:
+                    continue
+                pts = np.asarray(geo.positions, dtype=np.float64).reshape(-1, 3)
+                pts = pts[:geo.vertex_count] if getattr(geo, "vertex_count", 0) else pts
+                if len(pts):
+                    # The acromial end: the clavicle's most lateral vertex.
+                    lateral = pts[:, 0].argmax() if scap_pos[0] >= 0 else pts[:, 0].argmin()
+                    ac = clav_pos + pts[lateral]
+                    break
+        # Upward rotation happens about the thorax's local surface normal at
+        # the scapula, so the blade glides round the ribcage instead of
+        # swinging out of it in the coronal plane.
+        radial = np.array([scap_pos[0], scap_pos[1], 0.0])
+        n = float(np.linalg.norm(radial))
+        axis = radial / n if n > 1e-6 else np.array([0.0, 1.0, 0.0])
+        hit = (scap_pos, clav_pos, ac, axis)
+        cache[side] = hit
+        return hit
+
+    def _apply_girdle(self, side: str, mirror: float, ab_rad: float,
+                      scapula: SceneNode, clavicle: SceneNode | None) -> None:
+        """Scapular upward rotation on the thorax, and clavicle elevation.
+
+        The first version rotated the scapula about an anterior-posterior
+        axis through its centroid.  Measured at 165 deg of abduction that put
+        the inferior angle at x = 28.3, seven units outside the ribcage's
+        lateral extent (21), and every muscle attached to the blade -- teres
+        major, infraspinatus, subscapularis -- stood out from the trunk as a
+        wing.  Rotating about the thorax's surface normal at the scapula keeps
+        the inferior angle on the ribcage (it moves laterally AND forward
+        round the curve), and elevating the clavicle at the sternoclavicular
+        joint carries the acromion, and with it the whole blade, upward.
+        """
+        scap_rest, clav_rest, ac_rest, axis = self._girdle_rest(side, scapula, clavicle)
+        upward = ab_rad * self._SCAPULA_SHARE
+        if abs(upward) < 1e-9:
+            scapula.set_quaternion(np.array([0.0, 0.0, 0.0, 1.0]))
+            scapula.set_position(*scap_rest)
+            if clavicle is not None:
+                clavicle.set_quaternion(np.array([0.0, 0.0, 0.0, 1.0]))
+            return
+        q_scap = quat_from_axis_angle(axis, upward)
+        scapula.set_quaternion(q_scap)
+        if clavicle is None or clav_rest is None or ac_rest is None:
+            scapula.set_position(*scap_rest)
+            return
+        # Elevation only while the arm rises above the side; adduction below
+        # neutral does not depress the clavicle here.
+        elevation = max(0.0, -ab_rad * mirror) * self._CLAVICLE_ELEVATION
+        q_clav = quat_from_euler(0.0, -elevation * mirror, 0.0, "XYZ")
+        clavicle.set_quaternion(q_clav)
+        # Keep the acromioclavicular joint together: the blade goes wherever
+        # the clavicle's acromial end went.
+        ac_clav = clav_rest + quat_rotate_vec3(q_clav, ac_rest - clav_rest)
+        ac_scap = scap_rest + quat_rotate_vec3(q_scap, ac_rest - scap_rest)
+        shift = ac_clav - ac_scap
+        scapula.set_position(*(scap_rest + shift))
 
     def _apply_hands(self, state: BodyState) -> None:
         """Apply finger curl, spread, and thumb opposition."""

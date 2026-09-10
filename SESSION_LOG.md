@@ -124,3 +124,31 @@ scapula pivot's placement moves the acromion too little, so the deltoid is
 asked to lengthen where it should shorten. Proximity-seeded footprints remain
 far larger than real attachments; hand-authored ones would tighten every
 shoulder number further.
+
+## 2026-09-10 (night) — Grips, the winged scapula, hands sliding
+
+**Reported.** Back-squat bar between the fingers (hands not rotated to the
+bar); bench press hands supinated; something still pointing out of the back
+at the pull-up hang; hands sliding along the bar during the pull. Committed
+and pushed the previous work first (582ee0f).
+
+**Found.** The "wing" was teres major / infraspinatus / subscapularis
+following a scapula rotated about a fixed centroid axis (inferior angle 7
+units outside the ribcage at 165°); the lats were not involved. The wrist
+composed pronation innermost, so a pronated wrist could not extend toward a
+bar. Grip poses had been authored without measuring the hand frame. Nothing
+held the hands' lateral position while the shoulder angles interpolated.
+
+**Fixed.** Scapular upward rotation about the thorax's surface normal plus
+clavicle elevation carrying the acromion (`_apply_girdle`, inferior angle
+stays at r = 21, wing gone: 0 vertices displaced outward); pronation
+outermost at the wrist; footprints for the trapezius parts and rhomboids
+(config origins corrected to the spine); grips re-authored from a wrist-frame
+probe (back squat 0.9°, bench 13–15°, pull-up 10° between the flexion axis
+and the bar); `exercise/grip_lock.py` holds each hand's offset along the bar
+by solving shoulder abduction per frame (grip width 54.5–68.7 → 55.1–55.1).
+Fast tier 1748 passed; gate passing (seam p99 0.14).
+
+**Open.** Rhomboid major 5.5× at the dead hang (the medial border glides far
+from T2–T5); C7/T1 unregistered; the pull-up top's flexion axis 18° off
+after the width correction.

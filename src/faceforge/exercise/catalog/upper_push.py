@@ -17,8 +17,17 @@ from faceforge.exercise.catalog._helpers import (
 from faceforge.exercise.model import Category, ExerciseDefinition
 
 _BENCH_LEGS = only(hip_flex=35, knee_flex=90, ankle_flex=-30)
-_BENCH_BOTTOM = merge(pose(), _BENCH_LEGS, arms(flex=-10, abduct=45, elbow=95, forearm=-20), grip())
-_BENCH_TOP = merge(pose(), _BENCH_LEGS, arms(flex=80, abduct=12, elbow=5, forearm=-20), grip())
+# Hand DOFs measured on the rig (wrist-frame probe, 2026-09-10): the finger
+# flexion axis lies along the bar (15 deg off at the bottom, 12 at lockout),
+# the palm faces the bar (19 deg from vertical) with the wrist extended 70
+# deg, and the forearm is within 25 deg of vertical.  The forearm value
+# differs between the two keyframes because the rig's shoulder Euler order
+# couples axial rotation to abduction; the hand's world orientation is the
+# same in both.
+_BENCH_BOTTOM = merge(pose(), _BENCH_LEGS,
+                      arms(flex=-15, abduct=75, rotate=-20, elbow=80, forearm=90, wrist=-70), grip())
+_BENCH_TOP = merge(pose(), _BENCH_LEGS,
+                   arms(flex=75, abduct=12, rotate=0, elbow=10, forearm=0, wrist=-70), grip())
 _BENCH_EQUIP = eq("bench", attach="static", height=BENCH_TOP)
 
 barbell_bench_press = ExerciseDefinition(
@@ -62,13 +71,16 @@ incline_dumbbell_press = ExerciseDefinition(
            "Feet flat, shoulder blades back"),
     orientation="supine", anchor="none", base_position=(-85.0, BENCH_TOP + 15.0, 0.0),
     phases=(
-        ph("Lower", ECC, 2.0, merge(pose(), _BENCH_LEGS, arms(flex=0, abduct=60, elbow=100, forearm=-30), grip()),
+        ph("Lower", ECC, 2.0, merge(pose(), _BENCH_LEGS,
+                                    arms(flex=-5, abduct=75, rotate=-20, elbow=90, forearm=90, wrist=-70), grip()),
            pitch=30, pivot=HIPS,
            cues=("Dumbbells to the outer chest, elbows below the wrists",)),
-        ph("Press", CON, 1.5, merge(pose(), _BENCH_LEGS, arms(flex=75, abduct=20, elbow=10, forearm=-30), grip()),
+        ph("Press", CON, 1.5, merge(pose(), _BENCH_LEGS,
+                                    arms(flex=75, abduct=15, rotate=0, elbow=10, forearm=0, wrist=-70), grip()),
            pitch=30, pivot=HIPS,
            cues=("Press up and slightly in; do not clash the dumbbells",)),
-        ph("Top", ISO, 0.4, merge(pose(), _BENCH_LEGS, arms(flex=75, abduct=20, elbow=10, forearm=-30), grip()),
+        ph("Top", ISO, 0.4, merge(pose(), _BENCH_LEGS,
+                                  arms(flex=75, abduct=15, rotate=0, elbow=10, forearm=0, wrist=-70), grip()),
            pitch=30, pivot=HIPS),
     ),
     muscles=(mu("pectoralis_upper", P, 0.9), mu("deltoid_anterior", P, 0.85),

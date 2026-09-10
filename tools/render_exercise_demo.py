@@ -93,6 +93,7 @@ class DemoScene:
             player=self.player, scene=self.scene, wrapper=self.smc.wrapper_node,
             pivots=jp.pivots, joint_positions=jp.joint_positions,
             muscle_activation=self.activation, show_equipment=equipment,
+            body_animation=self.hs.body_animation,
         )
         self.activation.set_enabled(True)
         self.runtime.start(defn, reps=reps, tempo=tempo, autoplay=False)

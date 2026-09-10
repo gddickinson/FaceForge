@@ -127,6 +127,7 @@ class ExerciseController:
             joint_positions=joint_setup.joint_positions,
             muscle_activation=ctx.muscle_activation, apply_live_body=apply_live,
             show_equipment=bool(self.options.get("equipment", True)),
+            body_animation=getattr(ctx.simulation, "body_animation", None),
         )
 
     def _start(self, defn) -> None:

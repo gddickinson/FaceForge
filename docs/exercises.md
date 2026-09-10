@@ -751,9 +751,9 @@ Supine on a bench, the bar is lowered to the lower sternum with the elbows at ~4
 
 | phase | kind | s | moving joints | cues |
 |---|---|---|---|---|
-| Lower | eccentric | 2.00 | Elbows: flexion 5° → 95°; Shoulders: extension 80° → 10°; Shoulders: abduction 12° → 45° | Bar to the lower sternum, elbows ~45 deg from the trunk Forearms vertical |
+| Lower | eccentric | 2.00 | Forearms: supination 0° → 90°; Shoulders: extension 75° → 15°; Elbows: flexion 10° → 80°; Shoulders: abduction 12° → 75° | Bar to the lower sternum, elbows ~45 deg from the trunk Forearms vertical |
 | Touch | isometric | 0.30 | hold | Light touch; stay tight |
-| Press | concentric | 1.50 | Elbows: extension 95° → 5°; Shoulders: flexion 10° → 80°; Shoulders: adduction 45° → 12° | Drive the bar up and slightly back over the shoulders Push the feet into the floor |
+| Press | concentric | 1.50 | Forearms: pronation 90° → 0°; Shoulders: flexion 15° → 75°; Elbows: extension 80° → 10°; Shoulders: adduction 75° → 12° | Drive the bar up and slightly back over the shoulders Push the feet into the floor |
 | Lockout | isometric | 0.50 | hold | Elbows straight, shoulder blades down |
 
 **Muscles**
@@ -793,8 +793,8 @@ On a 30 deg incline, dumbbells are pressed from chest level to above the shoulde
 
 | phase | kind | s | moving joints | cues |
 |---|---|---|---|---|
-| Lower | eccentric | 2.00 | Elbows: flexion 10° → 100°; Shoulders: extension 75° → 0°; Shoulders: abduction 20° → 60°; trunk pitch +30° | Dumbbells to the outer chest, elbows below the wrists |
-| Press | concentric | 1.50 | Elbows: extension 100° → 10°; Shoulders: flexion 0° → 75°; Shoulders: adduction 60° → 20°; trunk pitch +30° | Press up and slightly in; do not clash the dumbbells |
+| Lower | eccentric | 2.00 | Forearms: supination 0° → 90°; Elbows: flexion 10° → 90°; Shoulders: extension 75° → 5°; Shoulders: abduction 15° → 75°; trunk pitch +30° | Dumbbells to the outer chest, elbows below the wrists |
+| Press | concentric | 1.50 | Forearms: pronation 90° → 0°; Elbows: extension 90° → 10°; Shoulders: flexion 5° → 75°; Shoulders: adduction 75° → 15°; trunk pitch +30° | Press up and slightly in; do not clash the dumbbells |
 | Top | isometric | 0.40 | trunk pitch +30° |  |
 
 **Muscles**
@@ -1123,9 +1123,9 @@ Hanging from a bar with a pronated grip wider than the shoulders, the body is pu
 
 | phase | kind | s | moving joints | cues |
 |---|---|---|---|---|
-| Pull | concentric | 1.50 | Elbows: flexion 5° → 130°; Shoulders: adduction 165° → 45°; Shoulders: flexion 10° → 20° | Depress the shoulder blades first, then drive the elbows down and back Chin over the bar, chest to the bar |
+| Pull | concentric | 1.50 | Elbows: flexion 5° → 130°; Shoulders: adduction 165° → 50°; Shoulders: extension 10° → 0° | Depress the shoulder blades first, then drive the elbows down and back Chin over the bar, chest to the bar |
 | Top | isometric | 0.40 | hold | Hold; shoulders down away from the ears |
-| Lower | eccentric | 2.00 | Elbows: extension 130° → 5°; Shoulders: abduction 45° → 165°; Shoulders: extension 20° → 10° | Lower under control to straight arms |
+| Lower | eccentric | 2.00 | Elbows: extension 130° → 5°; Shoulders: abduction 50° → 165°; Shoulders: flexion 0° → 10° | Lower under control to straight arms |
 | Dead hang | isometric | 0.50 | hold | Shoulders relaxed up; re-brace |
 
 **Muscles**

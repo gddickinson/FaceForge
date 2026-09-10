@@ -43,8 +43,12 @@ pull_up = _vertical_pull(
     "pull_up", "Pull-up (overhand)",
     "Hanging from a bar with a pronated grip wider than the shoulders, the body is pulled "
     "up until the chin clears the bar.",
-    bottom_arms=arms(flex=10, abduct=165, elbow=5, forearm=-70),
-    top_arms=arms(flex=20, abduct=45, elbow=130, forearm=-70),
+    # Hand DOFs measured on the rig (wrist-frame probe, 2026-09-10): with the
+    # humerus externally rotated and the forearm pronated the finger flexion
+    # axis lies along the bar (10 deg off at the hang, 0 at the top) and the
+    # palm faces forward (10 / 0 deg), so the fingers hook over the bar.
+    bottom_arms=arms(flex=10, abduct=165, rotate=90, elbow=5, forearm=-90),
+    top_arms=arms(flex=0, abduct=40, rotate=90, elbow=145, forearm=-90),
     muscles=(mu("latissimus_dorsi", P, 1.0), mu("biceps_brachii", P, 0.8),
              mu("brachialis", S, 0.7), mu("brachioradialis", S, 0.55),
              mu("trapezius_lower", S, 0.55, note="initiates by depressing the scapula"),

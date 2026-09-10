@@ -20,7 +20,13 @@ from faceforge.exercise.model import Category, ExerciseDefinition
 
 _ARMS_FORWARD = arms(flex=70, elbow=10)
 # Arm bundles are PARTIAL poses (combine, not merge) so they never reset the legs.
-_BAR_ON_BACK = combine(arms(flex=-35, abduct=45, rotate=90, elbow=70), grip())
+# Measured on the rig (wrist-frame probe, 2026-09-10): elbows out and down,
+# forearms up to a bar 16 units behind the neck, finger flexion axis 0.5 deg
+# from the bar and the palm 21 deg from vertical -- the bar rests on the palms
+# with the fingers over it.  The earlier (abduct 45, elbow 70) pose had the
+# forearms nearly parallel to the bar, so the bar passed between the fingers.
+_BAR_ON_BACK = combine(arms(flex=0, abduct=60, rotate=91, elbow=120, forearm=90, wrist=-70),
+                       grip())
 _FRONT_RACK = combine(arms(flex=90, abduct=15, elbow=145), grip())
 _GOBLET = combine(arms(flex=35, abduct=15, elbow=135, forearm=60), grip())
 

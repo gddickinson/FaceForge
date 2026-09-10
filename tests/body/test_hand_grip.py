@@ -82,3 +82,41 @@ def test_hyperextension_is_confined_to_the_knuckle():
     assert _angle_deg(p["finger_R_2_prox"]) == pytest.approx(20.0, abs=0.01)
     assert _angle_deg(p["finger_R_2_mid"]) == pytest.approx(2.0, abs=0.01)
     assert _angle_deg(p["finger_R_2_mc"]) == pytest.approx(0.0, abs=1e-9)
+
+
+def _wrist_rig():
+    from faceforge.core.scene_graph import Scene
+    scene = Scene()
+    root = SceneNode("bodyRoot")
+    scene.add(root)
+    wrist = SceneNode("wrist_R_pivot")
+    root.add(wrist)
+    finger = SceneNode("finger_R_2_prox_pivot")
+    finger.set_position(0.0, 0.0, -10.0)
+    wrist.add(finger)
+    joints = type("J", (), {"pivots": {"wrist_R": wrist, "finger_R_2_prox": finger}})()
+    return scene, wrist, finger, joints
+
+
+def _axis_x(node):
+    node.update_world_matrix(force=True)
+    return np.asarray(node.world_matrix)[:3, 0]
+
+
+def test_the_finger_flexion_axis_turns_with_pronation_and_not_with_wrist_flexion():
+    scene, wrist, finger, joints = _wrist_rig()
+    anim = BodyAnimationSystem(joints)
+    anim._apply_limbs(BodyState(forearm_r_rotate=1.0))            # supination 90 deg
+    scene.update()
+    pronated_axis = _axis_x(finger)
+    assert abs(pronated_axis[0]) < 1e-6 and abs(abs(pronated_axis[1]) - 1.0) < 1e-6, \
+        "90 deg about the forearm turns the lateral axis onto the anterior-posterior one"
+    anim._apply_limbs(BodyState(forearm_r_rotate=1.0, wrist_r_flex=-1.0))   # + 70 deg extension
+    scene.update()
+    assert np.allclose(_axis_x(finger), pronated_axis, atol=1e-6), \
+        "wrist flexion rotates ABOUT that axis; it does not move it"
+    # The extension moved the finger pivot in the plane perpendicular to the axis.
+    finger.update_world_matrix(force=True)
+    p = np.asarray(finger.world_matrix)[:3, 3]
+    assert abs(float(p @ pronated_axis)) < 1e-6
+    assert p[2] > -10.0 + 1.0, "the hand tilted up out of the forearm line"
