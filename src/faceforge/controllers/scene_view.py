@@ -29,8 +29,9 @@ from faceforge.core.math_utils import quat_from_axis_angle, quat_multiply, vec3
 
 logger = logging.getLogger(__name__)
 
-#: Clip auto-loaded when a scene type is entered.
-SCENE_CLIPS = {"dance_studio": "Contemporary"}
+#: Clip auto-loaded when a scene type is entered.  ``None`` means none: the
+#: gym is driven by the exercise system, which loads its own clip.
+SCENE_CLIPS = {"dance_studio": "Contemporary", "gym": None}
 DEFAULT_SCENE_CLIP = "Wake Up"
 
 #: Empirically determined default supine placement of the wrapper.
@@ -103,7 +104,7 @@ class SceneViewController:
         ctx.scene.update()
 
         clip_name = SCENE_CLIPS.get(scene_type, DEFAULT_SCENE_CLIP)
-        clip = ctx.builtin_clips.get(clip_name)
+        clip = ctx.builtin_clips.get(clip_name) if clip_name else None
         if clip is not None:
             ctx.anim_player.load(clip)
             ctx.anim_player.seek(0)

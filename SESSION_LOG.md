@@ -1,0 +1,126 @@
+# SESSION_LOG.md — FaceForge
+
+## 2026-09-09 / 10 — Exercise demonstrations
+
+**Goal.** Animate the anatomical figure through weight-training, conditioning
+and athletic movements; show the technique, which joints move, and which
+muscles work (heatmap), for teaching and physiotherapy use.
+
+**Measured first.** Probed the real skeleton (`tools/headless_loader`): the
+"abduct" DOF spun the limb about its length and "rotate" swung it sideways
+(JS Y-up axes kept in a Z-up model); the arms hang off the pelvis root so
+spinal flexion does not carry the shoulders. Both recorded in
+`docs/exercise_animation.md`.
+
+**Built.**
+- `body/dof_ranges.py` (one DOF table) and the axis fix in
+  `body_animation._apply_limbs`; joint limits widened for overhead/deep-squat.
+- `body/muscle_activation.py` rewritten: the heatmap set a flag nothing read
+  and never marked colours dirty, so it never showed; now external levels,
+  palettes, DiGiovine bands; on-demand muscle regions are registered.
+- `faceforge/exercise/`: model, muscle groups → mesh names, pose library in
+  degrees with the foot-flat rule, activation model, motion description, clip
+  builder, equipment + rig, runtime; 63 exercises in six catalogue modules.
+- `body/ground_contact.py`: the ground lock (feet/hands re-anchored per frame).
+- Gym scene + cameras, `ExerciseController`, `ExerciseTab`, simulation hooks.
+- `tools/render_exercise_demo.py` (GL demo + no-GL probe),
+  `tools/export_exercise_docs.py` → `docs/exercises.md`.
+- Tests: `tests/exercise/*`, `tests/body/test_ground_contact.py`,
+  `test_dof_ranges_and_limb_axes.py`, `test_muscle_activation_heatmap.py`,
+  `test_skinning_under_scene_wrapper.py` (with a negative control),
+  `tests/controllers/test_exercise_controller.py`; wiring map and the GUI
+  smoke test's tab list updated. Fast tier: 1718 passed.
+
+**Found and fixed on the way.** The heatmap never rendered (wrong flag,
+colours never marked dirty); the abduction/rotation axis swap; the skinning's
+correction passes ignoring the scene wrapper (muscles flew off the body in
+every scene mode, not only the gym); a `merge()`-as-partial mistake in the
+first catalogue draft that the placement probe caught (legs reset to neutral
+under an arm bundle). Every placement number in the catalogue was checked
+against the real skeleton with `tools/render_exercise_demo.py --probe`.
+
+**Research.** Six web searches and six fetched papers grounded the squat,
+deadlift, bench, pull-up, pulldown and eccentric/concentric numbers; the
+delegated research agents were stopped by a session rate limit and the
+search budget then ran out, so the rest is standard references, marked as
+such in `docs/research/exercise_sources_2026-09.md`.
+
+**Next.** Tune placements from the probe report and the rendered demo;
+consider reparenting the shoulder girdle under T1; a "length change" heatmap
+mode from the attachment system's stretch ratio; scapular DOFs for shrugs.
+
+## 2026-09-10 (later) — Shoulder muscles torn by arm movement
+
+**Reported.** Lats, pecs and shoulder muscles pulled away from the torso into
+peaks in the pull-up and barbell back squat renders.
+
+**Found.** The headless render path was not the app's (private, stale chain
+builder without the clavicle/scapula joints; bare muscle registration with no
+attachments, so the shipped footprints never resolved); latissimus dorsi's
+config origin was the scapula; footprints existed for three right-side
+muscles only.
+
+**Fixed.** Shared chain builder (`coordination/joint_chains.py`) and shared
+muscle registration (`demand_loaders.register_muscle_layer`); lat origin →
+T7–T12 / lower ribs / hip bone, with vertebra meshes registered as attachment
+bones; footprints mirrored to the left and seeded from bone proximity for 16
+shoulder-girdle muscles (`tools/author_footprints.py`). Per-muscle stretch
+measured before/after (table in `docs/exercise_animation.md`); every listed
+muscle improved, none regressed. Fast tier 1722 passed.
+
+## 2026-09-10 (evening) — Sagging arms, bowed lats, spikes, and bars through hands
+
+**Reported.** At the pull-up dead hang the lats hung away from the body as if
+unattached at the back; other muscles spiked; in the back squat the upper-arm
+muscles sagged below the humerus; bars passed through the hands instead of
+being gripped. Asked to detect, diagnose and fix all of it and re-render
+every demo.
+
+**Found, each by a measurement before the fix.**
+
+1. *Arm sag.* `MuscleAttachmentSystem.apply_stretch_clamp` measured a
+   muscle's "length" along the mesh's anterior-posterior extent and, when the
+   meaningless ratio exceeded 1.35, blended the whole mesh halfway back to its
+   rest position in space. At the back-squat rack pose the biceps sat a median
+   7.2 units below the humerus with it, 0.4 without. Legacy Y-extent pinning
+   toward a bone centroid's translation tore the non-footprinted arm muscles
+   too (triceps medial head stretch p99 1.30× → 5.90×).
+2. *Bowed lats.* Footprinted muscles were placed by blending the rigid images
+   of their two joints; a belly vertex 40 units from the shoulder has a 40-unit
+   arc as its humerus image, and half of that arc is the loop the user saw.
+3. *Spikes at rest.* Bone-collision capsules were built from pivot-local bone
+   vertices, so all twelve sat near the neck; a phantom humerus displaced
+   ~3,000 vertices of every deep neck muscle up to 3 units at the neutral pose
+   (semispinalis stretch p99 9.3× at rest; 26 of 169 muscles non-unity).
+4. *Bars through hands.* Digit pivots sat at bone centroids (a phalanx
+   rotating about its middle opens the joint) and 90° of curl was shared over
+   four joints, so a full curl barely bent the fingers; the bar was placed at
+   the wrist plus an offset rather than inside the fingers.
+
+**Fixed.** Stretch clamp is measurement-only and legacy pinning is gone;
+`anatomy/fibre_field.py` interpolates a footprinted muscle's belly
+harmonically between the rigid images of its footprints (eight bind-time
+solves, disk-cached; footprints trimmed to a geodesic gap and to their far
+ends, isolated specks pruned), and the passes that pull toward a rigid image
+(bone-offset projection, superior envelope, hull bound, balloon, collision)
+are skipped for those muscles; capsules live in the bone's local frame,
+follow it every frame and only resolve penetration beyond each vertex's rest
+depth; digit pivots at the phalanges' proximal ends, per-joint curl maxima
+(MCP 90°, PIP 100°, DIP 60°), and the equipment rig puts a bar's axis through
+the centroid of the closed finger joints (`EquipmentRig.grip_point`); a body
+anchored by its hands to a point (the pull-up bar) now hangs by that ring
+instead of by its wrists (`body/hand_points.py`).
+
+**Measured after.** Neutral pose: 0 of 169 muscles deviate. Rack pose:
+biceps residual from the humerus median 7.2 → 0.0 units. Deformation gate on
+the app path: seam p99 37.65 → 0.18, seam max 665 → 257, containment 0; bulk
+p99 0.090 → 0.25 because bellies now stretch instead of tearing, thresholds
+re-ratcheted from that measurement. Per-pose shoulder table in
+`docs/exercise_animation.md`. Fast tier 1741 passed (new: fibre field,
+collision placement/allowance, measure-only clamp, hand grip, grip ring).
+
+**Still open.** The deltoids sit at ~3–4× p99 at a 165° dead hang: the
+scapula pivot's placement moves the acromion too little, so the deltoid is
+asked to lengthen where it should shorten. Proximity-seeded footprints remain
+far larger than real attachments; hand-authored ones would tighten every
+shoulder number further.

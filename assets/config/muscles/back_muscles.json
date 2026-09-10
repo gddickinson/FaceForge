@@ -59,7 +59,7 @@
         "name": "Latissimus Dorsi R",
         "stl": "FMA13358",
         "color": 12079184,
-        "originBones": ["Right Scapula"],
+        "originBones": ["T7", "T8", "T9", "T10", "T11", "T12", "Right Hip Bone", "Right 10th Rib", "Right 11th Rib", "Right 12th Rib"],
         "insertionBones": ["Right Humerus"],
         "fasciaRegions": ["trapezius_R", "deltoid_R"]
     },
@@ -67,7 +67,7 @@
         "name": "Latissimus Dorsi L",
         "stl": "FMA13359",
         "color": 12079184,
-        "originBones": ["Left Scapula"],
+        "originBones": ["T7", "T8", "T9", "T10", "T11", "T12", "Left Hip Bone", "Left 10th Rib", "Left 11th Rib", "Left 12th Rib"],
         "insertionBones": ["Left Humerus"],
         "fasciaRegions": ["trapezius_L", "deltoid_L"]
     },

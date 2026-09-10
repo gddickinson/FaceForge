@@ -66,6 +66,20 @@ Color-coded head anatomy with structure labels. The Layers tab (right) provides 
 
 Wireframe sitting pose with the Body tab showing 6 pose presets and per-joint sliders for spine, shoulders, elbows, hips, knees, and more.
 
+### Exercise Demonstrations
+
+<p align="center">
+  <img src="docs/images/exercise_squat_phases.png" alt="Bodyweight squat demonstration: descent, bottom, ascent, lockout with the muscle activation heatmap" width="100%">
+</p>
+
+The Exercise tab demonstrates 63 gym movements on the anatomical figure -- squats, deadlifts, presses, rows, pull-ups, core work, bike, rower, gait, kettlebell swing, jumps, cleans -- with procedural equipment in the hands, the working muscles coloured by a per-phase activation model (primary movers, synergists, stabilisers; concentric / eccentric / isometric), the moving joints named with their degrees, technique cues and common errors, and sources for the numbers. Poses are authored in degrees against a measured rig, the feet (or hands) are re-anchored to the floor every frame, and the same runtime renders headlessly:
+
+```bash
+python -m tools.render_exercise_demo --exercise barbell_back_squat --frames 36
+```
+
+See `docs/exercise_animation.md` for the design and `docs/exercises.md` for the catalogue.
+
 ### Virtual Scanner
 
 The built-in virtual scanner generates cross-section images using tiled ray-triangle intersection with Moller-Trumbore testing. It supports 5 imaging modes (CT, MRI T1, MRI T2, X-ray, Anatomical) and 3 anatomical orientations (axial, coronal, sagittal).

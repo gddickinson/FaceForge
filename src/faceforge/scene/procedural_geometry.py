@@ -171,3 +171,54 @@ def make_disc(radius: float, segments: int = 16) -> BufferGeometry:
     idx = np.array(indices, dtype=np.uint32)
 
     return BufferGeometry(positions=pos, normals=nrm, indices=idx)
+
+
+def make_sphere(radius: float, segments: int = 16, rings: int = 12) -> BufferGeometry:
+    """Create a UV sphere centred at the origin."""
+    positions = []
+    normals = []
+    indices = []
+    for r in range(rings + 1):
+        phi = math.pi * r / rings           # 0 at +Y pole, pi at -Y pole
+        y = math.cos(phi)
+        ring_r = math.sin(phi)
+        for s_ in range(segments + 1):
+            theta = 2 * math.pi * s_ / segments
+            nx, nz = ring_r * math.cos(theta), ring_r * math.sin(theta)
+            positions.append((radius * nx, radius * y, radius * nz))
+            normals.append((nx, y, nz))
+    cols = segments + 1
+    for r in range(rings):
+        for s_ in range(segments):
+            a = r * cols + s_
+            b = a + cols
+            indices.extend([a, b, a + 1, a + 1, b, b + 1])
+    pos = np.array(positions, dtype=np.float32).ravel()
+    nrm = np.array(normals, dtype=np.float32).ravel()
+    idx = np.array(indices, dtype=np.uint32)
+    return BufferGeometry(positions=pos, normals=nrm, indices=idx)
+
+
+def make_torus(radius: float, tube: float, segments: int = 24, sides: int = 8) -> BufferGeometry:
+    """Create a torus in the XZ plane (axis +Y), centred at the origin."""
+    positions = []
+    normals = []
+    indices = []
+    for i in range(segments + 1):
+        u = 2 * math.pi * i / segments
+        cu, su = math.cos(u), math.sin(u)
+        for j in range(sides + 1):
+            v = 2 * math.pi * j / sides
+            cv, sv = math.cos(v), math.sin(v)
+            positions.append(((radius + tube * cv) * cu, tube * sv, (radius + tube * cv) * su))
+            normals.append((cv * cu, sv, cv * su))
+    cols = sides + 1
+    for i in range(segments):
+        for j in range(sides):
+            a = i * cols + j
+            b = a + cols
+            indices.extend([a, a + 1, b, b, a + 1, b + 1])
+    pos = np.array(positions, dtype=np.float32).ravel()
+    nrm = np.array(normals, dtype=np.float32).ravel()
+    idx = np.array(indices, dtype=np.uint32)
+    return BufferGeometry(positions=pos, normals=nrm, indices=idx)

@@ -24,6 +24,15 @@ class BoneAnchorRegistry:
 
     def __init__(self) -> None:
         self._bone_nodes: dict[str, SceneNode] = {}
+        #: Inverse of the scene wrapper's world matrix while scene mode is
+        #: active, else None.  Rest positions were snapshotted with no wrapper
+        #: (identity), so current positions are brought back into that frame
+        #: before anyone compares the two.  Without this, every consumer --
+        #: muscle pinning, fascia, the neck and platysma handlers -- compared
+        #: body-frame vertices with WORLD-frame bones as soon as the body
+        #: stood in a room: measured on a footprinted rotator cuff at a dead
+        #: hang, pinning alone raised the p99 edge stretch from 1.6x to 13.6x.
+        self._frame_cancel: NDArray[np.float64] | None = None
         self._rest_positions: dict[str, NDArray[np.float64]] = {}
 
     # ------------------------------------------------------------------
@@ -98,9 +107,17 @@ class BoneAnchorRegistry:
     # Internal
     # ------------------------------------------------------------------
 
-    @staticmethod
-    def _get_bone_position(node: SceneNode) -> NDArray[np.float64]:
-        """Get bone world position, preferring mesh centroid when available.
+    def set_frame_cancel(self, cancel: "NDArray[np.float64] | None") -> None:
+        """Transform current positions by ``cancel`` (the wrapper's inverse), or not."""
+        self._frame_cancel = None if cancel is None else np.asarray(cancel, dtype=np.float64)
+
+    @property
+    def frame_cancel(self) -> "NDArray[np.float64] | None":
+        """The scene wrapper's inverse for this frame, or None outside scene mode."""
+        return self._frame_cancel
+
+    def _get_bone_position(self, node: SceneNode) -> NDArray[np.float64]:
+        """Get bone position in the body frame, preferring mesh centroid when available.
 
         STL-loaded bone nodes typically have their vertex data in world
         coordinates with the SceneNode transform at identity.  For these
@@ -108,14 +125,16 @@ class BoneAnchorRegistry:
         and fall back to the mesh vertex centroid transformed by the
         node's world matrix.
         """
-        world_pos = np.asarray(node.get_world_position(), dtype=np.float64)
+        wm = np.asarray(node.world_matrix, dtype=np.float64)
+        if self._frame_cancel is not None:
+            wm = self._frame_cancel @ wm
+        world_pos = wm[:3, 3].copy()
 
         # If node has a mesh and the transform-based position is at origin,
         # compute position from mesh centroid instead.
         if node.mesh is not None and np.linalg.norm(world_pos) < 1e-6:
             mesh_centroid = node.mesh.geometry.get_bounding_center()
             # Transform centroid by the node's world matrix
-            wm = node.world_matrix
             local = np.append(mesh_centroid, 1.0)
             world = wm @ local
             return world[:3].astype(np.float64)

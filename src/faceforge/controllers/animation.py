@@ -67,7 +67,11 @@ class AnimationController:
         self.ctx.event_bus.publish(
             EventType.ANIM_PROGRESS, progress=1.0,
             time=player.duration, duration=player.duration)
-        self.ctx.control_panel.display_tab.transport.set_playing(False)
+        panel = self.ctx.control_panel
+        panel.display_tab.transport.set_playing(False)
+        exercise_tab = getattr(panel, "exercise_tab", None)
+        if exercise_tab is not None:
+            exercise_tab.transport.set_playing(False)
 
     # -- Transport handlers ------------------------------------------------
 
@@ -103,5 +107,10 @@ class AnimationController:
         """
         player = self.ctx.anim_player
         if player.is_playing or player.progress > 0:
-            self.ctx.control_panel.display_tab.update_animation_progress(
+            panel = self.ctx.control_panel
+            panel.display_tab.update_animation_progress(
                 player.progress, player.current_time, player.duration)
+            exercise_tab = getattr(panel, "exercise_tab", None)
+            if exercise_tab is not None:
+                exercise_tab.update_progress(
+                    player.progress, player.current_time, player.duration)

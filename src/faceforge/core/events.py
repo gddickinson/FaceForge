@@ -101,6 +101,12 @@ class EventType(Enum):
     GENDER_CHANGED = auto()           # data: gender (float, 0=male, 1=female)
     GENDER_RELEASED = auto()          # data: gender (float) — slider released, trigger re-registration
 
+    # Exercise demonstrations (faceforge.exercise)
+    EXERCISE_SELECTED = auto()        # data: exercise_id (str), reps (int), tempo (float)
+    EXERCISE_STOPPED = auto()         # no data: leave the demonstration
+    EXERCISE_OPTION_CHANGED = auto()  # data: option (str), value (any)
+    EXERCISE_STATUS = auto()          # data: exercise_id, phase, kind, cue, motions (list), levels (dict), time, rep
+
 
 class EventBus:
     """Simple publish/subscribe event system."""

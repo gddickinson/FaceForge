@@ -104,6 +104,13 @@ class Simulation:
         # Scene animation player (set by app.py when scene mode wired)
         self.anim_player = None  # AnimationPlayer or None
 
+        # Hooks run (a) right after the animation player has ticked, with dt,
+        # and (b) after the scene graph matrices are updated.  The exercise
+        # runtime uses them to sample its activation track and to re-anchor
+        # the feet / place equipment once world positions are known.
+        self.after_animation_hooks: list = []
+        self.after_scene_update_hooks: list = []
+
         # Cached head quaternion for neck muscles
         self._head_quat: Quat = quat_identity()
 
@@ -124,6 +131,8 @@ class Simulation:
         # 0. Scene animation (drives wrapper transform + body/face targets)
         if self.anim_player is not None and self.anim_player.is_playing:
             self.anim_player.tick(dt)
+        for hook in self.after_animation_hooks:
+            hook(dt)
 
         # 1. Interpolate state toward targets
         self.interpolator.interpolate(
@@ -276,6 +285,8 @@ class Simulation:
 
         # 13. Update scene graph matrices
         self.scene.update()
+        for hook in self.after_scene_update_hooks:
+            hook()
 
         # 14. Physiological simulations (after scene graph, works on current positions)
         if self.physiology is not None:

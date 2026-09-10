@@ -12,6 +12,12 @@ from faceforge.core.state import BodyState
 from faceforge.core.scene_graph import SceneNode
 from faceforge.core.config_loader import load_skeleton_config
 from faceforge.body.joint_pivots import JointPivotSetup
+from faceforge.body.dof_ranges import dof_range
+
+
+def _rad(pattern: str, value: float) -> float:
+    """A normalised DOF value as radians, via the shared range table."""
+    return deg_to_rad(dof_range(pattern).degrees_for(value))
 
 
 class BodyAnimationSystem:
@@ -86,9 +92,9 @@ class BodyAnimationSystem:
         JS convention: rotation.set(X=flex, Y=rotation, Z=latBend)
         Total rotation is split: 40% thoracic, 60% lumbar (anatomical ratio).
         """
-        flex_rad = state.spine_flex * deg_to_rad(45.0)
-        bend_rad = state.spine_lat_bend * deg_to_rad(30.0)
-        rot_rad = state.spine_rotation * deg_to_rad(30.0)
+        flex_rad = _rad("spine_flex", state.spine_flex)
+        bend_rad = _rad("spine_lat_bend", state.spine_lat_bend)
+        rot_rad = _rad("spine_rotation", state.spine_rotation)
 
         # Split total angle between thoracic and lumbar regions
         flex_thoracic = flex_rad * self._THORACIC_SHARE
@@ -128,12 +134,24 @@ class BodyAnimationSystem:
             pivot_node.set_quaternion(q)
 
     def _apply_limbs(self, state: BodyState) -> None:
-        """Apply limb joint rotations using JS rotation conventions.
+        """Apply limb joint rotations.
 
-        JS coordinate system: Y=up, Z=toward camera, X=lateral
-        - Flexion (forward swing) = negative X rotation
-        - Knee flexion (backward) = positive X rotation
-        - Shoulder abduction = Z rotation, mirrored for left side
+        Body frame (measured, see ``docs/exercise_animation.md``): +Z superior,
+        -Y anterior, +X right.  So for a limb hanging along -Z:
+
+        * flexion / extension is a rotation about X, the lateral axis
+          (negative X swings the limb anteriorly);
+        * abduction / adduction is a rotation about Y, the anterior-posterior
+          axis (the sign is mirrored so +1 is lateral on both sides);
+        * axial rotation is a rotation about Z, the limb's own long axis
+          (+1 = external rotation on both sides).
+
+        The port originally kept the JS Y-up assignments (abduction about Z,
+        rotation about Y).  In this Z-up frame that made "abduct" spin the limb
+        about its length and "rotate" swing it sideways -- measured on the real
+        skeleton: shoulder_r_abduct=1 moved the wrist 9 units, shoulder_r_rotate=1
+        moved it 76 units medially.  Every range comes from
+        :mod:`faceforge.body.dof_ranges` so authoring tools and this code agree.
         """
         pivots = self.joints.pivots  # dict[str, SceneNode]
 
@@ -141,91 +159,93 @@ class BodyAnimationSystem:
             s = side.lower()
             mirror = 1.0 if side == "R" else -1.0
 
-            # ── Shoulder: rotation.set(flRad, rotRad, abRad) ──
+            # ── Shoulder ──
             shoulder = pivots.get(f"shoulder_{side}")
             ab_val = getattr(state, f"shoulder_{s}_abduct", 0.0)
+            ab_rad = -_rad("shoulder_{s}_abduct", ab_val) * mirror
             if shoulder is not None:
                 fl_val = getattr(state, f"shoulder_{s}_flex", 0.0)
                 rot_val = getattr(state, f"shoulder_{s}_rotate", 0.0)
-                # Abduction: Z-axis, mirrored for left side (±90°)
-                ab_rad = ab_val * deg_to_rad(90.0) * mirror
-                # Flexion: negative X-axis (±90°)
-                fl_rad = -fl_val * deg_to_rad(90.0)
-                # Internal/external rotation: Y-axis (±70°)
-                rot_rad = rot_val * deg_to_rad(70.0) * mirror
-                q = quat_from_euler(fl_rad, rot_rad, ab_rad, "XYZ")
+                fl_rad = -_rad("shoulder_{s}_flex", fl_val)
+                rot_rad = _rad("shoulder_{s}_rotate", rot_val) * mirror
+                q = quat_from_euler(fl_rad, ab_rad, rot_rad, "XYZ")
                 shoulder.set_quaternion(q)
 
             # ── Scapulohumeral rhythm: scapula rotates ~1° per 2° abduction ──
+            # Upward rotation is in the coronal plane, i.e. about the same
+            # anterior-posterior axis as abduction.
             scapula = pivots.get(f"scapula_{side}")
             if scapula is not None and abs(ab_val) > 0.01:
-                # Scapular upward rotation: ~1/3 of total arm abduction
-                scap_rad = ab_val * deg_to_rad(90.0) * mirror / 3.0
-                q = quat_from_euler(0.0, 0.0, scap_rad, "XYZ")
+                q = quat_from_euler(0.0, ab_rad / 3.0, 0.0, "XYZ")
                 scapula.set_quaternion(q)
 
-            # ── Elbow: rotation.set(-flex*145°, 0, 0) ──
+            # ── Elbow: flexion about X ──
             elbow = pivots.get(f"elbow_{side}")
             if elbow is not None:
                 el_val = getattr(state, f"elbow_{s}_flex", 0.0)
-                el_rad = -el_val * deg_to_rad(145.0)
+                el_rad = -_rad("elbow_{s}_flex", el_val)
                 q = quat_from_euler(el_rad, 0.0, 0.0, "XYZ")
                 elbow.set_quaternion(q)
 
-            # ── Hip: rotation.set(-flex*90°, rotRad, abRad) ──
+            # ── Hip ──
             hip = pivots.get(f"hip_{side}")
             if hip is not None:
                 hf_val = getattr(state, f"hip_{s}_flex", 0.0)
                 hab_val = getattr(state, f"hip_{s}_abduct", 0.0)
                 hrot_val = getattr(state, f"hip_{s}_rotate", 0.0)
-                hf_rad = -hf_val * deg_to_rad(90.0)
-                # Abduction: Z-axis, mirrored (±45°)
-                hab_rad = hab_val * deg_to_rad(45.0) * mirror
-                # Internal/external rotation: Y-axis (±45°)
-                hrot_rad = hrot_val * deg_to_rad(45.0) * mirror
-                q = quat_from_euler(hf_rad, hrot_rad, hab_rad, "XYZ")
+                hf_rad = -_rad("hip_{s}_flex", hf_val)
+                hab_rad = -_rad("hip_{s}_abduct", hab_val) * mirror
+                hrot_rad = _rad("hip_{s}_rotate", hrot_val) * mirror
+                q = quat_from_euler(hf_rad, hab_rad, hrot_rad, "XYZ")
                 hip.set_quaternion(q)
 
-            # ── Knee: rotation.set(+flex*145°, 0, 0) ──
+            # ── Knee: flexion is a positive X rotation (heel toward buttock) ──
             knee = pivots.get(f"knee_{side}")
             if knee is not None:
                 kn_val = getattr(state, f"knee_{s}_flex", 0.0)
-                kn_rad = kn_val * deg_to_rad(145.0)
+                kn_rad = _rad("knee_{s}_flex", kn_val)
                 q = quat_from_euler(kn_rad, 0.0, 0.0, "XYZ")
                 knee.set_quaternion(q)
 
-            # ── Ankle: rotation.set(-flex*45°, 0, invertRad) ──
+            # ── Ankle: dorsiflexion about X; inversion about the foot's own
+            # anterior-posterior axis (Y), lateral border dropping ──
             ankle = pivots.get(f"ankle_{side}")
             if ankle is not None:
                 an_val = getattr(state, f"ankle_{s}_flex", 0.0)
                 an_inv = getattr(state, f"ankle_{s}_invert", 0.0)
-                an_rad = -an_val * deg_to_rad(45.0)
-                # Inversion/eversion: Z-axis, mirrored (±30°)
-                inv_rad = an_inv * deg_to_rad(30.0) * mirror
-                q = quat_from_euler(an_rad, 0.0, inv_rad, "XYZ")
+                an_rad = -_rad("ankle_{s}_flex", an_val)
+                inv_rad = _rad("ankle_{s}_invert", an_inv) * mirror
+                q = quat_from_euler(an_rad, inv_rad, 0.0, "XYZ")
                 ankle.set_quaternion(q)
 
-            # ── Wrist: rotation.set(flexRad, forearmRot, deviateRad) ──
+            # ── Wrist: flexion about X, ulnar deviation about Y, and
+            # pronation/supination about the forearm's long axis (Z) ──
             wrist = pivots.get(f"wrist_{side}")
             if wrist is not None:
                 wr_flex = getattr(state, f"wrist_{s}_flex", 0.0)
                 wr_dev = getattr(state, f"wrist_{s}_deviate", 0.0)
                 fa_rot = getattr(state, f"forearm_{s}_rotate", 0.0)
-                # Wrist flexion: X-axis (±70°)
-                wr_fl_rad = -wr_flex * deg_to_rad(70.0)
-                # Forearm pronation/supination: Y-axis (±90°)
-                fa_rot_rad = fa_rot * deg_to_rad(90.0) * mirror
-                # Ulnar/radial deviation: Z-axis (±30°)
-                wr_dev_rad = wr_dev * deg_to_rad(30.0) * mirror
-                q = quat_from_euler(wr_fl_rad, fa_rot_rad, wr_dev_rad, "XYZ")
+                wr_fl_rad = -_rad("wrist_{s}_flex", wr_flex)
+                wr_dev_rad = _rad("wrist_{s}_deviate", wr_dev) * mirror
+                fa_rot_rad = _rad("forearm_{s}_rotate", fa_rot) * mirror
+                q = quat_from_euler(wr_fl_rad, wr_dev_rad, fa_rot_rad, "XYZ")
                 wrist.set_quaternion(q)
 
     # ── Digit animation ──────────────────────────────────────────────
 
     # Finger curl distribution: MCP 40%, PIP 35%, DIP 25%
-    _FINGER_CURL_DIST = {"mc": 0.40, "prox": 0.35, "mid": 0.25, "dist": 0.0}
-    _FINGER_MAX_CURL = 90.0   # degrees at slider=1.0
+    # Finger flexion at slider=1.0, per joint.  The digit pivots sit at the
+    # proximal end of each bone, so "prox" is the metacarpophalangeal joint,
+    # "mid" the proximal and "dist" the distal interphalangeal joint, and
+    # "mc" the carpometacarpal joint (a few degrees, ulnar fingers only).
+    # A closed fist is roughly 90/100/60 degrees at MCP/PIP/DIP (functional
+    # tasks use about 60/60/40: Hume et al., J Hand Surg 1990).  The old
+    # model spread 90 degrees in total over four joints, which cannot close
+    # a hand round a bar -- the bar passed through the palm in every render.
+    _FINGER_CURL_MAX = {"mc": 8.0, "prox": 90.0, "mid": 100.0, "dist": 60.0}
+    _FINGER_HYPER = {"prox": 1.0, "mid": 0.1, "dist": 0.1}
     _FINGER_MIN_CURL = -20.0  # slight hyperextension at slider=-1.0 (MCP only)
+    _THUMB_CURL_MAX = {"mc": 25.0, "prox": 55.0, "dist": 80.0}
 
     # Finger spread: fan pattern at MCP (metacarpal) joints
     _FINGER_SPREAD = {2: 12.0, 3: 3.0, 4: -6.0, 5: -12.0}  # degrees per unit
@@ -257,31 +277,32 @@ class BodyAnimationSystem:
 
             # ── Fingers 2-5: curl + spread ──
             for digit in range(2, 6):
-                for seg, frac in self._FINGER_CURL_DIST.items():
+                for seg, max_deg in self._FINGER_CURL_MAX.items():
                     pivot = pivots.get(f"finger_{side}_{digit}_{seg}")
                     if pivot is None:
                         continue
 
-                    # Curl: X-axis flexion
+                    # Curl: X-axis flexion, each joint to its own maximum
                     if curl_val >= 0:
-                        angle = curl_val * self._FINGER_MAX_CURL * frac
+                        angle = curl_val * max_deg
                     else:
-                        # Hyperextension only at MCP, minimal at PIP/DIP
-                        hyper_frac = 1.0 if seg == "mc" else 0.1
+                        # Hyperextension only at the MCP, minimal at PIP/DIP
+                        hyper_frac = self._FINGER_HYPER.get(seg, 0.0)
                         angle = curl_val * abs(self._FINGER_MIN_CURL) * hyper_frac
 
                     x_rad = deg_to_rad(-angle)  # negative X = forward flexion
 
-                    # Spread: Z-axis at MCP only
-                    z_rad = 0.0
+                    # Spread: fans in the palm plane, about the AP axis (Y),
+                    # at the MCP only
+                    y_rad = 0.0
                     if seg == "mc" and digit in self._FINGER_SPREAD:
-                        z_rad = deg_to_rad(self._FINGER_SPREAD[digit] * spread_val * mirror)
+                        y_rad = deg_to_rad(self._FINGER_SPREAD[digit] * spread_val * mirror)
 
-                    q = quat_from_euler(x_rad, 0.0, z_rad, "XYZ")
+                    q = quat_from_euler(x_rad, y_rad, 0.0, "XYZ")
                     pivot.set_quaternion(q)
 
             # ── Thumb (digit 1): opposition ──
-            for seg, frac in self._FINGER_CURL_DIST.items():
+            for seg, max_deg in self._THUMB_CURL_MAX.items():
                 pivot = pivots.get(f"finger_{side}_1_{seg}")
                 if pivot is None:
                     continue
@@ -293,14 +314,14 @@ class BodyAnimationSystem:
                     adduct = thumb_op * self._THUMB_OP_ADDUCT * mirror
                     # Also apply curl to thumb MC
                     if curl_val >= 0:
-                        flex += curl_val * self._FINGER_MAX_CURL * 0.3
+                        flex += curl_val * max_deg
                     q = quat_from_euler(
                         deg_to_rad(-flex), deg_to_rad(pronate), deg_to_rad(adduct), "XYZ",
                     )
                 else:
                     # Thumb phalanges: just curl
                     if curl_val >= 0:
-                        angle = curl_val * self._FINGER_MAX_CURL * frac
+                        angle = curl_val * max_deg
                     else:
                         angle = curl_val * abs(self._FINGER_MIN_CURL) * 0.1
                     q = quat_from_euler(deg_to_rad(-angle), 0.0, 0.0, "XYZ")

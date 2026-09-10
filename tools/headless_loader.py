@@ -36,39 +36,8 @@ from faceforge.loaders.asset_manager import AssetManager
 logger = logging.getLogger(__name__)
 
 
-# ── Muscle chain mapping (mirrors app.py) ────────────────────────────
-
-_MUSCLE_CHAIN_MAP: dict[str, list[str]] = {
-    "back_muscles":     ["spine", "ribs"],
-    "torso_muscles":    ["spine", "ribs"],
-    "shoulder_muscles": ["spine", "arm"],
-    "arm_muscles":      ["spine", "arm", "hand"],
-    "hip_muscles":      ["spine", "leg"],
-    "leg_muscles":      ["spine", "leg", "foot"],
-}
-
-_MUSCLE_CHAIN_OVERRIDES: dict[str, list[str]] = {}
-for _n in ("Serratus Ant.", "Subclavius"):
-    for _s in ("R", "L"):
-        _MUSCLE_CHAIN_OVERRIDES[f"{_n} {_s}"] = ["spine", "ribs"]
-for _n in ("Pect. Major Clav.", "Pect. Major Stern.", "Pect. Major Abd.",
-           "Pect. Minor"):
-    for _s in ("R", "L"):
-        _MUSCLE_CHAIN_OVERRIDES[f"{_n} {_s}"] = ["spine", "ribs", "arm"]
-for _n in ("Ext. Intercostal", "Int. Intercostal", "Innermost Intercostal",
-           "Diaphragm", "Linea Alba"):
-    _MUSCLE_CHAIN_OVERRIDES[_n] = ["spine", "ribs"]
-for _n in ("Trans. Thoracis", "Lev. Costarum Longi", "Lev. Costarum Breves"):
-    for _s in ("R", "L"):
-        _MUSCLE_CHAIN_OVERRIDES[f"{_n} {_s}"] = ["spine", "ribs"]
-for _n in ("Asc. Trapezius", "Trans. Trapezius", "Desc. Trapezius",
-           "Latissimus Dorsi", "Rhomboid Major", "Rhomboid Minor"):
-    for _s in ("R", "L"):
-        _MUSCLE_CHAIN_OVERRIDES[f"{_n} {_s}"] = ["spine", "ribs", "arm"]
-for _n in ("Serratus Post. Sup.", "Serratus Post. Inf."):
-    for _s in ("R", "L"):
-        _MUSCLE_CHAIN_OVERRIDES[f"{_n} {_s}"] = ["spine", "ribs"]
-del _n, _s
+# Muscle chain restriction lives in faceforge.coordination.demand_loaders
+# (MUSCLE_CHAIN_MAP / MUSCLE_CHAIN_OVERRIDES); this file used to carry a copy.
 
 # Layer name → AssetManager loader method + config info
 _LAYER_INFO: dict[str, dict] = {
@@ -101,6 +70,7 @@ class HeadlessScene:
     face_state: FaceState = field(default_factory=FaceState)
     constraint_state: ConstraintState = field(default_factory=ConstraintState)
     _loaded_layers: set[str] = field(default_factory=set)
+    _layer_defs: dict[str, list] = field(default_factory=dict)
     _head_quat: Quat = field(default_factory=quat_identity)
 
 
@@ -154,82 +124,31 @@ def load_headless_scene() -> HeadlessScene:
     # Soft tissue skinning
     skinning = SoftTissueSkinning()
 
-    # Build kinematic chains (mirrors app.py lines 1035-1110)
-    joint_chains: list[list[tuple[str, SceneNode]]] = []
+    # The application's own chain builder, so every headless tool binds to
+    # the same joints the app does (clavicle and scapula included).
+    from faceforge.coordination.joint_chains import build_joint_chains
+
     chain_ids: dict[str, int] = {}
-
-    # Chain 0: Spine (thoracic + lumbar)
-    spine_chain: list[tuple[str, SceneNode]] = []
-    if pipeline.skeleton is not None:
-        for pinfo in pipeline.skeleton.pivots.get("thoracic", []):
-            spine_chain.append((f"thoracic_{pinfo.get('level', 0)}", pinfo["group"]))
-        for pinfo in pipeline.skeleton.pivots.get("lumbar", []):
-            spine_chain.append((f"lumbar_{pinfo.get('level', 0)}", pinfo["group"]))
-    if spine_chain:
-        chain_ids["spine"] = len(joint_chains)
-        joint_chains.append(spine_chain)
-
-    # Limb chains (single 3-joint chain per limb — no shared-joint duplication)
-    if pipeline.joint_setup is not None:
-        jp = pipeline.joint_setup.pivots
-        for side in ("R", "L"):
-            # Arm chain: shoulder → elbow → wrist
-            arm_chain: list[tuple[str, SceneNode]] = []
-            for jn in ("shoulder", "elbow", "wrist"):
-                node = jp.get(f"{jn}_{side}")
-                if node is not None:
-                    arm_chain.append((f"{jn}_{side}", node))
-            if arm_chain:
-                chain_ids[f"arm_{side}"] = len(joint_chains)
-                joint_chains.append(arm_chain)
-
-            # Leg chain: hip → knee → ankle
-            leg_chain: list[tuple[str, SceneNode]] = []
-            for jn in ("hip", "knee", "ankle"):
-                node = jp.get(f"{jn}_{side}")
-                if node is not None:
-                    leg_chain.append((f"{jn}_{side}", node))
-            if leg_chain:
-                chain_ids[f"leg_{side}"] = len(joint_chains)
-                joint_chains.append(leg_chain)
-
-    # Digit chains
-    if pipeline.joint_setup is not None:
-        jp = pipeline.joint_setup.pivots
-        for side in ("R", "L"):
-            for digit in range(1, 6):
-                hand_chain: list[tuple[str, SceneNode]] = []
-                for seg in ("mc", "prox", "mid", "dist"):
-                    p = jp.get(f"finger_{side}_{digit}_{seg}")
-                    if p is not None:
-                        hand_chain.append((f"finger_{side}_{digit}_{seg}", p))
-                if hand_chain:
-                    chain_ids[f"hand_{side}_{digit}"] = len(joint_chains)
-                    joint_chains.append(hand_chain)
-
-                foot_chain: list[tuple[str, SceneNode]] = []
-                for seg in ("mt", "prox", "mid", "dist"):
-                    p = jp.get(f"toe_{side}_{digit}_{seg}")
-                    if p is not None:
-                        foot_chain.append((f"toe_{side}_{digit}_{seg}", p))
-                if foot_chain:
-                    chain_ids[f"foot_{side}_{digit}"] = len(joint_chains)
-                    joint_chains.append(foot_chain)
-
-    # Rib chain
-    if body_anim is not None and body_anim._rib_pivots:
-        rib_chain: list[tuple[str, SceneNode]] = []
-        for i, pivot in enumerate(body_anim._rib_pivots):
-            rib_chain.append((f"rib_{i}", pivot))
-        if rib_chain:
-            chain_ids["ribs"] = len(joint_chains)
-            joint_chains.append(rib_chain)
+    joint_chains = build_joint_chains(
+        pipeline.skeleton, pipeline.joint_setup,
+        body_anim._rib_pivots if body_anim is not None else None, chain_ids)
 
     if joint_chains:
         scene.update()
         skinning.build_skin_joints(joint_chains)
         logger.info("Skin joints built: %d joints in %d chains",
                      len(skinning.joints), len(joint_chains))
+
+    # Muscle attachments and bone collision, as the app's
+    # AssetLoadSequence.build_attachment_systems installs them.
+    if pipeline.bone_anchors is not None:
+        from faceforge.anatomy.bone_collision import BoneCollisionSystem
+        from faceforge.anatomy.muscle_attachments import MuscleAttachmentSystem
+
+        skinning.attachment_system = MuscleAttachmentSystem(pipeline.bone_anchors)
+        collision = BoneCollisionSystem(pipeline.bone_anchors)
+        if collision.build_capsules() > 0:
+            skinning.collision_system = collision
 
     return HeadlessScene(
         scene=scene,
@@ -243,45 +162,6 @@ def load_headless_scene() -> HeadlessScene:
         skeleton=pipeline.skeleton,
         assets=assets,
     )
-
-
-def _resolve_chain_set(chain_names: list[str], chain_ids: dict[str, int]) -> set[int] | None:
-    """Convert chain name list to chain ID set."""
-    chains = set()
-    for cn in chain_names:
-        cid = chain_ids.get(cn)
-        if cid is not None:
-            chains.add(cid)
-    return chains if chains else None
-
-
-def _resolve_sided_chains(
-    chain_names: list[str], muscle_name: str, chain_ids: dict[str, int],
-) -> set[int] | None:
-    """Resolve side-neutral chain tokens to muscle's side."""
-    side = None
-    if muscle_name.endswith(" R"):
-        side = "R"
-    elif muscle_name.endswith(" L"):
-        side = "L"
-
-    resolved: list[str] = []
-    for cn in chain_names:
-        if cn in ("arm", "leg"):
-            if side is not None:
-                resolved.append(f"{cn}_{side}")
-            else:
-                resolved.append(f"{cn}_R")
-                resolved.append(f"{cn}_L")
-        elif cn in ("hand", "foot"):
-            # Expand to all 5 digit chains per side
-            sides = [side] if side is not None else ["R", "L"]
-            for s in sides:
-                for digit in range(1, 6):
-                    resolved.append(f"{cn}_{s}_{digit}")
-        else:
-            resolved.append(cn)
-    return _resolve_chain_set(resolved, chain_ids)
 
 
 def load_layer(hs: HeadlessScene, layer_name: str) -> list[MeshInstance]:
@@ -318,6 +198,7 @@ def load_layer(hs: HeadlessScene, layer_name: str) -> list[MeshInstance]:
 
     body_root.add(result.group)
     hs._loaded_layers.add(layer_name)
+    hs._layer_defs[layer_name] = list(getattr(result, "defs_loaded", []) or [])
     logger.info("Loaded layer %s: %d meshes", layer_name, len(result.meshes))
     return result.meshes
 
@@ -383,29 +264,16 @@ def register_layer(
             )
 
     elif layer_type == "muscle":
-        config_name = info["config"]
-        defs = load_muscle_config(config_name)
-        default_chain_names = _MUSCLE_CHAIN_MAP.get(layer_name, ["spine"])
+        # Exactly the application's registration (attachments, footprints,
+        # lever damping, physics opt-in, digit clean-up), so a headless render
+        # deforms as the app does.  ``defs_loaded`` pairs with the meshes
+        # one-to-one even when an STL failed to load.
+        from faceforge.coordination.demand_loaders import register_muscle_layer
 
-        for mesh, defn in zip(meshes, defs):
-            muscle_name = defn.get("name", mesh.name)
-            override = _MUSCLE_CHAIN_OVERRIDES.get(muscle_name)
-            chain_names = override if override else default_chain_names
-            ac = _resolve_sided_chains(chain_names, muscle_name, chain_ids)
-            skinning.register_skin_mesh(mesh, is_muscle=True, allowed_chains=ac)
-
-        # Remove digit/limb cross-chain blending for arm and leg muscles
-        if layer_name in ("arm_muscles", "leg_muscles"):
-            digit_cids: set[int] = set()
-            prefix = "hand" if layer_name == "arm_muscles" else "foot"
-            for side in ("R", "L"):
-                for digit in range(1, 6):
-                    cid = chain_ids.get(f"{prefix}_{side}_{digit}")
-                    if cid is not None:
-                        digit_cids.add(cid)
-            if digit_cids:
-                skinning.snap_hierarchy_blends(digit_cids)
-                skinning.reassign_orphan_vertices(digit_cids)
+        defs = hs._layer_defs.get(layer_name)
+        if not defs or len(defs) != len(meshes):
+            defs = load_muscle_config(info["config"])[:len(meshes)]
+        register_muscle_layer(skinning, layer_name, meshes, defs, chain_ids)
 
     elif layer_type == "organ":
         spine_id = chain_ids.get("spine")

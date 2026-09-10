@@ -123,3 +123,77 @@ class TestBoneCollisionSystem:
         pos = np.zeros(9, dtype=np.float32)
         rest = pos.copy()
         assert sys.resolve_penetrations(pos, rest) == 0
+
+
+class TestCapsulesLiveOnTheirBones:
+    """Capsules are built in the bone's local frame and placed with its world matrix.
+
+    Bone meshes are reparented under joint pivots, so their vertex arrays are
+    pivot-local; the first version treated them as world positions and put
+    all twelve capsules in a cluster near the body origin -- the neck --
+    where a phantom humerus pushed the deep neck muscles 3 units at rest.
+    """
+
+    def _bone_under_pivot(self, name, local_positions, pivot_pos):
+        reg = BoneAnchorRegistry()
+        pivot = SceneNode(name=f"{name}_pivot")
+        pivot.set_position(*pivot_pos)
+        node = SceneNode(name=name)
+        pos = np.array(local_positions, dtype=np.float32)
+        nrm = np.zeros_like(pos)
+        nrm[2::3] = 1.0
+        geom = BufferGeometry(positions=pos, normals=nrm, vertex_count=len(pos) // 3)
+        node.mesh = MeshInstance(name=name, geometry=geom, material=Material())
+        pivot.add(node)
+        pivot.update_world_matrix(force=True)
+        reg.register_bones({name: node})
+        reg.snapshot_rest_positions()
+        return reg, pivot, node
+
+    def test_capsule_is_placed_with_the_bones_world_matrix(self):
+        local = []
+        for x in np.linspace(0, 20, 10):
+            local.extend([x, 0.0, 0.0])
+        reg, pivot, _node = self._bone_under_pivot("Right Humerus", local, (50.0, 0.0, -10.0))
+        sys = BoneCollisionSystem(reg)
+        assert sys.build_capsules() == 1
+        cap = sys._capsules[0]
+        assert min(cap.start[0], cap.end[0]) == pytest.approx(50.0, abs=1e-6)
+        assert max(cap.start[0], cap.end[0]) == pytest.approx(70.0, abs=1e-6)
+
+        pivot.set_position(80.0, 0.0, -10.0)          # the limb moved
+        pivot.update_world_matrix(force=True)
+        sys.refresh()
+        assert min(cap.start[0], cap.end[0]) == pytest.approx(80.0, abs=1e-6)
+        # A vertex where the bone WAS is no longer pushed; one where it IS, is.
+        stale = np.array([60.0, 1.0, -10.0], dtype=np.float32)
+        live = np.array([90.0, 1.0, -10.0], dtype=np.float32)
+        rest = np.array([60.0, 40.0, 0.0, 90.0, 40.0, 0.0], dtype=np.float32)
+        pos = np.concatenate([stale, live])
+        assert sys.resolve_penetrations(pos, rest) == 1
+        assert pos[:3] == pytest.approx(stale)
+        assert pos[4] == pytest.approx(cap.radius, abs=1e-5)
+
+    def test_rest_penetration_is_an_allowance_not_a_defect(self):
+        local = []
+        for x in np.linspace(0, 20, 10):
+            local.extend([x, 0.0, 0.0])
+        reg, _pivot, _node = self._bone_under_pivot("Right Humerus", local, (0.0, 0.0, 0.0))
+        sys = BoneCollisionSystem(reg)
+        sys.build_capsules()
+        radius = sys._capsules[0].radius
+        # One vertex 1.0 inside the capsule at rest, one outside.
+        rest = np.array([10.0, 1.0, 0.0, 10.0, radius + 2.0, 0.0], dtype=np.float32)
+        pos = rest.copy()
+        assert sys.resolve_penetrations(pos, rest) == 0, "nothing moves at rest, by construction"
+        assert np.array_equal(pos, rest)
+        # Pushed deeper than its rest depth: back out to its rest depth, not to the surface.
+        pos = rest.copy()
+        pos[1] = 0.3
+        assert sys.resolve_penetrations(pos, rest) == 1
+        assert pos[1] == pytest.approx(1.0, abs=1e-5)
+        # The vertex that was outside at rest is held at the full radius.
+        pos = rest.copy()
+        pos[4] = 0.5
+        assert sys.resolve_penetrations(pos, rest) == 1
+        assert pos[4] == pytest.approx(radius, abs=1e-5)

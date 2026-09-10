@@ -1,10 +1,12 @@
 """Bone attachment constraints for body muscles.
 
-Body muscles have anatomical origin and insertion bones.  This system pins
-the endpoints of each muscle toward their respective bones, preventing
-muscles from floating away from the skeleton during deformation.
+Body muscles have anatomical origin and insertion bones.  With authored
+footprints (``assets/config/muscle_footprints.json``) a muscle is placed from
+the rigid images of its two attachments by a harmonic fibre field
+(:mod:`faceforge.anatomy.fibre_field`); without them the skinning solver's
+own assignment stands.
 
-Also provides per-muscle stretch monitoring (Layer 3) and fascia region
+Also provides per-muscle stretch measurement (Layer 3) and fascia region
 constraints (Layer 5).
 """
 
@@ -20,6 +22,7 @@ from scipy.sparse.csgraph import dijkstra
 from numpy.typing import NDArray
 
 from faceforge.anatomy.bone_anchors import BoneAnchorRegistry
+from faceforge.anatomy.fibre_field import FibreField, cached_fibre_field, trim_footprints
 from faceforge.body.soft_tissue import SkinBinding
 
 logger = logging.getLogger(__name__)
@@ -51,6 +54,19 @@ class MuscleAttachmentData:
     origin_frac_threshold: float = 0.8
     insertion_frac_threshold: float = 0.2
 
+    #: True once authored footprints replaced the Y-extent masks.  The rest
+    #: and current lengths are then measured between the footprint centroids
+    #: rather than along the mesh's Y extent -- which in this Z-up body frame
+    #: is the anterior-posterior axis, meaningless as a muscle's length for
+    #: anything but a prevertebral strap.
+    footprint_masks: bool = False
+    #: Skin-joint indices the footprints resolved to (origin, insertion).
+    origin_joint: int | None = None
+    insertion_joint: int | None = None
+    #: Harmonic interpolation between the two footprints; None until they
+    #: resolve.  Placed every frame by :meth:`apply_bone_pinning`.
+    fibre_field: "FibreField | None" = None
+
     # Per-muscle overrides for the module globals; None means "use the global".
     #
     # A single global cannot be right for every muscle: physiological
@@ -74,13 +90,15 @@ PIN_STRENGTH = 0.6
 
 
 class MuscleAttachmentSystem:
-    """Bone-pinning and stretch monitoring for body muscles.
+    """Attachment placement and stretch measurement for body muscles.
 
     For each registered muscle:
     1. Computes attachment fraction from mesh Y-extent (like neck spine_fracs)
-    2. Identifies origin-end and insertion-end vertex zones
-    3. Per-frame: queries current bone positions and pins muscle endpoints
-    4. Monitors stretch ratio and clamps if exceeded
+    2. Identifies origin-end and insertion-end vertex zones, replaced by the
+       authored footprints when :meth:`reassign_by_footprints` runs
+    3. Per-frame: places a footprinted muscle from its attachments' rigid
+       images through its fibre field
+    4. Measures the stretch ratio between the attachments
     """
 
     def __init__(self, bone_registry: BoneAnchorRegistry) -> None:
@@ -209,6 +227,9 @@ class MuscleAttachmentSystem:
         i_idx = np.asarray(fp.get("insertion_indices", []), dtype=np.int64)
         o_idx = o_idx[o_idx < n]
         i_idx = i_idx[i_idx < n]
+        shared = np.intersect1d(o_idx, i_idx)   # near both bones: neither attachment
+        if len(shared):
+            o_idx, i_idx = np.setdiff1d(o_idx, shared), np.setdiff1d(i_idx, shared)
         if not len(o_idx) or not len(i_idx):
             return 0
 
@@ -238,6 +259,15 @@ class MuscleAttachmentSystem:
         g = csr_matrix((np.concatenate([w, w]),
                         (np.concatenate([e[:, 0], e[:, 1]]),
                          np.concatenate([e[:, 1], e[:, 0]]))), shape=(n, n))
+        g_o = dijkstra(g, indices=o_idx, min_only=True)
+        g_i = dijkstra(g, indices=i_idx, min_only=True)
+        # Footprints seeded by bone proximity touch wherever a muscle wraps
+        # its own joint; the fibre field tears across such a seam, so a
+        # geodesic gap is kept between them (fibre_field.trim_footprints).
+        o_idx, i_idx = trim_footprints(g_o, g_i, o_idx, i_idx)
+        if not len(o_idx) or not len(i_idx):
+            logger.info("Footprints for %s touch everywhere; solver assignment kept", name)
+            return 0
         g_o = dijkstra(g, indices=o_idx, min_only=True)
         g_i = dijkstra(g, indices=i_idx, min_only=True)
         both = np.isfinite(g_o) & np.isfinite(g_i)
@@ -277,7 +307,24 @@ class MuscleAttachmentSystem:
         im[i_idx[i_idx < len(im)]] = True
         data.origin_mask = om
         data.insertion_mask = im
+        # The muscle's length is now origin footprint -> insertion footprint.
+        rest_full = np.asarray(binding.mesh.rest_positions, dtype=np.float64).reshape(-1, 3)
+        no, ni = min(len(om), len(rest_full)), min(len(im), len(rest_full))
+        if om[:no].any() and im[:ni].any():
+            data.rest_length = max(1e-3, float(np.linalg.norm(
+                rest_full[:no][om[:no]].mean(axis=0) - rest_full[:ni][im[:ni]].mean(axis=0))))
+            data.footprint_masks = True
 
+        # The belly interpolates harmonically between the two footprints; the
+        # eight bind-time solves are cached on disk beside the binding solve.
+        try:
+            data.fibre_field = cached_fibre_field(rest[:n], e, o_idx, i_idx)
+        except Exception as exc:  # noqa: BLE001 -- a failed solve must not abort loading
+            logger.warning("Fibre field for %s failed: %s", name, exc)
+            data.fibre_field = None
+
+        binding.footprint_graded = True
+        data.origin_joint, data.insertion_joint = int(j_o), int(j_i)
         changed = int((before != ji[:n]).sum())
         logger.info("Footprint reassignment for %s: %d/%d vertices "
                     "(origin joint %d, insertion joint %d, %d unreached)",
@@ -332,51 +379,69 @@ class MuscleAttachmentSystem:
             tops.append(float(((v @ m[:3, :3].T) + m[:3, 3])[:, 2].max()))
         return max(tops) if tops else None
 
-    def apply_bone_pinning(self, binding: SkinBinding) -> None:
-        """Pin muscle endpoints toward their attachment bones.
+    def set_frame_cancel(self, cancel) -> None:
+        """Forward the scene wrapper's inverse to the bone registry (per frame)."""
+        self._bones.set_frame_cancel(cancel)
+
+    def apply_bone_pinning(self, binding: SkinBinding, joint_delta=None) -> None:
+        """Place a footprinted muscle from its attachments.
 
         Call after delta-matrix transform + neighbor clamping.
+
+        With authored footprints and ``joint_delta`` (the skinning's
+        current-times-inverse-rest transform for a joint index) the muscle's
+        harmonic fibre field places every vertex from the RIGID images of its
+        two footprints (:mod:`faceforge.anatomy.fibre_field`); without a
+        field, the footprint vertices alone are blended toward their images.
+
+        A muscle without footprints is left to the skinning solver.  The
+        older path pinned the top and bottom 20% of the mesh's
+        anterior-posterior extent toward the translation of the origin or
+        insertion bone's centroid, which on a humerus swung through 90
+        degrees pinned part of the belly to a place the bone no longer was:
+        at the back-squat rack pose it took the biceps' stretch p99 from
+        1.45x to 3.08x and the triceps medial head's from 1.30x to 5.90x.
         """
         data = self._attachments.get(id(binding))
-        if data is None:
+        if (data is None or not data.footprint_masks or joint_delta is None
+                or data.origin_joint is None or data.insertion_joint is None):
             return
 
         mesh = binding.mesh
         positions = mesh.geometry.positions.reshape(-1, 3)
         rest_pos = mesh.rest_positions.reshape(-1, 3).astype(np.float64)
+        delta_o = np.asarray(joint_delta(data.origin_joint), dtype=np.float64)
+        delta_i = np.asarray(joint_delta(data.insertion_joint), dtype=np.float64)
 
-        # Get current and rest bone positions for origin
-        origin_cur = self._get_bone_centroid_current(data.origin_bones)
-        origin_rest = self._get_bone_centroid_rest(data.origin_bones)
+        if data.fibre_field is not None:
+            data.fibre_field.apply(positions, delta_o, delta_i)
+            return
 
-        if origin_cur is not None and origin_rest is not None:
-            bone_delta = origin_cur - origin_rest  # (3,)
-            self._pin_zone(
-                positions, rest_pos, data.origin_mask, data.attachment_frac,
-                bone_delta, data.origin_frac_threshold, towards_high=True,
-                pin_strength=(data.pin_strength
-                              if data.pin_strength is not None
-                              else PIN_STRENGTH),
-            )
+        strength = (data.pin_strength if data.pin_strength is not None else PIN_STRENGTH)
+        for mask, delta in ((data.origin_mask, delta_o), (data.insertion_mask, delta_i)):
+            n = min(len(mask), len(positions), len(rest_pos))
+            idx = np.where(mask[:n])[0]
+            if not len(idx):
+                continue
+            target = rest_pos[idx] @ delta[:3, :3].T + delta[:3, 3]
+            current = positions[idx].astype(np.float64)
+            positions[idx] = (current + strength * (target - current)).astype(np.float32)
 
-        # Get current and rest bone positions for insertion
-        insert_cur = self._get_bone_centroid_current(data.insertion_bones)
-        insert_rest = self._get_bone_centroid_rest(data.insertion_bones)
-
-        if insert_cur is not None and insert_rest is not None:
-            bone_delta = insert_cur - insert_rest
-            self._pin_zone(
-                positions, rest_pos, data.insertion_mask, data.attachment_frac,
-                bone_delta, data.insertion_frac_threshold, towards_high=False,
-                pin_strength=(data.pin_strength
-                              if data.pin_strength is not None
-                              else PIN_STRENGTH),
-            )
+    def has_fibre_field(self, binding: SkinBinding) -> bool:
+        """True when this muscle is placed by its harmonic fibre field."""
+        data = self._attachments.get(id(binding))
+        return data is not None and data.fibre_field is not None
 
     def apply_stretch_clamp(self, binding: SkinBinding) -> float:
-        """Monitor and clamp muscle stretch.  Returns excess above MAX_STRETCH.
+        """Measure muscle stretch.  Returns the excess above MAX_STRETCH.
 
-        Call after bone pinning.
+        Measurement only.  This used to blend the WHOLE mesh halfway back
+        toward its rest position in space when the ratio exceeded the limit,
+        and for any muscle on a moving limb that is a place the limb has
+        left: at the back-squat rack pose it held the biceps a median 7.2
+        units off the humerus (0.4 with the pull-back off) -- the muscles
+        "sagging off the bone" that a user reported.  Excursion is the fibre
+        field's business now; the ratio feeds the tension readout.
         """
         data = self._attachments.get(id(binding))
         if data is None:
@@ -384,36 +449,28 @@ class MuscleAttachmentSystem:
 
         mesh = binding.mesh
         positions = mesh.geometry.positions.reshape(-1, 3)
-        rest_pos = mesh.rest_positions.reshape(-1, 3).astype(np.float64)
         V = len(positions)
 
         # Compute current length (same method as rest)
-        y_vals = positions[:, 1].astype(np.float64)
-        n15 = max(1, V // 7)
-        top_idx = np.argpartition(y_vals, -n15)[-n15:]
-        bot_idx = np.argpartition(y_vals, n15)[:n15]
-        top_centroid = positions[top_idx].astype(np.float64).mean(axis=0)
-        bot_centroid = positions[bot_idx].astype(np.float64).mean(axis=0)
+        if data.footprint_masks:
+            om, im = data.origin_mask, data.insertion_mask
+            no, ni = min(len(om), V), min(len(im), V)
+            top_centroid = positions[:no][om[:no]].astype(np.float64).mean(axis=0)
+            bot_centroid = positions[:ni][im[:ni]].astype(np.float64).mean(axis=0)
+        else:
+            y_vals = positions[:, 1].astype(np.float64)
+            n15 = max(1, V // 7)
+            top_idx = np.argpartition(y_vals, -n15)[-n15:]
+            bot_idx = np.argpartition(y_vals, n15)[:n15]
+            top_centroid = positions[top_idx].astype(np.float64).mean(axis=0)
+            bot_centroid = positions[bot_idx].astype(np.float64).mean(axis=0)
         current_length = float(np.linalg.norm(top_centroid - bot_centroid))
 
         ratio = current_length / data.rest_length
         data.current_stretch = ratio
 
         limit = data.max_stretch if data.max_stretch is not None else MAX_STRETCH
-        excess = max(0.0, ratio - limit)
-        if excess <= 0.0:
-            return 0.0
-
-        # Clamp: blend positions back toward rest + limited stretch
-        # The amount to pull back is proportional to how much we exceed
-        scale = limit / ratio  # < 1.0 when over-stretched
-        pull_back = 1.0 - scale
-        # Blend deformed positions back toward rest positions
-        current_f64 = positions.astype(np.float64)
-        clamped = current_f64 * (1.0 - pull_back * 0.5) + rest_pos * (pull_back * 0.5)
-        positions[:] = clamped.astype(np.float32)
-
-        return excess
+        return max(0.0, ratio - limit)
 
     def get_total_tension_excess(self) -> float:
         """Sum of all muscles' stretch excess above MAX_STRETCH."""
@@ -426,74 +483,3 @@ class MuscleAttachmentSystem:
     @property
     def attachment_count(self) -> int:
         return len(self._attachments)
-
-    def _pin_zone(
-        self,
-        positions: np.ndarray,
-        rest_pos: np.ndarray,
-        mask: np.ndarray,
-        frac: np.ndarray,
-        bone_delta: np.ndarray,
-        threshold: float,
-        towards_high: bool,
-        pin_strength: float = PIN_STRENGTH,
-    ) -> None:
-        """Pin vertices in a zone toward bone displacement.
-
-        Parameters
-        ----------
-        positions : (V, 3) float32 — modified in place
-        rest_pos : (V, 3) float64
-        mask : (V,) bool — vertices in the zone
-        frac : (V,) float64 — attachment fraction
-        bone_delta : (3,) float64 — bone displacement (current - rest)
-        threshold : float — fraction threshold (0.2 or 0.8)
-        towards_high : bool — True for origin (high frac), False for insertion (low frac)
-        """
-        if not mask.any():
-            return
-
-        idx = np.where(mask)[0]
-        current = positions[idx].astype(np.float64)
-
-        # Quadratic falloff from the boundary of the zone
-        if towards_high:
-            # Origin: frac > threshold → strength increases toward 1.0
-            zone_t = (frac[idx] - threshold) / (1.0 - threshold + 1e-6)
-        else:
-            # Insertion: frac < threshold → strength increases toward 0.0
-            zone_t = (threshold - frac[idx]) / (threshold + 1e-6)
-
-        zone_t = np.clip(zone_t, 0.0, 1.0)
-        # Per-muscle override, resolved by the caller (this helper has no
-        # access to the attachment record).
-        strength = pin_strength * zone_t * zone_t  # quadratic falloff
-
-        # Target: rest position + bone displacement
-        target = rest_pos[idx] + bone_delta[np.newaxis, :]
-
-        # Blend toward target
-        pinned = current + strength[:, np.newaxis] * (target - current)
-        positions[idx] = pinned.astype(np.float32)
-
-    def _get_bone_centroid_current(self, bone_names: list[str]) -> NDArray[np.float64] | None:
-        """Get averaged current position of named bones."""
-        positions = []
-        for name in bone_names:
-            pos = self._bones.get_muscle_anchor_current(name, [name])
-            if pos is not None:
-                positions.append(pos)
-        if not positions:
-            return None
-        return np.mean(positions, axis=0).astype(np.float64)
-
-    def _get_bone_centroid_rest(self, bone_names: list[str]) -> NDArray[np.float64] | None:
-        """Get averaged rest position of named bones."""
-        positions = []
-        for name in bone_names:
-            pos = self._bones.get_muscle_anchor(name, [name])
-            if pos is not None:
-                positions.append(pos)
-        if not positions:
-            return None
-        return np.mean(positions, axis=0).astype(np.float64)

@@ -327,11 +327,21 @@ class LoadingPipeline:
         self.bone_anchors.register_bones(bone_nodes)
 
         # Also register thoracic pivot nodes (used by deep prevertebral muscles)
-        thoracic_group = self.skeleton.groups.get("thoracic")
-        if thoracic_group is not None:
-            for child in thoracic_group.children:
+        # and, beneath them, the vertebra meshes themselves ("T7" ... "L5",
+        # "Sacrum").  The spine pivots are nested caudal -> cranial, so only
+        # the caudal-most pivot is a direct child of the group; walking the
+        # subtree is what makes a vertebra resolvable as an attachment bone
+        # (latissimus dorsi originates on T7-T12, not on the scapula).
+        for region in ("thoracic", "lumbar"):
+            group = self.skeleton.groups.get(region)
+            if group is None:
+                continue
+            for child in group.children:
                 if child.name and child.name not in bone_nodes:
                     self.bone_anchors.register_bones({child.name: child})
+            for node in self._mesh_nodes_below(group):
+                if node.name and not self.bone_anchors.has_bone(node.name):
+                    self.bone_anchors.register_bones({node.name: node})
 
         # Register rib nodes for scalene attachment
         rib_group = self.skeleton.groups.get("ribs")
@@ -386,6 +396,18 @@ class LoadingPipeline:
 
         self._report("Skeleton complete", 1.0)
         self.event_bus.publish(EventType.LOADING_COMPLETE)
+
+    @staticmethod
+    def _mesh_nodes_below(group: SceneNode) -> list[SceneNode]:
+        """Every mesh-bearing node in ``group``'s subtree (pivots have no mesh)."""
+        out: list[SceneNode] = []
+        stack = list(group.children)
+        while stack:
+            node = stack.pop()
+            if node.mesh is not None:
+                out.append(node)
+            stack.extend(node.children)
+        return out
 
     def _collect_bone_nodes(self) -> dict[str, SceneNode]:
         """Build a dict mapping bone names to SceneNodes from all skeleton groups.

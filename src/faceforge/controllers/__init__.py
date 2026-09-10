@@ -31,6 +31,7 @@ from faceforge.controllers.alignment import AlignmentController
 from faceforge.controllers.animation import AnimationController
 from faceforge.controllers.body import BodyController
 from faceforge.controllers.diagnostics import DiagnosticsController
+from faceforge.controllers.exercise import ExerciseController
 from faceforge.controllers.display import DisplayController
 from faceforge.controllers.expression import ExpressionController
 from faceforge.controllers.frame_loop import FrameLoop
@@ -45,7 +46,7 @@ from faceforge.core.events import EventType
 __all__ = [
     "AlignmentController", "AnimationController", "BodyController",
     "Controllers", "DiagnosticsController", "DisplayController",
-    "ExpressionController", "FrameLoop", "LabelController", "LayerController",
+    "ExerciseController", "ExpressionController", "FrameLoop", "LabelController", "LayerController",
     "OverlayController", "SceneViewController", "ToolsController",
     "build_controllers",
 ]
@@ -67,6 +68,7 @@ class Controllers:
     diagnostics: DiagnosticsController
     tools: ToolsController
     loaders: DemandLoaders
+    exercise: ExerciseController
 
 
 def build_controllers(ctx: Any) -> Controllers:
@@ -90,6 +92,7 @@ def build_controllers(ctx: Any) -> Controllers:
         diagnostics=DiagnosticsController(ctx),
         tools=ToolsController(ctx),
         loaders=loaders,
+        exercise=ExerciseController(ctx),
     )
 
     bus = ctx.event_bus
@@ -123,6 +126,7 @@ def build_controllers(ctx: Any) -> Controllers:
     controllers.overlays.subscribe_search()
     bus.subscribe(EventType.SPEECH_PLAY, controllers.expression.on_speech_play)
     controllers.overlays.subscribe_pathology()
+    controllers.exercise.subscribe()         # EXERCISE_*
 
     controllers.tools.connect_display_buttons()
     return controllers

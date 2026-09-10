@@ -74,7 +74,7 @@ from PySide6.QtWidgets import (  # noqa: E402  (import after the env var)
 )
 
 #: The six tabs of the control panel, in order.
-EXPECTED_TABS = ("ANIMATE", "BODY", "LAYERS", "ALIGN", "DISPLAY", "DEBUG")
+EXPECTED_TABS = ("ANIMATE", "BODY", "EXERCISE", "LAYERS", "ALIGN", "DISPLAY", "DEBUG")
 
 #: Buttons whose label contains one of these are not clicked.  Each would
 #: either terminate the process or open a native file dialog that the static

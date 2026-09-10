@@ -211,6 +211,78 @@ def digit_chain_ids(prefix: str, chain_ids: dict[str, int]) -> set[int]:
     return out
 
 
+def register_muscle_layer(skinning: Any, layer: str, meshes: list, defs: list[dict],
+                          chain_ids: dict[str, int], *,
+                          default_chains: list[str] | None = None,
+                          footprints: dict | None = None) -> None:
+    """Register one regional muscle layer with the skinning, the app's way.
+
+    This is THE muscle registration: chain restriction to the muscle's own
+    side, the attachment record (origin/insertion bones, fascia regions,
+    per-muscle stretch and pin overrides), authored footprints, lever-arm
+    damping, the physics opt-in, and the digit-chain clean-up for arm and leg
+    layers.  ``tools/headless_loader.py`` calls it too, so a headless render
+    deforms exactly as the application does -- it used to call
+    ``register_skin_mesh`` alone, which left every muscle without its
+    attachments and measured a latissimus edge at 560x its rest length in a
+    dead hang that the app would have clamped.
+    """
+    if default_chains is None:
+        default_chains = MUSCLE_CHAIN_MAP.get(layer, ["spine"])
+    if footprints is None:
+        footprints = _muscle_footprints()
+    for mesh, defn in zip(meshes, defs, strict=True):
+        muscle_name = defn.get("name", mesh.name)
+        chain_names = (MUSCLE_CHAIN_OVERRIDES.get(muscle_name)
+                       or default_chains)
+        allowed = resolve_sided_chains(chain_names, muscle_name, chain_ids)
+        skinning.register_skin_mesh(
+            mesh, is_muscle=True, allowed_chains=allowed,
+            head_follow_config=defn.get("headFollow"),
+            muscle_name=muscle_name,
+            # Forbid opposite-side bones. `ribs` is one unsided chain, so
+            # allowed_chains cannot express this on its own.
+            side=("R" if muscle_name.endswith(" R")
+                  else "L" if muscle_name.endswith(" L") else None),
+            # Opt-in per muscle: the physics pass costs sweeps over the
+            # mesh edges, and only the few fan-shaped muscles spanning a
+            # static origin and a moving insertion need it.
+            physics_deform=bool(defn.get("physicsDeform", False)),
+        )
+        origin = defn.get("originBones")
+        insertion = defn.get("insertionBones")
+        if origin and insertion and skinning.attachment_system is not None:
+            skinning.attachment_system.register_muscle(
+                skinning.bindings[-1], origin, insertion,
+                fascia_regions=defn.get("fasciaRegions", []),
+                # Optional per-muscle overrides; absent means the module
+                # global applies, so an unsourced muscle keeps today's
+                # behaviour rather than getting an invented value.
+                max_stretch=defn.get("maxStretch"),
+                pin_strength=defn.get("pinStrength"),
+            )
+            if footprints:
+                # MUST follow register_muscle, which creates the
+                # attachment record this reads.
+                skinning.attachment_system.reassign_by_footprints(
+                    skinning.bindings[-1], skinning.joints, footprints,
+                )
+                # Lever-arm damping is REST-based, so it runs once here rather
+                # than per frame. After footprint reassignment, because it
+                # scales the weights that reassignment sets.
+                skinning.apply_lever_damping(skinning.bindings[-1])
+
+    # Arm and leg muscles: remove digit/limb cross-chain blending.  Digit
+    # pivots are children of wrist/ankle pivots, so a digit chain's delta
+    # already includes the limb movement and blending double-counts it.
+    if layer in ("arm_muscles", "leg_muscles"):
+        prefix = "hand" if layer == "arm_muscles" else "foot"
+        digit_cids = digit_chain_ids(prefix, chain_ids)
+        if digit_cids:
+            skinning.snap_hierarchy_blends(digit_cids)
+            skinning.reassign_orphan_vertices(digit_cids)
+
+
 class DemandLoaders:
     """The on-demand loaders for one application context.
 
@@ -307,6 +379,15 @@ class DemandLoaders:
                                       strict=True):
                     physiology.register_muscle(mesh, defn.get("name", mesh.name))
 
+            # The heatmap registered only meshes whose *name* contained
+            # "muscle" at finalise time -- which no regional muscle does
+            # ("Rectus Femoris R"), and which are loaded later anyway.
+            activation = getattr(self.ctx, "muscle_activation", None)
+            if activation is not None:
+                for mesh, defn in zip(result.meshes, result.defs_loaded,
+                                      strict=True):
+                    activation.register_muscle(mesh, defn.get("name", mesh.name))
+
             if layer == "back_muscles" and skinning is not None:
                 self._wire_back_neck_muscles(defs, skinning)
 
@@ -321,58 +402,8 @@ class DemandLoaders:
 
     def _register_muscles(self, layer: str, result: Any, defs: list[dict],
                           default_chains: list[str], skinning: Any) -> None:
-        chain_ids = self.ctx.skin_chain_ids
-        for mesh, defn in zip(result.meshes, result.defs_loaded, strict=True):
-            muscle_name = defn.get("name", mesh.name)
-            chain_names = (MUSCLE_CHAIN_OVERRIDES.get(muscle_name)
-                           or default_chains)
-            allowed = resolve_sided_chains(chain_names, muscle_name, chain_ids)
-            skinning.register_skin_mesh(
-                mesh, is_muscle=True, allowed_chains=allowed,
-                head_follow_config=defn.get("headFollow"),
-                muscle_name=muscle_name,
-                # Forbid opposite-side bones. `ribs` is one unsided chain, so
-                # allowed_chains cannot express this on its own.
-                side=("R" if muscle_name.endswith(" R")
-                      else "L" if muscle_name.endswith(" L") else None),
-                # Opt-in per muscle: the physics pass costs sweeps over the
-                # mesh edges, and only the few fan-shaped muscles spanning a
-                # static origin and a moving insertion need it.
-                physics_deform=bool(defn.get("physicsDeform", False)),
-            )
-            origin = defn.get("originBones")
-            insertion = defn.get("insertionBones")
-            if origin and insertion and skinning.attachment_system is not None:
-                skinning.attachment_system.register_muscle(
-                    skinning.bindings[-1], origin, insertion,
-                    fascia_regions=defn.get("fasciaRegions", []),
-                    # Optional per-muscle overrides; absent means the module
-                    # global applies, so an unsourced muscle keeps today's
-                    # behaviour rather than getting an invented value.
-                    max_stretch=defn.get("maxStretch"),
-                    pin_strength=defn.get("pinStrength"),
-                )
-                fp = _muscle_footprints()
-                if fp:
-                    # MUST follow register_muscle, which creates the
-                    # attachment record this reads.
-                    skinning.attachment_system.reassign_by_footprints(
-                        skinning.bindings[-1], skinning.joints, fp,
-                    )
-                    # Lever-arm damping is REST-based, so it runs once here rather
-                    # than per frame. After footprint reassignment, because it
-                    # scales the weights that reassignment sets.
-                    skinning.apply_lever_damping(skinning.bindings[-1])
-
-        # Arm and leg muscles: remove digit/limb cross-chain blending.  Digit
-        # pivots are children of wrist/ankle pivots, so a digit chain's delta
-        # already includes the limb movement and blending double-counts it.
-        if layer in ("arm_muscles", "leg_muscles"):
-            prefix = "hand" if layer == "arm_muscles" else "foot"
-            digit_cids = digit_chain_ids(prefix, chain_ids)
-            if digit_cids:
-                skinning.snap_hierarchy_blends(digit_cids)
-                skinning.reassign_orphan_vertices(digit_cids)
+        register_muscle_layer(skinning, layer, result.meshes, result.defs_loaded,
+                              self.ctx.skin_chain_ids, default_chains=default_chains)
 
     def _wire_back_neck_muscles(self, defs: list[dict], skinning: Any) -> None:
         from faceforge.anatomy.back_neck_muscles import BackNeckMuscleHandler

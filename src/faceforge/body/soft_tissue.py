@@ -2224,8 +2224,7 @@ class SoftTissueSkinning:
 
         jp = np.empty((len(self.joints), 3), dtype=np.float64)
         for i, j in enumerate(self.joints):
-            j.node.update_world_matrix()
-            jp[i] = j.node.world_matrix[:3, 3]
+            jp[i] = self._joint_world(j.node)[:3, 3]
 
         # segs is now (V, 2) joint indices per vertex, not a segment table.
         a = jp[segs[:n, 0]]
@@ -2275,8 +2274,7 @@ class SoftTissueSkinning:
             return cached
         neutral = True
         for j in self.joints:
-            j.node.update_world_matrix()
-            if np.linalg.norm(np.asarray(j.node.world_matrix, dtype=np.float64)
+            if np.linalg.norm(self._joint_world(j.node)
                               - np.asarray(j.rest_world, dtype=np.float64)) > 1e-6:
                 neutral = False
                 break
@@ -2288,6 +2286,37 @@ class SoftTissueSkinning:
         self._moved_joint_cache = None
         self._neutral_cache = None
         self._delta_cache = None
+        self._cancel_cache = None
+
+    def _wrapper_cancel(self) -> Optional[np.ndarray]:
+        """Inverse of the scene wrapper's world matrix, once per frame, or None.
+
+        Every reading of a joint's world matrix must go through
+        :meth:`_joint_world`, which applies this.  ``update`` cancelled the
+        wrapper for the main delta pass only; the correction passes (bone-offset
+        projection, hull bound, superior envelope, static-vertex mask) read
+        ``node.world_matrix`` directly and so compared body-frame vertices with
+        WORLD-frame bones.  Measured with the body standing in the gym scene:
+        a thigh muscle's centroid sat 8.5 units from the femur before the first
+        skinning update and 146 units from it after.
+        """
+        cached = getattr(self, "_cancel_cache", None)
+        if cached is not None:
+            return cached if cached is not False else None
+        wrapper = self.scene_wrapper
+        if wrapper is None or wrapper.parent is None:
+            self._cancel_cache = False
+            return None
+        wrapper.update_world_matrix(force=True)
+        self._cancel_cache = mat4_inverse(wrapper.world_matrix)
+        return self._cancel_cache
+
+    def _joint_world(self, node: SceneNode) -> np.ndarray:
+        """A joint node's world matrix in the body frame (wrapper cancelled)."""
+        node.update_world_matrix()
+        m = np.asarray(node.world_matrix, dtype=np.float64)
+        cancel = self._wrapper_cancel()
+        return m if cancel is None else cancel @ m
 
     def _joint_delta(self, ji: int) -> np.ndarray:
         """This joint's current-times-inverse-rest transform, once per frame.
@@ -2310,8 +2339,7 @@ class SoftTissueSkinning:
         if rinv is None:
             rinv = inv[ji] = np.linalg.inv(
                 np.asarray(j.rest_world, dtype=np.float64))
-        j.node.update_world_matrix()
-        out = np.asarray(j.node.world_matrix, dtype=np.float64) @ rinv
+        out = self._joint_world(j.node) @ rinv
         cache[ji] = out
         return out
 
@@ -2696,9 +2724,8 @@ class SoftTissueSkinning:
         if moved is None:
             rows = []
             for j in self.joints:
-                j.node.update_world_matrix()
                 rows.append(np.linalg.norm(
-                    np.asarray(j.node.world_matrix, dtype=np.float64)
+                    self._joint_world(j.node)
                     - np.asarray(j.rest_world, dtype=np.float64)) > 1e-6)
             moved = np.array(rows, dtype=bool)
             self._moved_joint_cache = moved
@@ -2960,7 +2987,19 @@ class SoftTissueSkinning:
         #   w=0.0 → strength=0.0 (pure DQS for joint transition)
         #   w=0.3 → strength=0.6 (mostly bone-following)
         #   w=0.5+ → strength=1.0 (fully bone-following)
-        strength = np.clip((w - 0.0) / 0.5, 0.0, 1.0)  # (B,)
+        #
+        # A muscle graded by authored FOOTPRINTS carries primary weights of
+        # 1.0 at its own attachment falling to 0.5 at the midline, so that
+        # ramp made every graded vertex fully rigid with its primary joint and
+        # undid the grading: the two halves moved as two rigid bodies with a
+        # seam at the midline (measured: 100% of a footprinted rotator cuff's
+        # over-stretched edges were seam edges at w = 0.5).  For those
+        # bindings the ramp runs from the midline to the attachment instead,
+        # so the ends still hug their bones and the belly blends.
+        if getattr(binding, "footprint_graded", False):
+            strength = np.clip((w - 0.5) / 0.5, 0.0, 1.0)  # (B,)
+        else:
+            strength = np.clip((w - 0.0) / 0.5, 0.0, 1.0)  # (B,)
         s = strength[:, np.newaxis]  # (B, 1)
 
         result_pri[blend_idx] = s * pri_only + (1.0 - s) * dqs_result
@@ -2992,10 +3031,11 @@ class SoftTissueSkinning:
         # When a scene_wrapper is active, cancel its transform from joint
         # world matrices so the skinning outputs local-space positions
         # (the renderer applies the wrapper via the scene graph).
-        cancel = None
-        if self.scene_wrapper is not None and self.scene_wrapper.parent is not None:
-            self.scene_wrapper.update_world_matrix(force=True)
-            cancel = mat4_inverse(self.scene_wrapper.world_matrix)
+        cancel = self._wrapper_cancel()
+        if self.attachment_system is not None:
+            self.attachment_system.set_frame_cancel(cancel)
+        if self.collision_system is not None:
+            self.collision_system.refresh()
 
         # Refresh the joint hierarchy from its root BEFORE reading any joint.
         #
@@ -3218,14 +3258,28 @@ class SoftTissueSkinning:
 
             # Bone attachment pinning for muscles (Layer 2)
             if binding.is_muscle and self.attachment_system is not None:
-                self.attachment_system.apply_bone_pinning(binding)
+                self.attachment_system.apply_bone_pinning(
+                    binding, joint_delta=self._joint_delta)
+
+            # A muscle with a harmonic fibre field has just had every vertex
+            # placed from its two attachments.  The passes below that pull a
+            # vertex toward its own joint's rigid image (bone-offset
+            # projection, superior envelope, hull bound) would reintroduce
+            # exactly the arc the field removed, so they are skipped for it.
+            fibre = (binding.is_muscle and self.attachment_system is not None
+                     and self.attachment_system.has_fibre_field(binding))
 
             # Per-muscle stretch clamping (Layer 3)
             if binding.is_muscle and self.attachment_system is not None:
                 self.attachment_system.apply_stretch_clamp(binding)
 
-            # Bone collision resolution (Layer 4)
-            if binding.is_muscle and self.collision_system is not None:
+            # Bone collision resolution (Layer 4).  Not for a fibre-field
+            # muscle: its belly lies on the straight fibre between the two
+            # attachments, and where that passes through a bone the bone
+            # occludes it, whereas the hard push-out tore the deltoid at the
+            # dead hang (edge stretch max 17.5x from the field alone, 58.8x
+            # after the push).
+            if binding.is_muscle and self.collision_system is not None and not fibre:
                 self.collision_system.resolve_penetrations(
                     binding.mesh.geometry.positions,
                     binding.mesh.rest_positions,
@@ -3247,7 +3301,7 @@ class SoftTissueSkinning:
             # the rest normals, which reflects none of these position passes, so
             # a mesh this moved has its normals recomputed from geometry instead.
             projected = 0
-            if self.USE_BONE_OFFSET_PROJECTION and binding.is_muscle:
+            if self.USE_BONE_OFFSET_PROJECTION and binding.is_muscle and not fibre:
                 projected = self._apply_bone_offset_projection(binding)
 
             # Reference capture: on a neutral frame this binding's output IS
@@ -3275,16 +3329,24 @@ class SoftTissueSkinning:
             # edge relaxation, plus volume, both attachments and the corridor,
             # alternating to convergence. Kept switchable so the two can be
             # measured against each other rather than swapped on assertion.
-            self._apply_superior_envelope(binding)
+            if not fibre:
+                self._apply_superior_envelope(binding)
 
-            if self.MUSCLE_BALLOON:
+            # The balloon / physics solve holds the attachments and keeps every
+            # vertex inside a corridor round its own joint's RIGID image -- the
+            # arc again -- so it is skipped for fibre-field muscles too
+            # (measured: it moved the deltoid up to 19 units and pectoralis
+            # major up to 23 units off the field's output).
+            if fibre:
+                pass
+            elif self.MUSCLE_BALLOON:
                 rep = self._apply_muscle_balloon(binding)
                 if rep and not rep.get("converged", True):
                     self._balloon_unconverged += 1
             else:
                 self._apply_muscle_physics(binding)
 
-            if self.USE_HULL_BOUND:
+            if self.USE_HULL_BOUND and not fibre:
                 projected += self._apply_hull_bound(binding)
 
             # Normals — cache rest normals as float64

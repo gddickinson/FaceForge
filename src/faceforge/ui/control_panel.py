@@ -1,4 +1,4 @@
-"""Right control panel with QTabWidget containing 6 tabs."""
+"""Right control panel with QTabWidget containing 7 tabs."""
 
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QTabWidget, QLineEdit, QHBoxLayout
 from PySide6.QtCore import Qt, QTimer
@@ -11,12 +11,13 @@ from faceforge.ui.tabs.layers_tab import LayersTab
 from faceforge.ui.tabs.align_tab import AlignTab
 from faceforge.ui.tabs.display_tab import DisplayTab
 from faceforge.ui.tabs.debug_tab import DebugTab
+from faceforge.ui.tabs.exercise_tab import ExerciseTab
 
 
 class ControlPanel(QWidget):
     """Right-side control panel with tabbed interface.
 
-    Contains 6 tabs: Animate, Body, Layers, Align, Display, Debug.
+    Contains 7 tabs: Animate, Body, Exercise, Layers, Align, Display, Debug.
     Width ~330px, matching the HTML version's right panel.
     """
 
@@ -55,6 +56,7 @@ class ControlPanel(QWidget):
         # Create tabs
         self.animate_tab = AnimateTab(event_bus, state)
         self.body_tab = BodyTab(event_bus, state)
+        self.exercise_tab = ExerciseTab(event_bus, state)
         self.layers_tab = LayersTab(event_bus, state)
         self.align_tab = AlignTab(event_bus, state)
         self.display_tab = DisplayTab(event_bus, state)
@@ -62,6 +64,7 @@ class ControlPanel(QWidget):
 
         self.tabs.addTab(self.animate_tab, "ANIMATE")
         self.tabs.addTab(self.body_tab, "BODY")
+        self.tabs.addTab(self.exercise_tab, "EXERCISE")
         self.tabs.addTab(self.layers_tab, "LAYERS")
         self.tabs.addTab(self.align_tab, "ALIGN")
         self.tabs.addTab(self.display_tab, "DISPLAY")

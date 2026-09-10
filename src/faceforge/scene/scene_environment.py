@@ -96,7 +96,52 @@ class SceneEnvironment:
         """Construct the full environment and return the root node."""
         if self.scene_type == "dance_studio":
             return self._build_dance_studio()
+        if self.scene_type == "gym":
+            return self._build_gym()
         return self._build_examination()
+
+    # ── Gym ────────────────────────────────────────────────────────────
+
+    def _build_gym(self) -> SceneNode:
+        """A bright training room: rubber floor, light walls, an overhead lamp.
+
+        Same footprint as the dance studio so the standing placement and the
+        camera presets carry over; the exercise system adds its own equipment.
+        """
+        root = SceneNode("scene_env_root")
+        room = SceneNode("room")
+        root.add(room)
+        floor = _make_node("floor", make_plane(STUDIO_WIDTH, STUDIO_DEPTH, 6, 6),
+                           0x2E3236, y=0, double_sided=True)
+        floor.mesh.material.shininess = 12.0
+        room.add(floor)
+        room.add(_make_node("ceiling", make_plane(STUDIO_WIDTH, STUDIO_DEPTH, 4, 4),
+                            0x9A9DA3, y=STUDIO_HEIGHT, double_sided=True))
+        room.add(_make_node("wall_back", make_box(STUDIO_WIDTH, STUDIO_HEIGHT, WALL_THICK),
+                            0x6E7278, y=STUDIO_HEIGHT / 2, z=-STUDIO_DEPTH / 2))
+        room.add(_make_node("wall_left", make_box(WALL_THICK, STUDIO_HEIGHT, STUDIO_DEPTH),
+                            0x63676D, x=-STUDIO_WIDTH / 2, y=STUDIO_HEIGHT / 2))
+        room.add(_make_node("wall_right", make_box(WALL_THICK, STUDIO_HEIGHT, STUDIO_DEPTH),
+                            0x63676D, x=STUDIO_WIDTH / 2, y=STUDIO_HEIGHT / 2))
+        # A floor line marks the lifting platform.
+        room.add(_make_node("platform", make_box(260.0, 1.0, 200.0), 0x3A3F45, y=0.5))
+
+        lamp = SceneNode("lamp")
+        root.add(lamp)
+        arm_height = 20.0
+        lamp.add(_make_node("lamp_arm", make_cylinder(SPOT_ARM_RADIUS, arm_height, 8),
+                            0x333333, y=STUDIO_HEIGHT - arm_height / 2))
+        shade_y = STUDIO_HEIGHT - arm_height - SPOT_SHADE_HEIGHT / 2
+        lamp.add(_make_node("lamp_shade", make_cylinder(SPOT_SHADE_RADIUS, SPOT_SHADE_HEIGHT, 16),
+                            0x444444, y=shade_y))
+        disc_y = shade_y - SPOT_SHADE_HEIGHT / 2
+        disc = _make_node("lamp_disc", make_disc(SPOT_SHADE_RADIUS, 16), 0xFFFBEA, y=disc_y,
+                          double_sided=True)
+        disc.mesh.material.emissive = (0.6, 0.58, 0.5)
+        lamp.add(disc)
+        self._light_pos = np.array([0.0, disc_y, 60.0], dtype=np.float64)
+        self.root = root
+        return root
 
     # ── Examination room ──────────────────────────────────────────────
 

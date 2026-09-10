@@ -59,7 +59,7 @@ INTERACTION_BUDGET_S = 1.5
 #: Floors on interaction counts, so the sweep cannot silently stop covering
 #: things.  Measured counts on the reference tree are roughly 2x these.
 MIN_COUNTS = {
-    "button": 60, "checkbox": 50, "slider": 150, "combo": 200, "tab": 6,
+    "button": 60, "checkbox": 50, "slider": 150, "combo": 200, "tab": 7,
 }
 
 
@@ -110,7 +110,7 @@ def test_app_constructs_without_exceptions(swept):
     assert swept["window"].windowTitle(), "main window has no title"
 
 
-def test_all_six_tabs_open(swept):
+def test_all_tabs_open(swept):
     """Every named tab exists and selects without raising."""
     labels = [t.label for t in swept["tabs"]]
     for name in H.EXPECTED_TABS:

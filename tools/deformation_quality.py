@@ -70,15 +70,24 @@ import numpy as np
 #: containment is a hard invariant with no tolerance. The other three carry
 #: headroom for pose and load-order variation.
 #:
-#: The seam numbers are BAD and are the open defect, not an accepted state:
-#: multi-influence muscles cuts seam p99 to 5.113 and seam max to 184.19, but
-#: costs 43x on bulk p99 (0.1028 -> 4.4375), so it is disabled pending a visual
-#: comparison. Tighten these two the moment that trade is resolved.
+#: The seam numbers WERE the open defect.  Re-measured on 2026-09-10 after the
+#: harmonic fibre field replaced rigid-image blending for footprinted muscles
+#: (anatomy/fibre_field.py), with the legacy stretch-clamp pull-back and
+#: Y-extent pinning removed and the collision capsules placed on their bones:
+#:
+#:   containment 0.000   bulk p99 0.2605   seam p99 0.191   seam max 257.36
+#:
+#: (the same tree measured 37.654 / 664.96 / 0.0900 the day before).  Bulk
+#: rose because a footprinted muscle's belly now STRETCHES between its two
+#: attachments instead of riding rigidly on one bone and tearing at the seam:
+#: 1% of edges longer by more than 25% at 90 degrees of shoulder flexion is
+#: within physiological excursion, and it is the seam tail that a viewer sees.
+#: Thresholds re-ratcheted from that measurement, with headroom.
 THRESHOLDS = {
     "containment": 0.0,
-    "seam_p99": 50.0,
-    "seam_max": 700.0,
-    "bulk_p99": 0.15,
+    "seam_p99": 1.0,
+    "seam_max": 320.0,
+    "bulk_p99": 0.30,
 }
 
 DEFAULT_LAYERS = ("back_muscles", "arm_muscles")

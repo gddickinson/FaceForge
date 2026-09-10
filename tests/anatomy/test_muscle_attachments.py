@@ -253,3 +253,73 @@ class TestMuscleAttachmentSystem:
         assert data.attachment_frac.max() <= 1.0
         assert data.origin_mask.any()
         assert data.insertion_mask.any()
+
+
+class TestMeasureDontDrag:
+    """The two legacy pulls that dragged muscles off moving bones are gone.
+
+    Measured at the back-squat rack pose: the stretch clamp's pull-back held
+    the biceps a median 7.2 units below the humerus (0.4 without it), and
+    Y-extent pinning toward a bone centroid's translation took the triceps
+    medial head's stretch p99 from 1.30x to 5.90x.
+    """
+
+    def _binding(self, y_range=(0.0, 50.0)):
+        mesh = _make_capsule_mesh(n_verts=100, y_range=y_range)
+        return SkinBinding(
+            mesh=mesh,
+            joint_indices=np.zeros(100, dtype=np.int32),
+            weights=np.ones(100, dtype=np.float32),
+            secondary_indices=np.zeros(100, dtype=np.int32),
+            is_muscle=True,
+            muscle_name="Test",
+        )
+
+    def test_stretch_clamp_measures_without_moving_a_vertex(self):
+        sys = MuscleAttachmentSystem(_make_bone_registry_with_bones())
+        binding = self._binding()
+        sys.register_muscle(binding, ["Right Clavicle"], ["Right Humerus"])
+        pos = binding.mesh.geometry.positions.reshape(-1, 3).copy()
+        pos[:, 1] *= 2.0
+        binding.mesh.geometry.positions = pos.ravel().copy()
+        before = binding.mesh.geometry.positions.copy()
+        assert sys.apply_stretch_clamp(binding) > 0.0
+        assert np.array_equal(binding.mesh.geometry.positions, before)
+
+    def test_pinning_without_footprints_leaves_the_skinning_alone(self):
+        sys = MuscleAttachmentSystem(_make_bone_registry_with_bones())
+        binding = self._binding()
+        sys.register_muscle(binding, ["Right Clavicle"], ["Right Humerus"])
+        moved = binding.mesh.rest_positions.reshape(-1, 3) + np.array([0.0, 0.0, 4.0])
+        binding.mesh.geometry.positions = moved.astype(np.float32).ravel().copy()
+        rot = np.eye(4)
+        rot[:3, 3] = [9.0, 0.0, 0.0]
+        sys.apply_bone_pinning(binding, joint_delta=lambda j: rot)
+        assert np.allclose(binding.mesh.geometry.positions.reshape(-1, 3), moved, atol=1e-6)
+
+    def test_a_fibre_field_places_every_solved_vertex(self):
+        from faceforge.anatomy.fibre_field import build_fibre_field
+
+        sys = MuscleAttachmentSystem(_make_bone_registry_with_bones())
+        binding = self._binding()
+        sys.register_muscle(binding, ["Right Clavicle"], ["Right Humerus"])
+        data = sys._attachments[id(binding)]
+        rest = binding.mesh.rest_positions.reshape(-1, 3).astype(np.float64)
+        order = np.argsort(rest[:, 1])
+        edges = np.stack([order[:-1], order[1:]], axis=1)      # a chain along Y
+        o, i = order[:10], order[-10:]
+        data.footprint_masks = True
+        data.origin_joint, data.insertion_joint = 0, 1
+        data.fibre_field = build_fibre_field(rest, edges, o, i)
+        assert data.fibre_field is not None and sys.has_fibre_field(binding)
+
+        shift = np.eye(4)
+        shift[:3, 3] = [0.0, 0.0, 6.0]
+        binding.mesh.geometry.positions = (rest + 100.0).astype(np.float32).ravel()  # scrambled
+        sys.apply_bone_pinning(binding, joint_delta=lambda j: {0: np.eye(4), 1: shift}[j])
+        pos = binding.mesh.geometry.positions.reshape(-1, 3)
+        assert np.allclose(pos[o], rest[o], atol=1e-4)
+        assert np.allclose(pos[i], rest[i] + [0, 0, 6.0], atol=1e-4)
+        z = pos[order, 2] - rest[order, 2]
+        assert np.all(np.diff(z) >= -1e-4) and 0.5 < z[len(z) // 2] < 5.5, \
+            "the belly rises smoothly from 0 at the origin to 6 at the insertion"

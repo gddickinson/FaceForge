@@ -49,6 +49,7 @@ from typing import Any, Callable, Iterator, Sequence
 from faceforge.body.body_animation import BodyAnimationSystem
 from faceforge.body.body_constraints import BodyConstraints
 from faceforge.body.soft_tissue import SoftTissueSkinning
+from faceforge.coordination.joint_chains import build_joint_chains
 from faceforge.core.scene_graph import SceneNode
 
 logger = logging.getLogger(__name__)
@@ -405,94 +406,18 @@ class AssetLoadSequence:
     def build_joint_chains(self) -> list:
         """Build the kinematic chains, filling ``ctx.skin_chain_ids``.
 
-        A *chain* is an ordered list of ``(name, node)`` joints that deform
-        together.  Chain ids are assigned by construction order -- spine first,
-        then limbs, then digits, then ribs -- and recorded by name in
-        ``ctx.skin_chain_ids`` so the on-demand loaders can name the chains a
-        structure follows without knowing the numbering.
-
-        Rebuilt wholesale (rather than patched) when the skeleton is rescaled,
-        which is why it is a method and not inline in :meth:`build_skinning`.
+        The builder itself is :func:`faceforge.coordination.joint_chains.build_joint_chains`,
+        shared with the headless tools so they bind to the same joints the
+        app does.  Rebuilt wholesale (rather than patched) when the skeleton
+        is rescaled, which is why it is a method and not inline in
+        :meth:`build_skinning`.
         """
         ctx = self.ctx
         pipeline = ctx.pipeline
-        chain_ids = ctx.skin_chain_ids
-        chains: list[list[tuple[str, SceneNode]]] = []
-        chain_ids.clear()
-
-        def add(name: str, chain: list[tuple[str, SceneNode]]) -> None:
-            if chain:
-                chain_ids[name] = len(chains)
-                chains.append(chain)
-
-        # Spine: thoracic top -> bottom, then lumbar.
-        spine: list[tuple[str, SceneNode]] = []
-        if pipeline.skeleton is not None:
-            for region in ("thoracic", "lumbar"):
-                for pinfo in pipeline.skeleton.pivots.get(region, []):
-                    spine.append(
-                        (f"{region}_{pinfo.get('level', 0)}", pinfo["group"]))
-        add("spine", spine)
-
-        # Limbs: one 3-joint chain per limb.
-        n_hand = n_foot = 0
-        if pipeline.joint_setup is not None:
-            pivots = pipeline.joint_setup.pivots
-            for side in ("R", "L"):
-                # The arm chain starts at the SCAPULA, not the shoulder.
-                # scapula_R/L pivots already exist in the rig but were in no
-                # chain, so muscles attaching to the shoulder girdle had no
-                # proximal joint to bind to and were bound to the shoulder
-                # (arm) pivot instead: measured, 100% of both deltoid
-                # divisions' vertices followed the humerus, and pectoralis
-                # minor's coracoid insertion was dragged up with the arm.
-                #
-                # Extending the existing chain rather than adding a separate
-                # "girdle" chain is deliberate: segments and secondary joints
-                # are only built WITHIN a chain, so a separate chain would
-                # give a hard partition with no blending across the girdle ->
-                # arm boundary -- trading detachment for tearing.
-                # Clavicle first: it is the most proximal girdle bone and
-                # the declared origin of deltoid clavicular and pectoralis
-                # major clavicular, which had no proximal joint before it
-                # existed.
-                for name, joints in (("arm", ("clavicle", "scapula",
-                                              "shoulder", "elbow", "wrist")),
-                                     ("leg", ("hip", "knee", "ankle"))):
-                    chain = [(f"{j}_{side}", pivots[f"{j}_{side}"])
-                             for j in joints if pivots.get(f"{j}_{side}") is not None]
-                    add(f"{name}_{side}", chain)
-
-            # Digits: one chain per digit per side.
-            for side in ("R", "L"):
-                for digit in range(1, 6):
-                    hand = [(f"finger_{side}_{digit}_{seg}",
-                             pivots[f"finger_{side}_{digit}_{seg}"])
-                            for seg in ("mc", "prox", "mid", "dist")
-                            if pivots.get(f"finger_{side}_{digit}_{seg}") is not None]
-                    if hand:
-                        n_hand += 1
-                    add(f"hand_{side}_{digit}", hand)
-
-                    foot = [(f"toe_{side}_{digit}_{seg}",
-                             pivots[f"toe_{side}_{digit}_{seg}"])
-                            for seg in ("mt", "prox", "mid", "dist")
-                            if pivots.get(f"toe_{side}_{digit}_{seg}") is not None]
-                    if foot:
-                        n_foot += 1
-                    add(f"foot_{side}_{digit}", foot)
-        logger.info("Digit chains built: %d hand, %d foot", n_hand, n_foot)
-
-        # Ribs: one pivot per rib, for rib-attached muscles and breathing.
         body_anim = getattr(ctx.simulation, "body_animation", None)
-        if body_anim is not None and body_anim._rib_pivots:
-            ribs = [(f"rib_{i}", pivot)
-                    for i, pivot in enumerate(body_anim._rib_pivots)]
-            add("ribs", ribs)
-            if ribs:
-                logger.info("Rib skinning chain added: %d rib pivots", len(ribs))
-
-        return chains
+        rib_pivots = body_anim._rib_pivots if body_anim is not None else None
+        return build_joint_chains(pipeline.skeleton, pipeline.joint_setup, rib_pivots,
+                                  ctx.skin_chain_ids)
 
     # -- Stage: diagnostics -------------------------------------------------
 

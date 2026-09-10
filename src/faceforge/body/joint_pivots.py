@@ -112,6 +112,31 @@ def compute_tmj_pivot(
     return compute_bone_endpoint(mand_pos, mand_count, "top")
 
 
+
+def proximal_end(points: np.ndarray, toward: Vec3, fraction: float = 0.12) -> Vec3:
+    """Centre of the end of a long bone nearest ``toward`` -- its joint.
+
+    The bone's long axis is its principal component; the end is the mean of
+    the ``fraction`` of vertices projecting furthest along that axis on the
+    side of ``toward``.  Digit pivots go here rather than at bone centroids:
+    a phalanx rotating about its middle swings its base backward and opens
+    the joint, which is why the fingers could never close round a bar.
+    """
+    pts = np.asarray(points, dtype=np.float64).reshape(-1, 3)
+    if len(pts) < 3:
+        c = pts.mean(axis=0) if len(pts) else np.zeros(3)
+        return vec3(float(c[0]), float(c[1]), float(c[2]))
+    centroid = pts.mean(axis=0)
+    centred = pts - centroid
+    _u, _sv, vt = np.linalg.svd(centred, full_matrices=False)
+    axis = vt[0]
+    t = centred @ axis
+    if float((np.asarray(toward, dtype=np.float64) - centroid) @ axis) < 0.0:
+        t = -t
+    k = max(1, int(round(len(pts) * fraction)))
+    end = pts[np.argpartition(t, -k)[-k:]].mean(axis=0)
+    return vec3(float(end[0]), float(end[1]), float(end[2]))
+
 class JointPivotSetup:
     """Creates and manages all body joint pivots from loaded skeleton geometry.
 
@@ -518,11 +543,12 @@ class JointPivotSetup:
             for seg_id, bone_name, bone_node in segments:
                 if bone_node is None or bone_node.mesh is None:
                     continue
-                # Compute centroid in parent-local space
+                # The joint is at the PROXIMAL end of the bone (the end nearest
+                # the parent pivot), in parent-local space.
                 geom = bone_node.mesh.geometry
                 pts = geom.positions.reshape(-1, 3)[:geom.vertex_count]
-                centroid = pts.mean(axis=0)
-                pivot_pos = vec3(float(centroid[0]), float(centroid[1]), float(centroid[2]))
+                joint = proximal_end(pts, prev_pos)
+                pivot_pos = vec3(float(joint[0]), float(joint[1]), float(joint[2]))
 
                 pivot_name = f"finger_{side}_{digit}_{seg_id}_pivot"
                 pivot = SceneNode(name=pivot_name)

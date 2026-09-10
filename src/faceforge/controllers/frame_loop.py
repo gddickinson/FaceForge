@@ -42,4 +42,7 @@ class FrameLoop:
         self.ctx.simulation.step(dt)
         self.original_paint()
         self.controllers.animation.update_frame()
+        exercise = getattr(self.controllers, "exercise", None)
+        if exercise is not None:
+            exercise.update_frame()
         self.controllers.labels.update_frame()

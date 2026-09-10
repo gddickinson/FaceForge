@@ -89,6 +89,25 @@ _SCENE_CAMERA_PRESETS: dict[str, tuple[tuple, tuple]] = {
     "corner":    ((_BODY_CENTER_X + 80, 160, 120),        _BODY_TARGET),
 }
 
+# Gym camera presets: the exercise system places the body itself (standing,
+# supine on a bench, hanging from a bar), so the target sits between the
+# standing centre (Y~100) and a bench (Y~70).
+# The room is 500 wide (walls at X = +-250) and 400 deep (back wall at
+# Z = -200, open toward the viewer), so every camera stays inside X = +-240.
+_GYM_TARGET = (0, 95, 0)
+_GYM_CAMERA_PRESETS: dict[str, tuple[tuple, tuple]] = {
+    "three_quarter": ((200, 150, 240),      _GYM_TARGET),
+    "front":         ((0, 110, 340),        _GYM_TARGET),
+    "front_wide":    ((0, 140, 450),        _GYM_TARGET),
+    "side":          ((235, 110, 10),       _GYM_TARGET),
+    "side_left":     ((-235, 110, 10),      _GYM_TARGET),
+    "low_side":      ((225, 45, 60),        _GYM_TARGET),
+    "overhead":      ((0, 290, 40),         _GYM_TARGET),
+}
+
+#: Scene types in which the body stands on the floor rather than lying supine.
+STANDING_SCENE_TYPES = ("dance_studio", "gym")
+
 # Dance studio camera presets: body center at roughly (0, 100, 0)
 _DANCE_TARGET = (0, 100, 0)
 _DANCE_CAMERA_PRESETS: dict[str, tuple[tuple, tuple]] = {
@@ -193,7 +212,7 @@ class SceneModeController:
         scene.add(env.root)
 
         # Reparent bodyRoot under the wrapper node, then add wrapper to scene.
-        if scene_type == "dance_studio":
+        if scene_type in STANDING_SCENE_TYPES:
             # Standing upright facing +Z, feet on floor
             self._wrapper.set_position(0, _STAND_Y, 0)
             self._wrapper.set_quaternion(_Q_STANDING_Z.copy())
@@ -224,7 +243,9 @@ class SceneModeController:
         camera._view_dirty = True
 
         # Set camera to default preset
-        if scene_type == "dance_studio":
+        if scene_type == "gym":
+            self.set_camera_preset(camera, "three_quarter")
+        elif scene_type == "dance_studio":
             self.set_camera_preset(camera, "front")
         else:
             self.set_camera_preset(camera, "side")
@@ -235,14 +256,14 @@ class SceneModeController:
             light_setup.point_light = PointLight(
                 position=light_pos,
                 color=(1.0, 0.95, 0.85),
-                intensity=2.0 if scene_type == "dance_studio" else 1.5,
-                range=500.0 if scene_type == "dance_studio" else 400.0,
+                intensity=2.0 if scene_type in STANDING_SCENE_TYPES else 1.5,
+                range=500.0 if scene_type in STANDING_SCENE_TYPES else 400.0,
                 enabled=True,
             )
         else:
             light_setup.point_light.position = light_pos
-            light_setup.point_light.intensity = 2.0 if scene_type == "dance_studio" else 1.5
-            light_setup.point_light.range = 500.0 if scene_type == "dance_studio" else 400.0
+            light_setup.point_light.intensity = 2.0 if scene_type in STANDING_SCENE_TYPES else 1.5
+            light_setup.point_light.range = 500.0 if scene_type in STANDING_SCENE_TYPES else 400.0
             light_setup.point_light.enabled = True
 
         self._active = True
@@ -294,16 +315,26 @@ class SceneModeController:
     # Camera presets
     # ------------------------------------------------------------------
 
-    def set_camera_preset(self, camera: Camera, preset_name: str) -> None:
-        """Apply one of the scene camera presets."""
+    def set_camera_preset(self, camera: Camera, preset_name: str,
+                          target: tuple | None = None) -> None:
+        """Apply one of the scene camera presets.
+
+        ``target`` replaces the preset's look-at point, keeping the preset's
+        offset from it: a hanging or lying body is not where a standing one is.
+        """
         presets = self._get_camera_presets()
         data = presets.get(preset_name)
         if data is None:
             logger.warning("Unknown scene camera preset: %s", preset_name)
             return
-        pos, target = data
+        pos, preset_target = data
+        if target is not None:
+            offset = np.asarray(pos, dtype=np.float64) - np.asarray(preset_target, dtype=np.float64)
+            new_target = np.asarray(target, dtype=np.float64)
+            pos = tuple(new_target + offset)
+            preset_target = tuple(new_target)
         camera.set_position(*pos)
-        camera.set_target(*target)
+        camera.set_target(*preset_target)
 
     def get_preset_names(self) -> list[str]:
         """Return the list of available scene camera preset names."""
@@ -311,6 +342,8 @@ class SceneModeController:
 
     def _get_camera_presets(self) -> dict[str, tuple[tuple, tuple]]:
         """Return the camera presets for the current scene type."""
+        if self._scene_type == "gym":
+            return _GYM_CAMERA_PRESETS
         if self._scene_type == "dance_studio":
             return _DANCE_CAMERA_PRESETS
         return _SCENE_CAMERA_PRESETS

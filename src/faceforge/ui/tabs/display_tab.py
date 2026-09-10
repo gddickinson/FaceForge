@@ -349,7 +349,7 @@ class DisplayTab(QScrollArea):
         scene_type_row = QHBoxLayout()
         scene_type_row.addWidget(QLabel("Scene:"))
         self._scene_type_combo = QComboBox()
-        self._scene_type_combo.addItems(["Examination Room", "Dance Studio"])
+        self._scene_type_combo.addItems(["Examination Room", "Dance Studio", "Gym"])
         self._scene_type_combo.setEnabled(True)
         scene_type_row.addWidget(self._scene_type_combo)
         scene_type_widget = QWidget()
@@ -561,18 +561,52 @@ class DisplayTab(QScrollArea):
             self._bus.publish(EventType.ANIM_STOP)
             self._transport.set_playing(False)
         # Determine scene type from combo
-        scene_type = "dance_studio" if self._scene_type_combo.currentIndex() == 1 else "examination"
+        scene_type = self.scene_type
         self._bus.publish(EventType.SCENE_MODE_TOGGLED, enabled=checked, scene_type=scene_type)
 
         # Update camera presets for scene type
         if checked:
             self._update_camera_presets(scene_type)
 
+    #: Combo index -> scene type id.
+    _SCENE_TYPES = ("examination", "dance_studio", "gym")
+
+    @property
+    def scene_type(self) -> str:
+        idx = self._scene_type_combo.currentIndex()
+        return self._SCENE_TYPES[idx] if 0 <= idx < len(self._SCENE_TYPES) else "examination"
+
+    @property
+    def scene_active(self) -> bool:
+        return self._scene_toggle.isChecked()
+
+    def sync_scene_state(self, active: bool, scene_type: str) -> None:
+        """Reflect a scene change made elsewhere (the exercise tab) without re-publishing."""
+        self._scene_type_combo.blockSignals(True)
+        if scene_type in self._SCENE_TYPES:
+            self._scene_type_combo.setCurrentIndex(self._SCENE_TYPES.index(scene_type))
+        self._scene_type_combo.blockSignals(False)
+        self._scene_toggle.setChecked(active)
+        self._scene_toggle.setText(f"Scene View: {'ON' if active else 'OFF'}")
+        self._scene_camera_combo.setEnabled(active)
+        self._anim_clip_combo.setEnabled(active)
+        self._transport.setEnabled(active)
+        self._scene_type_combo.setEnabled(not active)
+        for btn in self._nudge_buttons:
+            btn.setEnabled(active)
+        if active:
+            self._update_camera_presets(scene_type)
+
     def _update_camera_presets(self, scene_type: str) -> None:
         """Update camera combo items for the given scene type."""
         self._scene_camera_combo.blockSignals(True)
         self._scene_camera_combo.clear()
-        if scene_type == "dance_studio":
+        if scene_type == "gym":
+            self._scene_camera_combo.addItems([
+                "three_quarter", "front", "front_wide", "side", "side_left", "low_side",
+                "overhead",
+            ])
+        elif scene_type == "dance_studio":
             self._scene_camera_combo.addItems([
                 "front", "front_wide", "side_left", "side_right",
                 "overhead", "corner", "low_front",
