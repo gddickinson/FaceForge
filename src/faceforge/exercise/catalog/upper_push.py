@@ -16,7 +16,16 @@ from faceforge.exercise.catalog._helpers import (
 )
 from faceforge.exercise.model import Category, ExerciseDefinition
 
-_BENCH_LEGS = only(hip_flex=35, knee_flex=90, ankle_flex=-30)
+# Feet on the floor either side of the bench (measured 2026-09-11: with the
+# pelvis on a 58-high pad the thighs must slope 10 deg below the trunk and
+# the knees bend 70 for the soles to reach the floor; at hip 35 / knee 90
+# the feet rested on the bench top).
+_BENCH_LEGS = only(hip_flex=-10, knee_flex=70, ankle_flex=-5, hip_abduct=22)
+# The incline press pitches the whole body 30 deg about the hips, which
+# carries the legs down with it: 26 deg more hip flexion keeps the soles on
+# the floor (measured foot height 3.5; the flat-bench legs put them 20
+# below the floor).
+_INCLINE_LEGS = only(hip_flex=16, knee_flex=70, ankle_flex=-5, hip_abduct=22)
 # Hand DOFs measured on the rig (wrist-frame probe, 2026-09-10): the finger
 # flexion axis lies along the bar (15 deg off at the bottom, 12 at lockout),
 # the palm faces the bar (19 deg from vertical) with the wrist extended 70
@@ -71,15 +80,15 @@ incline_dumbbell_press = ExerciseDefinition(
            "Feet flat, shoulder blades back"),
     orientation="supine", anchor="none", base_position=(-85.0, BENCH_TOP + 15.0, 0.0),
     phases=(
-        ph("Lower", ECC, 2.0, merge(pose(), _BENCH_LEGS,
+        ph("Lower", ECC, 2.0, merge(pose(), _INCLINE_LEGS,
                                     arms(flex=-5, abduct=75, rotate=-20, elbow=90, forearm=90, wrist=-70), grip()),
            pitch=30, pivot=HIPS,
            cues=("Dumbbells to the outer chest, elbows below the wrists",)),
-        ph("Press", CON, 1.5, merge(pose(), _BENCH_LEGS,
+        ph("Press", CON, 1.5, merge(pose(), _INCLINE_LEGS,
                                     arms(flex=75, abduct=15, rotate=0, elbow=10, forearm=0, wrist=-70), grip()),
            pitch=30, pivot=HIPS,
            cues=("Press up and slightly in; do not clash the dumbbells",)),
-        ph("Top", ISO, 0.4, merge(pose(), _BENCH_LEGS,
+        ph("Top", ISO, 0.4, merge(pose(), _INCLINE_LEGS,
                                   arms(flex=75, abduct=15, rotate=0, elbow=10, forearm=0, wrist=-70), grip()),
            pitch=30, pivot=HIPS),
     ),

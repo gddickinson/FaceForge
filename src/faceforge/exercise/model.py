@@ -103,6 +103,10 @@ class EquipmentSpec:
     position: tuple[float, float, float] = (0.0, 0.0, 0.0)
     rotation_deg: tuple[float, float, float] = (0.0, 0.0, 0.0)
     params: dict[str, Any] = field(default_factory=dict)
+    #: How far below the hands the item's origin sits (world units); ``None``
+    #: takes the kind's default (a kettlebell hangs 10 below the grip in a
+    #: swing, but sits against the chest in a goblet hold).
+    hang: float | None = None
 
 
 @dataclass(frozen=True)
@@ -190,7 +194,8 @@ class ExerciseDefinition:
             EquipmentSpec(kind=e["kind"], attach=e.get("attach", "hands"),
                           position=tuple(e.get("position", (0.0, 0.0, 0.0))),
                           rotation_deg=tuple(e.get("rotation_deg", (0.0, 0.0, 0.0))),
-                          params=dict(e.get("params", {})))
+                          params=dict(e.get("params", {})),
+                          hang=(None if e.get("hang") is None else float(e["hang"])))
             for e in d.get("equipment", ())
         )
         base = d.get("base_position")

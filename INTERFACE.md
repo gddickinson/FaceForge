@@ -252,11 +252,11 @@ flat when ankle dorsiflexion = pitch − hip + knee.
 | `equipment.py` | Procedural gym equipment, built from the scene's own primitives. |
 | `equipment_rig.py` | Keep hand-held equipment in the hands, every frame: the bar's axis passes through the ring of closed finger joints (`grip_point`). |
 | `grip_lock.py` | `GripWidthLock`: hands anchored to a fixed bar stop sliding along it; per frame, shoulder abduction is solved (2x2 finite-difference Newton) so each hand's offset from the trunk holds its calibrated value. |
-| `model.py` | The data model for an exercise demonstration. |
+| `model.py` | The data model for an exercise demonstration; `EquipmentSpec.hang` overrides how far below the hands a held item's origin sits (a goblet-held kettlebell, a front-racked bar). |
 | `motion_description.py` | Turn a change of pose into the words a physiotherapist would use. |
 | `muscle_groups.py` | Functional muscle groups -> the muscle mesh names in ``assets/config/muscles``; hand/foot intrinsics (side-prefixed names) and `ALL_MUSCLE_REGIONS`. |
 | `pose_library.py` | Pose authoring for exercises: degrees in, normalised BodyState DOFs out. |
-| `runtime.py` | The exercise runtime: drives a built clip through the existing animation player. |
+| `runtime.py` | The exercise runtime: drives a built clip through the existing animation player; `equipment_tuning(spec)` merges the kind's grip/hang/spin defaults with the spec's override. |
 | `stabilisers.py` | Implied stabilisers: grip, carry, brace and stance muscles derived from the equipment, anchor and orientation, appended at clip-build time so a deadlift colours the hands, arms and back. |
 
 ### `faceforge/exercise/catalog/`

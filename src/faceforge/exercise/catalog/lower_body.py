@@ -27,8 +27,14 @@ _ARMS_FORWARD = arms(flex=70, elbow=10)
 # forearms nearly parallel to the bar, so the bar passed between the fingers.
 _BAR_ON_BACK = combine(arms(flex=0, abduct=60, rotate=91, elbow=120, forearm=90, wrist=-70),
                        grip())
-_FRONT_RACK = combine(arms(flex=90, abduct=15, elbow=145), grip())
-_GOBLET = combine(arms(flex=35, abduct=15, elbow=135, forearm=60), grip())
+# Measured on the rig (2026-09-11, closed-finger ring centres): the front
+# rack puts the hands 45 apart, 6 forward of and 20 above the shoulder
+# pivots with the elbows level and 40 forward -- the bar is then hung 13
+# below the hands so it rests on the front deltoids.  The goblet hold puts
+# the hands 14 apart, 19 forward of and 19 above the mid-sternum; the bell
+# (its origin 4 above the hands) hangs against the chest without entering it.
+_FRONT_RACK = combine(arms(flex=65, abduct=0, rotate=-60, elbow=145), grip())
+_GOBLET = combine(arms(flex=35, abduct=10, rotate=-58, elbow=100, forearm=60), grip())
 
 _SQUAT_MUSCLES = (
     mu("quadriceps", P, 0.95), mu("gluteus_maximus", P, 0.75),
@@ -113,7 +119,7 @@ goblet_squat = ExerciseDefinition(
     phases=_squat_phases(_GOBLET, _GOBLET, hip=120, knee=125, pitch=25),
     muscles=_SQUAT_MUSCLES + (mu("deltoid_anterior", ST, 0.35), mu("biceps_brachii", ST, 0.35),
                               mu("forearm_flexors", ST, 0.4)),
-    equipment=(eq("kettlebell", radius=10.0),),
+    equipment=(eq("kettlebell", radius=10.0, hang=-4.0),),
     errors=_SQUAT_ERRORS[:3], physio_notes=("A common teaching squat: the anterior load "
                                             "counterbalances and limits forward lean.",),
     sources=(SQUAT_REVIEW, ACE, EXRX), tags=("kettlebell", "beginner"),
@@ -131,7 +137,7 @@ front_squat = ExerciseDefinition(
              mu("hamstrings", S, 0.3), mu("soleus", S, 0.4), mu("rectus_abdominis", ST, 0.4),
              mu("obliques", ST, 0.35), mu("trapezius_upper", ST, 0.5),
              mu("deltoid_anterior", ST, 0.4), mu("gluteus_medius", ST, 0.35)),
-    equipment=(eq("barbell", plates=1),),
+    equipment=(eq("barbell", plates=1, hang=13.0),),
     errors=("Elbows dropping so the bar rolls forward: keep the upper arms parallel to the "
             "floor.", "Wrists hyperextended under load: open the grip or use straps."),
     physio_notes=("Lower spinal compressive and shear loads than the back squat at the same "

@@ -235,3 +235,35 @@ a test asserts name uniqueness across every muscle config.
 is memory bandwidth over 4–8 M vertices per pass. A display level of detail
 (decimated muscle meshes with the vertex-indexed data remapped by position)
 is the next step, and a project of its own.
+
+## 2026-09-11 — Every exercise through the viewer
+
+**Asked.** Look at the viewer, fix what comes up, and test that every
+exercise renders and plays.
+
+**Sweep.** A script drove the real viewer window through all 63 catalogue
+entries (four points per clip, three-quarter and side grabs, per-frame
+measurements): no NaN, no muscle centroid outside the skeleton's box, the
+ground lock's residual below a unit everywhere, every definition's
+equipment present, the grip lock armed for the hanging exercises. The
+contact sheets confirmed each exercise plays its movement. The viewer panel
+was exercised too: skin and whole-body toggles, leaving the mode (0.1 s),
+re-entering (0.4 s), starting another exercise after re-entry, stopping.
+
+**Fixed from the frames.** Goblet squat: the kettlebell sat inside the
+chest — the hands were at the shoulders and the bell hung 28 below them.
+Measured hand placement on the rig (closed-finger ring centres) and
+re-authored the hold: hands 14 apart, 19 forward of and 19 above the
+mid-sternum, the bell's origin 4 above the hands via a new per-spec
+`EquipmentSpec.hang` override (`eq(..., hang=)`, `runtime.equipment_tuning`).
+Front squat: the bar was 20 above the shoulders with the hands folded high;
+the rack is now flex 65 / rotate −60 / elbow 145 with the bar hung 13 below
+the hands, on the front deltoids. Bench press, incline press, lying triceps
+extension, chest fly: the feet rested on the bench top; with the pelvis on a
+58-high pad the thighs must slope 10 deg below the trunk and the knees bend
+70 for the soles to reach the floor (hip −10, knee 70, abduct 22, measured
+foot height 0–5). The incline press pitches the whole body 30 deg about the
+hips, which carries the legs with it, so it has its own legs (hip 16, knee
+70). Box jump verified standing on the box at the Stand phase (lowest bone
+65.8 over a 60-high box). Hand and foot muscle names de-duplicated earlier
+the same day.

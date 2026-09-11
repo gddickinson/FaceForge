@@ -135,3 +135,20 @@ def test_a_held_bar_passes_through_the_closed_fingers_not_the_palm():
     assert bar.position[1] != pytest.approx(93.0), "not the wrist-plus-offset palm point"
     assert EquipmentRig.grip_point(_hands(), "R", 7.0) == pytest.approx([30.0, 93.0, 20.0]), \
         "a rig without finger pivots keeps the palm fallback"
+
+
+def test_a_spec_can_override_how_far_an_item_hangs_below_the_hands():
+    """A kettlebell hangs 10 below the grip in a swing but sits against the chest in a goblet hold."""
+    from faceforge.exercise.catalog._helpers import eq
+    from faceforge.exercise.model import ExerciseDefinition
+    from faceforge.exercise.runtime import equipment_tuning
+
+    assert equipment_tuning(eq("kettlebell"))["hang"] == 10.0
+    assert equipment_tuning(eq("kettlebell", hang=-4.0))["hang"] == -4.0
+    assert equipment_tuning(eq("barbell"))["hang"] == 0.0
+    assert equipment_tuning(eq("kettlebell", hang=-4.0))["grip_offset"] == 8.0   # the rest is untouched
+    # The override survives the definition's dict round trip.
+    from faceforge.exercise.catalog import get_exercise_catalog
+    defn = get_exercise_catalog()["goblet_squat"]
+    again = ExerciseDefinition.from_dict(defn.to_dict())
+    assert [e.hang for e in again.equipment] == [e.hang for e in defn.equipment]

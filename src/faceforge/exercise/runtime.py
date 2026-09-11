@@ -51,6 +51,13 @@ _HELD_TUNING: dict[str, dict[str, float]] = {
 }
 
 
+def equipment_tuning(spec: EquipmentSpec) -> dict[str, float]:
+    """How ``spec`` follows the hands: the kind's defaults, with the spec's ``hang`` on top."""
+    tuning = dict(_HELD_TUNING.get(spec.kind, {}))
+    tuning["hang"] = float(spec.hang) if spec.hang is not None else float(tuning.get("hang", 0.0))
+    return tuning
+
+
 @dataclass
 class ExerciseStatus:
     """What the UI shows for the current frame."""
@@ -171,10 +178,10 @@ class ExerciseRuntime:
             except (KeyError, TypeError) as exc:
                 logger.warning("Equipment %r skipped: %s", spec.kind, exc)
                 continue
-            tuning = _HELD_TUNING.get(spec.kind, {})
+            tuning = equipment_tuning(spec)
             self.scene.add(node)
             self.rig.add(node, spec, grip_offset=tuning.get("grip_offset"),
-                         hang=tuning.get("hang", 0.0), spin=tuning.get("spin", 0.0))
+                         hang=tuning["hang"], spin=tuning.get("spin", 0.0))
 
     # -- player callback ----------------------------------------------------------
 

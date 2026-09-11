@@ -40,9 +40,9 @@ def mu(group: str, role: Role, peak: float | None = None, side: str | None = Non
 
 
 def eq(kind: str, attach: str = "hands", position=(0.0, 0.0, 0.0), rotation_deg=(0.0, 0.0, 0.0),
-       **params) -> EquipmentSpec:
+       hang: float | None = None, **params) -> EquipmentSpec:
     return EquipmentSpec(kind=kind, attach=attach, position=tuple(position),
-                         rotation_deg=tuple(rotation_deg), params=dict(params))
+                         rotation_deg=tuple(rotation_deg), params=dict(params), hang=hang)
 
 
 # -- sources ---------------------------------------------------------------------
