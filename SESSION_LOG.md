@@ -208,8 +208,21 @@ their projected centroids, full body framed in the front view at mid-rep.
 Tests: pivot re-basing flag, viewer entry timing, camera target override
 (controller and scene controller).
 
-**Open.** With every muscle loaded one simulation step costs 9.4 s
-(collision resolve 3.4 s, hull bound 1.2 s, DQS 2 s), so the viewer is not
-yet interactive; the skinning signature also includes the wrapper transform,
-which the ground lock changes every frame although the skinning output is
-wrapper-independent.
+**Per-frame cost.** With every muscle loaded (317 muscles, 7.9 M vertices)
+one `Simulation.step` cost 9.7 s. Profiled and cut, output unchanged
+(deformation gate re-run): the bone collision pass now measures only capsules
+whose box overlaps the mesh, and only the vertices in that box (3372
+distance passes → 220; 3.4 s → 0.75 s); face normals accumulate with
+`np.bincount` instead of `np.add.at` (0.92 → 0.31 s); a muscle none of whose
+driving joints moved since its last frame is skipped (per-binding driver
+deltas, 1e-9); the skinning signature no longer includes the wrapper (the
+output is body-frame, and the ground lock moved the wrapper every frame).
+Full-body recompute 9.7 → 6.3 s; a pull-up frame 9.7 → 1.25 s. A grouped
+per-joint matmul replacing the `(V, 4, 4)` gather measured slower from two
+joints up and was not kept (`body/skinning_ops.py` records the numbers).
+Fast tier 1774 passed.
+
+**Open.** The viewer is still ~1 frame/s with everything loaded; the floor
+is memory bandwidth over 4–8 M vertices per pass. A display level of detail
+(decimated muscle meshes with the vertex-indexed data remapped by position)
+is the next step, and a project of its own.

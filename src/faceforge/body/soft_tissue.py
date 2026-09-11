@@ -19,6 +19,9 @@ from faceforge.core.math_utils import (
     batch_quat_rotate,
 )
 from faceforge.body.edge_relaxation import relax_edges
+from faceforge.body.skinning_ops import (
+    accumulate_rows, rotate_vectors, transform_points, used_joints,
+)
 from faceforge.core.mesh import MeshInstance
 from faceforge.core.scene_graph import SceneNode
 from faceforge.core.state import BodyState
@@ -2685,7 +2688,7 @@ class SoftTissueSkinning:
         h = np.concatenate([ref, np.ones((n, 1))], axis=1)
         imgs = np.empty((n, inf.shape[1], 3))
         for k in range(inf.shape[1]):
-            imgs[:, k, :] = np.einsum('vij,vj->vi', D[idx[:, k]], h)[:, :3]
+            imgs[:, k, :] = transform_points(D, idx[:, k], h)
 
         ws = w / np.maximum(w.sum(axis=1, keepdims=True), 1e-12)
         centre = np.einsum('vk,vkj->vj', ws, imgs)
@@ -3023,6 +3026,10 @@ class SoftTissueSkinning:
         sig = self._compute_signature(body_state)
         if sig == self._last_signature:
             return
+        # An explicit reset (physiology moved vertices, the debug tab rebound
+        # a chain) means every binding's output is stale, not only the ones
+        # whose joints moved.
+        force_all = self._last_signature in ((), "")
         self._last_signature = sig
         # The moved-joint mask is valid for one pose only.
         self._begin_frame()
@@ -3090,6 +3097,26 @@ class SoftTissueSkinning:
             si = binding.secondary_indices  # (V,)
             w = binding.weights          # (V,)
 
+            # Per-binding early exit: a muscle none of whose driving joints
+            # has moved since it was last skinned still holds that output, so
+            # every pass below would recompute it.  In a pull-up the leg and
+            # hip muscles are half of the 7.9 million vertices and never
+            # move.  Muscles only, and not those the head-follow pass edits in
+            # place after skinning (it would compound).  Compared with a
+            # tolerance: the wrapper cancel is re-derived each frame, so the
+            # same pose gives the same deltas to ~1e-13, not bit-for-bit.
+            if binding.is_muscle and binding.head_follow_config is None:
+                inf_all = binding.influences
+                drivers = (used_joints(inf_all, None, len(delta_stack))
+                           if inf_all is not None
+                           else used_joints(ji, si, len(delta_stack)))
+                cur = delta_stack[drivers]
+                prev = getattr(binding, "_prev_driver_deltas", None)
+                if (not force_all and prev is not None and prev.shape == cur.shape
+                        and np.allclose(prev, cur, rtol=0.0, atol=1e-9)):
+                    continue
+                binding._prev_driver_deltas = cur.copy()
+
             # Homogeneous positions: (V, 4) — cached to avoid per-frame allocation
             if not hasattr(binding, '_pos_h') or binding._pos_h is None:
                 ones = np.ones((V, 1), dtype=np.float64)
@@ -3131,8 +3158,7 @@ class SoftTissueSkinning:
                         [centres, np.ones((V, 1), dtype=np.float64)], axis=1)
                     lbs_c = np.zeros((V, 3), dtype=np.float64)
                     for k in range(inf.shape[1]):
-                        m_k = delta_stack[inf[:, k]]
-                        lbs_c += (np.einsum('vij,vj->vi', m_k, c_h)[:, :3]
+                        lbs_c += (transform_points(delta_stack, inf[:, k], c_h)
                                   * infw[:, k:k + 1])
                     result_pri = (
                         batch_quat_rotate(q_r_all, rest_pos - centres) + lbs_c)
@@ -3151,9 +3177,8 @@ class SoftTissueSkinning:
             else:
                 # ── Two-influence path (muscles, and skin when
                 # SKIN_INFLUENCES == 2) ──
-                    # Primary transform: delta[ji] @ pos for each vertex
-                d_pri = delta_stack[ji]
-                result_pri = np.einsum('vij,vj->vi', d_pri, pos_h)[:, :3]
+                # Primary transform: delta[ji] @ pos for each vertex
+                result_pri = transform_points(delta_stack, ji, pos_h)
 
                 # Check which vertices need blending
                 needs_blend = (w < 0.999) & (ji != si)
@@ -3163,22 +3188,25 @@ class SoftTissueSkinning:
                 q_r_blend = None
 
                 if np.any(needs_blend):
-                    # Compute LBS secondary positions for divergence check
-                    d_sec = delta_stack[si]
-                    result_sec = np.einsum('vij,vj->vi', d_sec, pos_h)[:, :3]
+                    blend_idx = np.where(needs_blend)[0]
 
                     # Divergence-based cross-chain blend clamping:
                     # When primary and secondary joints are on DIFFERENT chains
                     # and their transforms place the vertex far apart, reduce
                     # secondary influence to prevent extreme distortion.
+                    # Only blended vertices can be cross-chain, so the
+                    # secondary images are computed for those alone.
                     w_eff = w.astype(np.float64)
                     if hasattr(self, '_joint_chain_ids') and len(self._joint_chain_ids) > 0:
-                        pri_chain = self._joint_chain_ids[ji]
-                        sec_chain = self._joint_chain_ids[si]
-                        cross_chain = (pri_chain != sec_chain) & needs_blend
-                        if np.any(cross_chain):
+                        pri_chain = self._joint_chain_ids[ji[blend_idx]]
+                        sec_chain = self._joint_chain_ids[si[blend_idx]]
+                        cross_b = pri_chain != sec_chain
+                        if np.any(cross_b):
+                            cross_idx = blend_idx[cross_b]
+                            result_sec = transform_points(
+                                delta_stack, si[cross_idx], pos_h[cross_idx])
                             divergence = np.linalg.norm(
-                                result_pri - result_sec, axis=1,
+                                result_pri[cross_idx] - result_sec, axis=1,
                             )
                             drange = self.DIVERGENCE_MAX - self.DIVERGENCE_MIN
                             if drange > 0:
@@ -3191,12 +3219,9 @@ class SoftTissueSkinning:
                                     divergence <= self.DIVERGENCE_MIN, 1.0, 0.0,
                                 )
                             w_eff = w_eff.copy()
-                            w_eff[cross_chain] = (
-                                1.0 - (1.0 - w[cross_chain]) * scale[cross_chain]
-                            )
+                            w_eff[cross_idx] = 1.0 - (1.0 - w[cross_idx]) * scale
 
                     # ── Dual Quaternion Skinning for blended vertices ──
-                    blend_idx = np.where(needs_blend)[0]
                     dq_pri = dq_stack[ji[blend_idx]].copy()   # (B, 8)
                     dq_sec = dq_stack[si[blend_idx]].copy()   # (B, 8)
 
@@ -3357,9 +3382,8 @@ class SoftTissueSkinning:
                 )
             rest_nrm = binding._rest_nrm_f64
             if rest_nrm is not None:
-                # Primary normals via rotation matrix
-                rot_pri = delta_stack[ji, :3, :3]  # (V, 3, 3)
-                nrm_pri = np.einsum('vij,vj->vi', rot_pri, rest_nrm)
+                # Primary normals via the primary joint's rotation
+                nrm_pri = rotate_vectors(delta_stack, ji, rest_nrm)
 
                 if blend_idx is not None and q_r_blend is not None:
                     # Blended normals: write into nrm_pri (already a fresh array)
@@ -3383,9 +3407,8 @@ class SoftTissueSkinning:
                 tri = np.asarray(mesh.geometry.indices).ravel().reshape(-1, 3)
                 p0, p1, p2 = pos_f[tri[:, 0]], pos_f[tri[:, 1]], pos_f[tri[:, 2]]
                 fn = np.cross(p1 - p0, p2 - p0)
-                acc = np.zeros_like(pos_f)
-                for _k in range(3):
-                    np.add.at(acc, tri[:, _k], fn)
+                acc = accumulate_rows(tri.ravel(order="F"), np.tile(fn, (3, 1)),
+                                      len(pos_f))
                 ln = np.maximum(np.linalg.norm(acc, axis=1, keepdims=True), 1e-12)
                 acc /= ln
                 # Preserve the existing orientation convention rather than
@@ -3436,16 +3459,14 @@ class SoftTissueSkinning:
         Returns a tuple of rounded floats — fast equality check, no string
         formatting overhead.
         """
-        # Include wrapper position AND quaternion so skinning reruns when wrapper moves/rotates
-        wrapper_sig: tuple = ()
-        if self.scene_wrapper is not None and self.scene_wrapper.parent is not None:
-            wp = self.scene_wrapper.position
-            wq = self.scene_wrapper.quaternion
-            wrapper_sig = (round(float(wp[0]), 2), round(float(wp[1]), 2),
-                           round(float(wp[2]), 2),
-                           round(float(wq[0]), 4), round(float(wq[1]), 4),
-                           round(float(wq[2]), 4), round(float(wq[3]), 4))
-        return wrapper_sig + (
+        # The scene wrapper is deliberately absent: every joint matrix is read
+        # through _joint_world / the cancel, so the output is a body-frame
+        # quantity independent of where the wrapper puts the body (asserted by
+        # tests/body/test_skinning_under_scene_wrapper.py).  It used to be
+        # included, and the exercise ground lock moves the wrapper every
+        # frame, so a paused demonstration re-skinned all 7.9 million muscle
+        # vertices each frame for nothing.
+        return (
             round(state.spine_flex, 4), round(state.spine_lat_bend, 4),
             round(state.spine_rotation, 4),
             round(state.shoulder_r_abduct, 4), round(state.shoulder_r_flex, 4),

@@ -106,3 +106,17 @@ def test_the_fixture_detects_a_leaked_world_frame(monkeypatch):
     monkeypatch.setattr(sk, "_joint_world", raw_world)
     leaked = _skin(sk, scene, mesh, nodes[1], 35.0)
     assert not np.allclose(leaked, without, atol=1e-3)
+
+
+def test_moving_only_the_wrapper_does_not_change_the_skinning_signature():
+    """The output is wrapper-independent, so the early-exit signature must be too."""
+    from faceforge.core.state import BodyState
+    scene, wrapper, nodes, sk = _rig()
+    sk.scene_wrapper = wrapper
+    state = BodyState()
+    before = sk._compute_signature(state)
+    wrapper.set_position(12.0, 250.0, -3.0)
+    wrapper.set_quaternion(quat_from_axis_angle(vec3(1, 0, 0), -np.pi / 2))
+    assert sk._compute_signature(state) == before
+    state.spine_flex = 0.3
+    assert sk._compute_signature(state) != before

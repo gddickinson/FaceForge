@@ -361,6 +361,33 @@ standalone viewer enters the mode from the load sequence's `COMPLETE` stage
 `geometry.positions` in place after load must set `mesh.needs_update`; the
 `MeshInstance.positions` setter does it for whole-array assignment only.
 
+**Per-frame cost with every muscle loaded.** 317 muscles are 7.9 million
+vertices, and one `Simulation.step` cost 9.7 s (bone collision 3.4 s, of
+which 3372 capsule-mesh distance passes almost all on meshes nowhere near
+the bone; the DQS/LBS passes ~2.7 s; hull bound 1.2 s; `np.add.at` face-normal
+sums 0.9 s). Three changes, none of which alters the output: the collision
+pass measures only capsules whose box overlaps the mesh's, and only the
+vertices inside that box (0.75 s, then 0.12 s once fewer muscles move);
+face normals accumulate with `np.bincount` (0.31 s); and a muscle none of
+whose driving joints moved since its last frame is skipped outright
+(`soft_tissue.update`, per-binding driver deltas compared at 1e-9 — the
+wrapper cancel is re-derived each frame so the same pose is not bit-identical).
+The skinning signature also no longer includes the scene wrapper: the
+output is a body-frame quantity, and the ground lock moves the wrapper every
+frame, so a paused demonstration re-skinned everything for nothing. Measured
+on the pull-up: a full-body recompute 9.7 s → 6.3 s; a frame in which the
+legs and hips rest 9.7 s → 1.25 s. A grouped per-joint matmul was tried in
+place of the `(V, 4, 4)` gather and was slower from two joints up
+(`body/skinning_ops.py` records the numbers).
+
+What is left is a memory-bandwidth floor: every pass over the moving
+muscles' vertices costs 50–150 ms, and the correction passes are what make
+the muscles look right, so they cannot move to the vertex shader. The next
+step for an interactive viewer is a display level of detail — decimated
+muscle meshes (trimesh 4.4 and open3d 0.18 are in the environment) with the
+vertex-indexed data (footprint seeds, `skinning_overrides.json`, the fibre
+field caches) remapped by position — which is a project of its own.
+
 **Implied stabilisers.** A catalogue entry lists the movers. What the body
 is also doing follows from the definition — what is held, what it is
 anchored by, how it is oriented — and `exercise/stabilisers.py` adds those

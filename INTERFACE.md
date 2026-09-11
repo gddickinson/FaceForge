@@ -175,6 +175,7 @@ flat when ankle dorsiflexion = pitch − hip + knee.
 | `ground_contact.py` | Keep the feet (or hands) on the floor while the joints move; hands anchored to a point (a bar) are measured at the closed-finger ring. |
 | `hand_points.py` | `finger_ring_centre`: the centroid of the closed finger joints, where a held bar's axis passes (shared by the equipment rig and the ground lock). |
 | `joint_pivots.py` | Joint pivot setup for limb articulation; digit pivots sit at each phalanx's proximal end (`proximal_end`). |
+| `skinning_ops.py` | The gathered-einsum `transform_points` / `rotate_vectors` every skinning pass uses (measured against grouped alternatives), `used_joints` (bincount), `accumulate_rows` (bincount face-normal sums replacing `np.add.at`). |
 | `muscle_activation.py` | Muscle activation heatmap: colour each muscle by how hard it is working. |
 | `neural_impulse.py` | Neural impulse particle effect module. |
 | `organs.py` | On-demand organ loading. |

@@ -103,6 +103,12 @@ def _radial_distance(pos: np.ndarray, start: np.ndarray, end: np.ndarray
     return np.linalg.norm(diff, axis=1), diff
 
 
+def _capsule_box(capsule: BoneCapsule) -> tuple[np.ndarray, np.ndarray]:
+    """Axis-aligned bounds of a capsule: its segment grown by the radius."""
+    ends = np.stack([capsule.start, capsule.end]).astype(np.float64)
+    return ends.min(axis=0) - capsule.radius, ends.max(axis=0) + capsule.radius
+
+
 @dataclass
 class _RestAllowance:
     """Per-mesh: for each capsule, the vertices inside it at rest and how deep."""
@@ -242,19 +248,41 @@ class BoneCollisionSystem:
         if not self._capsules:
             return 0
 
-        pos = np.asarray(positions).reshape(-1, 3).astype(np.float64)
-        V = len(pos)
+        pos32 = np.asarray(positions).reshape(-1, 3)
+        V = len(pos32)
+        if V == 0:
+            return 0
+        # A vertex can only be inside a capsule whose box (segment +- radius)
+        # it lies in, so the exact distance is computed for those vertices and
+        # those capsules only.  Measured with every muscle loaded: 3372
+        # capsule-mesh distance passes per frame (3.4 s) before this, all but
+        # a few dozen of them on meshes nowhere near the bone.
+        lo = pos32.min(axis=0).astype(np.float64)
+        hi = pos32.max(axis=0).astype(np.float64)
+        candidates = [(k, box) for k, capsule in enumerate(self._capsules)
+                      for box in (_capsule_box(capsule),)
+                      if np.all(lo <= box[1]) and np.all(hi >= box[0])]
+        if not candidates:
+            return 0
+
+        pos = pos32.astype(np.float64)
         allowance = self._rest_allowance(rest_positions)
         total_corrected = 0
 
-        for k, capsule in enumerate(self._capsules):
-            dist, diff = _radial_distance(pos, capsule.start, capsule.end)
-            allowed = np.full(V, capsule.radius, dtype=np.float64)
+        for k, (box_lo, box_hi) in candidates:
+            capsule = self._capsules[k]
+            sel = np.where(np.all((pos >= box_lo) & (pos <= box_hi), axis=1))[0]
+            if len(sel) == 0:
+                continue
+            dist, diff = _radial_distance(pos[sel], capsule.start, capsule.end)
+            allowed = np.full(len(sel), capsule.radius, dtype=np.float64)
             rest_hit = allowance.per_capsule[k] if k < len(allowance.per_capsule) else None
             if rest_hit is not None:
                 idx_r, depth_r = rest_hit
                 ok = idx_r < V
-                allowed[idx_r[ok]] = np.minimum(allowed[idx_r[ok]], depth_r[ok])
+                full = np.full(V, capsule.radius, dtype=np.float64)
+                full[idx_r[ok]] = np.minimum(full[idx_r[ok]], depth_r[ok])
+                allowed = full[sel]
 
             inside = dist < allowed
             # Don't correct vertices that are exactly on the axis (ambiguous direction)
@@ -262,9 +290,10 @@ class BoneCollisionSystem:
             if not inside.any():
                 continue
 
-            idx = np.where(inside)[0]
-            radial_dir = diff[idx] / dist[idx][:, np.newaxis]
-            pos[idx] = (pos[idx] - diff[idx]) + radial_dir * allowed[idx][:, np.newaxis]
+            local = np.where(inside)[0]
+            idx = sel[local]
+            radial_dir = diff[local] / dist[local][:, np.newaxis]
+            pos[idx] = (pos[idx] - diff[local]) + radial_dir * allowed[local][:, np.newaxis]
             total_corrected += len(idx)
 
         if total_corrected > 0:

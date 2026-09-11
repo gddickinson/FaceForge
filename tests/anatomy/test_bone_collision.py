@@ -197,3 +197,37 @@ class TestCapsulesLiveOnTheirBones:
         pos[4] = 0.5
         assert sys.resolve_penetrations(pos, rest) == 1
         assert pos[4] == pytest.approx(radius, abs=1e-5)
+
+
+class TestCandidateCulling:
+    """Only capsules whose box overlaps the mesh are measured; the result is unchanged."""
+
+    def _system_with_capsule(self, start, end, radius):
+        sys = BoneCollisionSystem(BoneAnchorRegistry())
+        sys._capsules = [BoneCapsule(bone_name="b", start=np.array(start, float),
+                                     end=np.array(end, float), radius=radius)]
+        return sys
+
+    def test_a_mesh_far_from_every_capsule_is_not_measured(self, monkeypatch):
+        import faceforge.anatomy.bone_collision as bc
+        calls = []
+        real = bc._radial_distance
+        monkeypatch.setattr(bc, "_radial_distance",
+                            lambda *a, **k: calls.append(1) or real(*a, **k))
+        sys = self._system_with_capsule((0, 0, 0), (0, 0, 10), 2.0)
+        far = np.array([[50.0, 0, 0], [52.0, 0, 3], [55.0, 1, 5]], dtype=np.float32).ravel()
+        rest = far.copy()
+        assert sys.resolve_penetrations(far, rest) == 0
+        assert calls == []
+
+    def test_only_vertices_in_the_capsule_box_are_measured_and_the_push_is_the_same(self):
+        sys = self._system_with_capsule((0, 0, 0), (0, 0, 10), 2.0)
+        # One vertex inside the capsule, one far away on the same mesh.
+        verts = np.array([[0.5, 0.0, 5.0], [80.0, 0.0, 5.0]], dtype=np.float32)
+        rest = np.array([[5.0, 0.0, 5.0], [80.0, 0.0, 5.0]], dtype=np.float32)  # outside at rest
+        pos = verts.ravel().copy()
+        n = sys.resolve_penetrations(pos, rest.ravel())
+        out = pos.reshape(-1, 3)
+        assert n == 1
+        np.testing.assert_allclose(out[0], [2.0, 0.0, 5.0], atol=1e-5)   # pushed to the radius
+        np.testing.assert_allclose(out[1], [80.0, 0.0, 5.0])             # untouched
