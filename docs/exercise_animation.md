@@ -372,6 +372,137 @@ originate there really are stretched (1.712 at full flexion, ~1.1 at a
 sit-up's 30°). Head rotation itself still reaches 2.087 on the infrahyoids
 at full pitch; that path was not touched.
 
+### Skin that tore during exercises (2026-09-11, last)
+
+Reported as "individual pixels either being left behind or attached to
+movements of the different body parts". Measured with the new
+`tools/skin_deformation_quality.py` over four poses, on the 791,729-vertex
+skin and its 2,379,747 edges. Edge stretch is the metric because it is
+invariant to the rigid rotation a limb legitimately undergoes; raw
+displacement is not, and a foot vertex moving 154 units in the body frame
+during a deadlift setup is correct, not a fault.
+
+The skin was intact at rest, in the clinical view and in the gym at the
+neutral pose, and tore the instant any joint rotated. Decomposing the
+pipeline at a deadlift-style hip hinge, by torn edges (stretched past twice
+their rest length):
+
+| stage | 99th pct | worst | torn |
+|---|---|---|---|
+| rigid, primary joint only | 1.000 | 214 | 9,900 |
+| two-joint linear blend | 1.766 | 109 | 18,850 |
+| four-influence linear blend | 4.741 | 247 | 53,485 |
+| four-influence dual-quaternion blend | 4.857 | 253 | 55,568 |
+| engine output, after every correction pass | 4.879 | 253 | 56,125 |
+
+So neither the dual-quaternion blend nor any correction pass was responsible
+-- the corrections moved the offending vertices by 0.000 units. The tearing
+arrived with the third and fourth influences, and it was not a question of
+count: two influences tore 18,850 edges, three tore 58,841 and four tore
+55,568. A third influence is *worse* than none at all.
+
+The reason is that the influence cutoff was rank-based. Each skin vertex took
+its four nearest bone segments with inverse-distance weights cut off at the
+distance to the fifth, which is smooth but not local: for a limb vertex the
+third and fourth segments are a whole joint further along the chain, so a
+thigh vertex carried real weight on the ankle and a hip hinge pulled it two
+ways at once.
+
+`SoftTissueSkinning.INFLUENCE_CUTOFF_BAND` replaces that with a compact
+support measured from the vertex's *nearest* segment: nothing more than three
+model units further contributes, whatever its rank. A departing segment's
+weight still reaches zero smoothly, which is the property the rank-based
+cutoff existed to provide, but the set stays local. The band is additive
+rather than a multiple of the nearest distance because a multiple collapses
+to nothing where the skin lies on the bone -- measured with a 1.5x ratio, the
+worst edge went from 253x to 1982x even as the 99th percentile improved.
+
+Bracketed over the four poses, worst-pose 99th percentile and total torn
+edges:
+
+| cutoff | worst p99 | torn | worst seam p99 |
+|---|---|---|---|
+| rank-based (before) | 8.073 | 185,170 | 61.950 |
+| band 1.5 | 1.763 | 66,749 | 60.811 |
+| band 3.0 (shipped) | 1.954 | 70,092 | 56.054 |
+| band 6.0 | 2.513 | 104,770 | 53.958 |
+| two influences | 2.273 | 87,711 | 70.236 |
+
+1.5 and 3.0 are within a few per cent on stretch; 3.0 is taken because it is
+better on the seam tail in every pose and on the single worst edge, and a
+seam is what reads on screen as a vertex stuck to the wrong limb. At the hip
+hinge, vertices with a torn incident edge fall from 39,672 to 12,967 of
+791,729 -- 5.01% to 1.64%. Containment stays at 0.000 throughout: nothing was
+ever left behind by a joint that did not move, so "left behind" was the far
+side of a torn edge. `results/skin_tearing.png` is the before and after.
+
+**Rejected, with the measurements that rejected them.** Turning on
+`DIFFUSE_WEIGHTS`, the existing heat-diffusion pass, halves the seam tail
+(24.5 to 10.7 at the hip hinge) but raises the bulk tail 25-32%, raises torn
+edges 43% and pushes the worst edge from 253x to 3179x -- it rebuilds the
+influence set from the top four of a diffused field, which destroys the
+compact support that kept the set stable between neighbours. Tightening
+`SKIN_SPATIAL_LIMIT` from 25 to 12, to stop lateral abdomen skin binding to
+the hand that hangs beside it, is worse still: seam p99 goes to 74/119/327
+and the worst edge to 4225x, because a harder eligibility cut adds partition
+boundaries rather than removing them.
+
+### Torso skin that moved when the arms moved (2026-09-11, last)
+
+Reported after the cutoff band went in. Measured by holding the trunk still
+and abducting both arms, then asking how far trunk skin travels. The lower
+trunk and the chest do not move at all. What moved was the back: 261 vertices
+in the midline strip over the thoracic spinous processes, by up to 10.4 units,
+plus the paraspinal and scapular region.
+
+The paraspinal motion is correct and the project's own data says so: the
+muscle layer assigns trapezius, rhomboids and latissimus dorsi the arm chain
+in `MUSCLE_CHAIN_OVERRIDES`, so skin over them follows the shoulder girdle.
+The midline strip does not — it lies over spinous processes that do not move.
+
+Those vertices had `clavicle_R` as their primary joint. By Euclidean distance
+they should not have: `thoracic_1` 8.78, `clavicle_R` 12.13, `rib_1` 13.52.
+The chain ranking is geodesic, and the geodesic fields are *seeded* by
+Euclidean radius -- a vertex within `SEED_RADIUS` of a bone is told its
+geodesic distance to that chain equals its Euclidean one. That makes seeding a
+contest between **superficial** bones rather than the right ones. The clavicle
+and scapula are subcutaneous, the vertebral bodies are not, so skin 8.78 units
+from its own vertebra was never a spine seed and measured its distance to the
+spine the long way round, while the collar bone was one short hop away. It
+came out with a quarter of its motion on the clavicle.
+
+`SEED_FROM_OWNED_SKIN` seeds each chain from the skin it *owns* -- the
+vertices whose nearest bone segment is one of its -- as well as from the
+radius. Every seed this adds was measured to fall on skin no bone reaches
+within the radius, so it is exactly the deep-tissue skin the old rule never
+saw. Midline back skin under full abduction goes from 261 vertices moving up
+to 10.4 units to zero moving at all, and the flank speckle below the scapula
+goes with it (`results/skin_arm_follow.png`).
+
+It is a trade, and the metrics say so plainly:
+
+| | midline movers | squat worst edge | axilla seam p99 | torn, 4 poses |
+|---|---|---|---|---|
+| radius seeds only | 261 | 212.80 | 56.054 | 70,092 |
+| plus owned skin | 0 | 100.57 | 69.974 | 77,434 |
+
+The reported defect goes to zero and the single worst edge in a deep squat
+halves; the cost is 10% more moderately torn edges overall and a quarter more
+seam stretch in the axilla, which was already the worst region and stays so
+either way. Restricting the new seeds to skin the radius rule leaves unseeded
+changes nothing, measured -- the benefit and the cost are the same seeds.
+
+Because the *rule* changed rather than a number, `skinning_cache.CACHE_VERSION`
+moved to 5. A tunable would not have covered it, and a stale entry served the
+old seeding while the measurement showed no change at all.
+
+**What is left.** The residual concentrates where the skin genuinely folds:
+the hip crease at 85 degrees of flexion, and the axilla at full abduction,
+where the worst edge is still 439x and the seam 99th percentile 56. Of the
+998 edges past 50x at full abduction, 469 are lateral abdomen skin whose
+nearest bone segment really is the hanging arm -- a limit of nearest-bone
+binding, not of the cutoff.
+
 ## The animation model
 
 A rep is a sequence of **phases**; each holds the pose reached at its end, how

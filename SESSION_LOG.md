@@ -470,3 +470,104 @@ negative control passes a deliberately broken engine. It is not the
 per-binding skip — measured with the skip disabled, containment is still
 0.000 — so the control needs a mechanism that still misbehaves, which is its
 own piece of work.
+
+## 2026-09-11 (last, later) — Skin that tore during exercises
+
+**Reported.** The skin layer deforms during exercises, with individual
+vertices either left behind or attached to the movements of different body
+parts.
+
+**Found.** The skin is intact at rest, in the clinical view and in the gym at
+the neutral pose, and tears the instant any joint rotates; exercises are only
+where it shows, because their poses are the most extreme. Containment is
+0.000 throughout, so nothing is ever left behind by a joint that did not
+move — "left behind" is the far side of a torn edge.
+
+Decomposing the pipeline at a deadlift-style hip hinge, by edges stretched
+past twice their rest length: rigid binding 9,900; two-joint linear blend
+18,850; four-influence linear blend 53,485; four-influence dual-quaternion
+blend 55,568; engine output after every correction pass 56,125. So neither
+the dual-quaternion blend nor any correction was responsible — the
+corrections moved the offending vertices by 0.000 units — and the count was
+not the issue either, since three influences tore 58,841 edges, more than
+four. The influence cutoff was rank-based: each vertex took its four nearest
+bone segments cut off at the distance to the fifth, which is smooth but not
+local, so a thigh vertex carried real weight on the ankle.
+
+**Built.** `SoftTissueSkinning.INFLUENCE_CUTOFF_BAND`: compact support
+measured from the vertex's nearest segment, three model units wide. A
+departing segment's weight still reaches zero smoothly, but the set stays
+local. The band is additive rather than a multiple of the nearest distance,
+because a multiple collapses where the skin lies on the bone — with a 1.5x
+ratio the worst edge went from 253x to 1982x. `SKIN_CHAIN_Z_MARGIN` and
+`SKIN_SPATIAL_LIMIT` are named constants now so they can be measured, and
+`tools/skin_deformation_quality.py` is the gate.
+
+**Measured.** Over four poses, worst-pose 99th-percentile edge stretch and
+total torn edges: rank-based 8.073 / 185,170; band 3.0 as shipped 1.954 /
+70,092. At the hip hinge, vertices with a torn incident edge fall from 39,672
+to 12,967 of 791,729 (5.01% to 1.64%). Through a real deadlift the torn
+edges fall from 97,478 to 42,002 and the 99th percentile from 8.728 to 4.193;
+the gain is smaller than on the gate's poses because the deadlift setup
+combines deep hip flexion with knee flexion and the arm reach. The muscle
+gate is byte-identical
+(seam p99 0.163, bulk p99 0.2226) because muscles do not take the
+multi-influence path. Figure: `results/skin_tearing.png`.
+
+**Rejected, with the measurements that rejected them.** `DIFFUSE_WEIGHTS`,
+the existing heat-diffusion pass, halves the seam tail but raises the bulk
+tail 25-32%, torn edges 43% and the worst edge from 253x to 3179x, because it
+rebuilds the influence set from the top four of a diffused field and so
+destroys the compact support. Two influences instead of four fixes the legs
+but loses the axilla (seam p99 70.2 against 56.1). Tightening the spatial
+guard from 25 to 12 is worse than anything: seam p99 74/119/327 and a worst
+edge of 4225x, because a harder eligibility cut adds partition boundaries.
+
+**Still open.** The residual concentrates where the skin genuinely folds: the
+hip crease, and the axilla at full abduction, where the worst edge is 439x.
+Of the 998 edges past 50x there, 469 are lateral abdomen skin whose nearest
+bone segment really is the arm hanging beside it — a limit of nearest-bone
+binding rather than of the cutoff.
+
+## 2026-09-11 (last, later still) — Torso skin that moved with the arms
+
+**Reported.** When the arms move, pixels from the torso are incorrectly moved.
+Asked whether it can be solved the way the muscle layer was, or by proximity
+of skin to muscles.
+
+**Found.** Holding the trunk still and abducting both arms: the lower trunk
+and the chest do not move at all. The back does — 261 vertices in the midline
+strip over the thoracic spinous processes, by up to 10.4 units, plus the
+paraspinal and scapular region. The paraspinal motion is correct, and the
+project's own muscle data says so: `MUSCLE_CHAIN_OVERRIDES` gives trapezius,
+rhomboids and latissimus dorsi the arm chain, so skin over them follows the
+shoulder girdle. So binding skin by proximity to muscle, as asked, would
+endorse most of what was being reported rather than remove it.
+
+The midline strip is a genuine fault. Those vertices had `clavicle_R` as
+primary even though the spine is nearer by Euclidean distance (thoracic_1
+8.78, clavicle_R 12.13, rib_1 13.52). The chain ranking is geodesic, and the
+geodesic fields are seeded by Euclidean radius, which makes seeding a contest
+between *superficial* bones: the clavicle and scapula are subcutaneous, the
+vertebral bodies are not, so skin 8.78 units from its own vertebra was never a
+spine seed and measured its distance to the spine the long way round.
+
+**Built.** `SEED_FROM_OWNED_SKIN`: each chain also seeds from the skin whose
+nearest bone segment belongs to it. Measured, every seed this adds falls on
+skin no bone reaches within the radius, so it is exactly the deep-tissue skin
+the old rule never saw. `skinning_cache.CACHE_VERSION` moved to 5 because the
+rule changed rather than a number, and a stale entry had already served the
+old seeding through one whole measurement.
+
+**Measured.** Midline back skin under full abduction: 261 vertices moving up
+to 10.4 units, now zero moving at all. The deep squat's worst edge halves,
+212.80 to 100.57. The cost is 10% more moderately torn edges over the four
+gate poses (70,092 to 77,434) and a quarter more seam stretch in the axilla
+(56.054 to 69.974), which was already the worst region. Figure:
+`results/skin_arm_follow.png`.
+
+**Rejected, with the measurement.** Seeding from owned skin *instead of* the
+radius, rather than as well as it, gives the same numbers — so the overlap the
+radius provides is not what is buying the soft boundary. Restricting the new
+seeds to vertices the radius rule leaves unseeded also changes nothing, for
+the same reason: benefit and cost are the same seeds.

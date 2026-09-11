@@ -211,6 +211,18 @@ def digit_chain_ids(prefix: str, chain_ids: dict[str, int]) -> set[int]:
     return out
 
 
+#: Two-tier spatial filtering for the skin binding, in model units.
+#:
+#: ``SKIN_CHAIN_Z_MARGIN`` is the margin on each chain's Z-axis bounding box;
+#: ``SKIN_SPATIAL_LIMIT`` is the Euclidean guard that catches the overlap the
+#: Z box cannot, where the arm and leg chains meet at hip level.  They are
+#: named rather than inline so `tools/skin_deformation_quality.py` can measure
+#: them: with the arms hanging, a hand sits beside the thigh, so lateral
+#: abdomen skin is genuinely nearer an arm segment than any rib.
+SKIN_CHAIN_Z_MARGIN = 15.0
+SKIN_SPATIAL_LIMIT = 25.0
+
+
 def register_muscle_layer(skinning: Any, layer: str, meshes: list, defs: list[dict],
                           chain_ids: dict[str, int], *,
                           default_chains: list[str] | None = None,
@@ -610,7 +622,8 @@ class DemandLoaders:
                 for mesh in result.meshes:
                     skinning.register_skin_mesh(
                         mesh, is_muscle=False, allowed_chains=all_chains,
-                        chain_z_margin=15.0, spatial_limit=25.0)
+                        chain_z_margin=SKIN_CHAIN_Z_MARGIN,
+                        spatial_limit=SKIN_SPATIAL_LIMIT)
             logger.info("Loaded skin: %d meshes", len(result.meshes))
             self.ctx.run_after_registration_hooks()
         except Exception as e:  # noqa: BLE001

@@ -239,6 +239,42 @@ class SoftTissueSkinning:
 
     SKIN_INFLUENCES = 4
 
+    #: Compact-support band for an influence, in model units past the
+    #: distance to the vertex's NEAREST bone segment.  ``0.0`` uses the
+    #: (K+1)-th nearest distance instead, which is what the influence solve
+    #: did originally.
+    #:
+    #: The rank-based cutoff is smooth but not local: the (K+1)-th segment can
+    #: be most of a limb away, so the third and fourth influences keep real
+    #: weight on bones a whole joint further along the chain.  Measured on the
+    #: 791,729-vertex skin at a deadlift-style hip hinge, admitting a third
+    #: influence at all is what tears it -- torn edges 18,850 (K=2), 58,841
+    #: (K=3), 55,568 (K=4) -- because a thigh vertex ends up part-driven by
+    #: the ankle.
+    #:
+    #: The band is additive rather than a multiple of the nearest distance: a
+    #: multiple collapses to nothing where the skin lies on the bone, so every
+    #: vertex with d1 ~ 0 fell back to rigid binding beside neighbours that
+    #: blended.  Measured with a 1.5x ratio, that pushed the worst edge from
+    #: 253x to 1982x even as the 99th percentile improved.
+    #:
+    #: 3.0 model units, about the thickness of soft tissue over a bone on a
+    #: body 230 units tall.  Bracketed with tools/skin_deformation_quality.py
+    #: over four poses -- the worst pose's 99th-percentile edge stretch and the
+    #: total torn edges across all four:
+    #:
+    #:   band   worst p99   torn      worst seam p99
+    #:   rank       8.073   185,170           61.950
+    #:   1.5        1.763    66,749           60.811
+    #:   3.0        1.954    70,092           56.054
+    #:   6.0        2.513   104,770           53.958
+    #:
+    #: 1.5 and 3.0 are within a few per cent of each other on stretch; 3.0 is
+    #: taken because it is better on the seam tail in every pose and on the
+    #: single worst edge (439x against 575x), and seams are what reads on
+    #: screen as a vertex stuck to the wrong limb.
+    INFLUENCE_CUTOFF_BAND = 3.0
+
     #: Restore each MUSCLE vertex's rest distance to its own bone segment.
     #:
     #: A muscle attaches to bone, so its offset from that bone is close to
@@ -607,6 +643,28 @@ class SoftTissueSkinning:
     # through the torso interior.
     GEODESIC_BLEND = 0.1   # Euclidean weight in hybrid distance (10% Euclidean)
     SEED_RADIUS = 5.0      # max Euclidean dist from bone segment to seed vertex
+
+    #: Seed each chain's geodesic field from the skin that chain OWNS -- the
+    #: vertices whose nearest bone segment belongs to it -- rather than from
+    #: every vertex within ``SEED_RADIUS`` of one of its bones.
+    #:
+    #: Seeding is what makes the geodesic separation work: a seed is told its
+    #: geodesic distance to the chain equals its Euclidean one, and every
+    #: other vertex measures from there across the mesh.  A fixed radius makes
+    #: that a contest between *superficial* bones, not the right ones.  The
+    #: clavicle and scapula are subcutaneous, the vertebral bodies are not, so
+    #: skin over the upper thoracic spine -- 8.8 units from its own vertebra
+    #: and so never a spine seed -- was handed a short geodesic path to the
+    #: shoulder girdle instead.  Measured on one such vertex, Euclidean
+    #: distances were thoracic_1 8.78, clavicle_R 12.13, rib_1 13.52, and the
+    #: influences it got were clavicle_R 0.25, thoracic_1 0.25, thoracic_2
+    #: 0.25, thoracic_0 0.25: a quarter of its motion came from the collar
+    #: bone.  Abducting the arm then moved midline back skin up to 10.4 units.
+    #:
+    #: Ownership asks the question the binding already answers per vertex, so
+    #: it needs no radius and no new tuning.  ``SEED_RADIUS`` remains the
+    #: fallback for a chain that owns no vertex at all.
+    SEED_FROM_OWNED_SKIN = True
 
     def __init__(self):
         self.joints: list[SkinJoint] = []
@@ -1554,7 +1612,13 @@ class SoftTissueSkinning:
         d_take = np.take_along_axis(d_take, order, axis=1)
 
         d_k = d_take[:, :K]                       # (V, K) the K nearest
-        if take > K:
+        band = float(self.INFLUENCE_CUTOFF_BAND)
+        if band > 0.0:
+            # Local support: nothing further than ``band`` past the nearest
+            # segment contributes, whatever its rank.  Additive, so the
+            # support never vanishes where the skin lies on the bone.
+            d_cut = d_take[:, :1] + band
+        elif take > K:
             d_cut = d_take[:, K:K + 1]            # (V, 1) the (K+1)-th
         else:
             # Fewer than K+1 candidates: no outer bound available, so fall back
@@ -2018,6 +2082,36 @@ class SoftTissueSkinning:
 
         result = np.full((V, C), np.inf, dtype=np.float64)
 
+        def _chain_min_dist(chain_id) -> np.ndarray:
+            """Euclidean distance from every vertex to this chain's nearest segment."""
+            chain_mask = seg_chain_arr == chain_id
+            starts = seg_starts[chain_mask]
+            ends = seg_ends[chain_mask]
+            ab = ends - starts
+            ab_len_sq = np.sum(ab * ab, axis=1)
+            ap = positions[:, np.newaxis, :] - starts[np.newaxis, :, :]
+            t = np.sum(ap * ab[np.newaxis, :, :], axis=2) / np.maximum(
+                ab_len_sq[np.newaxis, :], 1e-10)
+            t = np.clip(t, 0.0, 1.0)
+            closest = starts[np.newaxis, :, :] + t[:, :, np.newaxis] * ab[np.newaxis, :, :]
+            diff = positions[:, np.newaxis, :] - closest
+            return np.sqrt(np.sum(diff * diff, axis=2)).min(axis=1)
+
+        # Which chain owns the bone segment nearest each vertex.  Kept as a
+        # running best so this costs O(V) beyond the per-chain pass below.
+        nearest_chain = None
+        if self.SEED_FROM_OWNED_SKIN:
+            best = np.full(V, np.inf)
+            nearest_chain = np.full(V, -1, dtype=np.int64)
+            for chain_id in unique_chains:
+                d = _chain_min_dist(chain_id)
+                closer = d < best
+                best[closer] = d[closer]
+                nearest_chain[closer] = int(chain_id)
+            # Measured: every seed this adds falls on skin no bone reaches
+            # within SEED_RADIUS, so restricting it to that case changes
+            # nothing.  It is the deep-tissue skin the radius rule never saw.
+
         for chain_id in unique_chains:
             ci = chain_to_idx[int(chain_id)]
             chain_mask = seg_chain_arr == chain_id
@@ -2038,6 +2132,12 @@ class SoftTissueSkinning:
             min_seg_dist = seg_dists.min(axis=1)  # (V,)
 
             seed_mask = min_seg_dist <= self.SEED_RADIUS
+            if nearest_chain is not None:
+                # Union, not replacement: the radius keeps neighbouring fields
+                # overlapping across a joint, which is what keeps a boundary
+                # soft, while ownership guarantees a deep bone seeds the skin
+                # that lies over it however far under the surface it sits.
+                seed_mask = seed_mask | (nearest_chain == int(chain_id))
             seed_indices = np.where(seed_mask)[0]
             seed_dists = min_seg_dist[seed_mask]
 

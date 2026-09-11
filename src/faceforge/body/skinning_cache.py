@@ -51,7 +51,12 @@ import numpy as np
 # (SoftTissueSkinning.DIFFUSE_WEIGHTS). Entries hold solver OUTPUT,
 # so a stale one serves weights from the previous algorithm and the
 # change appears to do nothing -- that has cost this project twice.
-CACHE_VERSION = 4
+# 5: geodesic chain fields are seeded from the skin each chain owns as
+# well as from a fixed radius. A tunable would not have covered this --
+# the rule changed, not a number -- and the stale entry served the old
+# seeding while the measurement showed no change at all, which is the
+# third time this cache has done that.
+CACHE_VERSION = 5
 
 # Vertex count above which memoising beats solving.  The full-body skin mesh
 # is ~792k vertices; muscle meshes are typically 1k-30k.

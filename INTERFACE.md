@@ -196,7 +196,7 @@ flat when ankle dorsiflexion = pitch − hip + knee.
 | `surface_landmarks.py` | Joint landmarks from the skeleton's own bones, and the same joints found on a body mesh by shape (the wrist and ankle are where a limb is narrowest). |
 | `surface_register.py` | `register_onto`: limb-by-limb registration of the body-surface mesh onto the skeleton, held inside an edge-length band; `fit_head_to_skull`. |
 | `surface_projection.py` | The geometry the fit is built from: closest point on a triangle, region-constrained projection, edges, Laplacian smoothing, normals. |
-| `soft_tissue.py` | Delta-matrix soft tissue skinning for body muscles/organs/vasculature; `resnapshot_rest` re-snapshots the rest pose after the skeleton itself moves, keeping the binding. `_joint_world` always returns a fresh array: world matrices are rewritten in place, so a rest matrix that aliased one followed the body into the gym. |
+| `soft_tissue.py` | Delta-matrix soft tissue skinning for body muscles/organs/vasculature; `resnapshot_rest` re-snapshots the rest pose after the skeleton itself moves, keeping the binding. `_joint_world` always returns a fresh array: world matrices are rewritten in place, so a rest matrix that aliased one followed the body into the gym. `INFLUENCE_CUTOFF_BAND` keeps a skin vertex's influences local, so a thigh vertex is not part-driven by the ankle; `SEED_FROM_OWNED_SKIN` lets a deep bone seed the skin lying over it, so back skin is not handed to the collar bone. |
 | `stretch_viz.py` | Stretch heatmap and chain assignment visualization for soft tissue skinning. |
 | `vasculature.py` | On-demand vascular system loading. |
 
@@ -226,7 +226,7 @@ flat when ankle dorsiflexion = pitch − hip + knee.
 | `asset_load_sequence.py` | The startup load, as an explicit ordered sequence of named stages. |
 | `body_anchors.py` | The shoulder / ribcage / thoracic anchors the neck muscles follow, read in the **body** frame: `wrapper_cancel` undoes the `scene_wrapper` so a live pivot can be compared with a rest snapshot taken before scene mode existed. |
 | `joint_chains.py` | The kinematic chains the skinning binds to (arm chain from the clavicle); shared by the app and the headless tools |
-| `demand_loaders.py` | Load anatomy groups the first time the user asks to see them. |
+| `demand_loaders.py` | Load anatomy groups the first time the user asks to see them; `SKIN_CHAIN_Z_MARGIN` / `SKIN_SPATIAL_LIMIT` are the skin binding's two-tier eligibility filter, named so they can be measured. |
 | `loading_pipeline.py` | Sequential asset loading chain with progress reporting. |
 | `render_mode_sync.py` | Keep newly loaded meshes in step with the render mode already on screen. |
 | `scene_builder.py` | Constructs the scene graph from loaded assets. |
@@ -407,6 +407,7 @@ flat when ankle dorsiflexion = pitch − hip + knee.
 | `author_footprints.py` | Mirror authored attachment footprints to the other side, or seed them from bone proximity (measure before keeping) |
 | `export_exercise_docs.py` | Renders the catalogue to `docs/exercises.md` (`--check` for CI) |
 | `neck_deformation_quality.py` | Neck-muscle edge stretch and displacement per pose, with `--wrapper` for the gym-scene control |
+| `skin_deformation_quality.py` | Body-skin tearing, collapse and containment per pose; `--influences`, `--cutoff`, `--spatial-limit`, `--diffuse` for the tunables |
 | `glcontext.py` | Offscreen CGL context (software renderer in a sandbox) |
 | `capture_golden.py`, `compare_golden.py` | Golden-image capture and diff |
 | `generate_readme_images.py`, `generate_scanner_images.py` | README figures via the PIL renderers |
