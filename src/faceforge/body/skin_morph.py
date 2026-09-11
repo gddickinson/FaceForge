@@ -191,7 +191,7 @@ class SkinShapeMorph:
         out = np.array(field, dtype=np.float64, copy=True)
         for _ in range(iterations):
             avg = np.empty_like(out)
-            for c in range(3):
+            for c in range(out.shape[1]):
                 avg[:, c] = np.bincount(src, weights=out[dst, c], minlength=n_vertices) * inv
             out[has] = (1.0 - strength) * out[has] + strength * avg[has]
         return out

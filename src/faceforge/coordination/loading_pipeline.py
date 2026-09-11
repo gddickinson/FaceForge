@@ -4,6 +4,8 @@ import logging
 from dataclasses import dataclass, field
 from typing import Optional
 
+import numpy as np
+
 from faceforge.core.scene_graph import SceneNode
 from faceforge.core.mesh import MeshInstance
 from faceforge.core.events import EventBus, EventType
@@ -383,7 +385,7 @@ class LoadingPipeline:
         self._report("Loading body surface mesh...", 0.95)
         try:
             self.gender_morph = GenderMorphSystem()
-            mesh_node = self.gender_morph.load(self.assets)
+            mesh_node = self.gender_morph.load(self.assets, self._skeleton_points())
             if mesh_node is not None:
                 body_mesh_group = self.nodes.get("bodyMeshGroup")
                 if body_mesh_group is not None:
@@ -396,6 +398,37 @@ class LoadingPipeline:
 
         self._report("Skeleton complete", 1.0)
         self.event_bus.publish(EventType.LOADING_COMPLETE)
+
+    def _skeleton_points(self, per_bone: int = 120) -> Optional[np.ndarray]:
+        """Vertices sampled from every loaded bone, for the surface to enclose."""
+        root = self.nodes.get("bodyRoot")
+        if root is None:
+            return None
+        rng = np.random.default_rng(0)
+        # World, not local: bones are reparented under joint pivots, so their
+        # own vertices are expressed relative to the joint they hang from.
+        root.update_world_matrix(force=True)
+        out = []
+        stack = [root]
+        while stack:
+            node = stack.pop()
+            stack.extend(node.children)
+            mesh = getattr(node, "mesh", None)
+            if mesh is None or not node.name or node.name == "body_surface":
+                continue
+            geo = mesh.geometry
+            pts = np.asarray(geo.positions, dtype=np.float64).reshape(-1, 3)[:geo.vertex_count]
+            if len(pts) == 0:
+                continue
+            if len(pts) > per_bone:
+                pts = pts[rng.choice(len(pts), per_bone, replace=False)]
+            m = np.asarray(node.world_matrix, dtype=np.float64)
+            out.append(pts @ m[:3, :3].T + m[:3, 3])
+        if not out:
+            return None
+        points = np.concatenate(out)
+        logger.info("Skeleton sampled for surface containment: %d points", len(points))
+        return points
 
     @staticmethod
     def _mesh_nodes_below(group: SceneNode) -> list[SceneNode]:

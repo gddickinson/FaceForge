@@ -119,6 +119,86 @@ their neighbours received everything, so the mesh tore along the boundary); and
 a final edge-length band, which makes "no tearing" a property rather than a
 hope.
 
+### Fitting the surface mesh onto the skeleton
+
+The body-surface mesh and the skeleton are different bodies in different
+poses, so the mesh is warped onto the skeleton at load.  How that is done is
+the whole question, and the first two attempts both failed in ways worth
+recording.
+
+The version that shipped remapped the mesh piecewise in Z and blended two arm
+rotations against that remap.  Blending a rotation against a translation is
+not a rigid motion, and it sheared everything it touched:
+
+| | before the warp | after it |
+|---|---|---|
+| forearm depth | 24.7 | 17.4 |
+| forearm width | 21.5 | 28.4 |
+| foot length | 28.2 | 19.2 |
+| occiput | rounded | shaved flat |
+
+The fix is in `body/surface_register.py`.  Each limb segment is matched on its
+own -- rotated, scaled and moved onto its bone -- and the trunk and head are
+matched to the reference body level by level.  Those correspondences are
+sampled densely (a ring of points at five stations along every bone, which
+pins the rotation) and interpolated by a spline.
+
+Two things had to be added on top, each against a measured failure:
+
+* The spline is a *global* interpolant, so one inconsistent correspondence
+  distorts a whole region: 1519 edges ended stretched past twice their length,
+  the worst at 8.6x.  The result is therefore held inside a band around the
+  mesh's own edge lengths, and where the band bites the fit gives way rather
+  than the mesh.
+* Pairing the trunk's *outline* rather than just its centre does contain the
+  skeleton, but it also transfers the reference body's shape, and the
+  reference is an elderly cadaver with a bulbous occiput and a heavy abdomen.
+  The surface came out pot-bellied with a lump on the back of its skull.  Only
+  the centres are paired now.
+
+Two approaches were tried and rejected, both measured: a spline through the
+fourteen landmarks alone (under-determined -- a 2-unit cube in the forearm
+came out 1.36 x 1.64 x 2.00), and blending the per-limb similarities directly
+by distance weights (the blended centres move where the weights transition,
+which put 59.9 % of the skeleton outside the surface against 51.2 %).
+
+Landmarks matter as much as the method.  The mesh's "wrist" was the lowest
+tenth of the arm's vertices, which is the fingertips; the forearm was sheared
+to match.  It is now the narrowest station between elbow and hand
+(`body/surface_landmarks.py`), and the hand has a landmark of its own, taken
+from the middle finger's distal phalanx -- without one the skeleton's
+fingertips stood 15.6 units outside the surface.
+
+### The head is fitted to the skull
+
+The skull's face stood 4.8 units in front of the surface's, because the
+surface's head sits about 4 units behind it and is a little shallower.  The
+head is moved and grown by the least that clears the skull with a margin, per
+axis and never below 1, and the change is blended to nothing by the shoulders
+(`fit_head_to_skull`).  A single uniform factor was tried first and is set by
+the worst axis: the skull is deeper than the head but no taller, so it grew
+the whole head by a third.
+
+Inflating the surface wherever *any* bone poked through it was tried too, as
+the general form of the same idea.  On a 10 500-vertex mesh a 12-unit push
+produces self-intersecting spikes, and it is not usable; the head, where the
+mismatch is a clean translation, is.
+
+### The skeleton's fit, measured
+
+Sampled bone vertices lying outside the surface mesh, and how far:
+
+| | outside | p95 | worst |
+|---|---|---|---|
+| as shipped | 53.5 % | -- | -- |
+| placed by similarity, no deformation | 70.2 % | 19.2 | 23.9 |
+| registered (now) | 51.2 % | 12.7 | 16.5 |
+| skull only, registered | 16 % | 1.4 | 2.1 |
+
+The residual is honest: the two bodies genuinely differ, and every method that
+closes the gap further damages the mesh.  What the registration guarantees is
+that the mesh is never damaged to get there.
+
 ### The surface warp no longer flattens
 
 `body/gender_morph.py`.  The projection is now a constrained solve: a few small

@@ -14,10 +14,11 @@ from faceforge.body.bone_scaling import BoneScaler
 from faceforge.body.edge_relaxation import enforce_edge_range
 from faceforge.body.skeleton_morph import SkeletonMorph
 from faceforge.body.skin_morph import SkinShapeMorph
-from faceforge.body.surface_fit import (
-    align_to_bp3d, refine_onto_skin, extract_mesh_landmarks, extract_skeleton_landmarks, load_bp3d_skin_mesh,
-    surface_skin_refinement,
+from faceforge.body.surface_fit import align_to_bp3d, refine_onto_skin
+from faceforge.body.surface_landmarks import (
+    extract_mesh_landmarks, extract_skeleton_landmarks, load_bp3d_skin_mesh,
 )
+from faceforge.body.surface_register import fit_head_to_skull, register_onto
 from faceforge.body.surface_projection import (
     build_head_mask, closest_point_on_triangle_batch, closest_points_on_surface,
     extract_edges, laplacian_smooth_displacements, recompute_normals,
@@ -50,6 +51,7 @@ class GenderMorphSystem:
         self._bone_scaler = BoneScaler()
         self._skeleton_morph = SkeletonMorph(self._bone_scaler)
         self._skin_shape: Optional[SkinShapeMorph] = None
+        self._bone_points: Optional[NDArray] = None
         self._male_positions: Optional[NDArray[np.float32]] = None
         self._female_positions: Optional[NDArray[np.float32]] = None
         self._male_normals: Optional[NDArray[np.float32]] = None
@@ -108,12 +110,20 @@ class GenderMorphSystem:
         """Cached skeleton landmarks from last warp computation, or None."""
         return self._skel_landmarks
 
-    def load(self, assets: AssetManager) -> Optional[SceneNode]:
+    def load(self, assets: AssetManager,
+             bone_points: Optional[NDArray] = None) -> Optional[SceneNode]:
         """Load male and female body meshes.
+
+        ``bone_points`` are vertices sampled from the loaded skeleton, in the
+        same coordinates.  Given them, the surface is inflated wherever a bone
+        would otherwise poke through it; see
+        :func:`faceforge.body.surface_fit.inflate_to_contain`.
 
         Returns the SceneNode containing the body surface mesh, or None
         if loading fails.
         """
+        self._bone_points = None if bone_points is None else np.asarray(
+            bone_points, dtype=np.float64)
         try:
             male_geom, female_geom = assets.load_body_mesh()
         except Exception as e:
@@ -290,9 +300,6 @@ class GenderMorphSystem:
     def _extract_mesh_landmarks(self, pos):
         return extract_mesh_landmarks(pos)
 
-    def _surface_skin_refinement(self, *args, **kwargs):
-        return surface_skin_refinement(*args, **kwargs)
-
 
     # ── Surface projection methods ───────────────────────────────
     _closest_point_on_triangle_batch = staticmethod(closest_point_on_triangle_batch)
@@ -315,156 +322,50 @@ class GenderMorphSystem:
         skel_lm: dict[str, NDArray],
         assets: Optional[AssetManager] = None,
     ) -> tuple[NDArray, NDArray]:
-        """Compute per-vertex displacement + rotation matrix.
+        """Per-vertex displacement taking the surface mesh onto the skeleton.
 
-        Returns (displacements (V,3), per_vert_rot (V,3,3)).
+        Two stages.  The first registers the mesh onto the reference skin --
+        the skin of the same cadaver the skeleton came from, so landing on it
+        is landing on the skeleton -- with a spline fitted to matched
+        landmarks.  The second refines the fit locally, under edge-length
+        constraints.
+
+        It replaced a piecewise Z-remap blended against two arm rotations.
+        Blending a rotation against a translation is not a rigid motion, and
+        it sheared the limbs: the forearm's depth fell from 24.7 to 17.4 while
+        its width rose, the foot lost a third of its length, and the occiput
+        was sheared flat.
+
+        The rotation array is returned for callers that carry normals through
+        the warp; it is the identity here, because the deformation is no
+        longer a set of per-vertex rigid motions and the normals are
+        recomputed from the warped faces instead.
         """
         V = len(pos)
-        disp = np.zeros((V, 3), dtype=np.float64)
         per_vert_rot = np.tile(np.eye(3, dtype=np.float64), (V, 1, 1))
+        zero = np.zeros((V, 3), dtype=np.float64)
+        if assets is None:
+            return zero, per_vert_rot
+        skin = load_bp3d_skin_mesh(assets, self._bp3d_skin_mesh_cache)
+        if skin is None:
+            logger.warning("No reference skin: the surface mesh is left where it is")
+            return zero, per_vert_rot
 
-        z = pos[:, 2].astype(np.float64)
-        x = pos[:, 0].astype(np.float64)
-
-        # Average R/L skeleton landmarks for symmetric Z-keyframes
-        def _avg(lm, key, axis=2):
-            r = lm.get(f"{key}_R")
-            l = lm.get(f"{key}_L")
-            if r is not None and l is not None:
-                return (float(r[axis]) + float(l[axis])) / 2
-            if r is not None:
-                return float(r[axis])
-            return float(l[axis]) if l is not None else 0.0
-
-        sh_z_m = _avg(mesh_lm, "shoulder")
-        sh_z_s = _avg(skel_lm, "shoulder")
-        hi_z_m = _avg(mesh_lm, "hip")
-        hi_z_s = _avg(skel_lm, "hip")
-        kn_z_m = _avg(mesh_lm, "knee")
-        kn_z_s = _avg(skel_lm, "knee")
-        an_z_m = _avg(mesh_lm, "ankle")
-        an_z_s = _avg(skel_lm, "ankle")
-
-        head_top_z = float(z.max())
-        foot_bot_z = float(z.min())
-
-        # Head shift: at minimum matches the shoulder shift so the head is
-        # not compressed.  Add +5 so the cranium top aligns with the skull
-        # (skull cranium top ≈ Z=27.6).
-        shoulder_shift = sh_z_s - sh_z_m
-        head_shift = shoulder_shift + 5.0
-
-        # ── Phase 1: Piecewise Z-remap ──────────────────────────
-        # Keyframes ordered low-Z → high-Z for np.interp
-        kf_z = np.array([
-            foot_bot_z,
-            an_z_m,
-            kn_z_m,
-            hi_z_m,
-            sh_z_m,
-            head_top_z,
-        ])
-        kf_dz = np.array([
-            an_z_s - an_z_m,     # foot bottom follows ankle shift
-            an_z_s - an_z_m,     # ankle
-            kn_z_s - kn_z_m,     # knee
-            hi_z_s - hi_z_m,     # hip
-            sh_z_s - sh_z_m,     # shoulder
-            head_shift,          # head top
-        ])
-
-        z_shift = np.interp(z, kf_z, kf_dz)
-        disp[:, 2] = z_shift
-
-        # ── Phase 2: Arm rotation ───────────────────────────────
-        # For arm vertices, REPLACE the Z-shift with a proper rotation
-        # that maps mesh arm direction to skeleton arm direction.
-        for side_char, x_sign in (("R", 1), ("L", -1)):
-            sh = mesh_lm.get(f"shoulder_{side_char}")
-            el = mesh_lm.get(f"elbow_{side_char}")
-            wr = mesh_lm.get(f"wrist_{side_char}")
-            s_sh = skel_lm.get(f"shoulder_{side_char}")
-            s_el = skel_lm.get(f"elbow_{side_char}")
-            s_wr = skel_lm.get(f"wrist_{side_char}")
-            if any(v is None for v in (sh, el, wr, s_sh, s_el, s_wr)):
-                continue
-
-            sh_z_val = float(sh[2])
-            wr_z_val = float(wr[2])
-            lateral = x * x_sign
-
-            # Identify arm vertices (lateral, between shoulder and wrist Z)
-            arm_core = (lateral > 14) & (z <= sh_z_val + 8) & (z >= wr_z_val - 5)
-            if not arm_core.any():
-                continue
-
-            # Blend weight: 0 = use Z-shift, 1 = use arm rotation
-            arm_blend = np.zeros(V, dtype=np.float64)
-            arm_blend[arm_core] = np.clip((lateral[arm_core] - 14) / 5.0, 0, 1)
-
-            # Taper at Z boundaries
-            above_sh = arm_core & (z > sh_z_val)
-            below_wr = arm_core & (z < wr_z_val)
-            if above_sh.any():
-                arm_blend[above_sh] *= np.clip(
-                    (sh_z_val + 8 - z[above_sh]) / 8.0, 0, 1,
-                )
-            if below_wr.any():
-                arm_blend[below_wr] *= np.clip(
-                    (z[below_wr] - (wr_z_val - 5)) / 5.0, 0, 1,
-                )
-
-            has_blend = arm_blend > 0
-            if not has_blend.any():
-                continue
-
-            # Compute rotation matrices
-            sh64, el64, wr64 = (
-                sh.astype(np.float64),
-                el.astype(np.float64),
-                wr.astype(np.float64),
-            )
-            R_ua = self._rotation_between(el64 - sh64, s_el - s_sh)
-            warped_elbow = R_ua @ (el64 - sh64) + s_sh
-            R_fa = self._rotation_between(wr64 - el64, s_wr - warped_elbow)
-
-            el_z_val = float(el[2])
-            arm_pts = pos[has_blend].astype(np.float64)
-            arm_z_local = arm_pts[:, 2]
-
-            arm_disp = np.zeros_like(arm_pts)
-            arm_rot = np.tile(np.eye(3, dtype=np.float64), (len(arm_pts), 1, 1))
-
-            # Upper arm: rotate around mesh shoulder → skeleton shoulder
-            ua = arm_z_local > el_z_val
-            if ua.any():
-                rotated = (arm_pts[ua] - sh64) @ R_ua.T + s_sh
-                arm_disp[ua] = rotated - arm_pts[ua]
-                arm_rot[ua] = R_ua
-
-            # Forearm + hand: rotate around mesh elbow → warped elbow
-            fa = ~ua
-            if fa.any():
-                rotated = (arm_pts[fa] - el64) @ R_fa.T + warped_elbow
-                arm_disp[fa] = rotated - arm_pts[fa]
-                arm_rot[fa] = R_fa
-
-            # Blend between spine Z-shift and arm rotation
-            blend = arm_blend[has_blend, np.newaxis]
-            disp[has_blend] = blend * arm_disp + (1 - blend) * disp[has_blend]
-
-            blend_3d = arm_blend[has_blend, np.newaxis, np.newaxis]
-            per_vert_rot[has_blend] = (
-                blend_3d * arm_rot
-                + (1 - blend_3d) * per_vert_rot[has_blend]
-            )
-
-        # ── Phase 3: Surface skin refinement ──────────────────────
-        if assets is not None:
-            disp += refine_onto_skin(self, pos, disp, skel_lm, assets)
-
-        logger.info(
-            "Warp: head dZ=+%.0f, shoulder dZ=%+.0f, ankle dZ=%+.0f",
-            head_shift, shoulder_shift, an_z_s - an_z_m,
-        )
+        skull = None
+        if self._bone_points is not None and len(self._bone_points):
+            # The skull: everything the skeleton has above the shoulders.
+            sh = skel_lm.get("shoulder_R")
+            cut = float(sh[2]) + 12.0 if sh is not None else 0.0
+            skull = self._bone_points[self._bone_points[:, 2] > cut]
+        disp = register_onto(pos, skel_lm, skin[0], self._mesh_indices)
+        disp = disp + refine_onto_skin(self, pos, disp, skel_lm, assets)
+        if skull is not None and len(skull):
+            sh = skel_lm.get("shoulder_R")
+            warped = np.asarray(pos, dtype=np.float64) + disp
+            disp = (fit_head_to_skull(warped, skull,
+                                      float(sh[2]) if sh is not None else -15.0)
+                    - np.asarray(pos, dtype=np.float64))
+        logger.info("Surface warp: median %.1f, max %.1f",
+                    float(np.median(np.linalg.norm(disp, axis=1))),
+                    float(np.max(np.linalg.norm(disp, axis=1))))
         return disp, per_vert_rot

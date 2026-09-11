@@ -190,7 +190,9 @@ flat when ankle dorsiflexion = pitch − hip + knee.
 | `soft_tissue_morph.py` | `SoftTissueMorph`: composes the skeleton warp, the muscle bulk change and the soft-tissue field onto every mesh's rest pose, always from a captured original. |
 | `muscle_morph.py` | `MuscleMorph`: thins a muscle belly perpendicular to its own long axis, tapered to nothing at the attachments. |
 | `skinning_cache.py` | Disk cache for the soft-tissue binding solve. |
-| `surface_fit.py` | Fitting the body-surface mesh onto the skeleton: landmarks, the BP3D skin, and the constrained refinement that replaced the projection which flattened the hands. |
+| `surface_fit.py` | The refinement that pulls the registered surface mesh the last few units onto the reference skin, under edge-length constraints. |
+| `surface_landmarks.py` | Joint landmarks from the skeleton's own bones, and the same joints found on a body mesh by shape (the wrist and ankle are where a limb is narrowest). |
+| `surface_register.py` | `register_onto`: limb-by-limb registration of the body-surface mesh onto the skeleton, held inside an edge-length band; `fit_head_to_skull`. |
 | `surface_projection.py` | The geometry the fit is built from: closest point on a triangle, region-constrained projection, edges, Laplacian smoothing, normals. |
 | `soft_tissue.py` | Delta-matrix soft tissue skinning for body muscles/organs/vasculature; `resnapshot_rest` re-snapshots the rest pose after the skeleton itself moves, keeping the binding. |
 | `stretch_viz.py` | Stretch heatmap and chain assignment visualization for soft tissue skinning. |

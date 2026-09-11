@@ -323,3 +323,43 @@ A release costs 10 s, of which 5.9 s is the frame that follows. Replacing the
 full re-binding with a rest re-snapshot (the binding does not change when the
 body changes size) took 85 s off it. Fast tier green; `docs/sex_morph.md`
 records the measurements.
+
+## 2026-09-11 (later) — The body-surface mesh: flattening, and fitting the skull
+
+**Reported.** The skin mesh layer is still deformed strangely at the back of
+the head, the forearms and the feet, in both sexes; the skeleton should fit
+better inside it, and the skull should be resized to match.
+
+**Found.** The body-surface mesh is warped onto the skeleton at load by a
+piecewise Z-remap blended against two arm rotations. Blending a rotation
+against a translation is not a rigid motion: the forearm's depth fell from
+24.7 to 17.4 while its width rose from 21.5 to 28.4, the foot lost a third of
+its length, and the occiput was shaved flat. The mesh's "wrist" landmark was
+the lowest tenth of the arm's vertices — the fingertips — so the forearm was
+sheared to match, and there was no hand landmark at all, which left the
+skeleton's fingertips 15.6 units outside the surface.
+
+**Built.** `body/surface_register.py` registers the mesh limb by limb: each
+segment rotated, scaled and moved onto its bone, the trunk and head matched to
+the reference body level by level, the correspondences interpolated by a
+spline, and the result held inside a band around the mesh's own edge lengths.
+`body/surface_landmarks.py` finds the wrist and ankle at the narrowest station
+of a limb and gives the hand a landmark from the middle finger's distal
+phalanx. `fit_head_to_skull` moves and grows the head, per axis and never
+below 1, by the least that clears the skull, blended to nothing by the
+shoulders; the pipeline samples the loaded skeleton and hands it over.
+
+**Measured.** The occiput is rounded again, the forearm keeps its
+cross-section and the foot its length, in both sexes. Bone vertices outside
+the surface: 53.5 % as shipped, 70.2 % if the mesh is only placed and not
+deformed, 51.2 % now, with the 95th-percentile protrusion at 12.7 against
+19.2; the skull alone is 16 % outside with a worst case of 2.1.
+
+**Rejected, with the measurements that rejected them.** A spline through the
+fourteen landmarks alone (a 2-unit cube in the forearm came out 1.36 x 1.64 x
+2.00); blending the per-limb similarities by distance weight (59.9 % outside);
+pairing the trunk's outline rather than its centre (imports the reference
+cadaver's bulbous occiput and heavy abdomen); and inflating the surface
+wherever any bone pokes through (self-intersecting spikes on a 10 500-vertex
+mesh). The residual misfit is honest: the two bodies differ, and every method
+that closes the gap further damages the mesh.
