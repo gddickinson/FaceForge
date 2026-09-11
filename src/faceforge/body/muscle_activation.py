@@ -123,10 +123,21 @@ class MuscleActivationSystem:
     # -- registration ------------------------------------------------------
 
     def register_muscle(self, mesh: MeshInstance, name: str) -> None:
-        """Register a muscle mesh for heatmap colouring (idempotent by name)."""
+        """Register a muscle mesh for heatmap colouring (idempotent by name).
+
+        The name is the key the activation track addresses, so two different
+        meshes under one name would leave one of them never coloured and the
+        other coloured by the wrong level: the hand and foot configs used to
+        share four names (abductor / flexor / opponens digiti minimi, dorsal
+        interossei), and the hand's were silently replaced by the foot's.
+        """
         original = None
         if mesh.geometry.vertex_colors is not None:
             original = mesh.geometry.vertex_colors.copy()
+        previous = self._muscles.get(name)
+        if previous is not None and previous[0] is not mesh:
+            logger.warning("Heatmap: a second mesh registered as %r replaces the first; "
+                           "give the meshes distinct names", name)
         self._muscles[name] = (mesh, original)
 
     @property

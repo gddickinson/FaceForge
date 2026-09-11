@@ -222,6 +222,15 @@ per-joint matmul replacing the `(V, 4, 4)` gather measured slower from two
 joints up and was not kept (`body/skinning_ops.py` records the numbers).
 Fast tier 1774 passed.
 
+**Duplicate mesh names.** The hand and foot configs both named
+"R/L Abductor Digiti Minimi", "Flexor Digiti Minimi Brevis", "Opponens
+Digiti Minimi" and "Dorsal Interossei". The heatmap registry and the
+activation track are keyed by name, so the foot's registration replaced the
+hand's: a deadlift's grip never coloured those hand muscles and the foot's
+took the hand's level. The foot entries now carry "(Foot)" (config and
+`foot_intrinsics`), the registry warns on a second mesh under one name, and
+a test asserts name uniqueness across every muscle config.
+
 **Open.** The viewer is still ~1 frame/s with everything loaded; the floor
 is memory bandwidth over 4–8 M vertices per pass. A display level of detail
 (decimated muscle meshes with the vertex-indexed data remapped by position)

@@ -79,3 +79,23 @@ def test_palettes_are_selectable_and_thermal_is_luminance_ordered(system):
     assert np.all(np.diff(lum) >= -1e-6)
     with pytest.raises(KeyError):
         system.set_palette("rainbow")
+
+
+def test_registering_a_second_mesh_under_one_name_warns(caplog):
+    import logging
+    from faceforge.body.muscle_activation import MuscleActivationSystem
+    from faceforge.core.mesh import BufferGeometry, MeshInstance
+
+    def mesh(name):
+        geom = BufferGeometry(positions=np.zeros(9, dtype=np.float32),
+                              normals=np.zeros(9, dtype=np.float32))
+        return MeshInstance(name=name, geometry=geom)
+
+    system = MuscleActivationSystem(dof_map={})
+    a, b = mesh("R Abductor Digiti Minimi"), mesh("R Abductor Digiti Minimi")
+    with caplog.at_level(logging.WARNING, logger="faceforge.body.muscle_activation"):
+        system.register_muscle(a, a.name)
+        system.register_muscle(a, a.name)            # idempotent: same mesh, no warning
+        assert not caplog.records
+        system.register_muscle(b, b.name)
+    assert any("distinct names" in r.getMessage() for r in caplog.records)

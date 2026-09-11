@@ -53,3 +53,29 @@ def test_regions_for_groups_is_in_load_order_and_complete():
     regions = regions_for_groups(["quadriceps", "gluteus_maximus", "biceps_brachii"])
     assert regions == ["arm_muscles", "hip_muscles", "leg_muscles"]
     assert regions_for_groups(["tensor_fasciae_latae"]) == ["hip_muscles", "leg_muscles"]
+
+
+def test_mesh_names_are_unique_across_every_muscle_config():
+    """The heatmap registry and the activation track are keyed by mesh name.
+
+    The hand and foot configs both shipped "R Abductor Digiti Minimi",
+    "R Flexor Digiti Minimi Brevis", "R Opponens Digiti Minimi" and
+    "R Dorsal Interossei" (and the left sides): the foot's registration
+    replaced the hand's, so a deadlift's grip never coloured those hand
+    muscles and the foot's took the hand's level.
+    """
+    import json
+    from collections import Counter
+    from faceforge.constants import CONFIG_DIR
+    names: Counter = Counter()
+    for path in sorted((CONFIG_DIR / "muscles").glob("*.json")):
+        data = json.loads(path.read_text())
+        items = data if isinstance(data, list) else data.get("muscles", [])
+        for item in items:
+            if isinstance(item, dict) and item.get("name"):
+                names[item["name"]] += 1
+    duplicates = sorted(n for n, k in names.items() if k > 1)
+    assert not duplicates, duplicates
+    hand = set(expand_group("hand_intrinsics"))
+    foot = set(expand_group("foot_intrinsics"))
+    assert not hand & foot

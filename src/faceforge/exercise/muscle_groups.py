@@ -76,9 +76,15 @@ MUSCLE_GROUPS: dict[str, tuple[str, ...]] = {
                         "Abductor Digiti Minimi", "Flexor Digiti Minimi Brevis",
                         "Opponens Digiti Minimi", "Lumbricals", "Palmar Interossei",
                         "Dorsal Interossei"),
-    "foot_intrinsics": ("Abductor Hallucis", "Flexor Digitorum Brevis", "Abductor Digiti Minimi",
+    # The foot's digiti minimi muscles and dorsal interossei carry "(Foot)"
+    # in the config: the heatmap registry and the activation track are keyed
+    # by mesh name, and the hand config owns the bare names.
+    "foot_intrinsics": ("Abductor Hallucis", "Flexor Digitorum Brevis",
+                        "Abductor Digiti Minimi (Foot)",
                         "Flexor Accessorius", "First Lumbrical", "Second Lumbrical",
-                        "Third Lumbrical", "Fourth Lumbrical", "Flexor Digiti Minimi Brevis",
+                        "Third Lumbrical", "Fourth Lumbrical",
+                        "Flexor Digiti Minimi Brevis (Foot)", "Opponens Digiti Minimi (Foot)",
+                        "Dorsal Interossei (Foot)",
                         "Flexor Hallucis Brevis Medial", "Flexor Hallucis Brevis Lateral",
                         "Adductor Hallucis Oblique", "Adductor Hallucis Transverse"),
 }
