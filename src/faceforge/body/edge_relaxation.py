@@ -150,3 +150,71 @@ def relax_edges(
         "max_residual": residuals,
         "converged": converged,
     }
+
+
+def enforce_edge_range(
+    positions: np.ndarray,
+    edges: np.ndarray,
+    rest_lengths: np.ndarray,
+    *,
+    max_stretch: float = 0.25,
+    max_compression: float = 0.25,
+    iterations: int = 8,
+    omega: float = 1.0,
+    tol: float = 1e-4,
+) -> dict:
+    """Keep every edge inside ``[1-max_compression, 1+max_stretch] x rest``, in place.
+
+    The two-sided companion to :func:`relax_edges`.  Stretch alone is enough
+    when the input is a skinned pose, which can only pull skin apart; it is not
+    enough when the input is a *projection onto another surface*, which pulls
+    it together.  Projecting the body mesh onto the BP3D skin collapsed 1235
+    triangles to under a tenth of their area and squeezed hand edges to 0.4% of
+    their length -- both sides of a limb project onto the same patch, so the
+    limb becomes a sheet.  A compression floor makes that geometrically
+    impossible: a tube whose edges may not shorten past a fraction of their
+    rest length cannot be flattened.
+
+    Returns the same report as :func:`relax_edges`.
+    """
+    pos = positions
+    a = edges[:, 0]
+    b = edges[:, 1]
+    upper = rest_lengths * (1.0 + max_stretch)
+    lower = rest_lengths * max(0.0, 1.0 - max_compression)
+
+    counts = np.bincount(np.concatenate([a, b]), minlength=len(pos))
+    counts = np.maximum(counts, 1).astype(np.float64)[:, None]
+
+    violations: list[int] = []
+    residuals: list[float] = []
+    converged = False
+    run = 0
+    for run in range(1, iterations + 1):
+        d = pos[b] - pos[a]
+        length = np.linalg.norm(d, axis=1)
+        target = np.clip(length, lower, upper)
+        # A tolerance, not an exact comparison: a projection that lands the
+        # edge exactly on the floor leaves a last-bit residual that would
+        # otherwise be reported as non-convergence for ever.
+        bad = np.abs(target - length) > tol * np.maximum(rest_lengths, 1e-12)
+        n_bad = int(bad.sum())
+        violations.append(n_bad)
+        if n_bad == 0:
+            residuals.append(0.0)
+            converged = True
+            break
+        residuals.append(float(np.abs(target - length)[bad].max()))
+
+        safe = np.maximum(length[bad], 1e-12)
+        direction = d[bad] / safe[:, None]
+        # Half the correction to each endpoint conserves the edge midpoint, so
+        # the pass adds no net translation.
+        shift = 0.5 * omega * (length[bad] - target[bad])[:, None] * direction
+        corr = np.zeros_like(pos)
+        np.add.at(corr, a[bad], shift)
+        np.add.at(corr, b[bad], -shift)
+        pos += corr / counts
+
+    return {"iterations_run": run, "violations": violations,
+            "max_residual": residuals, "converged": converged}

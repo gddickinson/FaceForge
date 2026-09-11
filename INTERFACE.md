@@ -4,7 +4,8 @@
 and how they connect. Update it whenever the structure changes
 (`python -m tools.export_exercise_docs` regenerates the exercise list;
 this file is maintained by hand). Rig facts that were *measured*, not
-assumed, live in `docs/exercise_animation.md`.
+assumed, live in `docs/exercise_animation.md`; the sex morph's measurements
+live in `docs/sex_morph.md`.
 
 ## Running and testing
 
@@ -34,7 +35,7 @@ FaceForge/
 ├── assets/stl            symlink to the BodyParts3D STL set (outside the repo)
 ├── tools/                headless loaders, renderers, diagnostics, README image generators
 ├── tests/                pytest; `slow` marks asset-heavy and whole-app tests
-├── docs/                 headless_cli.md, exercise_animation.md, exercises.md (generated), research/
+├── docs/                 headless_cli.md, exercise_animation.md, sex_morph.md, exercises.md (generated), research/
 ├── results/              generated outputs (exercise demo frames live in results/exercise_demo/)
 ├── start_faceforge.sh    launcher: the full GUI
 ├── start_exercise_viewer.sh  launcher: the standalone exercise viewer (--exercise ID, --list)
@@ -163,15 +164,15 @@ flat when ankle dorsiflexion = pitch − hip + knee.
 | `body_animation.py` | Body animation: spine flex/bend/rotation, limb articulation, breathing; scapulohumeral rhythm as a glide on the thorax with clavicle elevation (`_apply_girdle`); pronation is the outermost wrist rotation. |
 | `body_constraints.py` | Body joint limit enforcement via simple clamping. |
 | `body_muscles.py` | On-demand body muscle loading and management. |
-| `bone_scaling.py` | Per-bone affine scaling for gender dimorphism. |
+| `bone_scaling.py` | Female/male scale factor per bone, from `assets/config/gender_dimorphism.json`; matches a bone name only on whole words, so "Tibialis" is not a tibia. |
 | `brain.py` | On-demand brain loading. |
 | `centres_of_rotation.py` | Per-vertex centres of rotation for skin deformation. |
 | `chain_overrides.py` | JSON persistence for vertex chain reassignment overrides. |
 | `chain_reassignment.py` | Reassign selected vertices to a different kinematic chain. |
 | `diagnostics.py` | Skinning diagnostics: detect mesh vertices displaced beyond expected limits. |
 | `dof_ranges.py` | The body's joint degrees of freedom: range, sign convention and anatomical name. |
-| `edge_relaxation.py` | One-sided distance-constraint relaxation for skin, after position-based dynamics. |
-| `gender_morph.py` | Gender morph system: coordinates body surface morphing and bone scaling. |
+| `edge_relaxation.py` | Distance-constraint relaxation: `relax_edges` (one-sided, for poses) and `enforce_edge_range` (two-sided, so a projection cannot flatten a limb). |
+| `gender_morph.py` | The sex morph's front door: the male/female surface pair, the skeleton morph, the soft-tissue field, and the warp of the surface mesh onto the skeleton. |
 | `ground_contact.py` | Keep the feet (or hands) on the floor while the joints move; hands anchored to a point (a bar) are measured at the closed-finger ring. |
 | `hand_points.py` | `finger_ring_centre`: the centroid of the closed finger joints, where a held bar's axis passes (shared by the equipment rig and the ground lock). |
 | `joint_pivots.py` | Joint pivot setup for limb articulation; digit pivots sit at each phalanx's proximal end (`proximal_end`). |
@@ -182,8 +183,16 @@ flat when ankle dorsiflexion = pitch − hip + knee.
 | `physiology.py` | Physiological simulation systems: heartbeat, blood flow, breathing, digestion, fasciculation. |
 | `region_labels.py` | Anatomical region labeling for body mesh segmentation. |
 | `skeleton.py` | Build full-body skeleton from STL batches. |
+| `skeleton_field.py` | Turns a skeleton change into a smooth spatial warp: joint displacements as a thin-plate spline (`displacement_warp`), sampled on a lattice (`sampled_warp`). |
+| `skeleton_joints.py` | Shuts an articulation whose two bones scale apart (the acromioclavicular joint), from a contact patch measured on the unscaled skeleton. |
+| `skeleton_morph.py` | `SkeletonMorph`: scales the skeleton as an articulated hierarchy -- bones about the joint they hang from, joints moved to the end of the scaled bone -- so proportions change without the joints coming apart. |
+| `skin_morph.py` | `SkinShapeMorph`: the female-minus-male soft-tissue field (breast, gluteal and thigh fat, waist), measured from the surface pair and transferred to the model's own skin. |
+| `soft_tissue_morph.py` | `SoftTissueMorph`: composes the skeleton warp, the muscle bulk change and the soft-tissue field onto every mesh's rest pose, always from a captured original. |
+| `muscle_morph.py` | `MuscleMorph`: thins a muscle belly perpendicular to its own long axis, tapered to nothing at the attachments. |
 | `skinning_cache.py` | Disk cache for the soft-tissue binding solve. |
-| `soft_tissue.py` | Delta-matrix soft tissue skinning for body muscles/organs/vasculature. |
+| `surface_fit.py` | Fitting the body-surface mesh onto the skeleton: landmarks, the BP3D skin, and the constrained refinement that replaced the projection which flattened the hands. |
+| `surface_projection.py` | The geometry the fit is built from: closest point on a triangle, region-constrained projection, edges, Laplacian smoothing, normals. |
+| `soft_tissue.py` | Delta-matrix soft tissue skinning for body muscles/organs/vasculature; `resnapshot_rest` re-snapshots the rest pose after the skeleton itself moves, keeping the binding. |
 | `stretch_viz.py` | Stretch heatmap and chain assignment visualization for soft tissue skinning. |
 | `vasculature.py` | On-demand vascular system loading. |
 

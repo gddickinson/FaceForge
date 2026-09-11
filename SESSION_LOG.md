@@ -267,3 +267,59 @@ hips, which carries the legs with it, so it has its own legs (hip 16, knee
 70). Box jump verified standing on the box at the Stand phase (lowest bone
 65.8 over a 60-high box). Hand and foot muscle names de-duplicated earlier
 the same day.
+
+## 2026-09-11 — The sex morph: skeleton, muscles and skin
+
+**Reported.** The morph between sexes "doesn't work well": skeletal changes
+leave gaps between bones and are not realistic, no change in musculature
+works, and the skin flattens, especially in the arms.
+
+**Diagnosed.** All three reproduced, and measured.
+
+* *Gaps.* Every bone scaled about its own centroid, so the knee opened 0.07 →
+  3.55 units at gender 1, the elbow 0.59 → 3.89, the patella 0.36 → 1.51.
+  Scaling about the centroid also leaves the centroid where it is: the median
+  bone-centroid displacement across the whole change was **0.00**, so the
+  skeleton never changed proportion at all.
+* *No musculature.* The release path scaled the bones and then *re-bound* the
+  skinning, which makes the new skeleton the rest pose and sets every delta to
+  the identity. Measured through the full path, muscle centroids, lengths,
+  radii and every skin cross-section were bit-identical before and after.
+* *Flattening.* The load-time warp projected every surface vertex onto the
+  closest point of the BP3D skin. 1235 triangles ended below a tenth of their
+  area, 3034 hand edges and 727 forearm edges below half their length, worst
+  0.4 %: the hands and feet were flat blades.
+
+**Built.** `body/skeleton_morph.py` scales the skeleton as an articulated
+hierarchy (bones about the joint they hang from, joints moved to the end of
+the scaled bone), with `skeleton_joints.py` shutting the one articulation the
+hierarchy cannot (acromioclavicular) from a measured contact patch.
+`skeleton_field.py` turns the joint movements into a thin-plate spline warp,
+sampled on a lattice; `soft_tissue_morph.py` composes that warp with
+`muscle_morph.py` (bellies thinned perpendicular to their own axis, tapered to
+nothing at the attachments) and `skin_morph.py` (the female-minus-male
+soft-tissue field, measured from the surface pair, size change and tangential
+component removed). `surface_fit.py` and `surface_projection.py` carry the
+warp machinery that `gender_morph.py` had grown to 1253 lines around.
+
+**Two latent bugs found on the way.** `_rest_inv_cache` is keyed by joint index
+and outlived the joints it described, so after any rebind the hull bound
+clamped 554875 skin vertices by up to 10.4 units. And `build_skin_joints`
+captured rest matrices in world space while `update` reads them
+wrapper-cancelled, so rebuilding the joints under the gym wrapper dropped the
+whole soft tissue on the floor, rotated 90 degrees. Both fixed, both with
+regression tests.
+
+**Measured after.** Every joint clearance within 0.12 of its male value;
+gender 0 restores bit-for-bit; 33 of 2.37 M skin edges outside the band, 32 of
+them in the toes. Biacromial F/M 0.89, femur 0.91, skin waist/hip 0.90 → 0.80,
+biceps belly radius 0.58, rectus femoris 0.77 — all within the published
+ranges. The anthropometry in `gender_dimorphism.json` was corrected: the female
+pelvis keeps nearly the male's absolute breadth rather than being scaled up,
+which had given a bi-iliac/biacromial ratio of 1.01 against a published
+0.80-0.86.
+
+A release costs 10 s, of which 5.9 s is the frame that follows. Replacing the
+full re-binding with a rest re-snapshot (the binding does not change when the
+body changes size) took 85 s off it. Fast tier green; `docs/sex_morph.md`
+records the measurements.

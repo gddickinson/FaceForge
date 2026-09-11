@@ -648,6 +648,72 @@ class SoftTissueSkinning:
         self.joints.clear()
         self.build_skin_joints(joint_chains)
 
+    #: Per-binding caches derived from the rest pose or from the joint rest
+    #: transforms.  A morph invalidates all of them; the binding itself (which
+    #: vertex follows which joint, and how strongly) survives.
+    REST_DERIVED_CACHES = (
+        "_rest_f64", "_pos_h", "_rest_nrm_f64", "_captured_ref", "_resolved_ref",
+        "_hull_used", "_hull_idx", "_cor", "_env_offset", "_env_bone_rest_top",
+        "_per_vert_max", "_neighbor_sum_buf", "_disp_sum_buf", "_prev_driver_deltas",
+    )
+
+    def resnapshot_rest(
+        self,
+        joint_chains: list[list[tuple[str, SceneNode]]],
+    ) -> bool:
+        """Re-snapshot the rest pose after the *skeleton* moved, keeping the binding.
+
+        A sex morph moves every joint and rewrites every soft-tissue rest pose,
+        but it does not change which bone a vertex belongs to: the body is the
+        same body at a different size.  Re-solving that assignment costs 85
+        seconds for 6.2 M vertices and returns the answer it already had, so
+        this refreshes only what the move invalidated -- the joints' rest
+        transforms and the per-binding caches derived from them.
+
+        Returns False, having changed nothing that matters, if the rebuilt
+        joint list is not the same list of joints in the same order; the
+        per-vertex indices would then refer to the wrong joints and the caller
+        must fall back to a full re-registration.
+        """
+        before = [j.name for j in self.joints]
+        self.rebuild_skin_joints(joint_chains)
+        if [j.name for j in self.joints] != before:
+            # Reported by the caller, which owns the fallback; this module
+            # deliberately has no logger of its own.
+            return False
+        for binding in self.bindings:
+            for attr in self.REST_DERIVED_CACHES:
+                if hasattr(binding, attr):
+                    delattr(binding, attr)
+            self._refresh_rest_metrics(binding)
+        return True
+
+    def _refresh_rest_metrics(self, binding: SkinBinding) -> None:
+        """Recompute the rest-pose neighbour baseline from the current rest pose.
+
+        The topology is unchanged, so the edge list and the neighbour counts
+        stand; only the distances move.
+        """
+        edges = binding.edge_pairs
+        counts = binding.neighbor_counts
+        if edges is None or counts is None or binding.mesh.rest_positions is None:
+            return
+        rest = np.asarray(binding.mesh.rest_positions,
+                          dtype=np.float64).reshape(-1, 3)
+        V = len(rest)
+        if len(counts) != V:
+            return
+        endpoints = np.concatenate([edges[:, 0], edges[:, 1]])
+        opposite = np.concatenate([edges[:, 1], edges[:, 0]])
+        neighbor_sum = np.empty((V, 3), dtype=np.float64)
+        for axis in range(3):
+            neighbor_sum[:, axis] = np.bincount(
+                endpoints, weights=rest[opposite, axis], minlength=V)
+        has = counts > 0
+        avg = np.zeros_like(neighbor_sum)
+        avg[has] = neighbor_sum[has] / counts[has, np.newaxis]
+        binding.rest_neighbor_dist = np.linalg.norm(rest - avg, axis=1)
+
     def build_skin_joints(
         self,
         joint_chains: list[list[tuple[str, SceneNode]]],
@@ -663,6 +729,21 @@ class SoftTissueSkinning:
             a chain — never across chain boundaries.
         """
         self.joints.clear()
+        # The wrapper cancel is read per joint below and cached per frame;
+        # drop any cache from an earlier frame so it is measured now.
+        self._cancel_cache = None
+        # The inverse rest transforms are cached by joint INDEX and described
+        # as constant for the rig's lifetime.  They are constant only while the
+        # joint list is: rebuilding it (a gender morph, a chain rebind from the
+        # debug tab) leaves index i pointing at a new joint while the cache
+        # still holds the old joint's inverse, so every delta computed through
+        # _joint_delta is current_new x rest_old^-1 instead of the identity.
+        # Measured on a gender morph: the hull bound, the one pass that reads
+        # those deltas, then clamped 554875 skin vertices by a median 0.79 and
+        # up to 10.4 units and tore 36316 edges past the range the rest of the
+        # pipeline had kept them inside.
+        self._rest_inv_cache = {}
+        self._delta_cache = None
 
         # Track which global joint indices belong to each chain
         chain_ranges: list[tuple[int, int]] = []  # (start_idx, end_idx) per chain
@@ -671,7 +752,15 @@ class SoftTissueSkinning:
             chain_start = len(self.joints)
             for name, node in chain:
                 node.update_world_matrix(force=True)
-                rest = node.world_matrix.copy()
+                # In the SAME frame ``update`` reads them in.  ``update``
+                # cancels the scene wrapper from every joint matrix, so a rest
+                # matrix captured in world space is a different frame and the
+                # delta comes out as the wrapper's own transform: rebuilding
+                # the joints while the gym wrapper was active dropped the whole
+                # soft tissue on the floor, rotated 90 degrees.  There is no
+                # wrapper during the initial load, which is why this only ever
+                # showed up on a rebind.
+                rest = self._joint_world(node)
                 joint = SkinJoint(
                     name=name,
                     node=node,

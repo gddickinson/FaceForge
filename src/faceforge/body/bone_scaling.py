@@ -14,6 +14,22 @@ from faceforge.core.config_loader import load_config
 logger = logging.getLogger(__name__)
 
 
+def _word_match(needle: str, haystack: str) -> bool:
+    """``needle`` occurs in ``haystack`` bounded by non-letters on both sides."""
+    start = 0
+    n = len(needle)
+    while True:
+        i = haystack.find(needle, start)
+        if i < 0:
+            return False
+        before_ok = i == 0 or not haystack[i - 1].isalpha()
+        j = i + n
+        after_ok = j == len(haystack) or not haystack[j].isalpha()
+        if before_ok and after_ok:
+            return True
+        start = i + 1
+
+
 class BoneScaler:
     """Scales skeleton bone meshes for gender dimorphism.
 
@@ -59,9 +75,14 @@ class BoneScaler:
 
         name_lower = bone_name.lower()
 
-        # Check JSON patterns first
+        # Check JSON patterns first.  The match must be delimited by
+        # non-letters on both sides: a bare substring test made "Tibialis
+        # Ant." a tibia, "Fibularis Long." a fibula, "Subscapularis" a
+        # scapula and "Iliocostalis" a costal cartilage -- 23 muscles scaled
+        # and displaced as though they were bones, which moved the whole
+        # morph's control points and compressed the foot skin.
         for pat in self._patterns:
-            if pat["match"].lower() in name_lower:
+            if _word_match(pat["match"].lower(), name_lower):
                 key = pat["key"]
                 self._name_cache[bone_name] = key
                 return key

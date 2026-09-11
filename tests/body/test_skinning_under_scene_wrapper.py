@@ -120,3 +120,32 @@ def test_moving_only_the_wrapper_does_not_change_the_skinning_signature():
     assert sk._compute_signature(state) == before
     state.spine_flex = 0.3
     assert sk._compute_signature(state) != before
+
+
+def test_rebuilding_the_joints_under_a_wrapper_does_not_move_the_body():
+    """The rest matrices must be captured in the frame ``update`` reads them in.
+
+    ``update`` cancels the scene wrapper from every joint matrix.  Capturing
+    the rest matrix in world space instead makes the delta the wrapper's own
+    transform, so a rebind while the gym wrapper was active dropped the whole
+    soft tissue on the floor, rotated 90 degrees.
+    """
+    from faceforge.core.math_utils import quat_from_axis_angle, vec3
+
+    scene, wrapper, nodes, sk = _rig()
+    mesh = _grid_mesh()
+    sk.register_skin_mesh(mesh, is_muscle=True, muscle_name=mesh.name)
+    sk._last_signature = ""
+    sk.update(BodyState())
+    before = np.asarray(mesh.geometry.positions, dtype=np.float64).reshape(-1, 3).copy()
+
+    wrapper.set_position(0.0, 203.0, 0.0)
+    wrapper.set_quaternion(quat_from_axis_angle(vec3(1, 0, 0), -np.pi / 2))
+    sk.scene_wrapper = wrapper
+    scene.update()
+
+    sk.rebuild_skin_joints([[(n.name, n) for n in nodes]])
+    sk._last_signature = ""
+    sk.update(BodyState())
+    after = np.asarray(mesh.geometry.positions, dtype=np.float64).reshape(-1, 3)
+    np.testing.assert_allclose(after, before, atol=1e-6)

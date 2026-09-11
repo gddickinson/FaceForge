@@ -77,7 +77,22 @@ class BodyController:
             morph.set_gender(gender)
 
     def on_gender_released(self, gender: float = 0.0, **kw) -> None:
-        """Slider release: bone scaling, then chain rebuild and re-registration."""
+        """Slider release: scale the skeleton, then rebuild the soft tissue on it.
+
+        The order matters and each step is there for a measured reason.
+
+        1. The skeleton is scaled as an articulated hierarchy, so the joints
+           move and the articulations stay shut
+           (:mod:`faceforge.body.skeleton_morph`).
+        2. The soft tissue's *rest* pose is rebuilt from how far those joints
+           moved, plus the muscle and soft-tissue sex differences
+           (:mod:`faceforge.body.soft_tissue_morph`).  It is deliberately not
+           routed through the skinning: joints that translate rather than
+           rotate tear the skin at every chain boundary, measured at 27747
+           over-stretched edges on the skin alone.
+        3. Only then is the skinning re-bound, which makes the morphed body
+           the pose-neutral body and leaves joint animation working from there.
+        """
         state = self.ctx.state
         state.body.gender = gender
         state.target_body.gender = gender
@@ -86,44 +101,92 @@ class BodyController:
             return
         morph.set_gender(gender)
 
-        bone_meshes = self.collect_bone_meshes()
-        if bone_meshes:
-            n_scaled = morph.scale_skeleton(bone_meshes)
-            logger.info("Gender %.2f: scaled %d/%d bone meshes",
-                        gender, n_scaled, len(bone_meshes))
-            for _, mesh in bone_meshes:
-                mesh.store_rest_pose()
+        root = self.ctx.node("bodyRoot")
+        if root is None:
+            return
+        joint_setup = getattr(getattr(self.ctx, "pipeline", None), "joint_setup", None)
+        skinning = getattr(self.ctx.simulation, "soft_tissue", None)
+        soft = {id(b.mesh) for b in getattr(skinning, "bindings", ())
+                if getattr(b, "mesh", None) is not None}
+        n_scaled = morph.scale_skeleton(
+            root, getattr(joint_setup, "joint_positions", None), exclude=soft)
+        root.update_world_matrix(force=True)
+        self.ctx.scene.update()
 
-        # setup_from_skeleton() is deliberately NOT re-run.  Pivots were built
-        # during the initial load and the bones are already reparented under
-        # them, so a second call would fail looking for bones in their original
-        # skeleton groups.  Scaling above updated vertex positions in place,
-        # which is what the pivots need.
+        skeleton = getattr(morph, "skeleton_morph", None)
+        warp = skeleton.displacement_field(root) if skeleton is not None else None
+        stats = self.morph_soft_tissue(gender, morph, warp)
+        logger.info("Gender %.2f: %d bones scaled, %d muscles and %d other meshes rebuilt",
+                    gender, n_scaled, stats.get("muscles", 0), stats.get("other", 0))
 
+        self.resnapshot_skinning()
+        self.refresh_after_skeleton_change()
+
+    def resnapshot_skinning(self) -> None:
+        """Make the morphed body the pose-neutral body.
+
+        Only the joints' rest transforms and the caches derived from them are
+        refreshed.  Which bone a vertex follows does not change when the body
+        changes size, and re-solving that costs 85 seconds against 0.4 for the
+        re-snapshot.  If the joint list itself came back different the
+        assignment really would be stale, and the full re-registration runs.
+        """
+        skinning = getattr(self.ctx.simulation, "soft_tissue", None)
+        if skinning is None:
+            return
+        builder = self.ctx.joint_chain_builder
+        chains = builder() if builder else []
+        if not chains:
+            return
+        resnapshot = getattr(skinning, "resnapshot_rest", None)
+        if resnapshot is not None and resnapshot(chains):
+            logger.info("Skinning re-snapshotted: %d bindings kept",
+                        len(skinning.bindings))
+            return
+        logger.warning("The joint list changed during the morph; re-solving "
+                       "every binding, which is slow but correct")
         self.rebind_skinning()
 
-    def collect_bone_meshes(self) -> list[tuple[str, Any]]:
-        """Every bone mesh in the ``bodyRoot`` subtree, as ``(name, mesh)``.
+    def morph_soft_tissue(self, gender: float, morph: Any, warp: Any) -> dict:
+        """Rebuild every muscle's and skin mesh's rest pose for ``gender``."""
+        skinning = getattr(self.ctx.simulation, "soft_tissue", None)
+        if skinning is None:
+            return {}
+        from faceforge.body.soft_tissue_morph import SoftTissueMorph
+        tissue = getattr(self, "_soft_tissue_morph", None)
+        if tissue is None:
+            tissue = self._soft_tissue_morph = SoftTissueMorph()
+        # A muscle's region is read from the kinematic chain most of its
+        # vertices bind to, so nothing has to be named twice.
+        ids = getattr(self.ctx, "skin_chain_ids", None) or {}
+        chain_names = {int(v): k for k, v in ids.items()} or None
+        return tissue.apply(
+            getattr(skinning, "bindings", ()), gender, warp=warp,
+            skin_field=getattr(morph, "skin_shape", None),
+            chain_names=chain_names,
+            chain_of_joint=getattr(skinning, "_joint_chain_ids", None))
 
-        Walks the whole subtree rather than the skeleton's own groups because
-        ``setup_from_skeleton()`` reparents bones under pivot nodes, so the
-        original groups are no longer where the bones live.  The body surface
-        mesh is excluded by name: it is skin, not bone, and scaling it here
-        would fight the surface morph.
+    def refresh_after_skeleton_change(self) -> None:
+        """Invalidate what was measured against the old skeleton.
+
+        The skinning early-exits on a signature made of joint DOFs, none of
+        which a sex change touches, so without clearing it the body would keep
+        the pose it was last deformed into.  The bone collision capsules and
+        the shoulder-girdle rest geometry were both measured from bone
+        vertices that have just moved.
         """
-        out: list[tuple[str, Any]] = []
-        body_root = self.ctx.node("bodyRoot")
-        if body_root is None:
-            return out
-
-        def walk(node: Any) -> None:
-            if node.mesh is not None and node.name and node.name != "body_surface":
-                out.append((node.name, node.mesh))
-            for child in node.children:
-                walk(child)
-
-        walk(body_root)
-        return out
+        skinning = getattr(self.ctx.simulation, "soft_tissue", None)
+        if skinning is not None:
+            skinning._last_signature = ()
+            collision = getattr(skinning, "collision_system", None)
+            if collision is not None:
+                try:
+                    collision.build_capsules()
+                except Exception as exc:                     # noqa: BLE001 - logged
+                    logger.warning("Bone capsules not rebuilt after morph: %s", exc)
+        anim = getattr(self.ctx.simulation, "body_animation", None)
+        if anim is not None and hasattr(anim, "_girdle_cache"):
+            anim._girdle_cache = {}
 
     def rebind_skinning(self) -> None:
         """Rebuild the skin joints for the new skeleton and re-register meshes.

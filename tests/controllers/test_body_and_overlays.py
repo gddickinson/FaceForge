@@ -93,18 +93,29 @@ def test_an_empty_pose_preset_changes_nothing(ctx, state, body):
 
 # ── Gender morph: the cheap path and the expensive one ───────────────────
 
+class StubSkeletonMorph:
+    def __init__(self):
+        self.fields = 0
+
+    def displacement_field(self, root):
+        self.fields += 1
+        return lambda pts: pts * 0.0
+
+
 class StubMorph:
     def __init__(self, loaded=True):
         self.loaded = loaded
         self.gender_calls: list[float] = []
-        self.scaled: list[int] = []
+        self.scaled: list[tuple] = []
+        self.skeleton_morph = StubSkeletonMorph()
+        self.skin_shape = None
 
     def set_gender(self, gender):
         self.gender_calls.append(gender)
 
-    def scale_skeleton(self, bone_meshes):
-        self.scaled.append(len(bone_meshes))
-        return len(bone_meshes)
+    def scale_skeleton(self, root, joint_positions=None, exclude=None):
+        self.scaled.append((root.name, exclude or set()))
+        return 1
 
 
 def test_dragging_the_slider_morphs_the_surface_but_never_the_skeleton(ctx, state,
@@ -114,45 +125,75 @@ def test_dragging_the_slider_morphs_the_surface_but_never_the_skeleton(ctx, stat
     ctx.pipeline = SimpleNamespace(gender_morph=morph)
     ctx.event_bus.publish(EventType.GENDER_CHANGED, gender=0.5)
     assert morph.gender_calls == [0.5]
-    assert morph.scaled == [], "bone scaling must wait for release"
+    assert morph.scaled == [], "skeleton scaling must wait for release"
     assert state.body.gender == 0.5
     assert state.target_body.gender == 0.5
 
 
-def test_releasing_the_slider_scales_bones_and_restores_their_rest_pose(ctx, body):
+class StubSkinning:
+    """Enough of the skinning for the release path: bindings and a re-snapshot."""
+
+    def __init__(self, bindings=()):
+        self.bindings = list(bindings)
+        self.resnapshots = 0
+        self._last_signature = ("stale",)
+        self.collision_system = None
+
+    def resnapshot_rest(self, chains):
+        self.resnapshots += 1
+        return True
+
+
+class StubBinding:
+    def __init__(self, mesh, is_muscle=False):
+        self.mesh = mesh
+        self.is_muscle = is_muscle
+
+
+def test_releasing_the_slider_scales_the_skeleton_and_spares_the_soft_tissue(ctx, body):
+    """Soft tissue is deformed by the morph, never scaled as though it were bone.
+
+    A muscle whose name merely reads like a bone -- "Tibialis", "Subscapularis"
+    -- was scaled and displaced as one, so the set of meshes the skinning owns
+    is handed over as an explicit exclusion.
+    """
     morph = StubMorph()
-    ctx.pipeline = SimpleNamespace(gender_morph=morph)
+    ctx.pipeline = SimpleNamespace(gender_morph=morph, joint_setup=None)
     root = FakeNode("bodyRoot")
     femur = FakeNode("femur_R", FakeMesh("femur_R"))
-    surface = FakeNode("body_surface", FakeMesh("body_surface"))
+    muscle = FakeNode("Tibialis Ant. R", FakeMesh("Tibialis Ant. R"))
     root.add(femur)
-    root.add(surface)
+    root.add(muscle)
     ctx.named_nodes["bodyRoot"] = root
-    ctx.simulation = SimpleNamespace(soft_tissue=None)
+    skinning = StubSkinning([StubBinding(muscle.mesh, is_muscle=True)])
+    ctx.simulation = SimpleNamespace(soft_tissue=skinning, body_animation=None)
+    ctx.joint_chain_builder = lambda: [["chain"]]
 
     ctx.event_bus.publish(EventType.GENDER_RELEASED, gender=1.0)
-    assert morph.scaled == [1], "the body surface is skin, not bone"
-    assert femur.mesh.rest_pose_stored == 1
-    assert surface.mesh.rest_pose_stored == 0
+
+    assert morph.gender_calls == [1.0]
+    assert len(morph.scaled) == 1
+    scaled_root, excluded = morph.scaled[0]
+    assert scaled_root == "bodyRoot"
+    assert excluded == {id(muscle.mesh)}, "the muscle must be excluded from scaling"
+    assert morph.skeleton_morph.fields == 1, "the soft tissue follows a warp field"
 
 
-def test_bone_collection_walks_the_reparented_hierarchy(ctx, body):
-    """Bones live under pivots after setup, not in their original groups."""
+def test_releasing_the_slider_resnapshots_rather_than_rebinding(ctx, body):
+    """Re-solving which bone a vertex follows costs 85 s and returns the same answer."""
+    morph = StubMorph()
+    ctx.pipeline = SimpleNamespace(gender_morph=morph, joint_setup=None)
     root = FakeNode("bodyRoot")
-    pivot = FakeNode("shoulder_R")
-    humerus = FakeNode("humerus_R", FakeMesh("humerus_R"))
-    pivot.add(humerus)
-    root.add(pivot)
+    root.add(FakeNode("femur_R", FakeMesh("femur_R")))
     ctx.named_nodes["bodyRoot"] = root
-    assert [n for n, _ in BodyController(ctx).collect_bone_meshes()] == ["humerus_R"]
+    skinning = StubSkinning()
+    ctx.simulation = SimpleNamespace(soft_tissue=skinning, body_animation=None)
+    ctx.joint_chain_builder = lambda: [["chain"]]
 
+    ctx.event_bus.publish(EventType.GENDER_RELEASED, gender=1.0)
 
-def test_bone_collection_skips_unnamed_and_meshless_nodes(ctx, body):
-    root = FakeNode("bodyRoot")
-    root.add(FakeNode("", FakeMesh("anonymous")))
-    root.add(FakeNode("group_only", None))
-    ctx.named_nodes["bodyRoot"] = root
-    assert BodyController(ctx).collect_bone_meshes() == []
+    assert skinning.resnapshots == 1
+    assert skinning._last_signature == (), "the skinning must recompute after a morph"
 
 
 def test_an_unloaded_morph_does_nothing_on_release(ctx, body):
