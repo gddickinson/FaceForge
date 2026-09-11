@@ -49,8 +49,9 @@ def exercise_ctx(ctx):
     scene, wrapper, pivots = _rig()
     ctx.scene = scene
     ctx.scene_controller = SimpleNamespace(
-        is_active=False, wrapper_node=wrapper, presets=[],
-        set_camera_preset=lambda cam, name, target=None: ctx.scene_controller.presets.append(name))
+        is_active=False, wrapper_node=wrapper, presets=[], targets=[],
+        set_camera_preset=lambda cam, name, target=None: ctx.scene_controller.presets.append(name),
+        set_camera_target_override=lambda target: ctx.scene_controller.targets.append(target))
     ctx.pipeline = SimpleNamespace(joint_setup=SimpleNamespace(pivots=pivots, joint_positions={}))
     ctx.anim_player = AnimationPlayer()
     ctx.anim_player.on_body_state = lambda d: ctx.state.target_body.set_from_js_dict(d)
@@ -83,6 +84,16 @@ def test_selecting_enters_the_gym_loads_muscles_and_starts(exercise_ctx):
     assert ctx.scene_controller.presets == ["three_quarter"]
     assert controller.runtime.after_animation in ctx.simulation.after_animation_hooks
     assert controller.runtime.after_scene_update in ctx.simulation.after_scene_update_hooks
+
+
+def test_the_presets_look_where_the_exercise_looks_until_it_stops(exercise_ctx):
+    ctx, controller, events = exercise_ctx
+    ctx.event_bus.publish(EventType.EXERCISE_SELECTED, exercise_id="pull_up")
+    # The pull-up hangs the body: its definition carries a look-at override,
+    # and the view buttons (SCENE_CAMERA_CHANGED) apply presets through it.
+    assert ctx.scene_controller.targets == [(0.0, 190.0, 0.0)]
+    ctx.event_bus.publish(EventType.EXERCISE_STOPPED)
+    assert ctx.scene_controller.targets[-1] is None
 
 
 def test_selecting_when_scene_mode_is_active_does_not_retoggle(exercise_ctx):

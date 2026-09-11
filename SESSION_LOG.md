@@ -176,3 +176,40 @@ Launchers added at the project root: `start_faceforge.sh` (the full GUI) and
 `start_exercise_viewer.sh` (the standalone viewer; forwards `--exercise` /
 `--list`), both choosing `$FACEFORGE_PYTHON`, then the flika environment, then
 `python3`, and setting `PYTHONPATH=src`.
+
+## 2026-09-11 — Bones outside the body in the exercise viewer
+
+**Reported.** Skeleton rendering wrong in the exercise viewer: bones outside
+the model's body.
+
+**Found.** Headless renders were fine and every world matrix and vertex
+array in the running app agreed with them; the *drawn* frame did not.
+Projecting the scene's own centroids onto a grab of the real window showed
+the ribs drawn ~45 units below and outside their centroids (10th rib) while
+every muscle sat where its matrix said. Cause: the standalone viewer entered
+its mode on `LOADING_COMPLETE`, which the skeleton pipeline publishes
+several stages before body animation, rib pivots, skinning and attachment
+systems are wired. The exercise therefore started without body animation
+(no grip lock) and the skeleton was painted — vertices uploaded to the GPU —
+before `reparent_under_pivot` re-based each rib under its breathing pivot by
+subtracting the centroid in place. Nothing set `needs_update`, the renderer
+re-streams only flagged meshes, so each rib was drawn at pivot + original
+vertices: twice its distance from the body origin.
+
+**Fixed.** `reparent_under_pivot` flags the mesh for re-upload (any in-place
+edit of `geometry.positions` after load must); `faceforge/exercise_viewer.py`
+enters the mode from the load sequence's `COMPLETE` stage
+(`watch_load_sequence`, deferred to the event loop). Also found in the same
+grabs: the view buttons applied presets at the standing height, so a hanging
+body was cut off at the hips; `SceneModeController.set_camera_target_override`
+now carries the running exercise's `camera_target` (set at start, cleared at
+stop) into every preset. Verified on the real window: ribs and pelvis on
+their projected centroids, full body framed in the front view at mid-rep.
+Tests: pivot re-basing flag, viewer entry timing, camera target override
+(controller and scene controller).
+
+**Open.** With every muscle loaded one simulation step costs 9.4 s
+(collision resolve 3.4 s, hull bound 1.2 s, DQS 2 s), so the viewer is not
+yet interactive; the skinning signature also includes the wrapper transform,
+which the ground lock changes every frame although the skinning output is
+wrapper-independent.

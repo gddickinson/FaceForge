@@ -148,6 +148,11 @@ class SceneModeController:
         self._saved_cam_target: np.ndarray | None = None
         self._saved_cam_up: np.ndarray | None = None
 
+        # Where the presets look while a demonstration has moved the body:
+        # set by the exercise controller from the definition's camera_target,
+        # cleared when the exercise stops.
+        self._camera_target_override: tuple[float, float, float] | None = None
+
     @property
     def is_active(self) -> bool:
         return self._active
@@ -320,12 +325,28 @@ class SceneModeController:
     # Camera presets
     # ------------------------------------------------------------------
 
+    def set_camera_target_override(self, target: tuple | None) -> None:
+        """Make every preset look at ``target`` (world) until cleared with ``None``.
+
+        A pull-up hangs the body 100 units above where it stands and a bench
+        press lays it on the bench; the view buttons apply the presets, and
+        without this they framed the standing height (a hanging body was cut
+        off at the hips in the front view).
+        """
+        self._camera_target_override = None if target is None else tuple(float(v) for v in target)
+
+    @property
+    def camera_target_override(self) -> tuple[float, float, float] | None:
+        return self._camera_target_override
+
     def set_camera_preset(self, camera: Camera, preset_name: str,
                           target: tuple | None = None) -> None:
         """Apply one of the scene camera presets.
 
         ``target`` replaces the preset's look-at point, keeping the preset's
         offset from it: a hanging or lying body is not where a standing one is.
+        Without an explicit ``target`` the override set by
+        :meth:`set_camera_target_override` applies.
         """
         presets = self._get_camera_presets()
         data = presets.get(preset_name)
@@ -333,6 +354,8 @@ class SceneModeController:
             logger.warning("Unknown scene camera preset: %s", preset_name)
             return
         pos, preset_target = data
+        if target is None:
+            target = self._camera_target_override
         if target is not None:
             offset = np.asarray(pos, dtype=np.float64) - np.asarray(preset_target, dtype=np.float64)
             new_target = np.asarray(target, dtype=np.float64)

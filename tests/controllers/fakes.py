@@ -162,9 +162,13 @@ class FakeSceneModeController:
     def __init__(self):
         self.is_active = False
         self.render_modes: list = []
+        self.camera_target_override = None
 
     def set_render_mode(self, mode):
         self.render_modes.append(mode)
+
+    def set_camera_target_override(self, target):
+        self.camera_target_override = target
 
 
 class FakeLabelOverlay:

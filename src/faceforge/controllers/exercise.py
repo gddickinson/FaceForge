@@ -87,6 +87,9 @@ class ExerciseController:
     def on_exercise_stopped(self, **kw) -> None:
         if self.runtime is not None:
             self.runtime.stop()
+        controller = self.ctx.scene_controller
+        if controller is not None:
+            controller.set_camera_target_override(None)
         activation = self.ctx.muscle_activation
         if activation is not None:
             activation.set_enabled(False)
@@ -163,6 +166,10 @@ class ExerciseController:
             activation.set_enabled(bool(self.options.get("heatmap", True)))
         controller = self.ctx.scene_controller
         camera = self.ctx.camera
+        if controller is not None:
+            # The view buttons re-apply presets while the body hangs or lies
+            # elsewhere than a standing one; they look where this exercise does.
+            controller.set_camera_target_override(defn.camera_target)
         if controller is not None and camera is not None and defn.camera:
             controller.set_camera_preset(camera, defn.camera, target=defn.camera_target)
             orbit = getattr(self.ctx.gl_widget, "orbit_controls", None)

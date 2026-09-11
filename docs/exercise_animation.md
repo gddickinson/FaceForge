@@ -343,6 +343,24 @@ way back. Entering the mode enters the gym scene, loads every muscle layer
 three-quarter view. The catalogue, playback and heatmap are the ones the
 EXERCISE tab already had.
 
+**Bones drawn outside the body (fixed).** The standalone viewer entered the
+mode on `LOADING_COMPLETE`, which the skeleton pipeline publishes several
+stages before body animation, the rib pivots, the skinning and the attachment
+systems are wired. Two consequences: the exercise started with no body
+animation (so no grip lock), and the skeleton was painted — its vertices
+uploaded to the GPU — before `reparent_under_pivot` re-based each rib under
+its breathing pivot by subtracting the centroid from the vertices in place.
+The renderer re-streams only a mesh flagged `needs_update`, and nothing set
+it, so every rib was drawn at pivot + original vertices: twice its distance
+from the body origin, 40–50 units below and outside the trunk in the front
+view (the projected centroid of the 10th rib sat 45 units above the rib as
+drawn, while the muscles, uploaded after their first skinning, were where
+their matrices said). `reparent_under_pivot` now flags the mesh, and the
+standalone viewer enters the mode from the load sequence's `COMPLETE` stage
+(`exercise_viewer.watch_load_sequence`). Rule: any code that edits
+`geometry.positions` in place after load must set `mesh.needs_update`; the
+`MeshInstance.positions` setter does it for whole-array assignment only.
+
 **Implied stabilisers.** A catalogue entry lists the movers. What the body
 is also doing follows from the definition — what is held, what it is
 anchored by, how it is oriented — and `exercise/stabilisers.py` adds those

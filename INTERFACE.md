@@ -104,7 +104,7 @@ flat when ankle dorsiflexion = pitch − hip + knee.
 | `app.py` | FaceForge application entry point. |
 | `appcontext.py` | The collaborators an assembled FaceForge application is made of. |
 | `cli.py` | ``faceforge-cli`` -- the scriptable half of FaceForge. |
-| `exercise_viewer.py` | `python -m faceforge.exercise_viewer [--exercise ID]`: the application opened straight into the exercise-viewer mode (skeleton preset, then every muscle layer). |
+| `exercise_viewer.py` | `python -m faceforge.exercise_viewer [--exercise ID]`: the application opened straight into the exercise-viewer mode (skeleton preset, then every muscle layer). `watch_load_sequence` enters the mode when the load *sequence* reaches `COMPLETE` (not on `LOADING_COMPLETE`, which the skeleton pipeline publishes before body animation, rib pivots and skinning are wired). |
 | `constants.py` | Shared constants and paths for FaceForge. |
 | `session.py` | A headless, scriptable FaceForge render session. |
 

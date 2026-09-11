@@ -73,6 +73,14 @@ def reparent_under_pivot(
         p = geom.positions.reshape(-1, 3)[:geom.vertex_count]
         p -= pivot_world_pos.astype(p.dtype)
         node.mesh.store_rest_pose()
+        # The vertices were edited in place.  If the mesh has already been
+        # drawn, the GPU still holds the un-offset copy, and the renderer only
+        # re-streams a mesh that says so: without this flag the bone is drawn
+        # at pivot + original vertices, i.e. twice its distance from the body
+        # origin.  Measured in the exercise viewer, whose skeleton was painted
+        # before the ribs were re-based under their breathing pivots: every
+        # rib hung 30-50 units below and outside the trunk it belongs to.
+        node.mesh.needs_update = True
     pivot.add(node)
 
 
