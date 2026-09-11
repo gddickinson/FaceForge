@@ -13,6 +13,10 @@ from faceforge.animation.auto_blink import AutoBlink
 from faceforge.animation.auto_breathing import AutoBreathing
 from faceforge.animation.micro_expressions import MicroExpressionGen
 from faceforge.animation.eye_tracking import EyeTracking
+from faceforge.coordination.body_anchors import (
+    body_anchor_positions,
+    wrapper_cancel,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -81,6 +85,11 @@ class Simulation:
 
         # Bone anchor registry for per-muscle attachment pinning
         self.bone_anchors = None  # BoneAnchorRegistry or None
+
+        # The scene_wrapper node while scene mode is active.  Everything that
+        # compares a live pivot with a rest snapshot has to cancel it first;
+        # see faceforge.coordination.body_anchors.
+        self._scene_wrapper: Optional[SceneNode] = None
 
         # Platysma body-spanning handler
         self.platysma = None  # PlatysmaHandler or None
@@ -202,14 +211,28 @@ class Simulation:
         if self.body_animation is not None:
             self.body_animation.apply(body, dt)
 
-        # 9.5 Extract body anchor positions for neck muscle body-tracking
-        if self.neck_muscles is not None and neck_muscles_visible and self.body_animation is not None:
-            self._update_neck_body_anchors()
-
-        # 9.6 Update bone anchor current positions (for per-muscle pinning)
-        if self.bone_anchors is not None and self.body_animation is not None:
+        # 9.5 Settle the frame the next three steps read pivots in.  Neck
+        # muscles, neck pinning and the platysma each subtract a rest
+        # snapshot taken before scene mode existed, so the wrapper has to
+        # come off every live reading first.  The anchors are read after the
+        # scene update, not before it, so they describe this pose and not
+        # the previous frame's.
+        if self.body_animation is not None and (
+                self.bone_anchors is not None
+                or (self.neck_muscles is not None and neck_muscles_visible)):
             self.scene.update()  # ensure world matrices are fresh
+        cancel = self.frame_cancel()
+
+        # 9.6 The bone anchors' frame, for per-muscle pinning.  Soft tissue
+        # sets the same cancel at step 12, which is three steps too late for
+        # the pinning that runs here.
+        if self.bone_anchors is not None and self.body_animation is not None:
+            self.bone_anchors.set_frame_cancel(cancel)
             # Note: snapshot_rest_positions is only called once during init
+
+        # 9.7 Extract body anchor positions for neck muscle body-tracking
+        if self.neck_muscles is not None and neck_muscles_visible and self.body_animation is not None:
+            self._update_neck_body_anchors(cancel)
 
         # 10. Neck muscles (skip if group invisible; now has body anim results)
         if self.neck_muscles is not None and neck_muscles_visible:
@@ -315,55 +338,43 @@ class Simulation:
             return
         # Force a scene update to get current world matrices
         self.scene.update()
-        self._update_neck_body_anchors()
+        self._update_neck_body_anchors(self.frame_cancel())
         # Copy current anchors as rest anchors
         if self.neck_muscles._body_anchor_current:
             self.neck_muscles.set_body_anchors_rest(
                 dict(self.neck_muscles._body_anchor_current)
             )
 
-    def _update_neck_body_anchors(self) -> None:
-        """Extract body anchor world positions from body animation pivots.
+    @property
+    def scene_wrapper(self) -> Optional[SceneNode]:
+        """The ``scene_wrapper`` node, or ``None`` outside scene mode.
 
-        Provides shoulder, ribcage, and thoracic anchor positions to neck
-        muscles for body-delta tracking of lower-end vertices.
+        Falls back to the skinning's own reference so that the one place the
+        app already wires (``controllers.scene_view``) keeps both readers in
+        the same frame without a second assignment to forget.
         """
-        ba = self.body_animation
-        if ba is None or self.neck_muscles is None:
+        if self._scene_wrapper is not None:
+            return self._scene_wrapper
+        return getattr(self.soft_tissue, "scene_wrapper", None)
+
+    @scene_wrapper.setter
+    def scene_wrapper(self, node: Optional[SceneNode]) -> None:
+        self._scene_wrapper = node
+
+    def frame_cancel(self):
+        """Inverse of the scene wrapper's world matrix for this frame, or None."""
+        return wrapper_cancel(self.scene_wrapper)
+
+    def _update_neck_body_anchors(self, cancel=None) -> None:
+        """Hand the neck muscles their body anchors, in the body frame.
+
+        ``cancel`` is the scene wrapper's inverse (see :meth:`frame_cancel`);
+        without it the anchors would be room positions compared against
+        rest positions snapshotted before any room existed.
+        """
+        if self.neck_muscles is None:
             return
-
-        anchors: dict[str, np.ndarray] = {}
-        pivots = getattr(ba, '_joint_setup', None)
-        if pivots is None:
-            pivots = getattr(ba, 'joint_setup', None)
-
-        # Thoracic: use highest thoracic pivot (T1, closest to neck)
-        thoracic_pivots = getattr(ba, 'thoracic_pivots', [])
-        if thoracic_pivots:
-            top_pivot = thoracic_pivots[0]
-            group = top_pivot.get("group")
-            if group is not None:
-                anchors["thoracic"] = group.get_world_position()
-
-        # Shoulder: average of R/L shoulder pivots
-        jp = getattr(ba, 'joints', None)
-        if jp is not None:
-            jp_pivots = getattr(jp, 'pivots', {})
-            shoulder_positions = []
-            for side in ("R", "L"):
-                node = jp_pivots.get(f"shoulder_{side}")
-                if node is not None:
-                    shoulder_positions.append(node.get_world_position())
-            if shoulder_positions:
-                anchors["shoulder"] = np.mean(shoulder_positions, axis=0)
-
-        # Ribcage: use rib pivot average if available
-        rib_pivots = getattr(ba, '_rib_pivots', [])
-        if rib_pivots:
-            rib_positions = [p.get_world_position() for p in rib_pivots[:4]]
-            if rib_positions:
-                anchors["ribcage"] = np.mean(rib_positions, axis=0)
-
+        anchors = body_anchor_positions(self.body_animation, cancel)
         if anchors:
             self.neck_muscles.set_body_anchors_current(anchors)
 

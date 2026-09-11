@@ -91,7 +91,7 @@
     "lowerLevel": 3,
     "headAttachFrac": 0.4,
     "lowerAttach": "thoracic",
-    "lowerBones": ["Thoracic Vertebra T1"]
+    "lowerBones": ["T1"]
   },
   {
     "name": "Thyrohyoid L",
@@ -101,7 +101,7 @@
     "lowerLevel": 3,
     "headAttachFrac": 0.4,
     "lowerAttach": "thoracic",
-    "lowerBones": ["Thoracic Vertebra T1"]
+    "lowerBones": ["T1"]
   },
   {
     "name": "Scalene Anterior R",
@@ -193,7 +193,7 @@
     "lowerLevel": 4,
     "headAttachFrac": 0.2,
     "lowerAttach": "thoracic",
-    "lowerBones": ["Thoracic Vertebra T1"]
+    "lowerBones": ["T1"]
   },
   {
     "name": "Longus Colli Sup. Obl. L",
@@ -203,7 +203,7 @@
     "lowerLevel": 4,
     "headAttachFrac": 0.2,
     "lowerAttach": "thoracic",
-    "lowerBones": ["Thoracic Vertebra T1"]
+    "lowerBones": ["T1"]
   },
   {
     "name": "Longus Colli Vert. R",
@@ -213,7 +213,7 @@
     "lowerLevel": 9,
     "headAttachFrac": 0.0,
     "lowerAttach": "thoracic",
-    "lowerBones": ["Thoracic Vertebra T3"]
+    "lowerBones": ["T3"]
   },
   {
     "name": "Longus Colli Vert. L",
@@ -223,7 +223,7 @@
     "lowerLevel": 9,
     "headAttachFrac": 0.0,
     "lowerAttach": "thoracic",
-    "lowerBones": ["Thoracic Vertebra T3"]
+    "lowerBones": ["T3"]
   },
   {
     "name": "Longus Colli Inf. Obl. R",
@@ -233,7 +233,7 @@
     "lowerLevel": 9,
     "headAttachFrac": 0.0,
     "lowerAttach": "thoracic",
-    "lowerBones": ["Thoracic Vertebra T3"]
+    "lowerBones": ["T3"]
   },
   {
     "name": "Longus Colli Inf. Obl. L",
@@ -243,7 +243,7 @@
     "lowerLevel": 9,
     "headAttachFrac": 0.0,
     "lowerAttach": "thoracic",
-    "lowerBones": ["Thoracic Vertebra T3"]
+    "lowerBones": ["T3"]
   },
   {
     "name": "Longus Capitis R",
@@ -253,7 +253,7 @@
     "lowerLevel": 5,
     "headAttachFrac": 0.3,
     "lowerAttach": "thoracic",
-    "lowerBones": ["Thoracic Vertebra T1"]
+    "lowerBones": ["T1"]
   },
   {
     "name": "Longus Capitis L",
@@ -263,7 +263,7 @@
     "lowerLevel": 5,
     "headAttachFrac": 0.3,
     "lowerAttach": "thoracic",
-    "lowerBones": ["Thoracic Vertebra T1"]
+    "lowerBones": ["T1"]
   },
   {
     "name": "Rectus Cap. Anterior R",
@@ -272,7 +272,8 @@
     "upperLevel": 0,
     "lowerLevel": 0,
     "headAttachFrac": 0.9,
-    "lowerAttach": "thoracic"
+    "lowerAttach": "thoracic",
+    "lowerBones": ["Atlas (C1)"]
   },
   {
     "name": "Rectus Cap. Anterior L",
@@ -281,7 +282,8 @@
     "upperLevel": 0,
     "lowerLevel": 0,
     "headAttachFrac": 0.9,
-    "lowerAttach": "thoracic"
+    "lowerAttach": "thoracic",
+    "lowerBones": ["Atlas (C1)"]
   },
   {
     "name": "Rectus Cap. Lateralis R",
@@ -290,7 +292,8 @@
     "upperLevel": 0,
     "lowerLevel": 0,
     "headAttachFrac": 0.9,
-    "lowerAttach": "thoracic"
+    "lowerAttach": "thoracic",
+    "lowerBones": ["Atlas (C1)"]
   },
   {
     "name": "Rectus Cap. Lateralis L",
@@ -299,7 +302,8 @@
     "upperLevel": 0,
     "lowerLevel": 0,
     "headAttachFrac": 0.9,
-    "lowerAttach": "thoracic"
+    "lowerAttach": "thoracic",
+    "lowerBones": ["Atlas (C1)"]
   },
   {
     "name": "Rectus Cap. Post. Maj. R",
@@ -308,7 +312,8 @@
     "upperLevel": 0,
     "lowerLevel": 1,
     "headAttachFrac": 0.85,
-    "lowerAttach": "thoracic"
+    "lowerAttach": "thoracic",
+    "lowerBones": ["Axis (C2)"]
   },
   {
     "name": "Rectus Cap. Post. Maj. L",
@@ -317,7 +322,8 @@
     "upperLevel": 0,
     "lowerLevel": 1,
     "headAttachFrac": 0.85,
-    "lowerAttach": "thoracic"
+    "lowerAttach": "thoracic",
+    "lowerBones": ["Axis (C2)"]
   },
   {
     "name": "Rectus Cap. Post. Min. R",
@@ -326,7 +332,8 @@
     "upperLevel": 0,
     "lowerLevel": 0,
     "headAttachFrac": 0.9,
-    "lowerAttach": "thoracic"
+    "lowerAttach": "thoracic",
+    "lowerBones": ["Atlas (C1)"]
   },
   {
     "name": "Rectus Cap. Post. Min. L",
@@ -335,7 +342,8 @@
     "upperLevel": 0,
     "lowerLevel": 0,
     "headAttachFrac": 0.9,
-    "lowerAttach": "thoracic"
+    "lowerAttach": "thoracic",
+    "lowerBones": ["Atlas (C1)"]
   },
   {
     "name": "Obliquus Cap. Sup. R",
@@ -344,7 +352,8 @@
     "upperLevel": 0,
     "lowerLevel": 0,
     "headAttachFrac": 0.85,
-    "lowerAttach": "thoracic"
+    "lowerAttach": "thoracic",
+    "lowerBones": ["Atlas (C1)"]
   },
   {
     "name": "Obliquus Cap. Sup. L",
@@ -353,7 +362,8 @@
     "upperLevel": 0,
     "lowerLevel": 0,
     "headAttachFrac": 0.85,
-    "lowerAttach": "thoracic"
+    "lowerAttach": "thoracic",
+    "lowerBones": ["Atlas (C1)"]
   },
   {
     "name": "Obliquus Cap. Inf. R",
@@ -362,7 +372,8 @@
     "upperLevel": 0,
     "lowerLevel": 1,
     "headAttachFrac": 0.75,
-    "lowerAttach": "thoracic"
+    "lowerAttach": "thoracic",
+    "lowerBones": ["Axis (C2)"]
   },
   {
     "name": "Obliquus Cap. Inf. L",
@@ -371,6 +382,7 @@
     "upperLevel": 0,
     "lowerLevel": 1,
     "headAttachFrac": 0.75,
-    "lowerAttach": "thoracic"
+    "lowerAttach": "thoracic",
+    "lowerBones": ["Axis (C2)"]
   }
 ]

@@ -149,3 +149,78 @@ def test_rebuilding_the_joints_under_a_wrapper_does_not_move_the_body():
     sk.update(BodyState())
     after = np.asarray(mesh.geometry.positions, dtype=np.float64).reshape(-1, 3)
     np.testing.assert_allclose(after, before, atol=1e-6)
+
+
+def test_a_joints_rest_matrix_does_not_follow_its_node():
+    """The rest matrix is a snapshot, not a view of the live world matrix.
+
+    ``SceneNode.update_world_matrix`` rewrites world matrices *in place*, and
+    ``np.asarray`` on an array that is already float64 hands back the same
+    object.  ``_joint_world`` therefore used to return a live view whenever
+    there was no wrapper to cancel -- which is exactly the case at load time --
+    so every joint's rest transform silently became the current world matrix
+    the moment the body stood up in the gym.
+    """
+    scene, wrapper, nodes, sk = _rig()
+    rest_before = [np.asarray(j.rest_world, dtype=np.float64).copy()
+                   for j in sk.joints]
+
+    wrapper.set_position(0.0, 203.0, 0.0)
+    wrapper.set_quaternion(quat_from_axis_angle(vec3(1, 0, 0), -np.pi / 2))
+    scene.update()
+
+    for joint, before in zip(sk.joints, rest_before, strict=True):
+        np.testing.assert_allclose(np.asarray(joint.rest_world), before, atol=1e-12)
+        assert joint.rest_world is not joint.node.world_matrix
+
+
+def test_a_mesh_registered_inside_the_scene_lands_where_one_registered_outside_does():
+    """The exercise flow enters the gym first and loads the muscles after it.
+
+    Measured before the rest matrices stopped aliasing: all 138 loaded meshes
+    came out in a different place depending on the order, by a median of 160.6
+    units and up to 203.0 -- the forearm flexors lying on the floor behind the
+    skeleton, skinned by a delta of exactly the wrapper's inverse.
+    """
+    # Registered before the wrapper exists, the way a clinical session loads.
+    scene_a, wrapper_a, nodes_a, sk_a = _rig()
+    mesh_a = _grid_mesh()
+    sk_a.register_skin_mesh(mesh_a, is_muscle=True, muscle_name=mesh_a.name)
+    wrapper_a.set_position(0.0, 203.0, 0.0)
+    wrapper_a.set_quaternion(quat_from_axis_angle(vec3(1, 0, 0), -np.pi / 2))
+    sk_a.scene_wrapper = wrapper_a
+    scene_a.update()
+    outside = _skin(sk_a, scene_a, mesh_a, nodes_a[1], 20.0)
+
+    # Registered after it, the way the exercise module loads a muscle region.
+    scene_b, wrapper_b, nodes_b, sk_b = _rig()
+    wrapper_b.set_position(0.0, 203.0, 0.0)
+    wrapper_b.set_quaternion(quat_from_axis_angle(vec3(1, 0, 0), -np.pi / 2))
+    sk_b.scene_wrapper = wrapper_b
+    scene_b.update()
+    mesh_b = _grid_mesh()
+    sk_b.register_skin_mesh(mesh_b, is_muscle=True, muscle_name=mesh_b.name)
+    inside = _skin(sk_b, scene_b, mesh_b, nodes_b[1], 20.0)
+
+    np.testing.assert_allclose(inside, outside, atol=1e-6)
+
+
+def test_an_unmoved_joints_delta_is_the_identity_after_the_body_enters_a_scene():
+    """``_joint_delta`` caches the inverse rest transform the first time it is
+    asked, which in the exercise flow is after the gym wrapper is already up.
+
+    With the rest matrices aliasing their nodes, that cache inverted the
+    *current world* matrix, so every delta came out as the wrapper's inverse.
+    The attachment pinning then carried each muscle bodily to that image of
+    its rest pose: measured on Pronator Quadratus R, a centroid of
+    (37.7, -3.4, -79.4) became (37.7, 79.4, -206.4).
+    """
+    scene, wrapper, nodes, sk = _rig()
+    wrapper.set_position(0.0, 203.0, 0.0)
+    wrapper.set_quaternion(quat_from_axis_angle(vec3(1, 0, 0), -np.pi / 2))
+    sk.scene_wrapper = wrapper
+    scene.update()
+    sk._begin_frame()
+
+    for ji in range(len(sk.joints)):
+        np.testing.assert_allclose(sk._joint_delta(ji), np.eye(4), atol=1e-9)

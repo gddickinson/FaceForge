@@ -132,8 +132,10 @@ flat when ankle dorsiflexion = pitch − hip + knee.
 | `item_generators.py` | Exam item generators. Every fact comes from data; none is authored here. |
 | `jaw_muscles.py` | 22 STL jaw muscles with jaw-angle deformation. |
 | `muscle_attachments.py` | Attachment placement for body muscles: authored footprints (trimmed to a geodesic gap) drive the fibre field; stretch is measured, never clamped. |
+| `neck_body_follow.py` | What moves a neck muscle's body end: the regional anchors, the per-muscle `lowerBones` displacement that overrides them, and the bone-pinning pass. |
 | `neck_constraints.py` | Neck constraint solver: tension monitoring, soft-clamping, spine compensation. |
-| `neck_muscles.py` | 36 STL neck muscles with head-follow deformation. |
+| `neck_fibre_strain.py` | Volume-preserving radial strain about each neck muscle's fibre axis. |
+| `neck_muscles.py` | 38 STL neck muscles with head-follow and body-follow deformation; the early exit compares the body deltas the current vertex buffers were built from, so returning to rest is not mistaken for "nothing to do". |
 | `pathology.py` | Pathology visualization system. |
 | `platysma.py` | Body-spanning deformation for Platysma muscles. |
 | `quiz_engine.py` | Interactive anatomy quiz engine. |
@@ -194,7 +196,7 @@ flat when ankle dorsiflexion = pitch − hip + knee.
 | `surface_landmarks.py` | Joint landmarks from the skeleton's own bones, and the same joints found on a body mesh by shape (the wrist and ankle are where a limb is narrowest). |
 | `surface_register.py` | `register_onto`: limb-by-limb registration of the body-surface mesh onto the skeleton, held inside an edge-length band; `fit_head_to_skull`. |
 | `surface_projection.py` | The geometry the fit is built from: closest point on a triangle, region-constrained projection, edges, Laplacian smoothing, normals. |
-| `soft_tissue.py` | Delta-matrix soft tissue skinning for body muscles/organs/vasculature; `resnapshot_rest` re-snapshots the rest pose after the skeleton itself moves, keeping the binding. |
+| `soft_tissue.py` | Delta-matrix soft tissue skinning for body muscles/organs/vasculature; `resnapshot_rest` re-snapshots the rest pose after the skeleton itself moves, keeping the binding. `_joint_world` always returns a fresh array: world matrices are rewritten in place, so a rest matrix that aliased one followed the body into the gym. |
 | `stretch_viz.py` | Stretch heatmap and chain assignment visualization for soft tissue skinning. |
 | `vasculature.py` | On-demand vascular system loading. |
 
@@ -222,12 +224,13 @@ flat when ankle dorsiflexion = pitch − hip + knee.
 | module | purpose |
 |---|---|
 | `asset_load_sequence.py` | The startup load, as an explicit ordered sequence of named stages. |
+| `body_anchors.py` | The shoulder / ribcage / thoracic anchors the neck muscles follow, read in the **body** frame: `wrapper_cancel` undoes the `scene_wrapper` so a live pivot can be compared with a rest snapshot taken before scene mode existed. |
 | `joint_chains.py` | The kinematic chains the skinning binds to (arm chain from the clavicle); shared by the app and the headless tools |
 | `demand_loaders.py` | Load anatomy groups the first time the user asks to see them. |
 | `loading_pipeline.py` | Sequential asset loading chain with progress reporting. |
 | `render_mode_sync.py` | Keep newly loaded meshes in step with the render mode already on screen. |
 | `scene_builder.py` | Constructs the scene graph from loaded assets. |
-| `simulation.py` | Per-frame simulation orchestrator — mirrors the JS animate() function. |
+| `simulation.py` | Per-frame simulation orchestrator — mirrors the JS animate() function. Step 9.5 settles `frame_cancel()` for the whole neck/pinning/platysma block, before any of them reads a pivot. |
 | `visibility.py` | Layer toggle → node visibility mapping. |
 
 ### `faceforge/core/`
@@ -403,6 +406,7 @@ flat when ankle dorsiflexion = pitch − hip + knee.
 | `render_exercise_demo.py` | Exercise demo through the real GL renderer; `--probe` measures placement without GL |
 | `author_footprints.py` | Mirror authored attachment footprints to the other side, or seed them from bone proximity (measure before keeping) |
 | `export_exercise_docs.py` | Renders the catalogue to `docs/exercises.md` (`--check` for CI) |
+| `neck_deformation_quality.py` | Neck-muscle edge stretch and displacement per pose, with `--wrapper` for the gym-scene control |
 | `glcontext.py` | Offscreen CGL context (software renderer in a sandbox) |
 | `capture_golden.py`, `compare_golden.py` | Golden-image capture and diff |
 | `generate_readme_images.py`, `generate_scanner_images.py` | README figures via the PIL renderers |
@@ -414,6 +418,6 @@ flat when ankle dorsiflexion = pitch − hip + knee.
 `anatomy` (attachments, fibre field, bone collision, bone anchors), `animation`, `app` (wiring), `body` (skinning, skinning under the
 scene wrapper, ground lock, DOF axes, hand grip, shoulder-girdle rhythm, heatmap), `controllers` (handlers on a
 stub `AppContext`; `fakes.py`),
-`core`, `exercise` (catalogue, activation, implied stabilisers, equipment, runtime, grip lock), `export`,
+`coordination` (the kinematic chains, the body anchors' frame), `core`, `exercise` (catalogue, activation, implied stabilisers, equipment, runtime, grip lock), `export`,
 `integration`, `loaders`, `rendering`, `scanner`, `session`, `tools`, `ui`
 (the viewer panel headless; whole-app smoke test and the viewer mode end to end, slow).

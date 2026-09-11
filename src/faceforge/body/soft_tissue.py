@@ -760,7 +760,10 @@ class SoftTissueSkinning:
                 # soft tissue on the floor, rotated 90 degrees.  There is no
                 # wrapper during the initial load, which is why this only ever
                 # showed up on a rebind.
-                rest = self._joint_world(node)
+                # ``_joint_world`` already copies; the explicit copy keeps
+                # this invariant readable where it matters -- a rest matrix
+                # must never alias the live world matrix it was read from.
+                rest = np.array(self._joint_world(node), dtype=np.float64)
                 joint = SkinJoint(
                     name=name,
                     node=node,
@@ -2404,11 +2407,26 @@ class SoftTissueSkinning:
         return self._cancel_cache
 
     def _joint_world(self, node: SceneNode) -> np.ndarray:
-        """A joint node's world matrix in the body frame (wrapper cancelled)."""
+        """A joint node's world matrix in the body frame (wrapper cancelled).
+
+        The result is always a fresh array.  ``SceneNode.update_world_matrix``
+        writes world matrices *in place*, and ``np.asarray`` on an array that
+        is already float64 returns the same object, so returning ``m`` itself
+        handed the caller a live view of a matrix the scene graph rewrites
+        every frame.  ``build_skin_joints`` stores what this returns as a
+        joint's *rest* transform: with no wrapper present at load time the
+        rest matrices silently became aliases, and every one of them turned
+        into the current world matrix the moment the body stood up in the gym.
+        Muscles loaded after that were then bound against world-space joint
+        positions and skinned by a delta of exactly the wrapper's inverse --
+        measured on Pronator Quadratus R, a centroid of (37.7, -3.4, -79.4)
+        became (37.7, 79.4, -206.4), which is the forearm lying on the floor
+        behind the skeleton.
+        """
         node.update_world_matrix()
         m = np.asarray(node.world_matrix, dtype=np.float64)
         cancel = self._wrapper_cancel()
-        return m if cancel is None else cancel @ m
+        return m.copy() if cancel is None else cancel @ m
 
     def _joint_delta(self, ji: int) -> np.ndarray:
         """This joint's current-times-inverse-rest transform, once per frame.

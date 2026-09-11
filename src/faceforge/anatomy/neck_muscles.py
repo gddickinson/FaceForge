@@ -26,27 +26,14 @@ from faceforge.core.scene_graph import SceneNode
 from faceforge.core.state import FaceState, BodyState
 from faceforge.loaders.stl_batch_loader import CoordinateTransform, load_stl_batch, STLBatchResult
 from faceforge.constants import JAW_PIVOT, get_jaw_pivot
+from faceforge.anatomy import neck_body_follow as _follow
+from faceforge.anatomy import neck_fibre_strain as _strain
 
-# Body anchor types and their approximate rest-pose world positions.
-# These are updated at runtime from actual skeleton pivot world positions.
-_ANCHOR_REST: dict[str, NDArray | None] = {
-    "shoulder": None,
-    "ribcage": None,
-    "thoracic": None,
-}
-
-# Body follow fractions per lowerAttach type
-# These represent how much the lower end of the muscle follows body motion
-BODY_FOLLOW_BASE = {
-    "shoulder": 0.12,
-    "ribcage": 0.30,
-    "thoracic": 0.18,
-}
-BODY_FOLLOW_MAX = {
-    "shoulder": 0.25,
-    "ribcage": 0.45,
-    "thoracic": 0.30,
-}
+# Body follow fractions per lowerAttach type: how much the lower end of the
+# muscle follows body motion rather than the head.
+#: Re-exported from :mod:`faceforge.anatomy.neck_body_follow`, which owns them.
+BODY_FOLLOW_BASE = _follow.BODY_FOLLOW_BASE
+BODY_FOLLOW_MAX = _follow.BODY_FOLLOW_MAX
 
 
 @dataclass
@@ -102,7 +89,9 @@ class NeckMuscleSystem:
         self._muscles: list[NeckMuscleData] = []
         self._group: Optional[SceneNode] = None
         self._last_head_quat: Optional[Quat] = None
-        self._last_body_anchors: Optional[dict[str, NDArray]] = None
+        #: The per-muscle body deltas the current vertex buffers were built
+        #: from.  ``update`` may only skip work when these still hold.
+        self._last_body_deltas: Optional[list[NDArray]] = None
         self._head_pivot = vec3(*(jaw_pivot or get_jaw_pivot()))
         # Body anchor rest positions (set by set_body_anchors_rest)
         self._body_anchor_rest: dict[str, NDArray] = {}
@@ -236,18 +225,34 @@ class NeckMuscleSystem:
         if head_pivot is None:
             head_pivot = self._head_pivot
 
-        # Compute body delta per anchor type
-        body_deltas = self._compute_body_deltas()
-        has_body_delta = any(np.linalg.norm(d) > 1e-6 for d in body_deltas.values())
+        # The displacement each muscle's body end follows: its own attachment
+        # bones when it names any, the regional anchor otherwise.  A muscle
+        # that sits on a bone the thoracic spine does not carry (longus colli
+        # originates on T1, which hangs off the cervical chain) must not be
+        # dragged by the thoracic anchor.
+        body_deltas = self._body_deltas_per_muscle()
+        has_body_delta = any(np.linalg.norm(d) > 1e-6 for d in body_deltas)
 
-        # Early-exit only if head quat AND body anchors haven't changed
+        # Early-exit only when nothing this pass reads has changed since the
+        # positions currently in the buffers were written.  Testing
+        # ``has_body_delta`` alone was wrong in one direction that matters:
+        # when the body returns to rest the delta goes to zero, which read as
+        # "nothing to do" on the very frame the muscles needed to be put back,
+        # so a neck bent by a sit-up stayed bent for the rest of the session.
         head_unchanged = (
             self._last_head_quat is not None
             and np.allclose(head_quaternion, self._last_head_quat, atol=1e-6)
         )
-        if head_unchanged and not has_body_delta:
+        deltas_unchanged = (
+            self._last_body_deltas is not None
+            and len(self._last_body_deltas) == len(body_deltas)
+            and all(np.allclose(a, b, atol=1e-9)
+                    for a, b in zip(self._last_body_deltas, body_deltas))
+        )
+        if head_unchanged and deltas_unchanged:
             return
         self._last_head_quat = head_quaternion.copy()
+        self._last_body_deltas = [np.array(d, dtype=np.float64) for d in body_deltas]
 
         identity_q = quat_identity()
         is_identity = np.allclose(head_quaternion, identity_q, atol=1e-6)
@@ -279,7 +284,7 @@ class NeckMuscleSystem:
 
         pivot = head_pivot.astype(np.float64)
 
-        for md in self._muscles:
+        for md, body_delta in zip(self._muscles, body_deltas, strict=True):
             rest = md.rest_positions.reshape(-1, 3).astype(np.float64)
             rest_n = md.rest_normals.reshape(-1, 3).astype(np.float64)
             fracs = md.spine_fracs  # (N,) float32
@@ -306,13 +311,10 @@ class NeckMuscleSystem:
                 out_nrm = rest_n + sin_a[:, None] * Kn + (1.0 - cos_a[:, None]) * K2n
 
             # Body-delta displacement: blend body motion into lower vertices
-            if has_body_delta:
-                lower_attach = md.lower_attach
-                delta = body_deltas.get(lower_attach)
-                if delta is not None and np.linalg.norm(delta) > 1e-6:
-                    # Weight: (1 - spine_frac) so body-end verts get full delta
-                    body_weight = (1.0 - fracs.astype(np.float64))[:, None]
-                    out_pos += body_weight * delta
+            if np.linalg.norm(body_delta) > 1e-6:
+                # Weight: (1 - spine_frac) so body-end verts get full delta
+                body_weight = (1.0 - fracs.astype(np.float64))[:, None]
+                out_pos += body_weight * body_delta
 
             # Volume-preserving fiber strain: radial bulging/thinning
             self._apply_fiber_strain(out_pos, out_nrm, md)
@@ -325,80 +327,49 @@ class NeckMuscleSystem:
             md.mesh.needs_update = True
 
     def _compute_body_deltas(self) -> dict[str, NDArray]:
-        """Compute body anchor displacement from rest to current position."""
-        deltas: dict[str, NDArray] = {}
-        for anchor_type in ("shoulder", "ribcage", "thoracic"):
-            rest = self._body_anchor_rest.get(anchor_type)
-            current = self._body_anchor_current.get(anchor_type)
-            if rest is not None and current is not None:
-                deltas[anchor_type] = current - rest
-            else:
-                deltas[anchor_type] = np.zeros(3, dtype=np.float64)
-        return deltas
+        """Body anchor displacement from rest to current position, per region."""
+        return _follow.regional_deltas(self._body_anchor_rest,
+                                       self._body_anchor_current)
 
-    # ------------------------------------------------------------------
-    # Bone-pinning constraint
-    # ------------------------------------------------------------------
+    def _body_deltas_per_muscle(self) -> list[NDArray]:
+        """The displacement each muscle's body end follows, in muscle order.
+
+        A muscle that names its attachment bones follows *those*; the
+        regional average is the fallback for the ones that name none.
+        """
+        regional = self._compute_body_deltas()
+        return [_follow.body_delta_for(md, regional, self._bone_registry)
+                for md in self._muscles]
 
     # Overall pin strength (0 = disabled, 1 = hard pin to bone position)
-    _PIN_STRENGTH = 0.6
+    _PIN_STRENGTH = _follow.PIN_STRENGTH
 
     def _apply_bone_pinning(
         self,
         out_pos: NDArray[np.float64],
         md: NeckMuscleData,
     ) -> None:
-        """Pin lower-end vertices toward their bone attachment positions.
+        """Pin lower-end vertices toward their bone attachment positions."""
+        _follow.apply_bone_pinning(out_pos, md, self._bone_registry,
+                                   self._PIN_STRENGTH)
 
-        Uses per-muscle ``lowerBones`` config to query the bone registry
-        for the specific attachment bone positions, rather than using a
-        shared global anchor.  Falls back to no-op if no registry or no
-        bones are configured.
+    # Fibre strain lives in neck_fibre_strain; these keep the system's API.
+    _STRAIN_STRENGTH = _strain.STRAIN_STRENGTH
+    _STRETCH_CLAMP = _strain.STRETCH_CLAMP
 
-        Pin strength is strongest at the body end (lowest spine fraction)
-        and fades to zero at the skull end, using a quadratic falloff.
-        """
-        if self._bone_registry is None:
-            return
+    def _init_fiber_geometry(self, md: NeckMuscleData) -> None:
+        """Pre-compute rest-pose fibre axis, centroids and radial offsets."""
+        _strain.init_fiber_geometry(md)
 
-        lower_bones = md.defn.get("lowerBones")
-        if not lower_bones:
-            return
-
-        muscle_name = md.defn.get("name", "")
-
-        bone_anchor_current = self._bone_registry.get_muscle_anchor_current(
-            muscle_name, lower_bones,
-        )
-        bone_anchor_rest = self._bone_registry.get_muscle_anchor(
-            muscle_name, lower_bones,
-        )
-
-        if bone_anchor_current is None or bone_anchor_rest is None:
-            return
-
-        fracs = md.spine_fracs.astype(np.float64)
-        frac_min = float(fracs.min())
-        frac_max = float(fracs.max())
-        frac_range = frac_max - frac_min
-
-        if frac_range < 1e-6:
-            return
-
-        # Pin weight: 1.0 at body end (frac=min), 0.0 at skull end (frac=max)
-        pin_weight = 1.0 - np.clip((fracs - frac_min) / frac_range, 0.0, 1.0)
-        pin_weight = pin_weight ** 2  # quadratic falloff for smooth transition
-
-        # Bone displacement from rest to current
-        bone_delta = bone_anchor_current - bone_anchor_rest
-
-        # Target: each vertex's rest position + bone displacement
-        rest = md.rest_positions.reshape(-1, 3).astype(np.float64)
-        target = rest + bone_delta
-
-        # Blend toward target: strong at body end, zero at skull end
-        blend = pin_weight[:, None] * self._PIN_STRENGTH
-        out_pos[:] = out_pos * (1.0 - blend) + target * blend
+    def _apply_fiber_strain(
+        self,
+        out_pos: NDArray[np.float64],
+        out_nrm: NDArray[np.float64],
+        md: NeckMuscleData,
+    ) -> None:
+        """Apply gentle volume-preserving fibre strain after rotation."""
+        _strain.apply_fiber_strain(out_pos, out_nrm, md,
+                                   self._STRAIN_STRENGTH, self._STRETCH_CLAMP)
 
     # ------------------------------------------------------------------
     # Internal
@@ -464,155 +435,6 @@ class NeckMuscleSystem:
         return BODY_FOLLOW_BASE.get(lower_attach, 0.05)
 
     # ------------------------------------------------------------------
-    # Fiber geometry + volume-preserving strain
-    # ------------------------------------------------------------------
-
-    def _init_fiber_geometry(self, md: NeckMuscleData) -> None:
-        """Pre-compute rest-pose fiber axis, centroids, and radial offsets.
-
-        The fiber axis runs from the lower (body) attachment region to the
-        upper (skull) attachment region.  Radial offsets measure each vertex's
-        perpendicular distance from the fiber axis, used for volume-preserving
-        bulging during deformation.
-        """
-        if md.vert_count < 4:
-            return
-
-        pos = md.rest_positions.reshape(-1, 3).astype(np.float64)
-        fracs = md.spine_fracs.astype(np.float64)
-
-        frac_min = float(fracs.min())
-        frac_max = float(fracs.max())
-        frac_range = frac_max - frac_min
-        if frac_range < 0.05:
-            return  # too small — can't define meaningful fiber axis
-
-        upper_thresh = frac_min + frac_range * 0.85
-        lower_thresh = frac_min + frac_range * 0.15
-
-        upper_mask = fracs >= upper_thresh
-        lower_mask = fracs <= lower_thresh
-
-        if upper_mask.sum() < 2 or lower_mask.sum() < 2:
-            return
-
-        upper_centroid = pos[upper_mask].mean(axis=0)
-        lower_centroid = pos[lower_mask].mean(axis=0)
-        fiber_vec = upper_centroid - lower_centroid
-        fiber_len = float(np.linalg.norm(fiber_vec))
-
-        if fiber_len < 0.1:
-            return
-
-        fiber_dir = fiber_vec / fiber_len
-        centroid = pos.mean(axis=0)
-
-        # Per-vertex decomposition along the fiber axis
-        relative = pos - centroid
-        axial_scalar = relative @ fiber_dir          # (N,) signed distance along axis
-        axial_proj = axial_scalar[:, None] * fiber_dir  # (N, 3) axial component
-        radial = relative - axial_proj                   # (N, 3) perpendicular component
-
-        md.fiber_axis_rest = fiber_dir
-        md.fiber_length_rest = fiber_len
-        md.centroid_rest = centroid
-        md.upper_centroid_rest = upper_centroid
-        md.lower_centroid_rest = lower_centroid
-        md.radial_offsets_rest = radial
-        md.axial_positions_rest = axial_scalar
-
-    # Maximum radial change from fiber strain (conservative to avoid detachment)
-    _STRAIN_STRENGTH = 0.5   # blend factor — 50% of full volume-preserving effect
-    _STRETCH_CLAMP = (0.75, 1.4)  # tighter clamp range
-
-    def _apply_fiber_strain(
-        self,
-        out_pos: NDArray[np.float64],
-        out_nrm: NDArray[np.float64],
-        md: NeckMuscleData,
-    ) -> None:
-        """Apply gentle volume-preserving fiber strain after rotation.
-
-        Measures how much the muscle has stretched or compressed along its
-        fiber axis (from the rotated attachment centroids) and applies radial
-        scaling to suggest volume preservation:
-        - Stretched muscles → slight radial contraction (muscle thins)
-        - Compressed muscles → slight radial expansion (muscle bulges)
-
-        The effect is weighted by spine_frac so body-end vertices are
-        unaffected (preventing detachment from the skeleton).
-        """
-        if md.fiber_axis_rest is None or md.vert_count < 4:
-            return
-
-        fracs = md.spine_fracs.astype(np.float64)
-        frac_min = float(fracs.min())
-        frac_max = float(fracs.max())
-        frac_range = frac_max - frac_min
-        if frac_range < 0.05:
-            return
-
-        # Identify upper/lower attachment regions (same thresholds as init)
-        upper_thresh = frac_min + frac_range * 0.85
-        lower_thresh = frac_min + frac_range * 0.15
-        upper_mask = fracs >= upper_thresh
-        lower_mask = fracs <= lower_thresh
-
-        if upper_mask.sum() < 2 or lower_mask.sum() < 2:
-            return
-
-        # Current attachment centroids after rotation
-        cur_upper = out_pos[upper_mask].mean(axis=0)
-        cur_lower = out_pos[lower_mask].mean(axis=0)
-        cur_fiber_vec = cur_upper - cur_lower
-        cur_length = float(np.linalg.norm(cur_fiber_vec))
-
-        if cur_length < 0.1:
-            return
-
-        cur_fiber_dir = cur_fiber_vec / cur_length
-
-        # Stretch ratio: how much did the fiber axis elongate?
-        stretch = cur_length / md.fiber_length_rest
-        stretch = np.clip(stretch, self._STRETCH_CLAMP[0], self._STRETCH_CLAMP[1])
-
-        if abs(stretch - 1.0) < 0.01:
-            return
-
-        # Volume-preserving radial scale: r' = r / sqrt(stretch)
-        # Blended with identity by _STRAIN_STRENGTH for a gentler effect
-        full_radial_scale = 1.0 / np.sqrt(stretch)
-        radial_scale = 1.0 + (full_radial_scale - 1.0) * self._STRAIN_STRENGTH
-
-        # Decompose relative to the LOWER centroid (body anchor) rather than
-        # the overall centroid. This keeps body-end vertices pinned.
-        anchor = cur_lower
-        relative = out_pos - anchor
-
-        axial_scalar = relative @ cur_fiber_dir        # (N,)
-        axial_proj = axial_scalar[:, None] * cur_fiber_dir
-        radial = relative - axial_proj
-
-        # Per-vertex blend weight: body-end verts (low frac) get no strain,
-        # skull-end verts (high frac) get full strain effect. This prevents
-        # lower-end detachment from the skeleton.
-        t = np.clip((fracs - frac_min) / frac_range, 0.0, 1.0)
-        per_vert_scale = 1.0 + (radial_scale - 1.0) * t  # (N,)
-
-        out_pos[:] = anchor + axial_proj + radial * per_vert_scale[:, None]
-
-        # Update normals: inverse-transpose of radial scaling
-        nrm_axial = (out_nrm @ cur_fiber_dir)[:, None] * cur_fiber_dir
-        nrm_radial = out_nrm - nrm_axial
-        nrm_inv_scale = 1.0 + (1.0 / radial_scale - 1.0) * t  # (N,)
-        out_nrm[:] = nrm_axial + nrm_radial * nrm_inv_scale[:, None]
-
-        # Re-normalize
-        nrm_lengths = np.linalg.norm(out_nrm, axis=1, keepdims=True)
-        nrm_lengths = np.maximum(nrm_lengths, 1e-8)
-        out_nrm /= nrm_lengths
-
-    # ------------------------------------------------------------------
     # Visibility
     # ------------------------------------------------------------------
 
@@ -630,3 +452,4 @@ class NeckMuscleSystem:
             md.mesh.geometry.normals[:] = md.rest_normals
             md.mesh.needs_update = True
         self._last_head_quat = None
+        self._last_body_deltas = None

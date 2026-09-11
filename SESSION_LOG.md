@@ -363,3 +363,110 @@ cadaver's bulbous occiput and heavy abdomen); and inflating the surface
 wherever any bone pokes through (self-intersecting spikes on a 10 500-vertex
 mesh). The residual misfit is honest: the two bodies differ, and every method
 that closes the gap further damages the mesh.
+
+## 2026-09-11 (later still) — Neck muscles that distorted during exercise
+
+**Reported.** The neck muscles distort during exercise; the other muscles
+render correctly.
+
+**Found.** Four defects, all in the neck muscles' own deformation path, which
+is separate from the soft-tissue skinning.
+
+1. *The wrong frame.* The rest body anchors are snapshotted at load, before
+   scene mode exists; the current ones were read as world positions, which in
+   the gym include the `scene_wrapper` (Rx(−90°) at Y = 203). One frame into
+   a bodyweight squat the thoracic anchor read (0.225, 192.088, −5.661)
+   against a rest of (0.225, 5.661, −10.912). Every neck muscle was dragged
+   153 units with a 99th-percentile edge stretch of 63×, at the neutral pose,
+   purely from entering the room. The other muscles were fine because the
+   skinning cancels the wrapper.
+2. *Attachment names that matched nothing.* Ten muscles named
+   `"Thoracic Vertebra T1"` / `"T3"` where the scene nodes are `T1` / `T3`,
+   and T1 was never registered at all — it hangs off the cervical pivot
+   chain, and the registry walked only the thoracic and lumbar groups.
+   Pinning silently did nothing for all ten.
+3. *Region over bone.* Every muscle followed its coarse regional anchor even
+   when it named the bone it attaches to. At full thoracic flexion the top
+   thoracic pivot travels 4.58 units while T1 does not move at all, so 14 of
+   the 38 muscles — the six suboccipitals among them, whose origins are on C1
+   and C2 — were dragged 3.76 units by a thorax they are not attached to.
+4. *A zero delta read as "nothing to do".* `update` skipped its work when the
+   head quaternion was unchanged and the body delta was zero. Returning to
+   rest *is* a zero delta, so the frame that should have straightened the
+   neck was the frame that was skipped, and a neck bent by a sit-up stayed
+   bent.
+
+**Built.** `coordination/body_anchors.py` reads the anchors in the body frame
+and owns the wrapper cancellation; `Simulation.frame_cancel()` settles it once
+at step 9.5, before the neck muscles, the neck pinning and the platysma read a
+pivot, instead of at step 12 where the skinning used to set it.
+`anatomy/neck_body_follow.py` prefers the muscle's own attachment-bone
+displacement over the regional average and holds the pinning pass;
+`anatomy/neck_fibre_strain.py` takes the volume-preserving strain, which
+brings `neck_muscles.py` back under the file-size limit. The loading pipeline
+registers the cervical vertebrae, the twelve suboccipitals gained their real
+C1/C2 attachments, and the early exit now compares the deltas the current
+vertex buffers were built from.
+
+**Measured.** `tools/neck_deformation_quality.py`, eight poses. In the gym:
+worst 99th-percentile edge stretch 63.119 → 1.712, worst displacement 152.931
+→ 3.515, and the gym rows are now identical to the clinical rows pose for
+pose. At full thoracic flexion: 14 muscles displaced → 4, worst stretch 2.522
+→ 1.712. The soft-tissue gate is unchanged (seam p99 0.163, bulk p99 0.2226).
+Figures: `results/neck_frame_diagnosis.png`,
+`results/neck_attachment_drag.png`.
+
+**Left open, and why.** The cervical spine and skull hang off `bodyRoot`
+rather than off the top of the thoracic chain, so thoracic flexion moves T3
+under a stationary head and the four longus colli that originate there really
+are stretched (1.712 at full flexion, about 1.1 at a sit-up's 30°). Fixing
+that means reparenting the head onto the spine, which moves head rotation,
+FACS, face alignment and the camera framing with it. Head rotation alone
+still reaches 2.087 on the infrahyoids at full pitch; that path was not part
+of this report and was not touched.
+
+## 2026-09-11 (last) — Muscles loading onto the floor behind the skeleton
+
+**Reported.** Many muscles load 90 degrees offset from the skeleton and lie on
+the floor behind it in the exercise module.
+
+**Found.** A one-line aliasing bug I introduced in 461ae0d.
+`SceneNode.update_world_matrix` rewrites world matrices *in place*, and
+`np.asarray` on an array that is already float64 returns the same object, so
+`SoftTissueSkinning._joint_world` handed back a live view whenever there was
+no wrapper to cancel — which is exactly the case at load time. Every joint's
+*rest* matrix was therefore an alias of its node's world matrix, and all 152
+of them silently became the current world matrices the moment the body stood
+up in the gym (joints read 219 units from where they were snapshotted). The
+exercise module enters the gym before it loads its muscle regions, so those
+muscles were bound against world-space joint positions, `_joint_delta` cached
+the inverse of a world matrix as a rest inverse, and the attachment pinning
+carried each muscle to that image of its rest pose. The previous code was
+`node.world_matrix.copy()`; the wrapper-cancel fix replaced it with a call
+that only copies when a wrapper is present.
+
+**Built.** `_joint_world` always returns a fresh array, documented with the
+measurement; `build_skin_joints` copies explicitly where it stores the result.
+
+**Measured.** Placement across four muscle regions, gym-entered-first against
+muscles-loaded-first: before, all 138 meshes differed, median 160.6 units and
+up to 203.0; after, 0.0000 for every mesh. Pronator Quadratus R held its
+centroid of (37.7, -3.4, -79.4) through the skinning instead of jumping to
+(37.7, 79.4, -206.4). Figure: `results/muscle_load_order_offset.png`, the arm
+and thigh muscles flat on the floor behind the standing skeleton. The
+soft-tissue gate is unchanged (seam p99 0.163, bulk
+p99 0.2226). Two tests in `tests/body/test_skinning_under_scene_wrapper.py`
+pin it and both fail on the old code. The two
+`tests/ui/test_exercise_viewer_mode.py` failures carried in the previous entry
+were partly this bug: they failed in both orders before and now pass when that
+file runs first. They still fail when `tests/tools/test_deformation_quality.py`
+runs before them, which is a test-order dependence in that fixture's fixed
+one-second settle, not a fault in the application.
+
+**Still open.** `tests/tools/test_deformation_quality.py::test_the_gate_is_sensitive_to_a_broken_engine`
+fails: re-enabling the neighbour clamp with the hull bound and containment
+corrections off no longer produces any containment drift, so the gate's
+negative control passes a deliberately broken engine. It is not the
+per-binding skip — measured with the skip disabled, containment is still
+0.000 — so the control needs a mechanism that still misbehaves, which is its
+own piece of work.

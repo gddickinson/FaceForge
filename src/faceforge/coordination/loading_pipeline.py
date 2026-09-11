@@ -345,6 +345,18 @@ class LoadingPipeline:
                 if node.name and not self.bone_anchors.has_bone(node.name):
                     self.bone_anchors.register_bones({node.name: node})
 
+        # Register the cervical vertebrae.  T1 hangs off the *cervical* pivot
+        # chain, not the thoracic group, so the loop above never reaches it --
+        # and it is the attachment the deep prevertebral muscles name (longus
+        # colli and longus capitis both originate on the upper thoracic
+        # bodies).  Without it ten neck muscles resolved no anchor at all and
+        # ``_apply_bone_pinning`` returned before doing anything.
+        vertebrae_group = self.nodes.get("vertebraeGroup")
+        if vertebrae_group is not None:
+            for node in self._mesh_nodes_below(vertebrae_group):
+                if node.name and not self.bone_anchors.has_bone(node.name):
+                    self.bone_anchors.register_bones({node.name: node})
+
         # Register rib nodes for scalene attachment
         rib_group = self.skeleton.groups.get("ribs")
         if rib_group is not None:

@@ -267,10 +267,110 @@ during the pull. Measured causes and fixes:
 
 Still open: the deltoids remain over-stretched at full elevation; the
 rhomboid major reaches 5.5× at the dead hang because the scapula's medial
-border glides 20 units from its spinous processes; C7 and T1 are not
-registered attachment bones (the rhomboid minor and descending trapezius
-attach to T2 for now); the pull-up top's flexion axis is 18° off after the
-grip lock adjusts abduction, because abduction also turns the hand.
+border glides 20 units from its spinous processes; the pull-up top's flexion
+axis is 18° off after the grip lock adjusts abduction, because abduction also
+turns the hand. (C7 and T1 *are* registered attachment bones as of
+2026-09-11 — see the neck-muscle section below.)
+
+### Neck muscles that distorted during exercise (2026-09-11)
+
+The neck muscles do not go through the soft-tissue skinning. They have their
+own path in `anatomy/neck_muscles.py`: a per-vertex slerp of the head
+quaternion, plus a *body delta* — how far the skeleton below them has moved
+since rest — blended into the lower vertices. Three defects in that path
+were measured, all in the same report of "the neck distorts during
+exercise". `tools/neck_deformation_quality.py` reproduces every number
+below; the figures are `results/neck_frame_diagnosis.png` and
+`results/neck_attachment_drag.png`.
+
+1. **The body anchors were read in the wrong frame.** The rest anchors are
+   snapshotted at load, before scene mode exists. The current ones came from
+   `SceneNode.get_world_position()`, which inside the gym includes the
+   `scene_wrapper` (Rx(−90°) at Y = 203). One frame into a bodyweight squat
+   the thoracic anchor read (0.225, 192.088, −5.661) against a rest of
+   (0.225, 5.661, −10.912): a 186-unit delta. Every neck muscle was dragged
+   ~153 units with a 99th-percentile edge stretch of **63×**, at the neutral
+   pose, purely from entering the room. This is the third instance of the
+   same frame mismatch (after the skinning's correction passes and the bone
+   registry), so the cancellation now lives in one place,
+   `coordination/body_anchors.py`, and `Simulation.frame_cancel()` settles
+   it at step 9.5 — before the neck muscles, the neck pinning and the
+   platysma read a pivot, rather than at step 12 where the skinning used to
+   set it.
+
+2. **Ten muscles named attachment bones that did not exist.** The config
+   said `"Thoracic Vertebra T1"`; the scene node is `T1`. Worse, T1 hangs
+   off the *cervical* pivot chain, so the registry — which walked only the
+   thoracic and lumbar groups — had never registered it at all. The whole
+   cervical group is registered now, and `tests/anatomy/
+   test_neck_attachment_config.py` checks every `lowerBones` entry against
+   the skeleton configs so a name that matches nothing fails loudly.
+
+3. **A muscle followed its *region* even when it named its bone.** At full
+   thoracic flexion the top thoracic pivot travels 4.58 units while T1 does
+   not move at all, because the cervical chain that carries T1 hangs off
+   `bodyRoot`. Fourteen of the 38 neck muscles were therefore dragged 3.76
+   units by a thorax most of them are not attached to — including the six
+   suboccipitals, whose origins are on C1 and C2. The body delta is now the
+   muscle's own attachment-bone displacement when it names one, and the
+   regional average only for muscles that name none (there are none left).
+   At full flexion: 14 muscles displaced → 4, worst 99th-percentile stretch
+   2.522 → 1.712.
+
+4. **A zero delta read as "nothing to do".** `update` early-exited when the
+   head quaternion was unchanged and the body delta was zero. Returning to
+   rest *is* a zero delta, so the frame that should have straightened the
+   neck was the frame that was skipped: a neck bent by a sit-up stayed bent.
+   The exit now compares the deltas the current vertex buffers were built
+   from, so it still skips a genuinely static frame and no longer skips the
+   frame that undoes the last one.
+
+### Muscles that loaded onto the floor behind the skeleton (2026-09-11, later)
+
+The exercise module enters the gym *first* and loads the muscle regions
+after it, so every muscle the demonstration needs is registered while the
+`scene_wrapper` is already up. All of them came out about 160 units away,
+rotated a quarter turn: measured across four regions, all 138 registered
+meshes landed in a different place depending on the order, by a median of
+160.6 units and up to 203.0. Pronator Quadratus R loaded at its correct
+body-frame centroid of (37.7, -3.4, -79.4) and the first skinning pass put
+it at (37.7, 79.4, -206.4), which is exactly the wrapper's inverse applied
+to its rest pose.
+
+The cause was an aliasing bug one line wide. `SceneNode.update_world_matrix`
+rewrites world matrices **in place** — deliberately, so cached
+`(mesh, world_matrix)` tuples stay valid — and `np.asarray` on an array that
+is already float64 hands back the same object. `SoftTissueSkinning._joint_world`
+returned that object unchanged whenever there was no wrapper to cancel, which
+is exactly the situation at load time, so every joint's *rest* matrix was a
+live view of its node. The instant the body stood up in the gym, all 152 rest
+matrices became the current world matrices: joints read 219 units from where
+they were snapshotted. `_joint_delta` then cached the inverse of a world
+matrix as if it were a rest matrix, and the attachment pinning carried each
+muscle bodily to that image of its rest pose.
+
+The figure is `results/muscle_load_order_offset.png`, which shows the arm
+and thigh muscles flat on the floor behind the standing skeleton.
+
+`_joint_world` now always returns a fresh array. Placement is byte-identical
+between the two load orders for all 138 meshes, and two tests in
+`tests/body/test_skinning_under_scene_wrapper.py` pin it: a joint's rest
+matrix must not follow its node, and an unmoved joint's delta must be the
+identity after the body enters a scene. Both fail on the old code. This also repaired the two `tests/ui/test_exercise_viewer_mode.py` failures
+when that file runs first; they had been red in every order because the
+viewer's muscles were not where the test looked for them. They remain
+order-dependent — red when `tests/tools/test_deformation_quality.py` runs
+before them — because the fixture waits a fixed one second for every muscle
+layer to load rather than waiting on a condition.
+
+Measured after all four, with `tools/neck_deformation_quality.py`: the gym
+rows are now identical to the clinical rows, pose for pose. What is left is
+a rig limitation, not a neck-muscle one — the cervical spine and skull hang
+off `bodyRoot` rather than off the top of the thoracic chain, so thoracic
+flexion moves T3 under a stationary head and the four longus colli that
+originate there really are stretched (1.712 at full flexion, ~1.1 at a
+sit-up's 30°). Head rotation itself still reaches 2.087 on the infrahyoids
+at full pitch; that path was not touched.
 
 ## The animation model
 
