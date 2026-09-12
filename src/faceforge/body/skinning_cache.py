@@ -56,7 +56,12 @@ import numpy as np
 # the rule changed, not a number -- and the stale entry served the old
 # seeding while the measurement showed no change at all, which is the
 # third time this cache has done that.
-CACHE_VERSION = 5
+# 6: geodesic seeding skips skin whose nearest chain is not clearly nearest
+# (SEED_CONFIDENCE_MARGIN), which is a rule change and not only the new
+# tunable: the ambiguity test also removes radius seeds. The island bridge
+# that came with it (GEODESIC_BRIDGE, BRIDGE_CONTACTS) needs no bump of its
+# own -- both are public scalars, so they are already in the key.
+CACHE_VERSION = 6
 
 # Vertex count above which memoising beats solving.  The full-body skin mesh
 # is ~792k vertices; muscle meshes are typically 1k-30k.

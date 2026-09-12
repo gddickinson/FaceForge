@@ -275,6 +275,28 @@ class SoftTissueSkinning:
     #: screen as a vertex stuck to the wrong limb.
     INFLUENCE_CUTOFF_BAND = 3.0
 
+    #: Extra support, as a fraction of the distance to the nearest segment,
+    #: added to :data:`INFLUENCE_CUTOFF_BAND`.  ``0.0`` uses the band alone.
+    #:
+    #: The band is a length, and the weights it produces are ``1/d - 1/d_cut``,
+    #: so what it buys depends on how far the nearest segment is.  Under the
+    #: axilla, where every bone is far, it buys almost nothing: measured on a
+    #: flap vertex with the arm at 16.98 and the ribs at 19.26, a 3-unit band
+    #: gives the arm 0.0089 and the ribs 0.0019 -- nearly five to one for a
+    #: difference of 2.3 units -- so the vertex goes to the arm and is drawn
+    #: out with it.  A term proportional to the nearest distance keeps the
+    #: support in scale with the geometry.  Purely proportional collapses
+    #: where the skin lies on the bone, which is why it is added to the band
+    #: rather than replacing it.
+    #: OFF: measured, it buys spikes with bulk.  At 0.08 the spikes fall 419
+    #: to 363 while torn edges go 54,253 to 93,861 and the deep squat's bulk
+    #: 99th percentile 1.898 to 2.905; at 0.25 the squat reaches 124,277 torn
+    #: edges.  Distances are large in the legs for their own reasons, so a
+    #: proportional support admits far bones there to fix something in the
+    #: axilla.  The spikes it does remove are at the hip, not the shoulder --
+    #: the flap count stays at 119 either way.
+    INFLUENCE_CUTOFF_RATIO = 0.0
+
     #: Restore each MUSCLE vertex's rest distance to its own bone segment.
     #:
     #: A muscle attaches to bone, so its offset from that bone is close to
@@ -666,6 +688,278 @@ class SoftTissueSkinning:
     #: fallback for a chain that owns no vertex at all.
     SEED_FROM_OWNED_SKIN = True
 
+    #: How much nearer than the runner-up a chain must be before a skin vertex
+    #: will seed it.  ``1.0`` seeds from the nearest chain whatever the margin.
+    #:
+    #: In the rest pose the arms hang against the trunk, so Euclidean
+    #: proximity treats the gap between forearm and waist as if it were
+    #: tissue.  Measured at full abduction, the worst edge in the whole mesh
+    #: joined two vertices 0.109 units apart on the left flank: one took
+    #: lumbar_1..4, the other elbow_L 0.32, shoulder_L 0.27, wrist_L 0.22, and
+    #: flew 60 units with the raised arm.  The forearm is about 4 units from
+    #: that skin and the lumbar spine about 19, so nearest-bone binding picks
+    #: the arm and every rule built on it inherits the mistake.
+    #:
+    #: A vertex in that ambiguous band seeds nothing.  The fields propagate
+    #: into it from territory that is unambiguous instead, which reaches the
+    #: waist from the trunk in a few units and from the arm only over the
+    #: shoulder -- the distinction Euclidean distance cannot make and surface
+    #: distance can.
+    #:
+    #: Bracketed with tools/skin_deformation_quality.py over four poses, by
+    #: total torn edges and by the axilla's seam tail at full abduction:
+    #:
+    #:   margin   torn     axilla seam p99   worst edge
+    #:   1.00     77,434            69.974       570.25
+    #:   1.25     68,486            54.439       439.08
+    #:   1.50     67,053            52.704       439.08
+    #:   2.00     72,093            53.791       439.08
+    #:   3.00     71,432            54.246       439.08
+    SEED_CONFIDENCE_MARGIN = 1.5
+
+    #: Bridge disconnected skin patches into the geodesic graph, up to this
+    #: many model units.  ``0.0`` leaves the graph as the tessellation gives
+    #: it.
+    #:
+    #: The body skin is not one surface: measured, 791,729 vertices fall into
+    #: 528 connected components, 454 of them smaller than 100 vertices, and
+    #: 28,201 vertices (3.56%) sit off the main one.  Dijkstra never reaches
+    #: an island from any chain's seeds, so its geodesic distance is infinite
+    #: and the solve falls back to pure Euclidean -- which is exactly the
+    #: measurement the geodesic pass exists to overrule.  With the arms
+    #: hanging, an island on the lower rib cage is nearer the elbow than the
+    #: ribs, so it flew 40 units with a raised arm while the surface around it
+    #: stayed put: the three worst edges in the whole mesh at full abduction,
+    #: at 396x, 366x and 352x, each joined an island vertex to its intact
+    #: neighbour 0.13 units away.
+    #:
+    #: Islands are not coincident duplicates -- their nearest main-surface
+    #: vertex is a median 1.03 units away -- so welding does not stitch them.
+    #: The bridge is added to the Dijkstra graph ONLY, never to
+    #: ``edge_pairs``, which the stretch metrics and edge relaxation read as
+    #: real topology.
+    GEODESIC_BRIDGE = 5.0
+
+    #: How many contacts each island patch is joined by.  A patch touches the
+    #: rest of the body along a rim, not at every one of its vertices.
+    BRIDGE_CONTACTS = 8
+
+    #: Radius, in model units, of the bone-contact seeds used to bootstrap
+    #: chain ownership.  ``0.0`` decides ownership by Euclidean distance, as
+    #: before.
+    #:
+    #: Euclidean ownership cannot survive a rest pose whose arms hang against
+    #: the trunk.  Measured with the arms at shoulder height, 552 vertices on
+    #: the anterolateral torso -- a strip from the armpit down to the waist,
+    #: |x| 15.8 to 21.9 -- were bound ENTIRELY to the arm: the worst, at
+    #: (21.3, -8.0, -67.8) on the lower abdomen, held elbow_R 0.39,
+    #: shoulder_R 0.31 and wrist_R 0.30 and drew out into a 74-unit spike
+    #: while the skin around it moved 25.  The hanging forearm is about 3
+    #: units from that skin and the lumbar spine about 24, so no test on
+    #: straight-line distance, however confident, can call it.
+    #:
+    #: Bone in CONTACT with skin can: the ulnar border, the tibial crest, the
+    #: clavicle, the sternum, the iliac crest.  Those seeds are unambiguous,
+    #: so a first Dijkstra from them gives a field that already knows the arm
+    #: is a different body part -- it reaches the abdomen from the ribs in a
+    #: few units and from the arm only over the shoulder.  Ownership is then
+    #: taken from that field rather than from the straight line, and a second
+    #: pass seeds the real one.  Two Dijkstras instead of one; the binding is
+    #: cached on disk, so it is paid once per machine.
+    #:
+    #: OFF: measured, it does not fix what it was built for and costs
+    #: elsewhere.  Over the four gate poses it improves every seam tail (hip
+    #: 17.889 -> 15.683, squat 11.122 -> 10.012, axilla 48.066 -> 44.985) but
+    #: raises total torn edges 62,280 -> 64,317 and the worst edge at shoulder
+    #: height 301.64 -> 469.48, and the anterolateral spikes it was aimed at
+    #: barely move: 552 vertices above their neighbours by 2 units becomes
+    #: 598, and 88 above 10 units becomes 70.  Unioning the radius seeds back
+    #: in is worse again (68,309 torn).  The reasoning still holds -- bone in
+    #: contact with skin is the only unambiguous seed -- so the path is left
+    #: in place, disabled, rather than removed.
+    SEED_CONTACT_RADIUS = 0.0
+
+    #: How much a body part's muscle distance counts alongside its bone
+    #: distance when ranking segments for SKIN.  ``0.0`` ignores the field.
+    #:
+    #: The bone says where the skeleton is; the muscle says where that body
+    #: part's flesh is.  Adding them means a chain whose bone happens to lie
+    #: near a patch of skin cannot win it unless that chain's flesh is there
+    #: too -- which is exactly what distinguishes the flank from the forearm
+    #: hanging beside it.
+    #:
+    #: 1.0 weights flesh and bone equally.  Bracketed over the four gate
+    #: poses, by spikes at shoulder height / that pose's torn edges / total
+    #: torn edges:
+    #:
+    #:   0.0    329    11,456    59,946
+    #:   0.6    306     9,543    57,179
+    #:   1.0    297     8,712    56,279
+    #:   2.0    261     7,843    57,992
+    #:
+    #: 2.0 is better at the shoulder and worse at the squat; 1.0 is the
+    #: balance, and is the value that needs no justifying.
+    MUSCLE_FIELD_WEIGHT = 1.0
+
+    #: How hard the muscle field re-weights an influence whose body part's
+    #: flesh is further away than the nearest part's.  ``0.0`` leaves the
+    #: weights the distance solve produced.
+    #:
+    #: Adding the flesh distance to the bone distance changes which segments
+    #: are CHOSEN.  This changes how much each chosen one COUNTS, which is
+    #: what the rendering shows still going wrong: a strip of flank skin keeps
+    #: a majority share on the arm even after the trunk is back in contention,
+    #: and a fan of triangles is drawn out along the arm from every vertex of
+    #: it.  An influence is divided by ``1 + bias * (its flesh distance minus
+    #: the nearest flesh distance)``, so a body part whose flesh is right
+    #: there is untouched and one whose flesh is ten units further is heavily
+    #: discounted.  Continuous in the field, so it adds no seam of its own.
+    #: OFF: measured inert where it matters.  It improves the seam tails
+    #: (hip 12.175 -> 9.605, squat 11.269 -> 8.212, shoulder height 17.835 ->
+    #: 11.039) and costs spikes (291 -> 303), and the rendering does not move:
+    #: 167 pixels out of 111,614 from the front, 374 the wrong way from the
+    #: three-quarter.  The reason is that the vertices drawn into wings hold
+    #: all four of their influences on ARM joints -- elbow 0.39, shoulder
+    #: 0.31, wrist 0.30 -- so there is no trunk share to shift weight toward.
+    #: Changing the shares cannot help; the SET has to change.
+    MUSCLE_WEIGHT_BIAS = 0.0
+
+    #: A chain whose flesh is within this many units of a vertex stays
+    #: eligible even when its nearest bone is beyond the spatial limit.
+    #: ``0.0`` leaves eligibility to bone distance alone.
+    #:
+    #: The spatial limit exists to stop a distant chain grabbing skin, and it
+    #: judges distance to BONE.  Under the lower rib cage there is no trunk
+    #: bone close enough -- measured, 94 of the 700 spikes have no trunk
+    #: segment within even the raised 16-unit floor -- so the trunk chain is
+    #: masked out and the arm wins by being the only candidate left.  The
+    #: abdominal wall is right there, though, a median 2.48 units away.  Flesh
+    #: in contact is a better licence to drive skin than a bone that happens
+    #: to be within an arbitrary radius.
+    #:
+    #: OFF: measured inert on top of the inward test.  Torn edges 55,445 ->
+    #: 55,365 and spikes 587 -> 578, and the rendering moves by less than it
+    #: varies between viewpoints: 587 pixels off the front, 334 back onto the
+    #: three-quarter.  With the reach floor raised to 16 the trunk chain is
+    #: already eligible almost everywhere it needs to be, so there is little
+    #: left for flesh to vouch for.
+    MUSCLE_ELIGIBILITY_RADIUS = 0.0
+
+    #: A chain may seed a vertex only if its bone lies INWARD of the skin --
+    #: the same side as the flesh that skin sits on.  ``False`` seeds on
+    #: distance alone.
+    #:
+    #: This is the test that separates the flank from the forearm hanging
+    #: beside it, and the only one that can: both are close, and both have
+    #: flesh close, so neither bone distance nor flesh distance decides it.
+    #: Direction does.  From flank skin the abdominal wall is inward and
+    #: medial; the forearm is outward and lateral, across a gap.  From the
+    #: inner surface of the forearm it is the other way round.  The inward
+    #: direction comes from the muscle field rather than the mesh normals,
+    #: because this asset's triangle winding is inconsistent -- 49% of it
+    #: points outward -- so its normals cannot be trusted for a side test.
+    #:
+    #: Measured over the four gate poses: torn edges 55,971 -> 55,445 and
+    #: spikes 669 -> 587.  The rendering is where it shows: stray skin loses
+    #: another 5,171 pixels from the front and 5,831 from the back, on top of
+    #: what everything before it removed.
+    SEED_INWARD_ONLY = True
+
+    #: A chain may seed only skin whose nearest flesh belongs to that chain's
+    #: own body part.  ``False`` seeds wherever the direction test allows.
+    #:
+    #: The direction test asks whether the bone is on the inward side, and
+    #: that is not enough beside a hanging arm: skin on the lateral chest,
+    #: further out than the humerus, has the humerus inward of it and lets
+    #: the arm seed chest skin.  The flesh answers it outright.  Measured on
+    #: the 123 vertices still drawn into flaps, 121 sit on TRUNK flesh, a
+    #: median 1.33 units away, with arm flesh 4.49 away -- they are chest
+    #: skin, and no chain but the trunk's should be telling them where they
+    #: are.
+    #:
+    #: Measured over the four gate poses: at shoulder height the worst edge
+    #: falls 213.66 to 59.69, torn edges 8,021 to 4,958 and the seam tail
+    #: 13.472 to 11.252; total torn 54,253 to 51,654.  The rendering barely
+    #: moves (666 pixels), because what is left there is not stretched by
+    #: much any more -- it is a sheet of triangles that spans the armpit and
+    #: has to go somewhere when the arm lifts.
+    SEED_ON_OWN_FLESH = True
+
+    #: Extra cost, in model units, for a step in the geodesic graph that
+    #: crosses from one body part's skin to another's.  ``0.0`` treats every
+    #: mesh edge alike.
+    #:
+    #: The arm and the chest are separate sheets facing each other across the
+    #: air below the armpit, and the surface path between them should run up
+    #: to the rim and back down: measured, a median of 36.74 units against a
+    #: straight line of 8.47.  For 1,443 lateral-chest vertices it does not,
+    #: because the asset has the two sheets touching -- the shortest such path
+    #: is 0.11 units.  Through those welds the arm's field floods the chest,
+    #: which is what is left of the wings.  A cost per crossing makes the weld
+    #: expensive without severing the genuine transition at the rim, where the
+    #: crossing is real and the distances are small either way.
+    #: OFF: a flat price cannot tell the two apart.  At 20 units the genuine
+    #: transition at the rim is priced out too and the blend across the
+    #: shoulder breaks: the worst edge at shoulder height goes to 16,987 and
+    #: the spikes to 2,057.  Anything small enough to spare the rim leaves the
+    #: weld cheaper than the way round, because both are a single crossing.
+    CROSS_PART_EDGE_COST = 0.0
+
+    #: Cut a crossing between body parts from the geodesic graph when it lies
+    #: this far below the shoulder.  ``None`` keeps every crossing.
+    #:
+    #: The arm and the trunk are one surface only at the shoulder.  Below it
+    #: they are two sheets facing each other across air, and any place the
+    #: asset has them touching is the arm resting against the body, not skin
+    #: continuing into skin.  Height is what separates the two cases, and the
+    #: skeleton supplies it -- no tuned constant, just "below the joint the
+    #: arm hangs from".
+    #:
+    #: OFF: measured, it cuts far more than the welds.  The body-part labels
+    #: come from a sampled field and flip along every real boundary -- the hip,
+    #: the wrist, the neck -- so "crossing below the shoulder" catches those
+    #: too: spikes 398 to 1,131 and the seam tail at shoulder height 11.3 to
+    #: 27.1.  Telling a weld from a boundary needs the surface to fold back on
+    #: itself, which is a dihedral test, and this asset's winding is
+    #: inconsistent enough that the sign of a fold cannot be read.  The weld
+    #: is an asset defect and wants an asset fix.
+    CROSS_PART_CUT_BELOW = None
+
+    #: Test the spatial limit on the distance the RANKING uses -- geodesic
+    #: blended with Euclidean -- rather than on the straight line.
+    #:
+    #: The limit exists to stop a distant chain grabbing skin, and it decided
+    #: distance by the straight line while the ranking beside it decided by
+    #: the surface.  The two disagree exactly where a limb lies against the
+    #: trunk, and the disagreement is what draws the wings.  Measured on a
+    #: flank vertex at (21.6, -7.7, -65.7): the rib cage is 17.27 away in a
+    #: straight line and 17.78 across the skin, the arm 17.16 and 34.29.  The
+    #: ranking had it right and never got the chance -- the ribs were 1.27
+    #: over the rib chain's 16-unit limit and were masked out, the arm was
+    #: inside its own 20-unit limit and was kept, and the vertex came out
+    #: 100% arm-driven.
+    SPATIAL_LIMIT_ON_HYBRID = True
+
+    #: Multiplier on every chain's spatial limit when it is tested across the
+    #: surface.  A path over the skin is longer than the straight line, so a
+    #: limit calibrated for one is too tight for the other: reusing it
+    #: unchanged left vertices with almost no candidates and the spikes at
+    #: shoulder height went 587 to 807.
+    #:
+    #: Bracketed over the four gate poses, by spikes at shoulder height /
+    #: that pose's worst edge / total torn edges:
+    #:
+    #:   1.6    312    901.31    53,006
+    #:   1.8    140    533.27    53,800
+    #:   1.9    119    213.66    54,253
+    #:   2.2    187    213.66    54,704
+    #:   2.8    245    213.66    55,393
+    #:
+    #: Below 1.9 the limits are tight enough that vertices start losing the
+    #: chain they belong to, which the worst-edge column shows before the
+    #: spike count does.
+    HYBRID_LIMIT_SCALE = 1.9
+
     def __init__(self):
         self.joints: list[SkinJoint] = []
         self.bindings: list[SkinBinding] = []
@@ -683,7 +977,35 @@ class SoftTissueSkinning:
 
         # Registration-time filter constants (tunable for optimization).
         # Defaults match the original hard-coded values.
-        self.min_spatial: float = 12.0      # min spatial limit for very small chains (foot/hand ~4-12 extent)
+        #: Floor on a chain's spatial reach, in model units.  A chain whose
+        #: proportional limit falls below this still reaches this far.
+        #:
+        #: 12.0 was too small for the rib cage, whose proportional limit works
+        #: out at 10.35 -- it is 41 units tall, so the vertical measure calls
+        #: it small -- while the arm chain, 80 units tall, got 20.  Flank skin
+        #: sits a median 12.4 units from the ribs and 14.6 from the arm, so
+        #: the NEARER bone was masked out and the further one won: for 482 of
+        #: the 700 spikes at shoulder height a trunk segment was already
+        #: closer than any arm segment.  Bracketed over the four gate poses,
+        #: by spikes at shoulder height / that pose's seam tail / total torn:
+        #:
+        #:   12    676   48.066   62,280
+        #:   14    434   28.704   60,747
+        #:   16    329   20.633   59,946
+        #:   18    325   20.060   60,049
+        #:   24    430   24.768   61,155
+        self.min_spatial: float = 16.0
+
+        #: Distance field over the muscle layers, or None.  See
+        #: :mod:`faceforge.body.muscle_field`: it tells the binding how far
+        #: each body part's FLESH is, which is the question nearest-bone
+        #: binding cannot answer where a limb hangs against the trunk.
+        self.muscle_field = None
+
+        #: Digest of the field above, or "".  Public and scalar, so the
+        #: binding cache keys on it: a rebuilt field must not be served a
+        #: binding that was solved against the old one.
+        self.muscle_field_id: str = ""
         self.spatial_factor: float = 0.25   # fraction of chain Z extent for proportional limit
         self.min_z_pad: float = 8.0         # minimum Z margin for very small chains (foot/hand)
         self.lateral_threshold: float = 5.0 # |centroid_x| above this triggers X filter
@@ -858,6 +1180,90 @@ class SoftTissueSkinning:
             elif chain_len == 1:
                 # Single-joint chain: no segment (will be skipped in registration)
                 pass
+
+    def rebind_from_current_pose(
+        self,
+        mesh: MeshInstance,
+        **solve_kwargs,
+    ) -> bool:
+        """Re-solve which bone drives each vertex, using the pose on screen.
+
+        The rest pose has the arms hanging against the trunk, so a straight
+        line from flank skin reaches the forearm before it reaches the spine
+        and no amount of care about distances can tell the two apart.  Posed
+        with the arms out they are metres apart in the only sense that
+        matters, and the same solve gets the answer right.
+
+        The vertex *indices* do not change with the pose, so an assignment
+        found in one pose is valid in every pose.  Only the assignment is
+        taken from here: the rest pose the deformation measures against is
+        untouched, and is put back before this returns.
+
+        Returns False when there is nothing to re-solve.
+        """
+        binding = next((b for b in self.bindings if b.mesh is mesh), None)
+        if binding is None or mesh.rest_positions is None:
+            return False
+
+        posed = np.asarray(mesh.geometry.positions, dtype=np.float32).copy()
+        if len(posed) != len(mesh.rest_positions):
+            return False
+
+        saved_rest = mesh.rest_positions
+        saved_segments = [(j.segment_start, j.segment_end) for j in self.joints]
+        saved_field = self.muscle_field
+        try:
+            mesh.rest_positions = posed
+            # The muscle field is sampled in the REST pose; against a deformed
+            # skin its distances mean nothing, so it sits this solve out.  The
+            # separation is doing the same job here anyway.
+            self.muscle_field = None
+            # Segments where the bones are NOW, to match the skin's pose.
+            cancel = self._wrapper_cancel()
+            world = []
+            for joint in self.joints:
+                m = np.asarray(self._joint_world(joint.node), dtype=np.float64)
+                world.append(m[:3, 3].copy())
+            for start, end in self._chain_ranges():
+                for k in range(start, end - 1):
+                    self.joints[k].segment_start = world[k]
+                    self.joints[k].segment_end = world[k + 1]
+                if end - start >= 2:
+                    last, prev = self.joints[end - 1], self.joints[end - 2]
+                    last.segment_start = world[end - 1]
+                    last.segment_end = world[end - 1] + (world[end - 1] - world[end - 2])
+            solved = self._solve_skin_binding(mesh, **solve_kwargs)
+        finally:
+            mesh.rest_positions = saved_rest
+            self.muscle_field = saved_field
+            for joint, (a, b) in zip(self.joints, saved_segments):
+                joint.segment_start, joint.segment_end = a, b
+
+        if solved is None:
+            return False
+        (joint_indices, secondary_indices, weights, _edges,
+         influences, influence_weights) = solved
+        binding.joint_indices = joint_indices
+        binding.secondary_indices = secondary_indices
+        binding.weights = weights
+        binding.influences = influences
+        binding.influence_weights = influence_weights
+        for attr in self.REST_DERIVED_CACHES:
+            if hasattr(binding, attr):
+                delattr(binding, attr)
+        self._dirty = True
+        return True
+
+    def _chain_ranges(self) -> list[tuple[int, int]]:
+        """(start, end) index range of each chain in ``self.joints``."""
+        ranges: list[tuple[int, int]] = []
+        start = 0
+        for i in range(1, len(self.joints) + 1):
+            if (i == len(self.joints)
+                    or self.joints[i].chain_id != self.joints[start].chain_id):
+                ranges.append((start, i))
+                start = i
+        return ranges
 
     def register_skin_mesh(
         self,
@@ -1107,6 +1513,26 @@ class SoftTissueSkinning:
                     )
                     # Unreachable vertices keep their Euclidean distances
 
+        # ── Muscle field: add each body part's flesh distance ──
+        # Skin only.  A muscle is bound to its own bone and does not need it.
+        field = getattr(self, "muscle_field", None)
+        if (field is not None and not is_muscle
+                and float(self.MUSCLE_FIELD_WEIGHT) > 0.0):
+            from faceforge.body.muscle_field import group_of_joint
+            weight = float(self.MUSCLE_FIELD_WEIGHT)
+            per_group: dict[str, np.ndarray] = {}
+            for si_ in range(len(seg_idx_arr)):
+                joint_name = self.joints[int(seg_idx_arr[si_])].name
+                group = group_of_joint(joint_name)
+                d_g = per_group.get(group)
+                if d_g is None:
+                    d_g = field.distance(positions, group)
+                    # A group with no muscles tells us nothing; adding inf
+                    # would silently delete that chain.
+                    d_g = np.where(np.isfinite(d_g), d_g, 0.0)
+                    per_group[group] = d_g
+                dists[:, si_] += weight * d_g
+
         # ── Spatial limit: mask out chains whose bone segments are too far ──
         # Uses the already-computed segment distances (not joint distances)
         # because long bone segments (e.g. hip→knee) may have a closest
@@ -1119,7 +1545,15 @@ class SoftTissueSkinning:
             _MIN_SPATIAL = self.min_spatial
             _SPATIAL_FACTOR = self.spatial_factor
 
-            # Compute chain Z extents for proportional spatial limit
+            # Compute chain Z extents for proportional spatial limit.
+            #
+            # Measuring a chain by its bounding-box diagonal instead was
+            # tried, on the reasoning that a short wide chain like the rib
+            # cage is judged small by height alone.  It helps on its own
+            # (spikes at shoulder height 676 -> 452) and is redundant once
+            # ``min_spatial`` is right: with the floor at 16 the vertical
+            # measure gives 329 spikes and the diagonal 356, because the
+            # diagonal also widens chains that did not need it.
             _chain_z_ext: dict[int, tuple[float, float]] = {}
             for joint in self.joints:
                 cid = joint.chain_id
@@ -1150,8 +1584,24 @@ class SoftTissueSkinning:
                 # this chain.  Use Euclidean (not geodesic) so that physical
                 # proximity determines chain eligibility — geodesic only
                 # affects the ranking among eligible chains.
-                min_seg_dist = dists_euclidean[:, chain_seg_mask].min(axis=1)  # (V,)
+                if self.SPATIAL_LIMIT_ON_HYBRID:
+                    metric = dists
+                    chain_limit *= float(self.HYBRID_LIMIT_SCALE)
+                else:
+                    metric = dists_euclidean
+                min_seg_dist = metric[:, chain_seg_mask].min(axis=1)  # (V,)
                 too_far = min_seg_dist > chain_limit
+                flesh_radius = float(self.MUSCLE_ELIGIBILITY_RADIUS)
+                field = getattr(self, "muscle_field", None)
+                if (np.any(too_far) and flesh_radius > 0.0 and field is not None
+                        and not is_muscle):
+                    # This chain's own flesh may vouch for it where its bone
+                    # cannot reach.
+                    from faceforge.body.muscle_field import group_of_joint
+                    ji_here = seg_idx_arr[chain_seg_mask]
+                    group = group_of_joint(self.joints[int(ji_here[0])].name)
+                    d_flesh = field.distance(positions, group)
+                    too_far &= ~(np.isfinite(d_flesh) & (d_flesh <= flesh_radius))
                 if np.any(too_far):
                     dists[np.ix_(too_far, chain_seg_mask)] = np.inf
 
@@ -1486,6 +1936,10 @@ class SoftTissueSkinning:
                 influences, influence_weights = self._diffuse_weights(
                     mesh, influences, influence_weights,
                 )
+            if not is_muscle and float(self.MUSCLE_WEIGHT_BIAS) > 0.0:
+                influence_weights = self._bias_weights_by_flesh(
+                    positions, influences, influence_weights,
+                )
 
         if cache_key is not None:
             _skin_cache.store(
@@ -1516,6 +1970,50 @@ class SoftTissueSkinning:
             )
             binding._cor = centres
         return centres
+
+    def _bias_weights_by_flesh(self, positions, influences, weights):
+        """Discount an influence whose body part's flesh is not here.
+
+        The influence SET is untouched; only the shares change, and they are
+        renormalised.  A vertex where every body part's flesh is equally far
+        is left exactly as it was, so this does nothing away from the places
+        where a limb lies against the trunk.
+        """
+        field = getattr(self, "muscle_field", None)
+        if field is None:
+            return weights
+        from faceforge.body.muscle_field import group_of_joint
+
+        bias = float(self.MUSCLE_WEIGHT_BIAS)
+        cache: dict[str, np.ndarray] = {}
+
+        def flesh(group: str) -> np.ndarray:
+            d = cache.get(group)
+            if d is None:
+                d = field.distance(positions, group)
+                d = np.where(np.isfinite(d), d, 0.0)
+                cache[group] = d
+            return d
+
+        K = influences.shape[1]
+        d_k = np.empty((len(positions), K), dtype=np.float64)
+        for k in range(K):
+            groups = np.array([group_of_joint(self.joints[int(j)].name)
+                               for j in influences[:, k]])
+            for group in np.unique(groups):
+                sel = groups == group
+                d_k[sel, k] = flesh(str(group))[sel]
+
+        nearest = d_k.min(axis=1, keepdims=True)
+        scale = 1.0 / (1.0 + bias * np.maximum(d_k - nearest, 0.0))
+        out = weights.astype(np.float64) * scale
+        total = out.sum(axis=1, keepdims=True)
+        dead = total[:, 0] <= 1e-12
+        if np.any(dead):
+            out[dead] = weights[dead]
+            total[dead] = np.maximum(weights[dead].sum(axis=1, keepdims=True), 1e-12)
+        out /= total
+        return out.astype(weights.dtype)
 
     def _diffuse_weights(self, mesh, influences, weights):
         """Smooth (V, K) influence weights by diffusion over the mesh graph.
@@ -1613,11 +2111,12 @@ class SoftTissueSkinning:
 
         d_k = d_take[:, :K]                       # (V, K) the K nearest
         band = float(self.INFLUENCE_CUTOFF_BAND)
-        if band > 0.0:
+        ratio = float(self.INFLUENCE_CUTOFF_RATIO)
+        if band > 0.0 or ratio > 0.0:
             # Local support: nothing further than ``band`` past the nearest
             # segment contributes, whatever its rank.  Additive, so the
             # support never vanishes where the skin lies on the bone.
-            d_cut = d_take[:, :1] + band
+            d_cut = d_take[:, :1] * (1.0 + ratio) + band
         elif take > K:
             d_cut = d_take[:, K:K + 1]            # (V, 1) the (K+1)-th
         else:
@@ -2022,6 +2521,120 @@ class SoftTissueSkinning:
 
         return unique_edges, edge_lengths
 
+    def _bridge_mesh_islands(
+        self,
+        positions: np.ndarray,
+        edges: np.ndarray,
+        edge_lengths: np.ndarray,
+    ) -> tuple[np.ndarray, np.ndarray]:
+        """Edges plus links joining disconnected patches to the main surface.
+
+        Returns the inputs unchanged when the mesh is already connected, when
+        scipy is unavailable, or when ``GEODESIC_BRIDGE`` is zero.  The result
+        is for the geodesic graph alone; see :data:`GEODESIC_BRIDGE`.
+        """
+        limit = float(self.GEODESIC_BRIDGE)
+        if limit <= 0.0 or len(edges) == 0:
+            return edges, edge_lengths
+        try:
+            from scipy.sparse import coo_matrix
+            from scipy.sparse.csgraph import connected_components
+            from scipy.spatial import cKDTree
+        except ImportError:  # pragma: no cover - scipy is a hard dependency
+            return edges, edge_lengths
+
+        V = len(positions)
+        graph = coo_matrix(
+            (np.ones(len(edges)), (edges[:, 0], edges[:, 1])), shape=(V, V))
+        ncomp, labels = connected_components(graph, directed=False)
+        if ncomp <= 1:
+            return edges, edge_lengths
+
+        sizes = np.bincount(labels, minlength=ncomp)
+        main = int(np.argmax(sizes))
+        off = np.where(labels != main)[0]
+        on = np.where(labels == main)[0]
+        if len(off) == 0 or len(on) == 0:
+            return edges, edge_lengths
+
+        dist, nearest = cKDTree(positions[on]).query(positions[off], k=1)
+        close = dist <= limit
+        if not np.any(close):
+            return edges, edge_lengths
+
+        # A patch is joined at its few closest contacts, not vertex by vertex.
+        # Gluing every island vertex to whatever main-surface vertex happens
+        # to be nearest lets a patch on the lateral chest attach across the
+        # armpit gap to the arm; joining at the rim and letting the patch's
+        # own edges carry the rest keeps it on the body part it belongs to.
+        keep = np.zeros(len(off), dtype=bool)
+        order = np.argsort(dist)
+        seen: dict[int, int] = {}
+        for k in order:
+            if not close[k]:
+                break
+            comp = int(labels[off[k]])
+            if seen.get(comp, 0) >= self.BRIDGE_CONTACTS:
+                continue
+            seen[comp] = seen.get(comp, 0) + 1
+            keep[k] = True
+        close = keep
+
+        bridge = np.stack([off[close], on[nearest[close]]], axis=1)
+        # This module has no logger of its own; the counts are recorded so a
+        # caller that wants them (tools/skin_deformation_quality.py) can read
+        # what the last bridge actually did.
+        self.last_bridge = {
+            "components": int(ncomp),
+            "island_vertices": int(len(off)),
+            "bridged": int(close.sum()),
+            "max_gap": round(float(dist[close].max()), 3),
+        }
+        return (np.concatenate([edges, bridge.astype(edges.dtype)]),
+                np.concatenate([edge_lengths, dist[close]]))
+
+    def _charge_cross_part_edges(self, positions, edges, edge_lengths):
+        """Add :data:`CROSS_PART_EDGE_COST` to every edge that changes body part.
+
+        Returns the lengths unchanged when the cost is zero or the muscle
+        field is absent.  The graph is the geodesic one only; ``edge_pairs``,
+        which the stretch metrics and edge relaxation read, never sees this.
+        """
+        cost = float(self.CROSS_PART_EDGE_COST)
+        cut_below = self.CROSS_PART_CUT_BELOW
+        field = getattr(self, "muscle_field", None)
+        if field is None or len(edges) == 0:
+            return edge_lengths
+        if cost <= 0.0 and cut_below is None:
+            return edge_lengths
+
+        best = np.full(len(positions), np.inf)
+        part = np.zeros(len(positions), dtype=np.int32)
+        for k, group in enumerate(field.groups):
+            d = field.distance(positions, group)
+            closer = d < best
+            best[closer] = d[closer]
+            part[closer] = k
+        crosses = part[edges[:, 0]] != part[edges[:, 1]]
+        if not np.any(crosses):
+            return edge_lengths
+        out = np.asarray(edge_lengths, dtype=np.float64).copy()
+        if cost > 0.0:
+            out[crosses] += cost
+        if cut_below is not None:
+            shoulders = [float(np.asarray(j.rest_world)[2, 3]) for j in self.joints
+                         if j.name.startswith("shoulder")]
+            if shoulders:
+                limit = max(shoulders) - float(cut_below)
+                mid_z = 0.5 * (positions[edges[:, 0], 2] + positions[edges[:, 1], 2])
+                weld = crosses & (mid_z < limit)
+                if np.any(weld):
+                    # Severed, not priced: an edge the surface does not really
+                    # have should cost what crossing air costs.
+                    out[weld] = np.inf
+                    self.last_weld_cut = int(weld.sum())
+        return out
+
     def _geodesic_chain_dists(
         self,
         positions: np.ndarray,
@@ -2053,6 +2666,9 @@ class SoftTissueSkinning:
         (V, C) array of geodesic distances, where C = number of unique chains.
         """
         V = len(positions)
+        edges, edge_lengths = self._bridge_mesh_islands(
+            positions, edges, edge_lengths)
+        edge_lengths = self._charge_cross_part_edges(positions, edges, edge_lengths)
         unique_chains = np.unique(seg_chain_arr)
         C = len(unique_chains)
         chain_to_idx = {int(c): i for i, c in enumerate(unique_chains)}
@@ -2080,8 +2696,6 @@ class SoftTissueSkinning:
                 adj[u].append((v, w))
                 adj[v].append((u, w))
 
-        result = np.full((V, C), np.inf, dtype=np.float64)
-
         def _chain_min_dist(chain_id) -> np.ndarray:
             """Euclidean distance from every vertex to this chain's nearest segment."""
             chain_mask = seg_chain_arr == chain_id
@@ -2097,105 +2711,190 @@ class SoftTissueSkinning:
             diff = positions[:, np.newaxis, :] - closest
             return np.sqrt(np.sum(diff * diff, axis=2)).min(axis=1)
 
-        # Which chain owns the bone segment nearest each vertex.  Kept as a
-        # running best so this costs O(V) beyond the per-chain pass below.
-        nearest_chain = None
-        if self.SEED_FROM_OWNED_SKIN:
-            best = np.full(V, np.inf)
-            nearest_chain = np.full(V, -1, dtype=np.int64)
-            for chain_id in unique_chains:
-                d = _chain_min_dist(chain_id)
-                closer = d < best
-                best[closer] = d[closer]
-                nearest_chain[closer] = int(chain_id)
-            # Measured: every seed this adds falls on skin no bone reaches
-            # within SEED_RADIUS, so restricting it to that case changes
-            # nothing.  It is the deep-tissue skin the radius rule never saw.
+        # Euclidean distance from every vertex to every chain, computed once.
+        chain_min = np.stack([_chain_min_dist(c) for c in unique_chains], axis=1)
 
-        for chain_id in unique_chains:
-            ci = chain_to_idx[int(chain_id)]
-            chain_mask = seg_chain_arr == chain_id
-            chain_seg_starts = seg_starts[chain_mask]  # (Sc, 3)
-            chain_seg_ends = seg_ends[chain_mask]      # (Sc, 3)
-
-            # Find seed vertices: those within SEED_RADIUS of any segment
-            ab = chain_seg_ends - chain_seg_starts  # (Sc, 3)
-            ab_len_sq = np.sum(ab * ab, axis=1)     # (Sc,)
-
-            p_exp = positions[:, np.newaxis, :]  # (V, 1, 3)
-            ap = p_exp - chain_seg_starts[np.newaxis, :, :]
-            t = np.sum(ap * ab[np.newaxis, :, :], axis=2) / np.maximum(ab_len_sq[np.newaxis, :], 1e-10)
-            t = np.clip(t, 0.0, 1.0)
-            closest = chain_seg_starts[np.newaxis, :, :] + t[:, :, np.newaxis] * ab[np.newaxis, :, :]
-            diff = p_exp - closest
-            seg_dists = np.sqrt(np.sum(diff * diff, axis=2))  # (V, Sc)
-            min_seg_dist = seg_dists.min(axis=1)  # (V,)
-
-            seed_mask = min_seg_dist <= self.SEED_RADIUS
-            if nearest_chain is not None:
-                # Union, not replacement: the radius keeps neighbouring fields
-                # overlapping across a joint, which is what keeps a boundary
-                # soft, while ownership guarantees a deep bone seeds the skin
-                # that lies over it however far under the surface it sits.
-                seed_mask = seed_mask | (nearest_chain == int(chain_id))
-            seed_indices = np.where(seed_mask)[0]
-            seed_dists = min_seg_dist[seed_mask]
-
-            if len(seed_indices) == 0:
-                # Fallback: closest vertex to each segment endpoint
-                fallback_list: list[int] = []
-                for seg_start, seg_end in zip(chain_seg_starts, chain_seg_ends):
-                    for pt in [seg_start, seg_end]:
-                        d = np.linalg.norm(positions - pt[np.newaxis, :], axis=1)
-                        fallback_list.append(int(np.argmin(d)))
-                seed_indices = np.unique(fallback_list).astype(np.intp)
+        def _run_dijkstra(seed_masks) -> np.ndarray:
+            """Multi-source geodesic distance per chain, from the given seeds."""
+            out = np.full((V, C), np.inf, dtype=np.float64)
+            for ci_, chain_id_ in enumerate(unique_chains):
+                min_seg_dist = chain_min[:, ci_]
+                seed_mask = seed_masks[ci_]
+                seed_indices = np.where(seed_mask)[0]
+                if len(seed_indices) == 0:
+                    # Fallback: the closest vertex to each segment endpoint.
+                    chain_mask_ = seg_chain_arr == chain_id_
+                    fallback_list: list[int] = []
+                    for seg_start, seg_end in zip(seg_starts[chain_mask_],
+                                                  seg_ends[chain_mask_]):
+                        for pt in (seg_start, seg_end):
+                            dd = np.linalg.norm(positions - pt[np.newaxis, :], axis=1)
+                            fallback_list.append(int(np.argmin(dd)))
+                    seed_indices = np.unique(fallback_list).astype(np.intp)
                 seed_dists = min_seg_dist[seed_indices]
 
-            if _has_scipy:
-                # Virtual super-source approach: add node V connected to all
-                # seeds with edge weight = seed Euclidean distance.  One
-                # Dijkstra from the super-source gives multi-source distances.
-                super_src = V  # virtual node index
-                seed_row = np.full(len(seed_indices), super_src, dtype=np.intp)
-                seed_col = seed_indices.astype(np.intp)
+                if _has_scipy:
+                    # Virtual super-source: one node joined to every seed with
+                    # edge weight equal to the seed's own distance to bone, so
+                    # a single Dijkstra gives the multi-source field.
+                    super_src = V
+                    seed_row = np.full(len(seed_indices), super_src, dtype=np.intp)
+                    seed_col = seed_indices.astype(np.intp)
+                    row = np.concatenate([base_row, seed_row, seed_col])
+                    col = np.concatenate([base_col, seed_col, seed_row])
+                    data = np.concatenate([base_data, seed_dists, seed_dists])
+                    graph = csr_matrix((data, (row, col)), shape=(V + 1, V + 1))
+                    out[:, ci_] = sp_dijkstra(
+                        graph, directed=False, indices=super_src)[:V]
+                else:
+                    import heapq
+                    assert adj is not None
+                    dist = np.full(V, np.inf, dtype=np.float64)
+                    heap: list[tuple[float, int]] = []
+                    for k_ in range(len(seed_indices)):
+                        sv = int(seed_indices[k_])
+                        sd = float(seed_dists[k_])
+                        if sd < dist[sv]:
+                            dist[sv] = sd
+                            heapq.heappush(heap, (sd, sv))
+                    while heap:
+                        d_u, u = heapq.heappop(heap)
+                        if d_u > dist[u]:
+                            continue
+                        for v_nb, w_nb in adj[u]:
+                            d_new = d_u + w_nb
+                            if d_new < dist[v_nb]:
+                                dist[v_nb] = d_new
+                                heapq.heappush(heap, (d_new, v_nb))
+                    out[:, ci_] = dist
+            return out
 
-                # Bidirectional edges to super-source
-                row = np.concatenate([base_row, seed_row, seed_col])
-                col = np.concatenate([base_col, seed_col, seed_row])
-                data = np.concatenate([base_data, seed_dists, seed_dists])
-
-                graph = csr_matrix(
-                    (data, (row, col)), shape=(V + 1, V + 1),
-                )
-                dists_from_super = sp_dijkstra(
-                    graph, directed=False, indices=super_src,
-                )  # (V+1,)
-                result[:, ci] = dists_from_super[:V]
+        def _owner_from(scores: np.ndarray):
+            """Nearest chain per vertex, and the ones too close to call."""
+            order = np.argsort(scores, axis=1)
+            best_i = order[:, 0]
+            owner = unique_chains[best_i].astype(np.int64)
+            best = scores[np.arange(V), best_i]
+            if C > 1:
+                second = scores[np.arange(V), order[:, 1]]
             else:
-                # Python heapq multi-source Dijkstra
-                import heapq
-                assert adj is not None
-                dist = np.full(V, np.inf, dtype=np.float64)
-                heap: list[tuple[float, int]] = []
-                for si_idx in range(len(seed_indices)):
-                    sv = int(seed_indices[si_idx])
-                    sd = float(seed_dists[si_idx])
-                    if sd < dist[sv]:
-                        dist[sv] = sd
-                        heapq.heappush(heap, (sd, sv))
+                second = np.full(V, np.inf)
+            margin_ = float(self.SEED_CONFIDENCE_MARGIN)
+            amb = (second < margin_ * np.maximum(best, 1e-9)) if margin_ > 1.0 else None
+            if amb is not None:
+                owner = np.where(amb, -1, owner)
+            owner = np.where(np.isfinite(best), owner, -1)
+            return owner, amb
 
-                while heap:
-                    d_u, u = heapq.heappop(heap)
-                    if d_u > dist[u]:
-                        continue
-                    for v_nb, w_nb in adj[u]:
-                        d_new = d_u + w_nb
-                        if d_new < dist[v_nb]:
-                            dist[v_nb] = d_new
-                            heapq.heappush(heap, (d_new, v_nb))
+        radius_masks = [chain_min[:, i] <= self.SEED_RADIUS for i in range(C)]
 
-                result[:, ci] = dist
+        inward = None
+        field = getattr(self, "muscle_field", None)
+        if self.SEED_INWARD_ONLY and field is not None:
+            from faceforge.body.muscle_field import group_of_joint
 
+            # The flesh each vertex sits on, and so the way into the body.
+            own_best = np.full(V, np.inf)
+            inward = np.zeros((V, 3), dtype=np.float64)
+            for group in field.groups:
+                d = field.distance(positions, group)
+                closer = d < own_best
+                if not np.any(closer):
+                    continue
+                pts = field.nearest_point(positions[closer], group)
+                own_best[closer] = d[closer]
+                inward[closer] = pts - positions[closer]
+            norm = np.linalg.norm(inward, axis=1, keepdims=True)
+            inward = np.where(norm > 1e-9, inward / np.maximum(norm, 1e-9), 0.0)
+
+        own_group = None
+        if self.SEED_ON_OWN_FLESH and field is not None:
+            from faceforge.body.muscle_field import group_of_joint as _goj
+
+            best_g = np.full(V, np.inf)
+            own_group = np.empty(V, dtype=object)
+            own_group[:] = ""
+            for group in field.groups:
+                d = field.distance(positions, group)
+                closer = d < best_g
+                best_g[closer] = d[closer]
+                own_group[closer] = group
+
+        nearest_chain = None
+        ambiguous_mask = None
+        if self.SEED_FROM_OWNED_SKIN:
+            contact = float(self.SEED_CONTACT_RADIUS)
+            if contact > 0.0:
+                # Bootstrap: only bone actually touching skin seeds the first
+                # pass.  Those seeds cannot be on the wrong body part, so the
+                # field they produce already knows an arm hanging beside the
+                # waist is a long way away across the surface.
+                boot_masks = []
+                for i in range(C):
+                    m = chain_min[:, i] <= contact
+                    boot_masks.append(m if m.any() else radius_masks[i])
+                rough = _run_dijkstra(boot_masks)
+                nearest_chain, ambiguous_mask = _owner_from(rough)
+            else:
+                nearest_chain, ambiguous_mask = _owner_from(chain_min)
+
+        bootstrapped = (self.SEED_FROM_OWNED_SKIN
+                        and float(self.SEED_CONTACT_RADIUS) > 0.0)
+        seed_masks = []
+        for i, chain_id in enumerate(unique_chains):
+            owned = (nearest_chain == int(chain_id)
+                     if nearest_chain is not None else None)
+            if inward is not None:
+                # Direction from the vertex to this chain's nearest bone.
+                mask_c = seg_chain_arr == chain_id
+                starts, ends = seg_starts[mask_c], seg_ends[mask_c]
+                ab = ends - starts
+                den = np.maximum(np.sum(ab * ab, axis=1), 1e-9)
+                best_d = np.full(V, np.inf)
+                to_bone = np.zeros((V, 3), dtype=np.float64)
+                for k in range(len(starts)):
+                    t = np.clip(((positions - starts[k]) @ ab[k]) / den[k], 0.0, 1.0)
+                    closest = starts[k] + t[:, None] * ab[k]
+                    delta = closest - positions
+                    d = np.linalg.norm(delta, axis=1)
+                    closer = d < best_d
+                    best_d[closer] = d[closer]
+                    to_bone[closer] = delta[closer]
+                n = np.linalg.norm(to_bone, axis=1, keepdims=True)
+                to_bone = np.where(n > 1e-9, to_bone / np.maximum(n, 1e-9), 0.0)
+                outward_of = (np.sum(to_bone * inward, axis=1) <= 0.0)
+            if bootstrapped:
+                # Ownership came from the surface, so it already knows which
+                # body part the skin is on.  Unioning the radius back in would
+                # undo that: the hanging forearm is within the radius of the
+                # waist, which is the whole reason the bootstrap exists.
+                m = owned if owned.any() else radius_masks[i]
+            elif owned is not None:
+                # Union: the radius keeps neighbouring fields overlapping
+                # across a joint, which keeps a boundary soft, while ownership
+                # guarantees a deep bone seeds the skin over it.
+                m = radius_masks[i] | owned
+            else:
+                m = radius_masks[i]
+            if own_group is not None:
+                from faceforge.body.muscle_field import group_of_joint as _goj2
+
+                # A chain with no joint of its own cannot name a body part,
+                # so it keeps whatever the rules above gave it.
+                named = next((j.name for j in self.joints
+                              if j.chain_id == int(chain_id)), None)
+                if named is not None:
+                    on_mine = own_group == _goj2(named)
+                    if (m & on_mine).any():
+                        m = m & on_mine
+            if ambiguous_mask is not None and (m & ambiguous_mask).any():
+                m = m & ~ambiguous_mask
+            if inward is not None and (m & outward_of).any():
+                blocked = m & ~outward_of
+                m = blocked if blocked.any() else m
+            seed_masks.append(m)
+
+        result = _run_dijkstra(seed_masks)
         return result
 
     def _build_neighbor_data(

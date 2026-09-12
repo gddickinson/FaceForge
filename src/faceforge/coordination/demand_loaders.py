@@ -222,6 +222,95 @@ def digit_chain_ids(prefix: str, chain_ids: dict[str, int]) -> set[int]:
 SKIN_CHAIN_Z_MARGIN = 15.0
 SKIN_SPATIAL_LIMIT = 25.0
 
+#: Pose the skin binding is re-solved in, or ``None`` to solve only in the
+#: rest pose.
+#:
+#: The rest pose has the arms hanging against the trunk, so a straight line
+#: from flank skin reaches the forearm before the spine: measured, the
+#: forearm is about 3 units away and the lumbar spine about 19.  No test on
+#: distance can separate them there, and the skin of the flank is drawn out
+#: along the arm when the arm lifts.  Posed with the arms out they are far
+#: apart in the only sense that matters.  Vertex indices do not change with
+#: the pose, so an assignment found here is valid in every pose; only the
+#: assignment is taken, and the rest pose the deformation measures against is
+#: untouched.
+#: OFF: measured, and it fails for a reason worth recording.  The skin has to
+#: be deformed into the separated pose before it can be re-solved there, and
+#: the only thing available to deform it with is the rest-pose binding whose
+#: mistakes are the problem.  Round one drags the flank skin out along the
+#: arm; round two then finds those vertices sitting beside the arm and binds
+#: them to it, harder.  Over the four gate poses the spikes at shoulder height
+#: went 291 to 1,237 and that pose's seam tail 17.8 to 504.0.  Disabling the
+#: muscle field for the second solve, in case a rest-pose field against a
+#: deformed skin was the cause, changed nothing: 1,237 spikes either way.
+#:
+#: Breaking the circle needs a way to separate the limbs that does not use the
+#: binding -- a smooth volumetric warp, or an authored separated rest pose for
+#: the asset.
+SKIN_BIND_POSE: dict | None = None
+
+#: Frames to settle into :data:`SKIN_BIND_POSE` before re-solving.
+SKIN_BIND_POSE_FRAMES = 40
+
+
+def _attach_muscle_field(skinning) -> None:
+    """Give the skinning the muscle distance field, if the asset is there.
+
+    Absent or unreadable, the binding falls back to bone distance alone --
+    which is what it did before the field existed, so a missing asset costs
+    accuracy and nothing else.  Built by ``tools/build_muscle_field.py``.
+    """
+    if getattr(skinning, "muscle_field", None) is not None:
+        return
+    from faceforge.body.muscle_field import MuscleChainField
+
+    path = CONFIG_DIR / "muscle_field.npz"
+    field = MuscleChainField.load(path)
+    if field is None:
+        logger.info("No muscle distance field at %s; "
+                    "skin binds on bone distance alone", path)
+        return
+    skinning.muscle_field = field
+    skinning.muscle_field_id = field.digest
+    logger.info("Muscle distance field loaded: %d body parts (%s)",
+                len(field.groups), field.digest)
+
+
+def _rebind_skin_in_separated_pose(ctx, skinning, meshes, **solve_kwargs) -> None:
+    """Re-solve the skin binding with the limbs held clear of the trunk.
+
+    Costs a second solve at first load; both are keyed into the binding cache,
+    so a later session pays neither.  A failure here leaves the rest-pose
+    binding in place, which is what the app had before this existed.
+    """
+    pose = SKIN_BIND_POSE
+    sim = getattr(ctx, "simulation", None)
+    if not pose or sim is None or getattr(sim, "body_animation", None) is None:
+        return
+    from faceforge.core.state import BodyState
+
+    saved = {f: getattr(ctx.state.body, f) for f in vars(BodyState())
+             if hasattr(ctx.state.body, f)}
+    try:
+        for state in (ctx.state.body, ctx.state.target_body):
+            for field, value in pose.items():
+                if hasattr(state, field):
+                    setattr(state, field, value)
+        for _ in range(SKIN_BIND_POSE_FRAMES):
+            sim.step(1 / 60)
+        for mesh in meshes:
+            skinning.rebind_from_current_pose(mesh, **solve_kwargs)
+        logger.info("Skin re-bound in the separated pose (%d meshes)", len(meshes))
+    except Exception as e:  # noqa: BLE001 - the rest-pose binding still stands
+        logger.warning("Skin re-bind in the separated pose failed: %s", e)
+    finally:
+        for state in (ctx.state.body, ctx.state.target_body):
+            for field, value in saved.items():
+                if hasattr(state, field):
+                    setattr(state, field, value)
+        for _ in range(SKIN_BIND_POSE_FRAMES):
+            sim.step(1 / 60)
+
 
 def register_muscle_layer(skinning: Any, layer: str, meshes: list, defs: list[dict],
                           chain_ids: dict[str, int], *,
@@ -617,13 +706,17 @@ class DemandLoaders:
             self._attach("skin", result)
             skinning = self._skinning
             if skinning is not None:
+                _attach_muscle_field(skinning)
                 chain_ids = self.ctx.skin_chain_ids
                 all_chains = set(chain_ids.values()) if chain_ids else None
+                solve_kwargs = dict(
+                    is_muscle=False, allowed_chains=all_chains,
+                    chain_z_margin=SKIN_CHAIN_Z_MARGIN,
+                    spatial_limit=SKIN_SPATIAL_LIMIT)
                 for mesh in result.meshes:
-                    skinning.register_skin_mesh(
-                        mesh, is_muscle=False, allowed_chains=all_chains,
-                        chain_z_margin=SKIN_CHAIN_Z_MARGIN,
-                        spatial_limit=SKIN_SPATIAL_LIMIT)
+                    skinning.register_skin_mesh(mesh, **solve_kwargs)
+                _rebind_skin_in_separated_pose(
+                    self.ctx, skinning, result.meshes, **solve_kwargs)
             logger.info("Loaded skin: %d meshes", len(result.meshes))
             self.ctx.run_after_registration_hooks()
         except Exception as e:  # noqa: BLE001

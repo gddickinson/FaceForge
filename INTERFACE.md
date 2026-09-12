@@ -31,7 +31,7 @@ python -m tools.render_exercise_demo --probe --all                 # placement c
 ```
 FaceForge/
 ├── src/faceforge/        the package (see the map below)
-├── assets/config/        JSON: structures, muscles/, skeleton/, joint limits, poses, DOF→muscle map
+├── assets/config/        JSON: structures, muscles/, skeleton/, joint limits, poses, DOF→muscle map; muscle_field.npz
 ├── assets/stl            symlink to the BodyParts3D STL set (outside the repo)
 ├── tools/                headless loaders, renderers, diagnostics, README image generators
 ├── tests/                pytest; `slow` marks asset-heavy and whole-app tests
@@ -180,6 +180,7 @@ flat when ankle dorsiflexion = pitch − hip + knee.
 | `joint_pivots.py` | Joint pivot setup for limb articulation; digit pivots sit at each phalanx's proximal end (`proximal_end`). |
 | `skinning_ops.py` | The gathered-einsum `transform_points` / `rotate_vectors` every skinning pass uses (measured against grouped alternatives), `used_joints` (bincount), `accumulate_rows` (bincount face-normal sums replacing `np.add.at`). |
 | `muscle_activation.py` | Muscle activation heatmap: colour each muscle by how hard it is working. |
+| `muscle_field.py` | `MuscleChainField`: how far each body part's *flesh* is from any point, and the nearest flesh point, sampled from the muscle meshes. The skin binding adds the distance to the bone distance, and uses the direction as an inward reference the mesh's inconsistent winding cannot provide. |
 | `neural_impulse.py` | Neural impulse particle effect module. |
 | `organs.py` | On-demand organ loading. |
 | `physiology.py` | Physiological simulation systems: heartbeat, blood flow, breathing, digestion, fasciculation. |
@@ -196,7 +197,7 @@ flat when ankle dorsiflexion = pitch − hip + knee.
 | `surface_landmarks.py` | Joint landmarks from the skeleton's own bones, and the same joints found on a body mesh by shape (the wrist and ankle are where a limb is narrowest). |
 | `surface_register.py` | `register_onto`: limb-by-limb registration of the body-surface mesh onto the skeleton, held inside an edge-length band; `fit_head_to_skull`. |
 | `surface_projection.py` | The geometry the fit is built from: closest point on a triangle, region-constrained projection, edges, Laplacian smoothing, normals. |
-| `soft_tissue.py` | Delta-matrix soft tissue skinning for body muscles/organs/vasculature; `resnapshot_rest` re-snapshots the rest pose after the skeleton itself moves, keeping the binding. `_joint_world` always returns a fresh array: world matrices are rewritten in place, so a rest matrix that aliased one followed the body into the gym. `INFLUENCE_CUTOFF_BAND` keeps a skin vertex's influences local, so a thigh vertex is not part-driven by the ankle; `SEED_FROM_OWNED_SKIN` lets a deep bone seed the skin lying over it, so back skin is not handed to the collar bone. |
+| `soft_tissue.py` | Delta-matrix soft tissue skinning for body muscles/organs/vasculature; `resnapshot_rest` re-snapshots the rest pose after the skeleton itself moves, keeping the binding. `_joint_world` always returns a fresh array: world matrices are rewritten in place, so a rest matrix that aliased one followed the body into the gym. `INFLUENCE_CUTOFF_BAND` keeps a skin vertex's influences local, so a thigh vertex is not part-driven by the ankle; `SEED_FROM_OWNED_SKIN` lets a deep bone seed the skin lying over it, so back skin is not handed to the collar bone; `SEED_CONFIDENCE_MARGIN` makes ambiguous skin seed nothing; `GEODESIC_BRIDGE` joins the skin's 528 disconnected patches into the Dijkstra graph, which `edge_pairs` never sees. |
 | `stretch_viz.py` | Stretch heatmap and chain assignment visualization for soft tissue skinning. |
 | `vasculature.py` | On-demand vascular system loading. |
 
@@ -407,7 +408,10 @@ flat when ankle dorsiflexion = pitch − hip + knee.
 | `author_footprints.py` | Mirror authored attachment footprints to the other side, or seed them from bone proximity (measure before keeping) |
 | `export_exercise_docs.py` | Renders the catalogue to `docs/exercises.md` (`--check` for CI) |
 | `neck_deformation_quality.py` | Neck-muscle edge stretch and displacement per pose, with `--wrapper` for the gym-scene control |
-| `skin_deformation_quality.py` | Body-skin tearing, collapse and containment per pose; `--influences`, `--cutoff`, `--spatial-limit`, `--diffuse` for the tunables |
+| `skin_deformation_quality.py` | Body-skin tearing, collapse, spikes and containment per pose; `--influences`, `--cutoff`, `--seed-margin`, `--muscle-weight`, `--min-spatial`, `--bridge`, `--contact`, `--diffuse` for the tunables |
+| `skin_defect_views.py` | The skin from three viewpoints, coloured by stretch, spike or arm-weight; `--save` a baseline and `--baseline` it back for before-and-after |
+| `render_skin_proof.py` | The skin drawn in **pixels** through `Session`'s own GL renderer, four viewpoints, with engine overrides so an earlier state can be rendered from the same tree |
+| `build_muscle_field.py` | Writes `assets/config/muscle_field.npz`, the per-body-part flesh distance the skin binding reads |
 | `glcontext.py` | Offscreen CGL context (software renderer in a sandbox) |
 | `capture_golden.py`, `compare_golden.py` | Golden-image capture and diff |
 | `generate_readme_images.py`, `generate_scanner_images.py` | README figures via the PIL renderers |

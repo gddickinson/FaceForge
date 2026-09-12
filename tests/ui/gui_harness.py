@@ -168,6 +168,7 @@ def build_main_window() -> tuple[QApplication, QMainWindow, list[str]]:
 
 def drain_deferred_startup(
     app: QApplication, settle: float = 0.5, timeout: float = 300.0,
+    until=None,
 ) -> float:
     """Pump the event loop until the deferred whole-scene load has finished.
 
@@ -175,6 +176,15 @@ def drain_deferred_startup(
     runs inside a ``processEvents()`` call some time after ``main()`` returns.
     This pumps until *settle* seconds have passed with no pump exceeding
     50 ms, which cannot terminate before the 100 ms timer has fired.
+
+    ``until`` is a predicate that must also hold before the drain returns.
+    Quiescence alone is not enough when a load arrives as a chain of deferred
+    timers: the gap between two of them can exceed *settle*, and the drain
+    then returns between them.  That is what made the exercise-viewer tests
+    order-dependent -- they passed when their file ran first and failed after
+    a heavy predecessor had slowed everything down.  A predicate says what the
+    caller is actually waiting for, so the wait is as long as it needs to be
+    and no longer.
 
     Returns the wall seconds spent draining.
     """
@@ -188,7 +198,14 @@ def drain_deferred_startup(
         elif quiet_since is None:
             quiet_since = time.perf_counter()
         elif time.perf_counter() - quiet_since >= settle:
-            break
+            if until is None:
+                break
+            try:
+                if until():
+                    break
+            except Exception:             # noqa: BLE001 - a predicate that
+                pass                      # cannot answer yet is not an error
+            quiet_since = None            # not there yet; keep pumping
         time.sleep(0.01)
     return time.perf_counter() - t0
 

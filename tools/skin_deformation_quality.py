@@ -37,7 +37,9 @@ POSES: dict[str, dict] = {
         "knee_r_flex": 0.9, "knee_l_flex": 0.9,
         "ankle_r_flex": 0.6, "ankle_l_flex": 0.6,
     },
-    "arms overhead": {
+    # Shoulder abduction's range is 90 degrees, so 1.0 is shoulder height,
+    # not overhead.  This is the pose the anterolateral spikes show in.
+    "arms to shoulder height": {
         "shoulder_r_abduct": 1.0, "shoulder_l_abduct": 1.0,
         "elbow_r_flex": 0.2, "elbow_l_flex": 0.2,
     },
@@ -48,6 +50,12 @@ POSES: dict[str, dict] = {
 
 #: An edge stretched past this is counted as torn.
 TORN = 2.0
+
+#: A vertex that moves this many model units further than its mesh
+#: neighbours' mean is counted as a spike.  Edge stretch alone does not see
+#: these: a vertex drawn out on a long thin strip stretches only the few
+#: edges at its base, while what reads on screen is the strip.
+SPIKE = 5.0
 
 SETTLE_FRAMES = 90
 
@@ -67,6 +75,18 @@ def _edges(soft, b):
     rest_len = np.linalg.norm(ref[e[:, 0]] - ref[e[:, 1]], axis=1)
     keep = rest_len > 1e-6
     return ref, n, e[keep], rest_len[keep]
+
+
+def _spikes(disp, e, n):
+    """Vertices whose displacement exceeds their neighbours' mean by SPIKE."""
+    src = np.concatenate([e[:, 0], e[:, 1]])
+    dst = np.concatenate([e[:, 1], e[:, 0]])
+    count = np.bincount(src, minlength=n).astype(np.float64)
+    total = np.bincount(src, weights=disp[dst], minlength=n)
+    has = count > 0
+    mean = np.zeros(n)
+    mean[has] = total[has] / count[has]
+    return int(((disp - mean) > SPIKE).sum())
 
 
 def _moved_joints(soft, before):
@@ -112,6 +132,7 @@ def measure(pose: dict, ctx, soft, b, cache) -> dict:
     cur = np.linalg.norm(pos[e[:, 0]] - pos[e[:, 1]], axis=1)
     s = cur / rest_len
 
+    disp = np.linalg.norm(pos - ref, axis=1)
     ji = np.asarray(b.joint_indices)[:n]
     seam = ji[e[:, 0]] != ji[e[:, 1]]
     static = _static_mask(b, moved, n)
@@ -126,6 +147,7 @@ def measure(pose: dict, ctx, soft, b, cache) -> dict:
         "torn": int((s > TORN).sum()),
         "seam_p99": float(np.percentile(s[seam], 99)) if seam.any() else 0.0,
         "bulk_p99": float(np.percentile(s[~seam], 99)) if (~seam).any() else 0.0,
+        "spikes": _spikes(disp, e, n),
         "containment": drift,
         "static": int(static.sum()),
         "moved_joints": int(moved.sum()),
@@ -138,6 +160,41 @@ def main(argv=None) -> int:
                     help="turn on DIFFUSE_WEIGHTS before the binding is solved")
     ap.add_argument("--locality", type=float, default=None,
                     help="DIFFUSION_LOCALITY (smaller spreads influence further)")
+    ap.add_argument("--muscle-bias", type=float, default=None,
+                    help="MUSCLE_WEIGHT_BIAS: discount an influence whose flesh is far")
+    ap.add_argument("--flesh-radius", type=float, default=None,
+                    help="MUSCLE_ELIGIBILITY_RADIUS: flesh that vouches for a chain")
+    ap.add_argument("--inward-seeds", action="store_true",
+                    help="SEED_INWARD_ONLY: a chain seeds only where its bone is inward")
+    ap.add_argument("--hybrid-limit", action="store_true",
+                    help="SPATIAL_LIMIT_ON_HYBRID: judge eligibility across the surface")
+    ap.add_argument("--hybrid-scale", type=float, default=None,
+                    help="HYBRID_LIMIT_SCALE: multiplier on the limits when it does")
+    ap.add_argument("--cutoff-ratio", type=float, default=None,
+                    help="INFLUENCE_CUTOFF_RATIO: support proportional to the nearest")
+    ap.add_argument("--own-flesh", action="store_true",
+                    help="SEED_ON_OWN_FLESH: a chain seeds only skin on its own flesh")
+    ap.add_argument("--cross-cost", type=float, default=None,
+                    help="CROSS_PART_EDGE_COST: price of stepping between body parts")
+    ap.add_argument("--cut-below", type=float, default=None,
+                    help="CROSS_PART_CUT_BELOW: sever crossings this far below the shoulder")
+    ap.add_argument("--muscle-weight", type=float, default=None,
+                    help="MUSCLE_FIELD_WEIGHT: how much the flesh distance counts")
+    ap.add_argument("--min-spatial", type=float, default=None,
+                    help="skinning.min_spatial: floor on a chain's spatial reach")
+    ap.add_argument("--spatial-factor", type=float, default=None,
+                    help="skinning.spatial_factor: reach as a fraction of chain size")
+    ap.add_argument("--contact", type=float, default=None,
+                    help="SEED_CONTACT_RADIUS: bootstrap ownership from bone "
+                         "within this distance of skin (0 = Euclidean ownership)")
+    ap.add_argument("--bridge-contacts", type=int, default=None,
+                    help="BRIDGE_CONTACTS: how many contacts join each island patch")
+    ap.add_argument("--bridge", type=float, default=None,
+                    help="GEODESIC_BRIDGE: how far to stitch disconnected skin "
+                         "patches into the geodesic graph (0 = not at all)")
+    ap.add_argument("--seed-margin", type=float, default=None,
+                    help="SEED_CONFIDENCE_MARGIN: how much nearer than the "
+                         "runner-up a chain must be to be seeded (1 = any)")
     ap.add_argument("--radius-seeds", action="store_true",
                     help="seed every chain from any vertex within SEED_RADIUS "
                          "(the behaviour before ownership seeding)")
@@ -172,11 +229,45 @@ def main(argv=None) -> int:
         demand_loaders.SKIN_SPATIAL_LIMIT = args.spatial_limit
     if args.radius_seeds:
         SoftTissueSkinning.SEED_FROM_OWNED_SKIN = False
+    if args.seed_margin is not None:
+        SoftTissueSkinning.SEED_CONFIDENCE_MARGIN = args.seed_margin
+    if args.bridge is not None:
+        SoftTissueSkinning.GEODESIC_BRIDGE = args.bridge
+    if args.bridge_contacts is not None:
+        SoftTissueSkinning.BRIDGE_CONTACTS = args.bridge_contacts
+    if args.contact is not None:
+        SoftTissueSkinning.SEED_CONTACT_RADIUS = args.contact
 
     ctx = build_app_context(argv=[])
     controllers = build_controllers(ctx)
     AssetLoadSequence(ctx).run()
     soft = ctx.simulation.soft_tissue
+    # Instance tunables, set after the skinning exists and before the skin
+    # binding is solved.
+    if args.muscle_weight is not None:
+        SoftTissueSkinning.MUSCLE_FIELD_WEIGHT = args.muscle_weight
+    if args.muscle_bias is not None:
+        SoftTissueSkinning.MUSCLE_WEIGHT_BIAS = args.muscle_bias
+    if args.flesh_radius is not None:
+        SoftTissueSkinning.MUSCLE_ELIGIBILITY_RADIUS = args.flesh_radius
+    if args.inward_seeds:
+        SoftTissueSkinning.SEED_INWARD_ONLY = True
+    if args.hybrid_limit:
+        SoftTissueSkinning.SPATIAL_LIMIT_ON_HYBRID = True
+    if args.hybrid_scale is not None:
+        SoftTissueSkinning.HYBRID_LIMIT_SCALE = args.hybrid_scale
+    if args.cutoff_ratio is not None:
+        SoftTissueSkinning.INFLUENCE_CUTOFF_RATIO = args.cutoff_ratio
+    if args.own_flesh:
+        SoftTissueSkinning.SEED_ON_OWN_FLESH = True
+    if args.cross_cost is not None:
+        SoftTissueSkinning.CROSS_PART_EDGE_COST = args.cross_cost
+    if args.cut_below is not None:
+        SoftTissueSkinning.CROSS_PART_CUT_BELOW = args.cut_below
+    if args.min_spatial is not None:
+        soft.min_spatial = args.min_spatial
+    if args.spatial_factor is not None:
+        soft.spatial_factor = args.spatial_factor
 
     t0 = time.perf_counter()
     controllers.loaders.load_skin()
@@ -190,18 +281,34 @@ def main(argv=None) -> int:
     print(f"skin: {cache[1]} vertices, {len(cache[2])} edges; "
           f"load+solve {solve_s:.1f} s; "
           f"SKIN_INFLUENCES={SoftTissueSkinning.SKIN_INFLUENCES} "
-          f"CUTOFF={SoftTissueSkinning.INFLUENCE_CUTOFF_BAND} "
+          f"CUTOFF={SoftTissueSkinning.INFLUENCE_CUTOFF_BAND}"
+          f"+{SoftTissueSkinning.INFLUENCE_CUTOFF_RATIO}d "
           f"SPATIAL_LIMIT={demand_loaders.SKIN_SPATIAL_LIMIT} "
+          f"MIN_SPATIAL={soft.min_spatial} FACTOR={soft.spatial_factor} "
+          f"MUSCLE_W={SoftTissueSkinning.MUSCLE_FIELD_WEIGHT} "
+          f"BIAS={SoftTissueSkinning.MUSCLE_WEIGHT_BIAS} "
+          f"FLESH_R={SoftTissueSkinning.MUSCLE_ELIGIBILITY_RADIUS} "
+          f"INWARD={SoftTissueSkinning.SEED_INWARD_ONLY} "
+          f"OWNFLESH={SoftTissueSkinning.SEED_ON_OWN_FLESH} "
+          f"XCOST={SoftTissueSkinning.CROSS_PART_EDGE_COST} "
+          f"CUTBELOW={SoftTissueSkinning.CROSS_PART_CUT_BELOW} "
+          f"HYBRID_LIMIT={SoftTissueSkinning.SPATIAL_LIMIT_ON_HYBRID} "
+          f"HSCALE={SoftTissueSkinning.HYBRID_LIMIT_SCALE} "
           f"OWNED_SKIN_SEEDS={SoftTissueSkinning.SEED_FROM_OWNED_SKIN} "
+          f"MARGIN={SoftTissueSkinning.SEED_CONFIDENCE_MARGIN} "
+          f"BRIDGE={SoftTissueSkinning.GEODESIC_BRIDGE} "
           f"DIFFUSE_WEIGHTS={SoftTissueSkinning.DIFFUSE_WEIGHTS} "
           f"LOCALITY={SoftTissueSkinning.DIFFUSION_LOCALITY}")
-    print(f"{'pose':30s} {'p99':>7s} {'p99.9':>8s} {'max':>9s} {'min':>7s} "
-          f"{'torn':>8s} {'seam p99':>9s} {'bulk p99':>9s} {'contain':>8s}")
+    if getattr(soft, "last_bridge", None):
+        print("  geodesic bridge:", soft.last_bridge)
+    print(f"{'pose':26s} {'p99':>7s} {'p99.9':>8s} {'max':>9s} {'min':>7s} "
+          f"{'torn':>8s} {'spikes':>7s} {'seam p99':>9s} {'bulk p99':>9s} "
+          f"{'contain':>8s}")
     for title, pose in POSES.items():
         m = measure(pose, ctx, soft, b, cache)
-        print(f"{title:30s} {m['p99']:7.3f} {m['p999']:8.3f} {m['max']:9.2f} "
-              f"{m['min']:7.4f} {m['torn']:8d} {m['seam_p99']:9.3f} "
-              f"{m['bulk_p99']:9.3f} {m['containment']:8.3f}")
+        print(f"{title:26s} {m['p99']:7.3f} {m['p999']:8.3f} {m['max']:9.2f} "
+              f"{m['min']:7.4f} {m['torn']:8d} {m['spikes']:7d} "
+              f"{m['seam_p99']:9.3f} {m['bulk_p99']:9.3f} {m['containment']:8.3f}")
     return 0
 
 

@@ -18,16 +18,32 @@ from tests.ui import gui_harness as H                             # noqa: E402
 pytestmark = pytest.mark.slow
 
 
+#: Meshes that must be in the scene once every muscle layer has loaded.
+PROBES = ("R Lumbricals", "Flex. Dig. Prof. R", "Rectus Femoris R",
+          "Latissimus Dorsi R", "Deltoid Acr. R", "Gluteus Max. R",
+          "R Abductor Hallucis", "Right Humerus")
+
+
 @pytest.fixture(scope="module")
 def viewer():
     app, window, errors = H.build_main_window()
     assert not errors, errors
     H.drain_deferred_startup(app)
     window.set_viewer_mode(True)
-    H.drain_deferred_startup(app, settle=1.0)         # every muscle layer loads here
+    # The muscle layers arrive as a chain of deferred timers, and the gap
+    # between two of them can be longer than any settle time worth waiting.
+    # Wait for what the tests actually need instead.
+    # A bounded wait: if the layers are not going to arrive, fail in a
+    # minute rather than pumping for the harness's default five.
+    H.drain_deferred_startup(
+        app, settle=0.5, timeout=60.0,
+        until=lambda: PROBES[0] in _mesh_names(window)
+        and PROBES[-1] in _mesh_names(window))
     window.event_bus.publish(EventType.EXERCISE_SELECTED, exercise_id="conventional_deadlift",
                              reps=1)
-    H.drain_deferred_startup(app, settle=1.0)
+    H.drain_deferred_startup(
+        app, settle=0.5, timeout=60.0,
+        until=lambda: window.gl_widget.scene.find("equip_barbell") is not None)
     return app, window
 
 
@@ -47,8 +63,7 @@ def test_the_mode_swaps_the_panels_and_moves_the_tab(viewer):
 def test_every_muscle_layer_and_the_skeleton_are_in_the_scene(viewer):
     _app, window = viewer
     names = _mesh_names(window)
-    for probe in ("R Lumbricals", "Flex. Dig. Prof. R", "Rectus Femoris R", "Latissimus Dorsi R",
-                  "Deltoid Acr. R", "Gluteus Max. R", "R Abductor Hallucis", "Right Humerus"):
+    for probe in PROBES:
         assert probe in names, probe
 
 

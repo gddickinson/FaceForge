@@ -62,20 +62,41 @@ def test_distortion_does_not_regress(measured, metric):
     )
 
 
-def test_the_gate_is_sensitive_to_a_broken_engine():
-    """Negative control: re-enable the mechanism that broke containment.
+def test_the_gate_is_sensitive_to_a_broken_engine(monkeypatch):
+    """Negative control: break the engine and require the gate to say so.
 
     Without this, every assertion above could be passing vacuously.
+
+    The mechanism matters and has had to be replaced.  The original control
+    re-enabled ``USE_NEIGHBOR_CLAMP`` with the hull bound off, which used to
+    drag static vertices along with their moving neighbours.  It no longer
+    does: measured, containment stays at 0.000 with that switch on, with the
+    per-binding skip disabled, and with ``CONTAIN_CORRECTIONS`` or
+    ``USE_BONE_OFFSET_PROJECTION`` on.  The control had been passing an engine
+    that was no longer broken.
+
+    Opting every muscle into the soft-body path is a breaker that still works,
+    and for a reason the metric is meant to catch: the physics pass relaxes
+    edges, which couples vertices, so a vertex none of whose own joints moved
+    is pulled by a neighbour whose joints did.  Measured, it puts 6.000 units
+    of drift on Triceps Long R.
     """
     from faceforge.body.soft_tissue import SoftTissueSkinning as S
+    from faceforge.coordination import demand_loaders as dl
 
-    prev = (S.USE_NEIGHBOR_CLAMP, S.USE_HULL_BOUND, S.CONTAIN_CORRECTIONS)
-    S.USE_NEIGHBOR_CLAMP, S.USE_HULL_BOUND, S.CONTAIN_CORRECTIONS = True, False, False
-    try:
-        failures = dq.check(dq.measure())
-    finally:
-        (S.USE_NEIGHBOR_CLAMP, S.USE_HULL_BOUND,
-         S.CONTAIN_CORRECTIONS) = prev
+    # The hull bound corrects the drift away again, so it comes off, exactly
+    # as the original control took it off.
+    monkeypatch.setattr(S, "USE_HULL_BOUND", False)
+    monkeypatch.setattr(S, "CONTAIN_CORRECTIONS", False)
+    real = dl.register_muscle_layer
+
+    def force_physics(skinning, layer, meshes, defs, chain_ids, **kw):
+        for defn in defs:
+            defn["physicsDeform"] = True
+        return real(skinning, layer, meshes, defs, chain_ids, **kw)
+
+    monkeypatch.setattr(dl, "register_muscle_layer", force_physics)
+    failures = dq.check(dq.measure())
     assert any("containment" in f for f in failures), (
         f"the gate passed a deliberately broken engine; failures were {failures}"
     )

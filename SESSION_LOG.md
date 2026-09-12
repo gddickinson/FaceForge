@@ -571,3 +571,256 @@ radius, rather than as well as it, gives the same numbers — so the overlap the
 radius provides is not what is buying the soft boundary. Restricting the new
 seeds to vertices the radius rule leaves unseeded also changes nothing, for
 the same reason: benefit and cost are the same seeds.
+
+## 2026-09-11 (end) — The axilla, and 528 pieces of skin
+
+**Asked.** Improve on the remaining skin problems.
+
+**Found.** Every surviving worst edge had the same shape: two vertices a tenth
+of a unit apart, one on the trunk and one flying off with the arm. The worst
+in the mesh joined a pair on the left flank; one took the lumbar spine, the
+other took elbow_L 0.32, shoulder_L 0.27 and wrist_L 0.22 and moved 60 units.
+In the rest pose the arms hang against the trunk, so the forearm is ~4 units
+from that skin and the lumbar spine ~19: straight-line distance treats the gap
+between arm and waist as tissue.
+
+Two causes, both about the surface rather than the bones. Skin in the
+ambiguous band was seeding chains, so the geodesic field it was meant to be
+corrected by was built from its own mistake. And the skin is not one surface:
+791,729 vertices in 528 connected components, 454 under 100 vertices, 28,201
+off the main one. Dijkstra never reaches an island, its geodesic distance is
+infinite, and the solve falls back to the Euclidean measurement the geodesic
+pass exists to overrule. The three worst edges at full abduction each joined
+an island vertex to its intact neighbour.
+
+**Built.** `SEED_CONFIDENCE_MARGIN` (1.5): a vertex seeds a chain only when
+that chain is clearly nearest; ambiguous skin seeds nothing and the fields
+reach it by propagation. `GEODESIC_BRIDGE` (5.0) with `BRIDGE_CONTACTS` (8):
+island patches are joined into the Dijkstra graph at their few closest
+contacts, never into `edge_pairs`, which the stretch metrics and edge
+relaxation read as real topology. Joining at contacts rather than vertex by
+vertex matters — gluing every island vertex to whatever is nearest attached a
+patch on the lateral chest across the armpit to the arm.
+
+**Measured.** Over the four gate poses, against the state committed before
+this: torn edges 77,434 to 62,280; the axilla's seam tail 69.974 to 48.066;
+the worst edge in the mesh 570.25 to 301.64; the hip hinge's worst edge 152.45
+to 110.11. At the hip hinge, vertices with a torn incident edge are 11,535 of
+791,729 (1.46%), against 5.01% before any of this session's skin work.
+Containment stays 0.000 and the midline back skin still does not move when the
+arms do. The margin was bracketed at 1.0/1.25/1.5/2.0/3.0 and the contact
+count at 3 and 8, which agree to four significant figures.
+
+**Still open.** The residual is where the skin genuinely folds: the hip crease
+and buttock at deep flexion, and the axilla at full abduction, worst edge
+301x. Linear and dual-quaternion skinning cannot represent a fold, so closing
+that needs a different deformation model rather than a better binding.
+
+## 2026-09-11 (end, later) — Confident seeding, bridged islands, and the spikes
+
+**Asked.** Improve on the remaining skin problems; then, separately, whether I
+can see the spikes of skin drawn off the front of the torso when the arms come
+up to shoulder height.
+
+**Built and measured.** Two further binding rules, both net wins on the gate:
+`SEED_CONFIDENCE_MARGIN` (1.5), so a vertex seeds a chain only when that chain
+is clearly the nearest and ambiguous skin seeds nothing; and `GEODESIC_BRIDGE`
+(5.0) with `BRIDGE_CONTACTS` (8), which joins the skin's 528 disconnected
+patches into the Dijkstra graph at their few closest contacts. Over the four
+gate poses: torn edges 77,434 to 62,280, the worst edge at shoulder height
+570.25 to 301.64, the axilla's seam tail 69.974 to 48.066, the hip hinge's
+worst edge 152.45 to 110.11. The margin was bracketed at five values and the
+contact count at two.
+
+**The spikes, seen and diagnosed.** The gate now counts them directly, since
+edge stretch does not: 676 at shoulder height, 225 at the hip hinge, none at
+rest. They are a rim of trunk skin at the lateral silhouette, half a unit
+wide, bound almost entirely to the arm; the worst holds elbow 0.39, shoulder
+0.31, wrist 0.30 and travels 74 units while its neighbours travel 25. Below
+the rib cage there is no trunk bone in reach — the ribs stop at z = -51, and
+for a vertex at z = -67.8 the chain Z margin and the spatial limit leave 22 of
+152 segments eligible, the nearest being the elbow at hybrid 36.6 against the
+lumbar spine's 48.3. The spine loses geodesically, not by straight line,
+because flank skin lying against the hanging forearm seeds the arm chain.
+
+**Rejected, with the measurements.** Bootstrapping ownership from bone in
+contact with skin (`SEED_CONTACT_RADIUS`, left in place, disabled) improves
+every seam tail but raises torn edges 62,280 to 64,317 and the worst edge
+301.64 to 469.48, and only moves the spikes from 88 to 70 above 10 units;
+unioning the radius seeds back in is worse still at 68,309. A 2.5-unit contact
+radius behaves the same. The island bridge is not implicated: with it off the
+spike count is 549 against 552.
+
+**Still open.** The spikes. The abdominal wall is what fills the space below
+the ribs, so binding skin by proximity to muscle — the obliques are chained to
+spine and ribs — is the shape of the answer, and nearest-bone binding is not.
+Figure: `results/skin_arm_spikes.png`.
+
+## 2026-09-11 (end, last) — Reach, flesh, and the gate that had gone quiet
+
+**Asked.** Work through every suggestion in order, measuring and visualising
+the defects before and after.
+
+**Suggestion 1, by a different route.** The premise was wrong and the
+measurement said so: the spikes were not short of a trunk bone. For 482 of the
+700, a trunk segment was already nearer than any arm segment — a median 12.4
+units against 14.6 — and had been masked out. A chain's spatial reach is
+proportional to its size, and size was measured as vertical extent, so the rib
+cage (41 units tall) got 10.35 floored to 12 while the arm chain (80 tall) got
+20. The floor is 16 now, bracketed at 12/14/16/18/24. Measuring size by
+bounding-box diagonal was tried and is redundant once the floor is right.
+
+**Suggestion 2, built.** `body/muscle_field.py` holds the distance to each
+body part's flesh, sampled from the muscle meshes by
+`tools/build_muscle_field.py` into `assets/config/muscle_field.npz` (1.2 MB),
+and the skin binding adds it to the bone distance. The premise was measured
+first: for 78% of the surviving spikes the nearest muscle is a trunk muscle
+while the nearest bone says arm. Weight bracketed at 0/0.6/1.0/2.0; 1.0 is
+shipped, weighting flesh and bone equally. The field's digest is a public
+scalar on the skinning, so the binding cache keys on it and a rebuilt field
+cannot be served a stale binding.
+
+**Measured, over the four gate poses.** Torn edges 62,280 to 55,971; spikes at
+shoulder height 676 to 291; the axilla's seam tail 48.066 to 17.835; the worst
+edge 301.64 to 203.89. Containment stays 0.000. Against where the skin work
+started: 185,170 torn edges and a worst edge of 537.
+
+**Visualised.** `tools/skin_defect_views.py` draws the skin from three
+viewpoints coloured by stretch, spike or arm-weight, and takes a saved
+baseline to draw before and after together. Figures:
+`results/skin_spike_views.png`, `skin_stretch_views.png`,
+`skin_armweight_views.png`, `skin_hiphinge_views.png`.
+
+**Housekeeping.** The deformation gate's negative control was passing a
+deliberately broken engine; the old mechanism (the neighbour clamp) no longer
+breaks containment, nor does the per-binding skip, `CONTAIN_CORRECTIONS` or
+`USE_BONE_OFFSET_PROJECTION`. Opting every muscle into the soft-body path does
+— 6.000 units of drift on Triceps Long R — because the physics pass relaxes
+edges and so couples vertices. The control uses that now and is live again.
+`drain_deferred_startup` takes an `until` predicate, so a test waits for what
+it needs rather than for a fixed settle.
+
+**Still open.** The two exercise-viewer tests remain order-dependent, and a
+second app context in one process is NOT the cause — measured, a second
+context loads a demand layer perfectly well. The wait is capped at 60 seconds
+now so the suite fails fast instead of pumping for five minutes. Suggestion 3,
+solving the binding in a separated pose, was not built: the muscle field
+addresses the same root cause — a limb lying against the trunk — more cheaply
+and is measured to work, so the case for a much larger change is no longer
+made. Skin asset repair is also open: 528 connected components and
+inconsistent triangle winding, the latter of which blocks the inside-outside
+test that would settle whether a bone is under the skin or across a gap.
+
+## 2026-09-12 — Proof in pixels
+
+**Asked.** Show the proof that the changes improved the rendering.
+
+**Found.** Everything measured so far was arithmetic on vertex positions.
+`tools/render_skin_proof.py` renders the app's own scene through `Session` --
+the same GL renderer (OpenGL 4.1 on this machine), framebuffer and
+blank-frame guard as the headless CLI -- with engine overrides so an earlier
+state can be drawn from the same working tree.
+
+**Measured, arms at shoulder height.** Stray skin removed: 24,988 pixels from
+the front (16.2% of the lit area), 23,835 from the back, 18,075 from the
+three-quarter. The side view is unchanged at 78 pixels, because the sheets of
+stretched triangles are edge-on there.
+
+**What the pixels correct.** The spikes are visibly reduced and visibly still
+there. The count fell 676 to 291, but each spike vertex drags a fan of
+triangles, so the count understates the screen area: the render shows two
+dense wings from armpit to hip before and thinner wings after, not a clean
+body. And at the hip hinge, where torn edges fell 22,638 to 8,817, the render
+barely changes — 81 pixels of 110,000 from the front — because that tearing
+is inside the silhouette and shows as shading, not as stray geometry.
+
+**Control.** At the neutral pose, before and after are pixel-identical: 0 of
+990,000 differing pixels, front and side. The changes touch deformation and
+nothing else.
+
+Figures: `results/skin_render_proof.png`, `results/skin_render_proof_hip.png`,
+and the raw frames in `results/skin_render/`.
+
+## 2026-09-12 (later) — Four more tries, judged by the renderer
+
+**Asked.** Keep going, using the rendering to assess the changes.
+
+**Kept: the inward test.** A chain may seed the geodesic field only where its
+bone lies on the same side of the skin as the flesh that skin sits on. This is
+the only thing that separates the flank from the forearm hanging beside it:
+both bones are close and both have flesh close, so no distance decides it, and
+direction does. The inward direction comes from the muscle field, not the mesh
+normals, because this asset's winding is inconsistent and half its normals
+point the wrong way. Torn edges 55,971 to 55,445 and spikes 669 to 587, and in
+pixels 5,171 more stray skin off the front and 5,831 off the back.
+
+**Rejected: re-binding in a separated pose.** The standard remedy, and it
+fails for a reason worth keeping. The skin must be deformed into the separated
+pose before it can be re-solved there, and the only thing available to deform
+it is the rest-pose binding whose mistakes are the problem: round one drags
+the flank out along the arm, round two finds those vertices beside the arm and
+binds them harder. Spikes 291 to 1,237, seam tail 17.8 to 504.0. Disabling the
+muscle field for the second solve changed nothing, so the rest-pose field was
+not the cause.
+
+**Rejected: discounting influences whose flesh is far.** Improves every seam
+tail (17.835 to 11.039 at shoulder height) and moves the picture by 167 pixels
+of 111,614. The vertices drawn into wings hold all four influences on arm
+joints, so there is no trunk share to shift weight toward; the set has to
+change, not the shares. That diagnosis is what led to the inward test.
+
+**Rejected: flesh granting chain eligibility.** Inert on top of the inward
+test, 587 pixels off the front and 334 back onto the three-quarter. With the
+reach floor at 16 the trunk chain is already eligible where it needs to be.
+
+**Where the rendering is.** At shoulder height, stray skin removed against the
+state before any of this: 29,128 pixels from the front (20.1%), 28,978 from
+the back (20.2%), 20,671 from the three-quarter (16.1%). The neutral-pose
+control is pixel-identical throughout, 0 of 990,000 in three views. The wings
+are thinner and still there.
+
+**Next honest step for them.** An authored rest pose with the limbs
+separated. Every fix that tries to manufacture one from the current binding
+inherits the binding's mistake, which is what the separated-pose experiment
+demonstrated.
+
+## 2026-09-12 (last) — Chasing the wings to the asset
+
+**Asked.** Keep going until the wings are removed.
+
+**Kept, both judged on pixels.** Eligibility is now tested across the surface
+rather than in a straight line: the limit and the ranking were measuring
+different things and disagreed exactly where a limb lies against the trunk.
+On a flank vertex the ribs were 17.27 away in a straight line and 17.78 across
+the skin, the arm 17.16 and 34.29 — the ranking had it right, the ribs were
+1.27 over their limit and masked, the arm kept. Limits scale by 1.9, bracketed
+at five values; 6,813 pixels off the front. And a chain now seeds only skin
+sitting on its own flesh, which the direction test could not settle: of the
+123 vertices still drawn into flaps, 121 sat on trunk flesh 1.33 units away
+with arm flesh 4.49 away. Worst edge at shoulder height 213.66 to 59.69, torn
+edges 8,021 to 4,958.
+
+**Rejected, with the measurements.** A wider influence band: 60% more torn
+edges, no gain at the shoulder. A proportional support: the deep squat goes
+from 22,505 torn edges to 53,020. A heavier flesh weight: spikes double.
+Grouping the glenohumeral muscles with the arm: worst edge 59.69 to 184.79 for
+135 pixels of difference. A flat price on crossing body parts: prices out the
+real transition at the shoulder, worst edge 16,987. Cutting crossings below
+the shoulder: catches the hip, wrist and neck too, spikes 398 to 1,131.
+
+**Not removed, and the reason is in the asset.** The arm and chest are two
+sheets facing each other across air below the armpit, and the surface path
+between them should run up to the rim and back — a median 36.74 units against
+a straight line of 8.47. For 1,443 lateral-chest vertices it does not: the
+asset has the sheets touching, the shortest path being 0.11 units. Through
+those welds the arm's field reaches the chest whatever the binding does.
+Telling a weld from a genuine boundary needs to see the surface fold back on
+itself, and the winding is too inconsistent to read the sign of a fold.
+
+**Where it got to.** Rendered stray skin at shoulder height is 28.7% smaller
+than at the start of this work (front 133,270 to 95,038 pixels, back 132,235
+to 94,308), and what is left is barely stretched — the worst edge went 578 to
+59.7 — so it is a coherent sheet rather than a fan of torn triangles. The
+neutral-pose control stays pixel-identical. Removing the rest wants the asset
+repaired: consistent winding, then cut the welds. That is the same repair the
+surface fitting has been wanting.
