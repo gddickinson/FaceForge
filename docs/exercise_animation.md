@@ -790,6 +790,16 @@ at deep flexion and the buttock. Linear and dual-quaternion skinning cannot
 represent a fold, so closing that needs a different deformation model rather
 than a better binding.
 
+**What it costs to load.** The first skin load on a machine solves the
+binding; every load after it reads the result from disk in 0.4 s. That first
+solve was 92 s and is 65.8 s, because three parts of the binding were each
+walking the muscle field themselves -- 27 queries over 791,729 vertices where
+9 will do, 41.4 s of it. They share one set of answers now, which is a pure
+refactor: the binding arrays and the rendering are unchanged, 0 differing
+pixels in four views. What is left is the geodesic pass, 43.4 s of Dijkstra
+over 2.4 M mesh edges once per chain, and that is the pass the whole fix rests
+on.
+
 ## The animation model
 
 A rep is a sequence of **phases**; each holds the pose reached at its end, how

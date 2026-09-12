@@ -824,3 +824,26 @@ to 94,308), and what is left is barely stretched — the worst edge went 578 to
 neutral-pose control stays pixel-identical. Removing the rest wants the asset
 repaired: consistent winding, then cut the welds. That is the same repair the
 surface fitting has been wanting.
+
+## 2026-09-12 (after) — The skin load, without touching what it produces
+
+**Reported.** The skin layer now takes a long time to load.
+
+**Found.** True for the first load on a machine; every load after it reads the
+binding from disk in 0.4 s. The first solve had gone to 92 s, of which 41.4 s
+was the muscle field: three parts of the binding -- the term added to the bone
+distance, the inward-direction test and the own-flesh test -- each walked
+every body part themselves, 27 queries over 791,729 vertices where 9 will do.
+
+**Built.** `_flesh_for` computes the per-body-part distances, the body part
+each vertex sits on and the inward direction once per solve, and the three
+consumers read it. The cache lives for one solve and is cleared around it.
+
+**Measured.** First solve 92.0 s to 65.8 s; field queries 27 to 9 and 41.4 s
+to 13.5 s. The output is unchanged and was checked both ways: the four gate
+poses report identical numbers to every decimal, and the rendering is
+pixel-identical in all four viewpoints, 0 of 990,000. Warm load stays 0.4 s.
+
+**Left alone.** The geodesic pass, 43.4 s of Dijkstra over 2.4 M edges once
+per chain. It is what the binding fix rests on, and the user's instruction was
+not to trade rendering for speed.
