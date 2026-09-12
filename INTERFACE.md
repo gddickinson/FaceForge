@@ -174,7 +174,7 @@ flat when ankle dorsiflexion = pitch − hip + knee.
 | `diagnostics.py` | Skinning diagnostics: detect mesh vertices displaced beyond expected limits. |
 | `dof_ranges.py` | The body's joint degrees of freedom: range, sign convention and anatomical name. |
 | `edge_relaxation.py` | Distance-constraint relaxation: `relax_edges` (one-sided, for poses) and `enforce_edge_range` (two-sided, so a projection cannot flatten a limb). |
-| `gender_morph.py` | The sex morph's front door: the male/female surface pair, the skeleton morph, the soft-tissue field, and the warp of the surface mesh onto the skeleton. |
+| `gender_morph.py` | The sex morph's front door: the male/female surface pair, the skeleton morph and the soft-tissue field. `WARP_SURFACE_TO_SKELETON` is off: the surface meshes keep their authored shape, which costs fit and buys a body that looks like one (see `docs/sex_morph.md`). |
 | `ground_contact.py` | Keep the feet (or hands) on the floor while the joints move; hands anchored to a point (a bar) are measured at the closed-finger ring. |
 | `hand_points.py` | `finger_ring_centre`: the centroid of the closed finger joints, where a held bar's axis passes (shared by the equipment rig and the ground lock). |
 | `joint_pivots.py` | Joint pivot setup for limb articulation; digit pivots sit at each phalanx's proximal end (`proximal_end`). |

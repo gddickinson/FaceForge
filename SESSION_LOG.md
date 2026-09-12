@@ -847,3 +847,28 @@ pixel-identical in all four viewpoints, 0 of 990,000. Warm load stays 0.4 s.
 **Left alone.** The geodesic pass, 43.4 s of Dijkstra over 2.4 M edges once
 per chain. It is what the binding fix rests on, and the user's instruction was
 not to trade rendering for speed.
+
+## 2026-09-12 (end) — The body-surface meshes go back to as authored
+
+**Asked.** Reinstate the original male and female skin meshes; the current
+ones distort too much.
+
+**Found, and it is visible rather than numerical.**
+`results/morph_surface_proof.png` renders both meshes both ways from three
+viewpoints through the app's own GL renderer. Warped onto the skeleton, the
+hands splay, the face sinks and puckers, the feet twist and the torso loses
+its symmetry. As authored, they are clean figures.
+
+Worth being exact about what the warp was doing: it is computed from the male
+mesh and applied to both, so it never distorted the *morph* — the difference
+between the two ends is the authored one either way. What it distorted was the
+base both ends sit on. It also inflated the surface by about 18%, median edge
+length 1.336 against 1.131.
+
+**Built.** `gender_morph.WARP_SURFACE_TO_SKELETON`, off. The meshes are scaled
+and placed into the BP3D frame and otherwise untouched.
+
+**Measured, and the cost is real.** Bone points to the nearest surface vertex
+go from a median of 2.60 to 5.11, 95th percentile 10.02 to 15.33, worst 16.53
+to 26.57. The skeleton sits about twice as far inside the skin and pokes
+through in more places. That is the trade, taken deliberately.

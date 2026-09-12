@@ -29,6 +29,25 @@ logger = logging.getLogger(__name__)
 
 
 
+#: Warp the body-surface meshes onto the BP3D skeleton at load.
+#:
+#: The surface pair is a MakeHuman male and female; the skeleton is a BP3D
+#: cadaver.  They are different bodies, so putting the skin on the bones means
+#: deforming the skin, and every method that closes the gap further damages
+#: the mesh -- the measurements are in docs/sex_morph.md.
+#:
+#: OFF by request: the warped meshes distort more than the misfit is worth.
+#: The male and female surfaces are now the originals, scaled and placed into
+#: the BP3D frame and otherwise untouched, so the morph between them is the
+#: shape difference their authors intended.  The warp is computed from the
+#: male mesh and applied to both, so it never was the morph that distorted --
+#: it was the base both ends sit on.
+#:
+#: What it costs is fit: bone vertices outside the surface go from 51.2% to
+#: 70.2%, with the 95th-percentile protrusion 12.7 against 19.2.
+WARP_SURFACE_TO_SKELETON = False
+
+
 class GenderMorphSystem:
     """Coordinates body surface morphing and skeletal scaling for gender dimorphism.
 
@@ -267,6 +286,11 @@ class GenderMorphSystem:
         if skel_lm is None:
             return male_pos, female_pos, male_norms, female_norms
         self._skel_landmarks = skel_lm
+
+        if not WARP_SURFACE_TO_SKELETON:
+            logger.info("Surface warp disabled: the body meshes keep their "
+                        "authored shape")
+            return male_pos, female_pos, male_norms, female_norms
 
         mesh_lm = self._extract_mesh_landmarks(male_pos)
 

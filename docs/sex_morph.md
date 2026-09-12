@@ -217,6 +217,41 @@ test is noise.
 | forearm edges below half | 727 | 32 (30 of them already in the input) |
 | torso fit | 0.56 → 0.24 | 0.56 → 0.16 |
 
+## The surface warp is off (2026-09-12)
+
+Reinstated at the user's request: the male and female body-surface meshes are
+the authored ones, scaled and placed into the BP3D frame and otherwise
+untouched. `gender_morph.WARP_SURFACE_TO_SKELETON` turns the fitting above
+back on.
+
+The reason is visible rather than numerical. `results/morph_surface_proof.png`
+renders both meshes both ways, from three viewpoints, through the app's own GL
+renderer: warped, the hands splay, the face sinks and puckers, the feet twist
+and the torso loses its symmetry; as authored, they are clean figures and the
+male and female shapes read as intended.
+
+It is worth being clear about what the warp was and was not doing. It is
+computed from the male mesh and applied to both, so it never distorted the
+*morph* -- the difference between the two ends is the authored one either way.
+What it distorted was the base both ends sit on. It also inflated the surface:
+median edge length 1.336 against 1.131, about 18% longer everywhere.
+
+What turning it off costs is fit, and the whole reason the warp existed. The
+surface pair is a MakeHuman male and female; the skeleton is a BP3D cadaver.
+They are different bodies, and the measurements in this file record every
+method tried to close the gap and what each one damaged. Bone points to the
+nearest surface vertex:
+
+| | median | 95th pct | worst |
+|---|---|---|---|
+| warped onto the skeleton | 2.60 | 10.02 | 16.53 |
+| as authored | 5.11 | 15.33 | 26.57 |
+
+So the skeleton sits about twice as far inside the skin, and pokes through it
+in more places. That is the trade, taken deliberately: a clean body that does
+not quite contain its skeleton, rather than a contained skeleton inside a body
+that does not look like one.
+
 ## Two bugs found on the way
 
 **The inverse-rest-matrix cache outlived the joints it described.**
