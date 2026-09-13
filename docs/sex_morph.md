@@ -271,24 +271,74 @@ an explicit exclusion.
 
 ## What the morph measures out at
 
-Female / male, at gender 1, on the shipped configuration:
+`tools/anthropometry.py` takes the measurements an anthropometrist takes, at
+gender 0 and gender 1, and prints the model's ratio beside the published one.
+It exits non-zero when any of them drifts, so this is checked rather than
+asserted.
 
-| measure | ratio | published |
+| measure | model | published |
 |---|---|---|
-| biacromial breadth | 0.89 | 0.89 |
-| bi-iliac breadth | 1.00 | 0.96 |
-| bi-iliac / biacromial | 0.78 → 0.88 | 0.75 → 0.80-0.86 |
-| femur length | 0.91 | 0.91 |
-| stature | 0.945 | 0.93 |
-| skin waist / hip | 0.90 → 0.80 | 0.90 → 0.75-0.80 |
-| biceps belly radius | 0.58 | ~0.6 |
-| rectus femoris belly radius | 0.77 | ~0.75 |
+| stature | 0.926 | 0.928 |
+| sitting height | 0.941 | 0.932 |
+| biacromial breadth | 0.894 | 0.894 |
+| bi-iliac breadth | 0.964 | 0.964 |
+| humerus length | 0.920 | 0.915 |
+| femur length | 0.910 | 0.913 |
+| tibia length | 0.910 | 0.918 |
+| head breadth | 0.953 | 0.954 |
+| head length | 0.958 | 0.958 |
+| head height | 0.950 | 0.950 |
+| bizygomatic breadth | 0.932 | 0.927 |
+| bigonial breadth | 0.910 | 0.918 |
 
-Bi-iliac breadth is worth a note: females do **not** have absolutely wider
-hips.  The measured ratio is about 0.96, and it is the *relative* width that is
-dimorphic, because the shoulders narrow much more.  Scaling the pelvis up
-instead, as the configuration used to, gave a bi-iliac/biacromial ratio of 1.01
-against a published female 0.80-0.86.
+And the two features that are angles rather than proportions, where only the
+difference between the sexes is modelled because the absolute is the donor's
+own anatomy:
+
+| angle | male | female | change | published change |
+|---|---|---|---|---|
+| carrying angle, right | -9.1 | -7.1 | +2.0 | +2.0 |
+| carrying angle, left | -7.2 | -5.2 | +2.0 | +2.0 |
+| knee valgus, right | 1.3 | 3.3 | +2.0 | +2.0 |
+| knee valgus, left | 4.2 | 6.2 | +2.0 | +2.0 |
+
+What the tool cannot fix is the donor.  The shoulder-to-hip ratio is 0.783 in
+the male against a published 0.700, because this cadaver has a wide pelvis for
+his shoulders.  That is the body the asset set is.
+
+### The head had no sex at all
+
+Run for the first time, the tool found stature at 0.950 against 0.928 and the
+sitting-height ratio at 0.985 against 0.932.  Both were one defect, and it
+took a second measurement to see it: exactly five bone meshes were unchanged
+between the sexes -- the cranium, the jaw, both sets of teeth and the atlas,
+which is the whole head.  The per-bone cranial factors in the config name
+bones ("frontal bone", "zygomatic") and the asset is one merged mesh called
+"cranium", so none of them had ever matched anything.
+
+Giving the skull a factor is not enough on its own.  It is scaled about its
+own centroid, because that is the only anchor a free-standing group has, and
+the cervical column is scaled about T1's centroid *as it was before the
+morph* -- a point that does not move however far the thoracic column below it
+descends.  So the head changed size in place while the trunk shortened under
+it.  That also made the vertebral factors almost inert, which is why nobody
+had noticed the column was not doing its share: taking the vertebral height
+from 0.95 to 0.91 moved stature by 0.002.
+
+`skull_morph.seat_on_neck` puts the neck and head back on top of the column by
+the distance its topmost joint moved.  It moves the bones inside those groups,
+not the group nodes: the soft-tissue warp is built by comparing each bone's
+captured rest position with where it ends up, and a group node's own position
+reads as rest either way, so moving the group would have carried the skull and
+left the face and the neck muscles behind.
+
+One factor over a merged skull cannot be right everywhere either.  Bizygomatic
+breadth is 12.7/13.7 = 0.927 against a vault nearer 0.954, so the vault's
+factor leaves the face three per cent too wide.  `skull_morph` adds the
+difference back over the lower skull, graded by height from the brow down so
+there is no seam, applied about the midline where it is exact.  The same grade
+narrows the mastoid process, which is one of the features a skull is sexed by
+and larger in males for the same reason.
 
 ## Cost
 
@@ -310,10 +360,15 @@ still runs.
 
 ## Still open
 
-* Stature lands at 0.945 against a published 0.93.  The limbs and the spine are
-  right; the remaining difference is in the regions anchored absolutely.
-* 33 edges of 2.37 million are still compressed past the band after a morph, 32
-  of them in the toes, where the surface pair disagrees most.
-* The surface mesh's hands sit about 5 units from the BP3D skin's, which is a
-  pose difference between two different bodies that the coarse warp does not
-  close.  It is no longer hidden by crushing the mesh onto the target.
+* The `tooth` and `disc` factors are guesses in the same sense the vertebral
+  one was: nothing measures them directly.
+* Two factors are now set from the whole-body measurement rather than the
+  segment one -- the vertebral and disc heights at 0.92 against an osteometric
+  body height of 0.95, and bi-iliac breadth at 0.964 where the pelvis used to
+  keep the male's breadth exactly.  The whole body is the better measured of
+  the two, but the segment figures are the ones with a citation.
+* 33 edges of 2.37 million are still compressed past the band after a morph,
+  32 of them in the toes, where the surface pair disagrees most.
+* The face mesh and the facial muscles have no sex of their own.  They now
+  follow the skull, because the skull moves and the soft-tissue warp carries
+  them, but nothing shapes them.

@@ -188,9 +188,13 @@ Every bone vertex, signed distance to the surface, positive outside:
 | | outside | median | p95 | max |
 |---|---|---|---|---|
 | male, as loaded | 65.8% | +2.45 | 11.42 | 27.76 |
-| male, fitted | 18.5% | -1.57 | 0.91 | 3.32 |
-| female, as loaded | 78.5% | +2.85 | 8.63 | 27.83 |
-| female, fitted | 22.9% | -1.40 | 1.42 | 3.44 |
+| male, fitted | 10.4% | -1.57 | 0.55 | 2.74 |
+| female, as loaded | 75.9% | +2.64 | 8.31 | 27.83 |
+| female, fitted | 23.3% | -1.34 | 1.31 | 3.44 |
+
+Nothing anywhere on the skeleton now stands more than 2.74 units through the
+skin, against 27.76 before: the inferior angle of the scapula and the crown of
+the skull, in that order.
 
 And on the things a containment number cannot see:
 
@@ -278,20 +282,21 @@ after:
 
 | layer | male before | male after | female before | female after |
 |---|---|---|---|---|
-| arm muscles | 19.3 | 6.1 | 16.7 | 3.8 |
-| back muscles | 18.9 | 5.3 | 16.2 | 3.4 |
-| shoulder muscles | 24.1 | 4.7 | 20.3 | 4.3 |
-| torso muscles | 17.4 | 8.2 | 15.0 | 4.0 |
-| hip muscles | 10.2 | 3.2 | 9.5 | -0.5 |
-| leg muscles | 14.8 | 10.5 | 8.0 | 2.9 |
-| hand muscles | 7.1 | 1.8 | 7.7 | 1.7 |
-| foot muscles | 14.0 | 2.2 | 8.2 | 1.1 |
-| organs | 14.8 | 4.2 | 15.0 | 7.2 |
-| vasculature | 11.3 | 4.4 | 10.5 | 2.5 |
-| ligaments | 11.1 | 2.3 | 6.3 | 3.5 |
+| arm muscles | 19.4 | 4.4 | 17.1 | 4.0 |
+| back muscles | 18.9 | 4.0 | 16.2 | 4.0 |
+| shoulder muscles | 24.2 | 4.5 | 20.6 | 4.2 |
+| torso muscles | 17.4 | 3.1 | 15.5 | 1.6 |
+| hip muscles | 10.2 | 2.8 | 9.4 | -0.3 |
+| leg muscles | 14.9 | 4.6 | 7.6 | 3.0 |
+| hand muscles | 7.2 | 2.0 | 7.7 | 1.3 |
+| foot muscles | 14.1 | 2.6 | 7.7 | 1.7 |
+| organs | 14.9 | 3.4 | 11.5 | 7.2 |
+| vasculature | 11.4 | 3.4 | 10.4 | 1.5 |
+| ligaments | 11.1 | 2.6 | 6.3 | 2.9 |
 
-Every layer is better off than it was, at both sexes.  32 meshes of 442 are
-past some limit at gender 0 and 14 at gender 1.
+Every layer is better off than it was, at both sexes.  19 meshes of 442 are
+past some limit at gender 0 and 14 at gender 1.  The adductors, which used to
+stand 10.5 units through the medial thigh, now stand 4.6.
 
 ## The female changes still happen
 

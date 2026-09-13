@@ -1110,3 +1110,57 @@ survives a sex change and does not interfere with one.
 
 **Still open.** The male adductors stand 10.5 units out where they stood 2.7;
 the female's do not. The digastric intermediate tendons stretch 4.5x.
+
+## 2026-09-13 — Five improvements to the male and female models
+
+**Asked.** What else can be done to improve the models, then: do all of it.
+
+**1. The head had no sex.** Measured, exactly five bone meshes were unchanged
+between gender 0 and gender 1 -- cranium, jaw, both sets of teeth, atlas --
+which is the whole head. The config's per-bone cranial factors name bones and
+the asset is one merged mesh, so none had ever matched. Patterns added; the
+merged skull takes published head dimensions; `skull_morph.py` adds the extra
+facial narrowing the vault's factor cannot carry, graded from the brow down.
+
+**2. The body surface was too coarse to fit.** 10,582 vertices and 21,160
+triangles for a whole body, edges 1.13 / 3.75 / 7.72. One Loop subdivision:
+42,322 and 84,640, edges 0.54 / 1.82 / 4.04, in 0.07 s, with the shape
+untouched to a tenth of a per cent. Loop rather than a midpoint split, which
+would quadruple the triangles and describe the same faceted surface.
+
+**3. Nothing checked the morph against the book.** `tools/anthropometry.py`
+now does, and found three errors on its first run: stature 0.950 against
+0.928, sitting height 0.985 against 0.932, bi-iliac breadth 1.000 against
+0.964. The first two were one defect -- the skull scaled about its own
+centroid and the cervical column about a T1 that never moves, so the head
+floated while the trunk shortened under it, which also made the vertebral
+factors inert (0.95 to 0.91 moved stature by 0.002). Every ratio is now within
+0.009.
+
+**4. Two dimorphic features are angles, not proportions.** The carrying angle
+and genu valgum, each two degrees wider in the female, neither of which any
+amount of bone scaling produces. Only the difference is applied; the absolutes
+are the donor's, and asymmetric as a real body's are. Measuring them signed
+mattered: the arm hangs abducted, so an unsigned measure read the increase as
+a decrease.
+
+**5. The defects the last round left.** The adductors, which stood 10.5 units
+through the medial thigh, now stand 4.6 -- fixed by the field work, not by
+anything aimed at them. Nothing anywhere on the skeleton now stands more than
+2.74 units through the skin, against 27.76 before: the scapula's inferior
+angle and the skull's crown.
+
+**Two regressions caught by the guards.** Re-solving against the finer surface,
+the male fit folded both arms into the torso again -- fingertips 37 units from
+the mesh's hands -- and the tool wrote it before checking. The check now runs
+before the write, and the hands and feet are tethered loosely to the mesh's own
+landmarks: fourteen units free, which a right answer never uses.
+
+**Every tissue layer, both sexes.** 19 meshes of 442 past a limit at gender 0
+and 14 at gender 1. The sex morph's effect on soft tissue is unchanged by the
+fit: muscles move 3.24 against 2.96 and lose the same bulk, the skin is
+identical.
+
+**Still open.** The digastric intermediate tendons stretch 3.2x. The face mesh
+and facial muscles have no sex of their own -- they follow the skull now, but
+nothing shapes them.
