@@ -6,14 +6,14 @@
     "translate_z": 0.0
   },
   "bone_scales": {
-    "_comment": "Per-bone (sx, sy, sz) at gender=1.0 (female), lerped from (1,1,1) at gender=0. X=lateral, Y=anteroposterior, Z=vertical. Female/male ratios from skeletal anthropometry: stature 162.9/175.6 = 0.93; biacromial breadth 355/397 mm = 0.89 (clavicle length 13.8/15.4 cm = 0.90); bi-iliac breadth 26.8/27.8 cm = 0.96, so the female pelvis keeps nearly the male's absolute breadth on a body 7% smaller -- that is what makes it RELATIVELY wide, and scaling it up instead gave a bi-iliac/biacromial ratio of 1.01 against a published female 0.80-0.86. Femur 43.2/47.3 = 0.91, humerus 30.2/33.0 = 0.92. Sacral index (breadth/height) 115 female vs 105 male: wider and distinctly shorter. Female sternum is markedly shorter relative to its width. Vertebral bodies: transverse width F/M ~0.90, body height ~0.95, which with a leg at 0.91 puts stature at 0.93 and keeps the female sitting-height fraction slightly the larger, as measured.  The skull is one merged mesh, so the per-bone cranial factors below never matched anything and the head did not change sex at all -- measured, the cranium, the jaw, both sets of teeth and the atlas were the only five bone meshes the slider left alone.  'cranium' is the whole skull, from published head dimensions: breadth 14.5/15.2 = 0.954, length 18.1/18.9 = 0.958, height about 0.95.  It is a single factor over a mesh whose vault and face differ -- bizygomatic breadth is 12.7/13.7 = 0.927 against a vault nearer 0.965 -- so the face is under-feminised by roughly 0.03; the graded version is in skull_morph.py.",
+    "_comment": "Per-bone (sx, sy, sz) at gender=1.0 (female), lerped from (1,1,1) at gender=0. X=lateral, Y=anteroposterior, Z=vertical. Female/male ratios from skeletal anthropometry: stature 162.9/175.6 = 0.93; biacromial breadth 355/397 mm = 0.89 (clavicle length 13.8/15.4 cm = 0.90); bi-iliac breadth 26.8/27.8 cm = 0.96, so the female pelvis keeps nearly the male's absolute breadth on a body 7% smaller -- that is what makes it RELATIVELY wide, and scaling it up instead gave a bi-iliac/biacromial ratio of 1.01 against a published female 0.80-0.86. Femur 43.2/47.3 = 0.91, humerus 30.2/33.0 = 0.92. Sacral index (breadth/height) 115 female vs 105 male: wider and distinctly shorter. Female sternum is markedly shorter relative to its width. Vertebral bodies: transverse width F/M ~0.90, body height ~0.95, which with a leg at 0.91 puts stature at 0.93 and keeps the female sitting-height fraction slightly the larger, as measured.  The skull is one merged mesh, so the per-bone cranial factors below never matched anything and the head did not change sex at all -- measured, the cranium, the jaw, both sets of teeth and the atlas were the only five bone meshes the slider left alone.  'cranium' is the whole skull, from published head dimensions: breadth 14.5/15.2 = 0.954, length 18.1/18.9 = 0.958, height about 0.95.  It is a single factor over a mesh whose vault and face differ -- bizygomatic breadth is 12.7/13.7 = 0.927 against a vault nearer 0.965 -- so the face is under-feminised by roughly 0.03; the graded version is in skull_morph.py.  Two figures here are now set from the whole-body measurement rather than the segment one, because the whole body is the better measured of the two and tools/anthropometry.py checks the model against it.  The vertebral and disc heights are 0.92, not the osteometric body height of 0.95: a column at 0.95 lands stature at 0.935 and the sitting-height ratio at 0.958, against published 0.928 and 0.932.  And bi-iliac breadth is 26.8/27.8 = 0.964, where the pelvis used to keep the male's breadth exactly; that was an over-correction for a bi-iliac/biacromial ratio measured before the head was seated on the spine.",
     "cranium": [
       0.954,
       0.958,
       0.95
     ],
     "pelvis": [
-      1.0,
+      0.964,
       1.03,
       0.92
     ],
@@ -210,12 +210,12 @@
     "vertebra": [
       0.92,
       0.95,
-      0.95
+      0.92
     ],
     "disc": [
       0.92,
       0.95,
-      0.95
+      0.92
     ]
   },
   "scale_groups": {

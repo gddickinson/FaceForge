@@ -47,7 +47,7 @@ import numpy as np
 from numpy.typing import NDArray
 
 from faceforge.body.skeleton_field import (
-    control_points, displacement_warp, sampled_warp,
+    control_points, displacement_warp, rest_offset, sampled_warp,
 )
 from faceforge.body import skull_morph
 from faceforge.body.skeleton_joints import close_articulations
@@ -289,6 +289,12 @@ class SkeletonMorph:
         # The skull is one mesh and its vault and face do not shrink together;
         # see :mod:`faceforge.body.skull_morph`.
         stats["skull"] = skull_morph.apply(root, gender, self._exclude)
+        # ...and it has to come down with the neck, which is five per cent
+        # shorter; scaled about its own centroid it would stay where it was.
+        skull_morph.seat_on_neck(
+            root,
+            lambda n: rest_offset(n, self._backup.pivot_positions),
+            self._node_offset)
 
         if joint_positions is not None:
             self._update_joint_positions(root, joint_positions)

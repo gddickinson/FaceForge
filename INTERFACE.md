@@ -416,6 +416,7 @@ flat when ankle dorsiflexion = pitch − hip + knee.
 | `fit_skeleton_to_skin.py` | Solves the per-region matrices that put the skeleton inside the body-surface mesh (`--measure`, `--solve --write`) |
 | `render_skeleton_fit.py` | Draws the skeleton in its surface, before and after the fit; `--protrusion` colours every bone vertex by how far it is outside |
 | `inspect_skeleton_fit.py` | Orthographic drawings on a labelled grid in body units, front/side/closeups and transverse sections: what the summary numbers cannot show |
+| `anthropometry.py` | Measures the morphed model back against published adult means: stature, sitting height, biacromial and bi-iliac breadth, long bones, cranial dimensions. Exits non-zero when a ratio drifts |
 | `fit_tissue_check.py` | Every tissue layer under the fit: edge stretch, drift from the nearest bone, and protrusion through the skin against a pre-fit control |
 | `skin_deformation_quality.py` | Body-skin tearing, collapse, spikes and containment per pose; `--influences`, `--cutoff`, `--seed-margin`, `--muscle-weight`, `--min-spatial`, `--bridge`, `--contact`, `--diffuse` for the tunables |
 | `skin_defect_views.py` | The skin from three viewpoints, coloured by stretch, spike or arm-weight; `--save` a baseline and `--baseline` it back for before-and-after |
