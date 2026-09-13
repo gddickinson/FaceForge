@@ -187,7 +187,7 @@ flat when ankle dorsiflexion = pitch − hip + knee.
 | `physiology.py` | Physiological simulation systems: heartbeat, blood flow, breathing, digestion, fasciculation. |
 | `region_labels.py` | Anatomical region labeling for body mesh segmentation. |
 | `skeleton.py` | Build full-body skeleton from STL batches. |
-| `fit_regions.py` | The skeleton as a tree of regions for the fit: which node belongs to which region, each region's anchor joint, and the composition rule that keeps the articulations shut. |
+| `fit_regions.py` | The skeleton as a tree of 23 regions for the fit: which node belongs to which region, each region's anchor joint, and the rule that composes rotations down the chain the way a pose does, so turning the humerus carries the whole arm. |
 | `skeleton_fit.py` | `SkeletonFit`: moves and deforms the skeleton so it sits *inside* the body-surface mesh, the opposite direction to the surface warp; matrices solved offline into `assets/config/skeleton_fit.json`. |
 | `skeleton_field.py` | Turns a skeleton change into a smooth spatial warp: joint displacements as a thin-plate spline (`displacement_warp`), sampled on a lattice (`sampled_warp`). |
 | `skeleton_joints.py` | Shuts an articulation whose two bones scale apart (the acromioclavicular joint), from a contact patch measured on the unscaled skeleton. |
@@ -414,6 +414,7 @@ flat when ankle dorsiflexion = pitch − hip + knee.
 | `skeleton_containment.py` | Signed distance from every bone vertex to the body surface, positive outside; the sign is calibrated, not read off the winding |
 | `fit_skeleton_to_skin.py` | Solves the per-region matrices that put the skeleton inside the body-surface mesh (`--measure`, `--solve --write`) |
 | `render_skeleton_fit.py` | Draws the skeleton in its surface, before and after the fit; `--protrusion` colours every bone vertex by how far it is outside |
+| `inspect_skeleton_fit.py` | Orthographic drawings on a labelled grid in body units, front/side/closeups and transverse sections: what the summary numbers cannot show |
 | `skin_deformation_quality.py` | Body-skin tearing, collapse, spikes and containment per pose; `--influences`, `--cutoff`, `--seed-margin`, `--muscle-weight`, `--min-spatial`, `--bridge`, `--contact`, `--diffuse` for the tunables |
 | `skin_defect_views.py` | The skin from three viewpoints, coloured by stretch, spike or arm-weight; `--save` a baseline and `--baseline` it back for before-and-after |
 | `render_skin_proof.py` | The skin drawn in **pixels** through `Session`'s own GL renderer, four viewpoints, with engine overrides so an earlier state can be rendered from the same tree |

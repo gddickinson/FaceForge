@@ -228,7 +228,10 @@ class BodyController:
              else carried).append(binding)
         stats = self.morph_soft_tissue(
             gender, morph, compose(gender_warp, fit_warp), carried)
-        if own:
+        # With no sex morph in force there is nothing for the skeleton's own
+        # skin to be rebuilt *from*: the second pass would copy 791,729
+        # vertices back onto themselves, and build the sex field to do it.
+        if own and (gender_warp is not None or gender > 0.0):
             extra = self.morph_soft_tissue(gender, morph, gender_warp, own)
             stats = {k: stats.get(k, 0) + extra.get(k, 0)
                      for k in set(stats) | set(extra)}

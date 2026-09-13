@@ -37,8 +37,8 @@ import numpy as np
 from numpy.typing import NDArray
 
 from faceforge.body.fit_regions import (
-    REGION_NAMES, RegionTransforms, SKIP_SUBTREES, anchors, blend_tables,
-    region_of,
+    REGION_NAMES, ROOT_REGION, RegionTransforms, SKIP_SUBTREES, anchors,
+    blend_tables, region_of,
 )
 from faceforge.body.skeleton_field import sampled_warp
 from faceforge.core.config_loader import load_config
@@ -66,15 +66,29 @@ SAMPLES_PER_BONE = 24
 #: regions' transforms differ most:
 #:
 #:     neighbours / smoothing   worst p99   median p99
-#:     16 / 3                     2.926        1.069
-#:     32 / 6                     2.396        1.080
-#:     48 / 10                    2.022        1.081
-#:     64 / 16                    2.046        1.129
+#:     16 / 3                     3.300        1.193
+#:     32 / 6                     2.657        1.184
+#:     48 / 10                    2.154        1.170
+#:     64 / 16                    1.986        1.187
+#:     96 / 30                    1.973        1.178
 #:
-#: Past 48 the field stops varying on the scale of a muscle and starts costing
-#: every mesh a little, which is the rise in the median.
-FIELD_NEIGHBOURS = 48
-FIELD_SMOOTHING = 10.0
+#: Past 64 the worst case stops falling and every mesh starts paying a little,
+#: which is the rise in the median.  As shipped, 64 neighbours on the lattice
+#: below: worst p99 1.746, median 1.137.
+FIELD_NEIGHBOURS = 64
+FIELD_SMOOTHING = 16.0
+
+#: Lattice the field is sampled on.  Sampling it is the whole cost of
+#: switching the option on, and a coarse lattice is better on both counts:
+#: the field is already smoothed over 64 control points spread across a limb,
+#: so interpolating it more coarsely only smooths it further.  Measured on the
+#: muscle layers, toggle time against the worst muscle's p99 edge stretch:
+#:
+#:     spacing   toggle   worst p99   median p99
+#:     3.0        2.01 s    1.924        1.159
+#:     4.5        1.54 s    1.805        1.163
+#:     6.0        1.45 s    1.746        1.137
+FIELD_LATTICE = 6.0
 
 
 #: The skin that came with the skeleton.  It was scanned from these bones and
@@ -177,7 +191,7 @@ class SkeletonFit:
         """False when no solved fit is shipped, so the option would do nothing."""
         for sex in ("male", "female"):
             for entry in self._table.get(sex, {}).values():
-                if entry.get("matrix") is not None or entry.get("offset"):
+                if any(entry.get(key) for key in ("rotation", "scale", "offset")):
                     return True
         return False
 
@@ -258,7 +272,7 @@ class SkeletonFit:
         stats = {"bones": 0, "pivots": 0}
         src: list[Vec3] = []
         dst: list[Vec3] = []
-        self._walk_apply(root, transforms, "trunk", np.zeros(3), np.zeros(3),
+        self._walk_apply(root, transforms, ROOT_REGION, np.zeros(3), np.zeros(3),
                          exclude or set(), stats, src, dst)
         self._applied = True
         self._amount = amount
@@ -375,7 +389,22 @@ class SkeletonFit:
         warp = _inverse_distance_warp(pts, moved - pts)
         if not sampled:
             return warp
-        return sampled_warp(warp, pts)
+
+        # Sampling the field on its lattice costs 2.3 s, and the toggle has to
+        # answer inside the 16 ms render timer.  Nothing is sampled until a
+        # mesh actually asks to be moved, so switching the option on with no
+        # soft tissue loaded -- the common case, and the one the GUI
+        # responsiveness budget measures -- pays none of it.
+        cache: dict[str, Any] = {}
+
+        def lazy(query: NDArray) -> NDArray:
+            field = cache.get("field")
+            if field is None:
+                field = cache["field"] = sampled_warp(
+                    warp, pts, spacing=FIELD_LATTICE)
+            return field(query)
+
+        return lazy
 
 
 def _inverse_distance_warp(points: NDArray, displacements: NDArray):

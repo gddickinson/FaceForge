@@ -6,29 +6,33 @@ from its name, and the joints move so the articulations stay shut
 of proportion, because a proportion change is what the factors describe.
 
 Fitting the skeleton into a body-surface mesh is a different problem.  The
-surface is a MakeHuman figure and the skeleton is a BodyParts3D cadaver: two
+surface is a MakeHuman figure and the skeleton a BodyParts3D cadaver: two
 different bodies, whose limbs differ in *direction* as well as in length --
 measured on the shipped pair, the forearm axes differ by 15 degrees and the
-shank axes by 10.  A per-axis scale cannot express that, so a region here
-carries a full 3x3 matrix.
+shank axes by 10.  So a region carries a rotation as well as a scale, and the
+rotations compose down the chain the way a pose does: turning the humerus at
+the shoulder carries the forearm, the hand and every finger with it, and the
+forearm's own rotation is then a correction *relative* to that.
 
-A region is a segment of the skeleton plus everything hanging off it, and it
-is anchored at the joint it hangs from::
+::
 
-    trunk ── neck ── head
-      ├── girdle_R ── upperarm_R ── forearm_R ── hand_R
-      ├── girdle_L ── ...
-      ├── thigh_R  ── shank_R ── foot_R
-      └── thigh_L  ── ...
+    pelvis ── lumbar ── thorax ── neck ── head
+      │                    ├── girdle_R ── upperarm_R ── forearm_R ── hand_R ── fingers_R
+      │                    └── girdle_L ── ...
+      ├── thigh_R ── shank_R ── foot_R ── toes_R
+      └── thigh_L ── ...
 
-Each region's anchor is carried by its parent, so the chain cannot come
-apart however the matrices are chosen:
+Each region's anchor is the joint it hangs from, and the parent carries it, so
+the chain cannot come apart however the parameters are chosen::
 
-    A'(r) = T(parent(r))(A(r))          the anchor, moved by the parent
-    T(r)(x) = A'(r) + M(r) (x - A(r))   everything else, about the anchor
+    R(r) = R(parent(r)) @ Rlocal(r)        rotations compose, as a pose does
+    M(r) = R(r) @ diag(scale(r))
+    A'(r) = T(parent(r))(A(r))             the anchor, moved by the parent
+    T(r)(x) = A'(r) + M(r) (x - A(r))      everything else, about the anchor
 
-Only the trunk has nowhere to hang from, so only the trunk carries a
-translation of its own.
+Only two regions carry a translation of their own: the pelvis, because it
+hangs from nothing, and the head, because the skull is a group of its own
+rather than a bone on a cervical pivot, so moving it opens no joint surface.
 """
 
 from __future__ import annotations
@@ -42,6 +46,9 @@ from numpy.typing import NDArray
 
 Vec3 = NDArray[np.float64]
 
+#: Regions allowed to move bodily as well as turn and scale.
+OFFSET_REGIONS: tuple[str, ...] = ("pelvis", "head")
+
 
 @dataclass(frozen=True)
 class RegionDef:
@@ -54,20 +61,24 @@ class RegionDef:
 
 #: The region tree, parents before children so one pass resolves every anchor.
 REGIONS: tuple[RegionDef, ...] = (
-    RegionDef("trunk", None, "pelvis"),
-    RegionDef("neck", "trunk", "cervicothoracic"),
+    RegionDef("pelvis", None, "pelvic_centre"),
+    RegionDef("lumbar", "pelvis", "lumbosacral"),
+    RegionDef("thorax", "lumbar", "thoracolumbar"),
+    RegionDef("neck", "thorax", "cervicothoracic"),
     RegionDef("head", "neck", "craniocervical"),
 ) + tuple(
     r
     for side in ("R", "L")
     for r in (
-        RegionDef(f"girdle_{side}", "trunk", f"sternoclavicular_{side}"),
+        RegionDef(f"girdle_{side}", "thorax", f"sternoclavicular_{side}"),
         RegionDef(f"upperarm_{side}", f"girdle_{side}", f"shoulder_{side}"),
         RegionDef(f"forearm_{side}", f"upperarm_{side}", f"elbow_{side}"),
         RegionDef(f"hand_{side}", f"forearm_{side}", f"wrist_{side}"),
-        RegionDef(f"thigh_{side}", "trunk", f"hip_{side}"),
+        RegionDef(f"fingers_{side}", f"hand_{side}", f"knuckle_{side}"),
+        RegionDef(f"thigh_{side}", "pelvis", f"hip_{side}"),
         RegionDef(f"shank_{side}", f"thigh_{side}", f"knee_{side}"),
         RegionDef(f"foot_{side}", f"shank_{side}", f"ankle_{side}"),
+        RegionDef(f"toes_{side}", f"foot_{side}", f"ball_{side}"),
     )
 )
 
@@ -80,12 +91,20 @@ _MEMBERSHIP: tuple[tuple[str, str], ...] = (
     (r"^shoulder_([RL])_pivot$", "upperarm_{side}"),
     (r"^elbow_([RL])_pivot$", "forearm_{side}"),
     (r"^wrist_([RL])_pivot$", "hand_{side}"),
+    # The knuckle is the break: metacarpals are the hand, phalanges the
+    # fingers, which is where the two bodies' hands differ most.
+    (r"^finger_([RL])_\d+_mc_pivot$", "hand_{side}"),
+    (r"^finger_([RL])_\d+_(?:prox|mid|dist)_pivot$", "fingers_{side}"),
     (r"^hip_([RL])_pivot$", "thigh_{side}"),
     (r"^knee_([RL])_pivot$", "shank_{side}"),
     (r"^ankle_([RL])_pivot$", "foot_{side}"),
+    (r"^toe_([RL])_\d+_mt_pivot$", "foot_{side}"),
+    (r"^toe_([RL])_\d+_(?:prox|mid|dist)_pivot$", "toes_{side}"),
     (r"^(?:clavicle|scapula)_([RL])_pivot$", "girdle_{side}"),
     (r"^skullGroup$", "head"),
     (r"^vertebraeGroup$", "neck"),
+    (r"^(?:thoracic_spine|rib_cage|upper_limb)$", "thorax"),
+    (r"^lumbar_spine$", "lumbar"),
 )
 
 #: Subtrees the fit never touches.  The body-surface mesh is the target it is
@@ -97,6 +116,9 @@ SKIP_SUBTREES: frozenset[str] = frozenset({
     "brainGroup", "stlMuscleGroup", "exprMuscleGroup", "platysmaGroup",
     "neckMuscleGroup",
 })
+
+#: The region a node under ``bodyRoot`` belongs to until something says otherwise.
+ROOT_REGION = "pelvis"
 
 
 def region_of(name: str, parent_region: str) -> str:
@@ -110,13 +132,24 @@ def region_of(name: str, parent_region: str) -> str:
     return parent_region
 
 
+def rotation_matrix(degrees: Any) -> NDArray:
+    """Rodrigues rotation from a rotation vector given in degrees."""
+    v = np.radians(np.asarray(degrees, dtype=np.float64).reshape(3))
+    theta = float(np.linalg.norm(v))
+    if theta < 1e-12:
+        return np.eye(3)
+    k = v / theta
+    K = np.array([[0.0, -k[2], k[1]], [k[2], 0.0, -k[0]], [-k[1], k[0], 0.0]])
+    return np.eye(3) + np.sin(theta) * K + (1.0 - np.cos(theta)) * (K @ K)
+
+
 def anchors(root: Any, joint_positions: dict[str, Any] | None,
             offset_of) -> dict[str, Vec3]:
     """Every region anchor, in body coordinates, from the unfitted skeleton.
 
-    ``offset_of(node)`` gives a node's rest position in body coordinates; the
-    cervical anchors are read from the cervical pivots themselves rather than
-    named, because the column's length differs between asset sets.
+    ``offset_of(node)`` gives a node's rest position in body coordinates.  The
+    spinal anchors are read from the pivots themselves rather than named,
+    because the columns' lengths differ between asset sets.
     """
     jp = {k: np.asarray(v, dtype=np.float64) for k, v in (joint_positions or {}).items()}
     out: dict[str, Vec3] = {}
@@ -132,11 +165,22 @@ def anchors(root: Any, joint_positions: dict[str, Any] | None,
         node = pivots.get(f"clavicle_{side}_pivot")
         if node is not None:
             out[f"sternoclavicular_{side}"] = offset_of(node)
+        # The knuckles and the ball of the foot: where the phalanges start.
+        for key, prefix in (("knuckle", "finger"), ("ball", "toe")):
+            heads = [v for name, v in jp.items()
+                     if name.startswith(f"{prefix}_{side}_")
+                     and name.endswith("_prox")]
+            if heads:
+                out[f"{key}_{side}"] = np.mean(heads, axis=0)
 
     hips = [out[k] for k in ("hip_R", "hip_L") if k in out]
-    out["pelvis"] = (np.mean(hips, axis=0) if hips
-                     else np.array([0.0, 0.0, -80.0]))
+    out["pelvic_centre"] = (np.mean(hips, axis=0) if hips
+                            else np.array([0.0, 0.0, -80.0]))
 
+    out["lumbosacral"] = _lowest_of(pivots, "lumbar_spine_pivot_", offset_of,
+                                    np.array([0.0, 0.0, -76.0]))
+    out["thoracolumbar"] = _lowest_of(pivots, "thoracic_spine_pivot_", offset_of,
+                                      np.array([0.0, 0.0, -48.0]))
     cervical = [offset_of(n) for name, n in pivots.items()
                 if name.startswith("vertebrae_pivot_")]
     if cervical:
@@ -149,13 +193,23 @@ def anchors(root: Any, joint_positions: dict[str, Any] | None,
     return out
 
 
-class RegionTransforms:
-    """The resolved affine of every region, anchors already carried.
+def _lowest_of(pivots: dict, prefix: str, offset_of, fallback: Vec3) -> Vec3:
+    """The lowest pivot whose name starts with ``prefix``: a column's base."""
+    points = [offset_of(n) for name, n in pivots.items() if name.startswith(prefix)]
+    if not points:
+        return fallback
+    return points[int(np.argmin([float(p[2]) for p in points]))]
 
-    ``table`` maps a region name to a 3x3 matrix, and the trunk may also carry
-    a 3-vector ``offset``.  ``amount`` blends the whole fit toward identity, so
+
+class RegionTransforms:
+    """The resolved affine of every region, anchors and rotations carried.
+
+    ``table`` maps a region name to ``{"rotation": (rx, ry, rz) in degrees,
+    "scale": (sx, sy, sz), "offset": (x, y, z)}``; every key is optional and
+    defaults to no change.  ``amount`` blends the whole fit toward identity, so
     the GUI can show it part-applied and a test can check that zero changes
-    nothing.
+    nothing -- and it blends the *parameters*, not the matrices, so a
+    half-applied rotation is a half rotation rather than a squashed one.
     """
 
     def __init__(self, table: dict[str, dict], anchor_points: dict[str, Vec3],
@@ -163,30 +217,31 @@ class RegionTransforms:
         self._anchor = anchor_points
         self._amount = float(np.clip(amount, 0.0, 1.0))
         self._mat: dict[str, NDArray] = {}
+        self._rot: dict[str, NDArray] = {}
         self._src: dict[str, Vec3] = {}
         self._dst: dict[str, Vec3] = {}
-        eye = np.eye(3)
         for rd in REGIONS:
             entry = table.get(rd.name) or {}
-            m = np.asarray(entry.get("matrix", eye), dtype=np.float64).reshape(3, 3)
-            m = eye + self._amount * (m - eye)
+            local = rotation_matrix(
+                self._amount * np.asarray(
+                    entry.get("rotation", (0.0, 0.0, 0.0)), dtype=np.float64))
+            parent_rot = (np.eye(3) if rd.parent is None
+                          else self._rot[rd.parent])
+            rot = parent_rot @ local
+            scale = np.asarray(entry.get("scale", (1.0, 1.0, 1.0)),
+                               dtype=np.float64)
+            scale = 1.0 + self._amount * (scale - 1.0)
             src = anchor_points.get(rd.anchor)
             if src is None:                  # pragma: no cover - defensive
                 src = np.zeros(3)
             base = (src if rd.parent is None
                     else self.apply(rd.parent, src[None, :])[0])
-            # An offset moves the region bodily, on top of where its parent
-            # carried it.  The trunk needs one because it hangs from nothing;
-            # the head needs one because the skull is not parented to a
-            # cervical pivot -- it is a group of its own, and the
-            # atlanto-occipital "joint" here is a reference point, not a
-            # contact surface that a translation could open.
             off = np.asarray(entry.get("offset", (0.0, 0.0, 0.0)),
                              dtype=np.float64)
-            dst = base + self._amount * off
-            self._mat[rd.name] = m
+            self._rot[rd.name] = rot
+            self._mat[rd.name] = rot @ np.diag(scale)
             self._src[rd.name] = np.asarray(src, dtype=np.float64)
-            self._dst[rd.name] = np.asarray(dst, dtype=np.float64)
+            self._dst[rd.name] = base + self._amount * off
 
     @property
     def amount(self) -> float:
@@ -220,17 +275,16 @@ def blend_tables(male: dict[str, dict], female: dict[str, dict],
                  gender: float) -> dict[str, dict]:
     """One table per sex, lerped: the surface the fit targets is itself lerped."""
     g = float(np.clip(gender, 0.0, 1.0))
-    eye = np.eye(3)
     out: dict[str, dict] = {}
     for name in REGION_NAMES:
         a = male.get(name) or {}
         b = female.get(name) or {}
-        ma = np.asarray(a.get("matrix", eye), dtype=np.float64).reshape(3, 3)
-        mb = np.asarray(b.get("matrix", eye), dtype=np.float64).reshape(3, 3)
-        oa = np.asarray(a.get("offset", (0.0, 0.0, 0.0)), dtype=np.float64)
-        ob = np.asarray(b.get("offset", (0.0, 0.0, 0.0)), dtype=np.float64)
-        out[name] = {"matrix": (ma * (1.0 - g) + mb * g).tolist(),
-                     "offset": (oa * (1.0 - g) + ob * g).tolist()}
+        entry: dict[str, list[float]] = {}
+        for key, default in (("rotation", 0.0), ("scale", 1.0), ("offset", 0.0)):
+            va = np.asarray(a.get(key, (default,) * 3), dtype=np.float64)
+            vb = np.asarray(b.get(key, (default,) * 3), dtype=np.float64)
+            entry[key] = (va * (1.0 - g) + vb * g).tolist()
+        out[name] = entry
     return out
 
 

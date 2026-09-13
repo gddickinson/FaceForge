@@ -30,7 +30,7 @@ import numpy as np
 from numpy.typing import NDArray
 
 from faceforge.body.fit_regions import (
-    REGIONS, REGION_NAMES, RegionTransforms, anchors,
+    OFFSET_REGIONS, REGIONS, REGION_NAMES, RegionTransforms, anchors,
 )
 from faceforge.body.skeleton_fit import SkeletonFit, node_offset
 from faceforge.constants import CONFIG_DIR
@@ -44,42 +44,93 @@ logger = logging.getLogger(__name__)
 #: vertex lying exactly in the skin "contained"; the skin has thickness.
 MARGIN = 1.0
 
+#: Containment alone is not enough, and the failure is spectacular rather than
+#: subtle: left to minimise protrusion, the search swung both forearms across
+#: the body until the hands lay inside the thighs, where nothing sticks out of
+#: anything.  Measured, the fitted right wrist sat at x = -6.1 -- across the
+#: midline -- and the right fingertips between the knees.  "Inside the
+#: surface" is not "inside the matching part of the surface", and no
+#: protrusion measure can tell the difference.
+#:
+#: Two ways of saying "the matching part" were tried and both are worse.
+#: Tying each limb's distal end to the body mesh's own landmark for it fails
+#: because those landmarks are biased by how they are found: the "ankle" is
+#: the mean of a band taken from the *lateral* half of the leg, so it sits 13
+#: units out from the leg's axis, and pulling the ankle onto it dragged both
+#: feet clean out of the mesh -- 100% of the foot outside, a median of 8
+#: units.  Calibrating how deep a bone may sit from the skin that came with
+#: the skeleton fails because that mesh is not a hollow surface: 24,757 of its
+#: vertices lie inside a 12-unit column through the chest, so every depth
+#: measured against it comes out near zero.
+#:
+#: What is left is the simplest true statement about the job: this is a fit,
+#: not a reposing.  The whole misfit is 27.7 units at its very worst and 2.4
+#: at the median, so no bone has any business travelling much further than
+#: that.  A bone may move freely up to ``MOVE_FREE`` and pays beyond it.  The
+#: shoulder's real correction is 24 units and costs almost nothing; the
+#: degenerate wrist's 51 costs 48, which is more than the whole rest of the
+#: objective.
+MOVE_FREE = 20.0
+MOVE_PENALTY = 0.05
+
 #: Bounds on what a region may do to itself.  A skeleton that may shrink
-#: without limit fits any surface by vanishing.
-SCALE_RANGE = (0.70, 1.15)
-ROT_RANGE = 0.35                       # radians, ~20 degrees
+#: without limit fits any surface by vanishing.  The rotation bound is per
+#: region and *relative* to its parent, so a chain of five reaches much
+#: further than one link: the hand used to end against this bound because it
+#: had to express the whole arm's turn by itself.
+#: 0.70 was too tight, and the grid drawings said so before the numbers did:
+#: the ribcage's anteroposterior scale sat exactly on the bound while the
+#: sternum and costal cartilages still stood 4 to 5 units through the chest.
+#: The cadaver's chest is simply deeper than the MakeHuman figure's.
+SCALE_RANGE = (0.60, 1.20)
+ROT_RANGE = 20.0                       # degrees, relative to the parent
 
 #: How hard a region is held to its own shape.  Chosen so that a uniform 10%
-#: shrink costs about as much as leaving one unit of mean protrusion.
+#: shrink costs about as much as leaving one unit of mean protrusion.  The
+#: rotation penalty is small: turning a limb costs the skeleton nothing --
+#: a real one does it -- where scaling a bone changes what it is.
 SCALE_PENALTY = 30.0
-ROT_PENALTY = 4.0
+ROT_PENALTY = 0.0015                   # per squared degree
 
 #: Points sampled per region for the solve.  The final report uses the whole
 #: cloud; the search does not need it, and the cost is linear.
 SOLVE_POINTS = 300
 
+#: How much a region answers for the regions it carries, against its own bones.
+#:
+#: A region must answer for its descendants -- a thorax placed without regard
+#: to where it puts the arms is no use -- but not mostly for them.  Pooling
+#: the whole subtree into one mean, which is what this did first, made the
+#: thorax's own bones a thirteenth of its objective, and flattening the chest
+#: then cost more in the scale penalty than it saved: the sternum and costal
+#: cartilages were left standing 7 to 9 units out of the mesh's chest.
+#:
+#: Weighting each region's sample back up to its true vertex count fixed that
+#: and broke something worse, because vertex count is tessellation, not
+#: anatomy: the hand and fingers carry 10,000 vertices across their many small
+#: bones against the humerus's 400, so the arm's objective became the hand's,
+#: and the humerus and scapula were left 10 to 17 units out.
+#:
+#: So: a region's own bones are one half of its objective and everything it
+#: carries is the other half, each descendant region counting once.
+DESCENDANT_WEIGHT = 1.0
+
 SWEEPS = 4
 PASSES = 3
 
-#: Regions allowed to move bodily as well as deform.  The trunk hangs from
-#: nothing; the skull is a group of its own rather than a bone on a cervical
-#: pivot, so moving it opens no articulation.
-OFFSET_REGIONS = ("trunk", "head")
+#: Under a mirror in X, a scale is unchanged, a rotation vector is an axial
+#: vector and flips its Y and Z components, and a translation flips its X.
+MIRROR_ROTATION = np.array([1.0, -1.0, -1.0])
+MIRROR_OFFSET = np.array([-1.0, 1.0, 1.0])
 
 
-def rodrigues(v: NDArray) -> NDArray:
-    """Rotation matrix from a rotation vector."""
-    theta = float(np.linalg.norm(v))
-    if theta < 1e-12:
-        return np.eye(3)
-    k = np.asarray(v, dtype=np.float64) / theta
-    K = np.array([[0.0, -k[2], k[1]], [k[2], 0.0, -k[0]], [-k[1], k[0], 0.0]])
-    return np.eye(3) + np.sin(theta) * K + (1.0 - np.cos(theta)) * (K @ K)
-
-
-def matrix_of(params: NDArray) -> NDArray:
-    """``(sx, sy, sz, rx, ry, rz)`` -> the region's 3x3."""
-    return rodrigues(params[3:6]) @ np.diag(params[0:3])
+def mirror_of(region: str) -> str | None:
+    """The region on the other side, or None for a midline one."""
+    if region.endswith("_R"):
+        return region[:-2] + "_L"
+    if region.endswith("_L"):
+        return region[:-2] + "_R"
+    return None
 
 
 def subtree_map() -> dict[str, list[str]]:
@@ -108,6 +159,12 @@ class Solver:
         self.anchors = anchor_points
         self.subtree = subtree_map()
         rng = np.random.default_rng(0)
+        stray = set(regions.tolist()) - set(REGION_NAMES)
+        if stray:
+            raise SystemExit(
+                f"points landed in regions the solver does not know: {sorted(stray)}. "
+                "Every point must be fitted by something, or that part of the "
+                "skeleton is silently left where it is.")
         self.points: dict[str, NDArray] = {}
         for name in REGION_NAMES:
             p = pts[regions == name]
@@ -122,7 +179,8 @@ class Solver:
     # -- objective -----------------------------------------------------------
 
     def table(self) -> dict[str, dict]:
-        out = {n: {"matrix": matrix_of(self.params[n]).tolist()}
+        out = {n: {"scale": self.params[n][0:3].tolist(),
+                   "rotation": self.params[n][3:6].tolist()}
                for n in REGION_NAMES}
         for n in OFFSET_REGIONS:
             out[n]["offset"] = self.offsets[n].tolist()
@@ -131,29 +189,47 @@ class Solver:
     def cost(self, region: str) -> float:
         """Squared protrusion of everything ``region`` carries, plus its penalty."""
         t = RegionTransforms(self.table(), self.anchors, 1.0)
-        chunks = []
+        own, carried = 0.0, []
         for name in self.subtree[region]:
             p = self.points[name]
-            if len(p):
-                chunks.append(t.apply(name, p))
-        if not chunks:
-            return 0.0
-        d = self.depth(np.vstack(chunks))
-        out = np.maximum(d + MARGIN, 0.0)
+            if not len(p):
+                continue
+            moved = t.apply(name, p)
+            out = np.maximum(self.depth(moved) + MARGIN, 0.0)
+            travel = np.maximum(
+                np.linalg.norm(moved - p, axis=1) - MOVE_FREE, 0.0)
+            value = float(np.mean(out ** 2 + MOVE_PENALTY * travel ** 2))
+            if name == region:
+                own = value
+            else:
+                carried.append(value)
         q = self.params[region]
         penalty = (SCALE_PENALTY * float(np.sum((q[0:3] - 1.0) ** 2))
                    + ROT_PENALTY * float(np.sum(q[3:6] ** 2)))
-        return float(np.mean(out ** 2)) + penalty
+        if not carried:
+            return own + penalty
+        return own + DESCENDANT_WEIGHT * float(np.mean(carried)) + penalty
 
     # -- search --------------------------------------------------------------
 
     def solve_region(self, region: str, verbose: bool = True) -> float:
+        """Search one region's six numbers, mirroring them to the other side.
+
+        The body-surface mesh is symmetric and so is the skeleton, so solving
+        the two halves independently only lets them find different local
+        optima -- which they did: the right hand ended 6.8 units inside the
+        mesh's hand while the left was 44% outside it.  A midline region is
+        held on the midline for the same reason: it may lengthen, widen and
+        nod, but it may not twist or lean.
+        """
+        midline = mirror_of(region) is None
+        axes = (0, 1, 2, 3) if midline else (0, 1, 2, 3, 4, 5)
         base = self.cost(region)
         start = base
         steps = [0.06, 0.03, 0.015, 0.0075]
-        rot_steps = [0.10, 0.05, 0.025, 0.012]
+        rot_steps = [6.0, 3.0, 1.5, 0.75]
         for sweep in range(SWEEPS):
-            for axis in range(6):
+            for axis in axes:
                 step = steps[sweep] if axis < 3 else rot_steps[sweep]
                 lo, hi = (SCALE_RANGE if axis < 3
                           else (-ROT_RANGE, ROT_RANGE))
@@ -164,10 +240,12 @@ class Solver:
                     if trial == current:
                         continue
                     self.params[region][axis] = trial
+                    self._mirror(region)
                     c = self.cost(region)
                     if c < best_cost:
                         best, best_cost = trial, c
                 self.params[region][axis] = best
+                self._mirror(region)
                 base = best_cost
             if region in OFFSET_REGIONS:
                 base = self._sweep_offset(region, base, steps[sweep] * 30.0)
@@ -175,13 +253,25 @@ class Solver:
             q = self.params[region]
             print(f"  {region:<12} cost {start:8.3f} -> {base:8.3f}   "
                   f"scale {q[0]:.3f},{q[1]:.3f},{q[2]:.3f}  "
-                  f"rot {np.degrees(q[3]):+5.1f},{np.degrees(q[4]):+5.1f},"
-                  f"{np.degrees(q[5]):+5.1f}")
+                  f"rot {q[3]:+6.1f},{q[4]:+6.1f},{q[5]:+6.1f}")
         return base
 
+    def _mirror(self, region: str) -> None:
+        """Copy a side region's parameters to its mirror image."""
+        other = mirror_of(region)
+        if other is None:
+            return
+        q = self.params[region]
+        self.params[other][0:3] = q[0:3]
+        self.params[other][3:6] = q[3:6] * MIRROR_ROTATION
+        if region in OFFSET_REGIONS and other in self.offsets:
+            self.offsets[other] = self.offsets[region] * MIRROR_OFFSET
+
     def _sweep_offset(self, region: str, base: float, step: float) -> float:
+        # A midline region's offset stays on the midline.
         offset = self.offsets[region]
-        for axis in range(3):
+        axes = (1, 2) if mirror_of(region) is None else (0, 1, 2)
+        for axis in axes:
             current = offset[axis]
             best, best_cost = current, base
             for delta in (-step, step, -2 * step, 2 * step):
@@ -194,9 +284,12 @@ class Solver:
         return base
 
     def solve(self) -> dict[str, dict]:
+        """Parents before children, right side only: the left is its mirror."""
         for p in range(PASSES):
             print(f"pass {p + 1}/{PASSES}")
             for rd in REGIONS:
+                if rd.name.endswith("_L"):
+                    continue
                 self.solve_region(rd.name)
         return self.table()
 
@@ -269,10 +362,12 @@ def main(argv: list[str] | None = None) -> int:
     print(f"solved in {time.time() - t0:.0f}s")
 
     sex = "female" if args.gender >= 0.5 else "male"
-    payload = {"version": 1,
-               "_comment": "Per-region 3x3 matrices putting the skeleton "
-                           "inside the body-surface mesh; solved by "
-                           "tools/fit_skeleton_to_skin.py.",
+    payload = {"version": 2,
+               "_comment": "Per-region rotation (degrees, relative to the "
+                           "parent region), per-axis scale and, for the "
+                           "pelvis and head, an offset: the transform that "
+                           "puts the skeleton inside the body-surface mesh. "
+                           "Solved by tools/fit_skeleton_to_skin.py.",
                "male": {}, "female": {}}
     if args.out.exists():
         try:

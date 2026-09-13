@@ -14,7 +14,7 @@ from typing import Any, Iterable
 import numpy as np
 from numpy.typing import NDArray
 
-from faceforge.body.fit_regions import SKIP_SUBTREES, region_of
+from faceforge.body.fit_regions import ROOT_REGION, SKIP_SUBTREES, region_of
 
 #: Vertices sampled per bone mesh.  The skeleton has ~200 of them, so this is
 #: a cloud of order 10^5 -- enough that a percentile is stable, small enough
@@ -35,7 +35,7 @@ def bone_points(root: Any, per_bone: int = PER_BONE, seed: int = 0,
     pts: list[NDArray] = []
     regions: list[str] = []
     names: list[str] = []
-    stack: list[tuple[Any, str, NDArray]] = [(root, "trunk", np.zeros(3))]
+    stack: list[tuple[Any, str, NDArray]] = [(root, ROOT_REGION, np.zeros(3))]
     while stack:
         node, region, offset = stack.pop()
         for child in node.children:

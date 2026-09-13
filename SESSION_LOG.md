@@ -935,3 +935,78 @@ nothing else, and renders byte-identically with the fit on or off.
 hands end against the ±20° rotation bound; the lerp between the two solved
 tables is not the fit of the lerped surface, and nothing checks it.
 `docs/skeleton_fit.md` has the full measurements.
+
+## 2026-09-12 (later still) — The fit learns to pose, and the drawings correct it
+
+**Asked.** Can the skeleton be *posed* to fit the mesh -- arms rotated and
+placed -- and can bones be reshaped further per sex?  And, if the solver keeps
+falling short, look at the model myself on a grid and fit it by hand.
+
+**Found, on inspection.** Each region's rotation was absolute in body
+coordinates, so a turn at the shoulder moved the elbow but left the forearm
+pointing where it was: the arm bent instead of swinging, and the hand was the
+one region ending against the rotation bound because it had to express the
+whole arm's turn alone.
+
+**Built.** Rotations now compose down the chain the way a pose does, and a
+region's own rotation is a correction relative to its parent. 17 regions
+became 23 -- pelvis, lumbar and thorax separated, and the knuckles and the
+ball of the foot made a break between hand and fingers, foot and toes. The
+left half is the mirror of the right and the midline regions may not twist.
+`tools/inspect_skeleton_fit.py` draws the whole thing orthographically on a
+labelled grid in body units.
+
+**Four things the drawings caught that the numbers could not.**
+
+*The arms folded into the thighs.* Free to minimise protrusion, the search
+swung both forearms across the body until the hands lay inside the thighs,
+where nothing sticks out of anything: the fitted right wrist at x = -6.1,
+across the midline, fingertips between the knees -- and containment called it
+perfect. "Inside the surface" is not "inside the matching part of it".
+
+*Landmarks cannot say which part.* Tethering each limb's distal end to the
+mesh's own landmark for it made things worse, because the "ankle" landmark is
+the mean of a band from the lateral half of the leg and sits 13 units off the
+leg's axis: both feet were dragged clean out of the mesh, 100% outside at a
+median of 8. Calibrating depth from the skin that came with the skeleton also
+fails -- that mesh is not hollow, 24,757 of its vertices lie inside a 12-unit
+column through the chest.
+
+*What works is a travel limit.* This is a fit, not a reposing: the whole
+misfit is 27.7 units at worst, so a bone moves 20 freely and pays beyond. The
+shoulder's real 24-unit correction costs almost nothing; the degenerate
+wrist's 51 costs more than the rest of the objective.
+
+*A region must answer for its own bones.* Pooled over its whole subtree, the
+thorax's own bones were a thirteenth of its objective and the chest wall was
+left standing 7 to 9 units through the skin. Weighting by vertex count fixed
+that and broke the arm, because vertex count is tessellation, not anatomy: the
+hand's 10,000 vertices drowned the humerus's 400 and the scapula was left 17
+units out. Half its own, half what it carries.
+
+**Hand-tuned from the drawings.** The ribcage's anteroposterior scale was
+sitting exactly on its lower bound with the sternum still 4 to 5 units proud
+of the chest, so the bound went from 0.70 to 0.60 and the solver settled at
+0.648. The cadaver's chest is deeper than the MakeHuman figure's.
+
+**Measured.** Male 65.7% to 27.1% outside, median +2.42 to -1.13, p95 11.38 to
+2.07, worst 27.7 to 7.7. Female 78.4% to 30.2%, p95 8.60 to 1.71. Both beat
+the first shipped fit (35.4%, p95 2.98) on every measure, and the two halves
+now match. Muscle edge stretch: the field's neighbourhood went 48/10 to 64/16,
+worst p99 2.154 to 1.986. The skin that came with the skeleton still renders
+byte-identically with the fit on or off.
+
+**One regression, caught by the GUI budget.** The new checkbox took 2.65 s
+against the 1.50 s responsiveness budget, all of it sampling the displacement
+field on its lattice. The field is now built on first use rather than on
+toggle -- 2.4 s to 0.09 s with nothing loaded -- and the lattice went from 2
+units to 6. Coarser is better on both counts, because interpolating an
+already-smooth field more coarsely only smooths it further: with skin and two
+muscle layers loaded the toggle went 2.01 s to 1.45 s and the worst muscle p99
+went 1.924 to 1.746. (`test_no_interaction_blocks_the_render_thread` still
+fails when the whole UI suite runs in one process, on the pre-existing 71 s
+"Run Diagnostic" button; it was failing that way before this work.)
+
+**Still open.** The skull's crown, about 5 units. The anterior chest wall and
+the upper thoracic spinous processes pull opposite ways and share one matrix.
+The thumb, which the mesh's mitten hand has no room for.
