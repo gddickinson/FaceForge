@@ -96,7 +96,8 @@ def apply(root: Any, gender: float, exclude: set[int] | None = None) -> int:
     return changed
 
 
-def seat_on_neck(root: Any, rest_of, live_of) -> float:
+def seat_on_neck(root: Any, rest_of, live_of,
+                 exclude: set[int] | None = None) -> float:
     """Move the neck and head down by however far the thoracic column shortened.
 
     Two things conspire to leave the head floating.  The skull is scaled about
@@ -111,11 +112,13 @@ def seat_on_neck(root: Any, rest_of, live_of) -> float:
     height from 0.95 to 0.91 moved stature by 0.002, because the trunk above
     T1 simply stayed where it was.
 
-    So the neck and the head are put back on top of the column afterwards, by
-    the distance its topmost joint moved.  ``rest_of`` and ``live_of`` give a
-    node's position in body coordinates before and after.  Returns how far the
-    head moved.
+    What is moved is the bones inside the groups, not the group nodes.  The
+    soft-tissue warp is built by comparing each bone's captured rest position
+    with where it ends up, and a group node's own position is read as rest
+    either way -- so moving the group would carry the skull and leave the face
+    and the neck muscles behind.
     """
+    skip = exclude or set()
     groups = []
     thoracic = []
     stack = [root]
@@ -134,15 +137,34 @@ def seat_on_neck(root: Any, rest_of, live_of) -> float:
     live = [np.asarray(live_of(n), dtype=np.float64) for n in thoracic]
     top = int(np.argmax([p[2] for p in rest]))
     shift = live[top] - rest[top]
+    if float(np.linalg.norm(shift)) < 1e-9:
+        return 0.0
 
+    moved = 0
     for group in groups:
-        base = getattr(group, "_seated_rest_position", None)
-        if base is None:
-            base = np.asarray(group.position, dtype=np.float64).copy()
-            group._seated_rest_position = base
-        moved = base + shift
-        group.set_position(float(moved[0]), float(moved[1]), float(moved[2]))
-    if float(np.linalg.norm(shift)) > 1e-9:
-        logger.info("Neck and head seated on the column: moved %s",
-                    np.round(shift, 2))
+        # Each subtree is moved once, at the highest pivot or bone in it:
+        # everything below a moved pivot comes with it.
+        stack = [(group, False)]
+        while stack:
+            node, carried = stack.pop()
+            done = carried
+            if not carried:
+                if "pivot" in (getattr(node, "name", "") or "").lower():
+                    node.set_position(*(np.asarray(node.position,
+                                                   dtype=np.float64) + shift))
+                    done = True
+                    moved += 1
+                else:
+                    mesh = getattr(node, "mesh", None)
+                    if mesh is not None and id(mesh) not in skip:
+                        pts = np.asarray(mesh.geometry.positions,
+                                         dtype=np.float64).reshape(-1, 3) + shift
+                        flat = pts.reshape(-1).astype(np.float32)
+                        mesh.geometry.positions = flat
+                        mesh.rest_positions = flat.copy()
+                        mesh.needs_update = True
+                        moved += 1
+            stack.extend((child, done) for child in node.children)
+    logger.info("Neck and head seated on the column: %d parts moved %s",
+                moved, np.round(shift, 2))
     return float(np.linalg.norm(shift))

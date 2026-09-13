@@ -49,7 +49,7 @@ from numpy.typing import NDArray
 from faceforge.body.skeleton_field import (
     control_points, displacement_warp, rest_offset, sampled_warp,
 )
-from faceforge.body import skull_morph
+from faceforge.body import joint_angles, skull_morph
 from faceforge.body.skeleton_joints import close_articulations
 
 logger = logging.getLogger(__name__)
@@ -294,7 +294,10 @@ class SkeletonMorph:
         skull_morph.seat_on_neck(
             root,
             lambda n: rest_offset(n, self._backup.pivot_positions),
-            self._node_offset)
+            self._node_offset, self._exclude)
+        # Two features that are angles rather than proportions, so no amount
+        # of scaling produces them; see :mod:`faceforge.body.joint_angles`.
+        stats["angles"] = joint_angles.apply(root, gender, self._exclude)
 
         if joint_positions is not None:
             self._update_joint_positions(root, joint_positions)

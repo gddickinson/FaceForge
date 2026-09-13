@@ -40,6 +40,18 @@ PUBLISHED: dict[str, tuple[float, float, str]] = {
     "bigonial breadth":   (11.0, 10.1, "cm"),
 }
 
+#: Angles, in degrees, measured in the frontal plane and signed so that
+#: positive is lateral deviation of the distal segment.  The published figures
+#: are the carrying angle at the elbow and genu valgum at the knee.
+#:
+#: Only the difference between the sexes is modelled; the absolute angles are
+#: the donor's own anatomy, and asymmetric as a real body's are.  So what is
+#: checked is the change, not the value.
+ANGLES: tuple[tuple[str, str, str, str, float], ...] = (
+    ("carrying angle", "shoulder", "elbow", "wrist", 2.0),
+    ("knee valgus", "hip", "knee", "ankle", 2.0),
+)
+
 #: Proportions, which are what a reader actually recognises as male or female.
 #: Each is (numerator, denominator, male reference, female reference).
 RATIOS: tuple[tuple[str, str, str, float, float], ...] = (
@@ -69,6 +81,31 @@ def bone_points_by_name(root) -> dict[str, NDArray]:
                 out[name] = p[:geo.vertex_count] + here
             stack.append((child, here))
     return out
+
+
+def frontal_deviation(joints: dict, proximal: str, joint: str, distal: str,
+                      side: str) -> float | None:
+    """Signed angle the distal segment makes with the proximal one, in degrees.
+
+    In the frontal plane, positive laterally.  Unsigned it is useless here:
+    the arm hangs abducted in this skeleton's rest pose, so the forearm starts
+    out deviating *medially* from the humerus, and a measure that only knows
+    the size of the deviation reads an increase in the carrying angle as a
+    decrease.
+    """
+    keys = [f"{n}_{side}" for n in (proximal, joint, distal)]
+    if any(k not in joints for k in keys):
+        return None
+    a, b, c = (np.asarray(joints[k], dtype=np.float64) for k in keys)
+    u = (b - a)[[0, 2]]
+    v = (c - b)[[0, 2]]
+    nu, nv = np.linalg.norm(u), np.linalg.norm(v)
+    if nu < 1e-9 or nv < 1e-9:
+        return None
+    u, v = u / nu, v / nv
+    lateral = 1.0 if side == "R" else -1.0
+    return float(np.degrees(np.arctan2(lateral * (u[0] * v[1] - u[1] * v[0]),
+                                       float(u @ v))))
 
 
 def span(points: NDArray, axis: int) -> float:
@@ -117,6 +154,12 @@ def measure(bones: dict[str, NDArray], joints: dict) -> dict[str, float]:
             out["bizygomatic breadth"] = span(face, 0)
     if "jaw" in bones:
         out["bigonial breadth"] = span(bones["jaw"], 0)
+
+    for label, proximal, joint, distal, _delta in ANGLES:
+        for side in ("R", "L"):
+            angle = frontal_deviation(joints, proximal, joint, distal, side)
+            if angle is not None:
+                out[f"{label} {side}"] = angle
     return out
 
 
@@ -147,6 +190,17 @@ def report(male: dict[str, float], female: dict[str, float],
         m = male[num] / male[den]
         f = female[num] / female[den]
         print(f"{label:<24}{m:>9.3f}{m_ref:>11.3f}{f:>9.3f}{f_ref:>11.3f}")
+
+    print(f"\n{'angle':<18}{'side':>5}{'male':>8}{'female':>9}"
+          f"{'change':>9}{'published':>11}")
+    for label, proximal, joint, distal, delta in ANGLES:
+        for side in ("R", "L"):
+            m = male.get(f"{label} {side}")
+            f = female.get(f"{label} {side}")
+            if m is None or f is None:
+                continue
+            print(f"{label:<18}{side:>5}{m:>8.1f}{f:>9.1f}{f - m:>+9.1f}"
+                  f"{delta:>+11.1f}")
 
     print(f"\nworst ratio error {worst:+.3f}"
           + (f"; off by more than {tolerance:.3f}: {', '.join(off)}"
