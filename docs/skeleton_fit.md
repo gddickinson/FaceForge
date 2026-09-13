@@ -213,45 +213,99 @@ fingers and toes.
 Moving the joints and routing that through the articulated skinning tears the
 skin at every chain boundary -- 27,747 over-stretched edges, measured for the
 sex morph -- so the soft tissue is carried by a displacement field instead.
-Two details are specific to this one.
+Getting that field right took four attempts, and each failure is worth
+recording because each one looked fine in the numbers that were being watched
+at the time.
 
-**The field is an inverse-distance blend, not a spline.**  The sex morph uses a
-thin-plate spline, which extrapolates outside the hull of its control points; a
-fit that turns the shoulder girdle by eight degrees made it extrapolate hard,
-and the trapezius and deltoid came away from the thorax in wings.  An
-inverse-distance blend of displacements actually measured on the bones is
-bounded by the largest of them wherever it is evaluated.  Its neighbour count
-and smoothing were chosen on the worst muscle, the quadriceps, which span the
-hip where two regions' transforms differ most:
+**A thin-plate spline**, as the sex morph uses, is an interpolant: outside the
+hull of its control points it extrapolates, and a fit that turns the shoulder
+girdle by eight degrees made it extrapolate hard.  The trapezius and deltoid
+came away from the thorax in wings.
 
-| neighbours / smoothing | worst p99 stretch | median p99 |
+**A blend of the displacements** is bounded -- every value is a convex
+combination of displacements that really happened -- but it cannot extrapolate
+a *scale*.  Shrink a femur by a tenth and the blend carries the bone's own
+surface correctly, while a muscle eight units outside it barely moves.
+Rendered, the quadriceps ballooned out past the leg, 15 units through the skin
+where they had been 4, and no neighbourhood or smoothing changed it.
+
+**A blend of the region matrices** extrapolates correctly but is not closed
+under averaging: a weighted mean of two rotation matrices is not a rotation,
+and with a forearm turned 92 degrees the averages collapse.  The worst
+muscle's 99th-percentile edge stretch went from 2.21 to 5.37.
+
+**A blend of where each region puts the point** is what it does now -- each
+region's affine applied, the results mixed.  Every value is a convex
+combination of positions each of which is correct, and a scale extrapolates
+because the affine does.  Two guards make it safe:
+
+* *No region may move a point further than it moved its own bones.*  An affine
+  evaluated far outside its region extrapolates wildly.
+* *Influence is limited by distance along the region tree, not through space.*
+  The finger bones hang beside the thigh, close enough to take 31% of the
+  weight on the quadriceps and seven steps away from them in the skeleton.
+  Carrying that weight, and with it a 92-degree pronation extrapolated 30
+  units, was the whole of a 16-unit error.
+
+| neighbours / smoothing | worst p99 stretch | quadriceps out |
 |---|---|---|
-| 16 / 3 | 3.300 | 1.193 |
-| 32 / 6 | 2.657 | 1.184 |
-| 48 / 10 | 2.154 | 1.170 |
-| 64 / 16 | **1.986** | 1.187 |
-| 96 / 30 | 1.973 | 1.178 |
+| 64 / 16 | 2.148 | 3.44 |
+| 32 / 8 | 1.944 | 4.17 |
+| 16 / 3 | 1.963 | 1.35 |
+| **32 / 4** | **1.611** | **1.17** |
 
 Sampling the field on its lattice is the whole cost of switching the option
-on, and a coarse lattice is better on both counts, because interpolating an
-already-smooth field more coarsely only smooths it further:
+on, and it is deferred until a mesh actually asks to be moved, so the toggle
+costs 0.09 s with no soft tissue loaded.
 
-| lattice spacing | toggle | worst p99 stretch | median p99 |
-|---|---|---|---|
-| 3.0 | 2.01 s | 1.924 | 1.159 |
-| 4.5 | 1.54 s | 1.805 | 1.163 |
-| 6.0 | **1.45 s** | **1.746** | **1.137** |
+**The skin that came with the skeleton is not carried at all.**  It was
+scanned from these bones and already fits them.  Dragging it onto the surface
+mesh's proportions is the distortion the whole option exists to avoid, and it
+is plainly visible: the carried skin comes out a head shorter and broad in the
+shoulders.  So it follows the sex morph and nothing else, and renders
+byte-identically with the fit on or off.
 
-It is also deferred until a mesh actually asks to be moved, so switching the
-option on with no soft tissue loaded costs 0.09 s rather than 2.4.
+## Does the soft tissue still fit?
 
-**The skin that came with the skeleton is not carried at all.**  It was scanned
-from these bones and already fits them.  Dragging it onto the surface mesh's
-proportions is the distortion the whole option exists to avoid, and it is
-plainly visible: the carried skin comes out a head shorter and broad in the
-shoulders.  So it follows the sex morph and nothing else, and the bones simply
-sit a little further inside it.  With the fit on or off, that skin renders
-byte-identically.
+`tools/fit_tissue_check.py` loads every layer and measures three things per
+mesh: edge stretch against its own pre-fit rest pose, how far its centroid
+moved relative to the nearest bone's, and how far it protrudes through the
+body surface -- against a control taken before the fit, because the two
+bodies disagreed about a good deal before anything moved.
+
+Furthest any mesh in the layer protrudes through the surface, before and
+after:
+
+| layer | male before | male after | female before | female after |
+|---|---|---|---|---|
+| arm muscles | 19.3 | 6.1 | 16.7 | 3.8 |
+| back muscles | 18.9 | 5.3 | 16.2 | 3.4 |
+| shoulder muscles | 24.1 | 4.7 | 20.3 | 4.3 |
+| torso muscles | 17.4 | 8.2 | 15.0 | 4.0 |
+| hip muscles | 10.2 | 3.2 | 9.5 | -0.5 |
+| leg muscles | 14.8 | 10.5 | 8.0 | 2.9 |
+| hand muscles | 7.1 | 1.8 | 7.7 | 1.7 |
+| foot muscles | 14.0 | 2.2 | 8.2 | 1.1 |
+| organs | 14.8 | 4.2 | 15.0 | 7.2 |
+| vasculature | 11.3 | 4.4 | 10.5 | 2.5 |
+| ligaments | 11.1 | 2.3 | 6.3 | 3.5 |
+
+Every layer is better off than it was, at both sexes.  32 meshes of 442 are
+past some limit at gender 0 and 14 at gender 1.
+
+## The female changes still happen
+
+The sex morph's effect on the soft tissue is the same whether or not the fit
+is in force, which is what it should be: the fit is about where the bones are,
+not about what sex the body is.
+
+| | fit off | fit on |
+|---|---|---|
+| muscles, median displacement | 3.11 | 3.32 |
+| muscles, bounding volume | x0.621 | x0.609 |
+| organs and other soft tissue | 1.81 | 2.05 |
+| organs, bounding volume | x0.703 | x0.669 |
+| the skeleton's own skin | 3.23, x0.766 | 3.23, x0.766 |
 
 ## A defect this found
 
@@ -267,16 +321,18 @@ switched off entirely.
 
 ## Still open
 
+* The male adductors stand 10.5 units through the medial thigh, where they
+  stood 2.7 before.  The female's do not.  They span the pelvis and the thigh,
+  two regions one step apart, and the blend between them does not suit.
+* The digastric intermediate tendons stretch 4.5x at the 99th percentile.
+  They are small and they end up inside, but that is a tear.
 * The crown of the skull stands about 3 units proud of the scalp.
 * The thumb: the mesh's hand is a mitten and has nowhere to put one.
-* The fingers and toes graze the skin along their length rather than sitting
-  inside it.
-* Dropping the pelvis 10 units puts 2.2x edge stretch into the adductors at
-  the 99th percentile, against 1.75 before.  It is the price of the posture
-  change and it is in the soft tissue, not the bone.
-* The fit is solved against the male and the female surface separately and
-  lerped between them.  Nothing checks that the lerp of two fits is the fit of
-  the lerped surface, and it will not be exactly.
+* The fit is solved against the male surface and the female surface
+  separately.  The pose is shared -- sexual dimorphism is proportion, not
+  posture, and left free the female solve folded the arm inward and buried the
+  hand in the torso, 34.5 units from where the mesh keeps it -- but nothing
+  checks that the lerp of two fits is the fit of the lerped surface.
 * The joint DOF axes are body axes, so a limb the fit has turned -- and the
   forearm is now turned 92 degrees -- is animated about an axis no longer
-  perpendicular to it.  This matters more than it did.
+  perpendicular to it.

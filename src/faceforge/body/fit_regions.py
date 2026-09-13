@@ -160,6 +160,26 @@ SKIP_SUBTREES: frozenset[str] = frozenset({
 ROOT_REGION = "pelvis"
 
 
+def tree_distance() -> NDArray:
+    """Steps between every pair of regions along the tree, as an (R, R) array.
+
+    Proximity in space is not proximity in the body: the finger bones hang
+    beside the thigh, close enough to be among its nearest neighbours and
+    seven steps away from it in the skeleton.
+    """
+    n = len(REGION_NAMES)
+    index = {name: i for i, name in enumerate(REGION_NAMES)}
+    dist = np.full((n, n), 1e6)
+    np.fill_diagonal(dist, 0.0)
+    for rd in REGIONS:
+        if rd.parent is not None:
+            a, b = index[rd.name], index[rd.parent]
+            dist[a, b] = dist[b, a] = 1.0
+    for k in range(n):                       # Floyd-Warshall; n is 23
+        dist = np.minimum(dist, dist[:, k][:, None] + dist[k, :][None, :])
+    return dist
+
+
 def region_of(name: str, parent_region: str) -> str:
     """The region a node belongs to, given its name and its parent's region."""
     for pattern, target in _MEMBERSHIP:
@@ -280,6 +300,7 @@ class RegionTransforms:
         self._amount = float(np.clip(amount, 0.0, 1.0))
         self._mat: dict[str, NDArray] = {}
         self._rot: dict[str, NDArray] = {}
+        self._scale: dict[str, Vec3] = {}
         self._src: dict[str, Vec3] = {}
         self._dst: dict[str, Vec3] = {}
         posture = posture_rotations(anchor_points)
@@ -308,6 +329,7 @@ class RegionTransforms:
             off = (np.asarray(entry.get("offset", (0.0, 0.0, 0.0)),
                               dtype=np.float64) + posture_offset)
             self._rot[rd.name] = rot
+            self._scale[rd.name] = scale
             self._mat[rd.name] = rot @ np.diag(scale)
             self._src[rd.name] = np.asarray(src, dtype=np.float64)
             self._dst[rd.name] = base + self._amount * off
@@ -318,6 +340,14 @@ class RegionTransforms:
 
     def matrix(self, region: str) -> NDArray:
         return self._mat.get(region, np.eye(3))
+
+    def rotation(self, region: str) -> NDArray:
+        """The region's accumulated rotation, without its scale."""
+        return self._rot.get(region, np.eye(3))
+
+    def scale(self, region: str) -> Vec3:
+        """The region's per-axis scale, without its rotation."""
+        return self._scale.get(region, np.ones(3))
 
     def anchor_pair(self, region: str) -> tuple[Vec3, Vec3]:
         """The region's anchor before and after the fit."""

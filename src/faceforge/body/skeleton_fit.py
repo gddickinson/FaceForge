@@ -38,8 +38,11 @@ from numpy.typing import NDArray
 
 from faceforge.body.fit_regions import (
     REGION_NAMES, ROOT_REGION, RegionTransforms, SKIP_SUBTREES, anchors,
-    blend_tables, region_of,
+    blend_tables, region_of, tree_distance,
 )
+
+#: Region name to its column in the per-query weight table.
+REGION_INDEX: dict[str, int] = {n: i for i, n in enumerate(REGION_NAMES)}
 from faceforge.body.skeleton_field import sampled_warp
 from faceforge.core.config_loader import load_config
 
@@ -55,40 +58,34 @@ CONFIG_NAME = "skeleton_fit.json"
 #: The centroid alone is not enough: a long bone that turns as well as scales
 #: displaces its two ends in opposite directions, and a single point in the
 #: middle records neither.
-SAMPLES_PER_BONE = 24
+SAMPLES_PER_BONE = 120
 
 #: Control points blended per query point, and the distance added to every
-#: weight.  The smoothing is what keeps a vertex sitting on a bone from
-#: following that one bone rigidly while its neighbour follows another.
+#: weight.  Measured on the muscle layers, as the worst muscle's 99th
+#: percentile edge stretch and how far the quadriceps stand through the skin
+#: (they stood 3.86 out before the fit touched them):
 #:
-#: Measured on the muscle layers, as the 99th-percentile edge stretch the fit
-#: puts into the worst muscle -- the quadriceps, which span the hip, where two
-#: regions' transforms differ most:
-#:
-#:     neighbours / smoothing   worst p99   median p99
-#:     16 / 3                     3.300        1.193
-#:     32 / 6                     2.657        1.184
-#:     48 / 10                    2.154        1.170
-#:     64 / 16                    1.986        1.187
-#:     96 / 30                    1.973        1.178
-#:
-#: Past 64 the worst case stops falling and every mesh starts paying a little,
-#: which is the rise in the median.  As shipped, 64 neighbours on the lattice
-#: below: worst p99 1.746, median 1.137.
-FIELD_NEIGHBOURS = 64
-FIELD_SMOOTHING = 16.0
+#:     neighbours / smoothing   worst p99   thigh out
+#:     64 / 16                    2.148        3.44
+#:     32 / 8                     1.944        4.17
+#:     16 / 3                     1.963        1.35
+#:     24 / 4                     1.641        1.23
+#:     32 / 4                     1.611        1.17
+FIELD_NEIGHBOURS = 32
+FIELD_SMOOTHING = 4.0
+
+#: How many steps along the region tree a control point may be from the
+#: region a query point actually sits in.  Space is not the body: the finger
+#: bones hang beside the thigh, close enough to take 31% of the weight on the
+#: quadriceps and seven steps away in the skeleton.  Carrying that weight, and
+#: with it a 92-degree pronation extrapolated 30 units, put the quadriceps 16
+#: units through the skin.
+REGION_REACH = 2.0
 
 #: Lattice the field is sampled on.  Sampling it is the whole cost of
-#: switching the option on, and a coarse lattice is better on both counts:
-#: the field is already smoothed over 64 control points spread across a limb,
-#: so interpolating it more coarsely only smooths it further.  Measured on the
-#: muscle layers, toggle time against the worst muscle's p99 edge stretch:
-#:
-#:     spacing   toggle   worst p99   median p99
-#:     3.0        2.01 s    1.924        1.159
-#:     4.5        1.54 s    1.805        1.163
-#:     6.0        1.45 s    1.746        1.137
-FIELD_LATTICE = 6.0
+#: switching the option on; 3 units is fine enough that the lattice is not
+#: what limits the answer.
+FIELD_LATTICE = 3.0
 
 
 #: The skin that came with the skeleton.  It was scanned from these bones and
@@ -174,6 +171,7 @@ class SkeletonFit:
         self._applied = False
         self._amount = 0.0
         self._control: tuple[NDArray, NDArray] | None = None
+        self._transforms: Any = None
 
     # -- state ---------------------------------------------------------------
 
@@ -240,6 +238,7 @@ class SkeletonFit:
         self._applied = False
         self._amount = 0.0
         self._control = None
+        self._transforms = None
         logger.info("Skeleton fit removed")
 
     # -- apply ---------------------------------------------------------------
@@ -271,12 +270,14 @@ class SkeletonFit:
 
         stats = {"bones": 0, "pivots": 0}
         src: list[Vec3] = []
-        dst: list[Vec3] = []
+        dst: list[int] = []
         self._walk_apply(root, transforms, ROOT_REGION, np.zeros(3), np.zeros(3),
                          exclude or set(), stats, src, dst)
         self._applied = True
         self._amount = amount
-        self._control = ((np.asarray(src), np.asarray(dst)) if src else None)
+        self._transforms = transforms
+        self._control = ((np.asarray(src), np.asarray(dst, dtype=np.int64))
+                         if src else None)
         if joint_positions is not None:
             self._update_joint_positions(root, joint_positions)
         logger.info("Skeleton fitted to the body surface at gender %.2f "
@@ -302,7 +303,7 @@ class SkeletonFit:
                 child.set_position(float(local[0]), float(local[1]), float(local[2]))
                 stats["pivots"] += 1
                 src.append(rest_body)
-                dst.append(new_body)
+                dst.append(REGION_INDEX[child_region])
             else:
                 new_body = new_parent + np.asarray(child.position, dtype=np.float64)
 
@@ -316,7 +317,7 @@ class SkeletonFit:
 
     def _transform_mesh(self, mesh: Any, transforms: RegionTransforms,
                         region: str, rest_body: Vec3, new_body: Vec3,
-                        src: list[Vec3], dst: list[Vec3]) -> bool:
+                        src: list[Vec3], dst: list[int]) -> bool:
         rest = self._rest.mesh_positions.get(id(mesh))
         if rest is None:
             authored = (mesh.rest_positions if mesh.rest_positions is not None
@@ -328,8 +329,9 @@ class SkeletonFit:
         pts = np.asarray(rest, dtype=np.float64).reshape(-1, 3) + rest_body
         moved = transforms.apply(region, pts)
         step = max(1, len(pts) // SAMPLES_PER_BONE)
-        src.extend(pts[::step])
-        dst.extend(moved[::step])
+        sample = pts[::step]
+        src.extend(sample)
+        dst.extend([REGION_INDEX[region]] * len(sample))
         flat = (moved - new_body).reshape(-1).astype(np.float32)
         mesh.geometry.positions = flat
         mesh.rest_positions = flat.copy()
@@ -374,27 +376,41 @@ class SkeletonFit:
         It is *not* the same field.  The sex morph uses a thin-plate spline,
         which is an interpolant: outside the hull of its control points it
         extrapolates, and a fit that turns the shoulder girdle by eight
-        degrees made it extrapolate hard.  Rendered, the trapezius and deltoid
-        came away from the thorax in wings and the pectorals tore open.  An
-        inverse-distance blend of the displacements actually measured on the
-        bones cannot do that: every value it returns is a convex combination
-        of displacements that really happened, so the field is bounded by the
-        largest of them wherever it is evaluated.
+        degrees made it extrapolate hard -- the trapezius and deltoid came
+        away from the thorax in wings.
+
+        Nor does it blend the displacements themselves, which was the next
+        thing tried.  A displacement blend cannot extrapolate a *scale*: shrink
+        a femur by a tenth and the blend carries the bone's own surface
+        correctly, but a muscle eight units outside it barely moves, because
+        every measured displacement nearby is on the bone.  Rendered, the
+        quadriceps ballooned out past the leg -- 15 units through the skin
+        where they had been 4 -- and no neighbourhood or smoothing changed it.
+
+        Nor a blend of the region *matrices*, which extrapolates correctly but
+        is not closed: a weighted average of two rotation matrices is not a
+        rotation, and with a forearm turned 92 degrees the averages collapse.
+        The worst muscle's 99th-percentile edge stretch went from 2.21 to 5.37.
+
+        So the regions' transforms are blended in the terms they are made of:
+        rotations as quaternions, which stay rotations however they are mixed;
+        scales and anchors linearly.  That extrapolates a scale outward from a
+        bone, which is what "follow the skeleton" means, and it survives a
+        right-angled turn.  It is dual-quaternion skinning with the regions as
+        bones and inverse distance for weights.
         """
-        if self._control is None:
+        if self._control is None or self._transforms is None:
             return None
-        pts, moved = self._control
+        pts, regions = self._control
         if len(pts) == 0:
             return None
-        warp = _inverse_distance_warp(pts, moved - pts)
+        warp = _inverse_distance_warp(pts, regions, self._transforms)
         if not sampled:
             return warp
 
-        # Sampling the field on its lattice costs 2.3 s, and the toggle has to
-        # answer inside the 16 ms render timer.  Nothing is sampled until a
-        # mesh actually asks to be moved, so switching the option on with no
-        # soft tissue loaded -- the common case, and the one the GUI
-        # responsiveness budget measures -- pays none of it.
+        # Sampling the field on its lattice is the whole cost of switching the
+        # option on, and the toggle has to answer inside the 16 ms render
+        # timer.  Nothing is sampled until a mesh actually asks to be moved.
         cache: dict[str, Any] = {}
 
         def lazy(query: NDArray) -> NDArray:
@@ -407,12 +423,39 @@ class SkeletonFit:
         return lazy
 
 
-def _inverse_distance_warp(points: NDArray, displacements: NDArray):
-    """Blend the nearest measured displacements, weighted by 1 / (d + eps)."""
+def _inverse_distance_warp(points: NDArray, regions: NDArray, transforms: Any):
+    """Blend where each region *puts* a point, weighted by inverse distance.
+
+    Not a blend of the displacements, which cannot extrapolate a scale: shrink
+    a femur by a tenth and a muscle eight units outside it barely moves,
+    because every measured displacement nearby is on the bone.  Rendered, the
+    quadriceps ballooned out past the leg.  And not a blend of the matrices,
+    which is not closed under averaging: with a forearm turned 92 degrees the
+    averages collapse.  Each region's affine is applied to the query point and
+    the *results* are mixed, every one of which is correct.
+
+    With one guard.  An affine extrapolates, and a region's affine evaluated
+    far outside it extrapolates wildly: the finger bones hang beside the
+    thigh, and the fingers' affine -- carrying that same 92-degree turn --
+    moves a point on the quadriceps by 50 units.  Weighted at 0.31 by nothing
+    but proximity, that was the whole of a 16-unit error.  So no region may
+    move a point further than it moved its own bones.
+    """
     from scipy.spatial import cKDTree
 
     pts = np.asarray(points, dtype=np.float64).reshape(-1, 3)
-    disp = np.asarray(displacements, dtype=np.float64).reshape(-1, 3)
+    ids = np.asarray(regions, dtype=np.int64).reshape(-1)
+    names = list(REGION_NAMES)
+    mats = np.stack([transforms.matrix(n) for n in names])
+    src = np.stack([transforms.anchor_pair(n)[0] for n in names])
+    dst = np.stack([transforms.anchor_pair(n)[1] for n in names])
+    steps = tree_distance()
+    reach = np.zeros(len(names))
+    for r, name in enumerate(names):
+        own = ids == r
+        if own.any():
+            moved = dst[r] + (pts[own] - src[r]) @ mats[r].T
+            reach[r] = float(np.linalg.norm(moved - pts[own], axis=1).max())
     tree = cKDTree(pts)
     k = int(min(FIELD_NEIGHBOURS, len(pts)))
 
@@ -424,8 +467,28 @@ def _inverse_distance_warp(points: NDArray, displacements: NDArray):
         if d.ndim == 1:
             d = d[:, None]
             idx = idx[:, None]
-        w = 1.0 / (d + FIELD_SMOOTHING)
-        w /= w.sum(axis=1, keepdims=True)
-        return np.einsum("qk,qkj->qj", w, disp[idx])
+        near = ids[idx]                                # (Q, k) region per neighbour
+        # Whichever region owns the nearest bone is the part of the body this
+        # point belongs to; a neighbour from further than REGION_REACH steps
+        # away along the tree is a different part that merely hangs close.
+        keep = steps[near[:, 0][:, None], near] <= REGION_REACH
+        w = np.where(keep, 1.0 / (d + FIELD_SMOOTHING), 0.0)
+        total = w.sum(axis=1, keepdims=True)
+        w = np.divide(w, total, out=np.zeros_like(w), where=total > 0)
+        share = np.zeros((len(q), len(names)), dtype=np.float64)
+        np.add.at(share, (np.repeat(np.arange(len(q)), k), ids[idx].ravel()),
+                  w.ravel())
+        out = np.zeros_like(q)
+        for r in range(len(names)):
+            weight = share[:, r]
+            live = weight > 1e-9
+            if not live.any():
+                continue
+            delta = (dst[r] + (q[live] - src[r]) @ mats[r].T) - q[live]
+            size = np.linalg.norm(delta, axis=1, keepdims=True)
+            limit = max(reach[r], 1e-9)
+            delta = delta * np.minimum(1.0, limit / np.maximum(size, 1e-9))
+            out[live] += weight[live, None] * delta
+        return out
 
     return warp

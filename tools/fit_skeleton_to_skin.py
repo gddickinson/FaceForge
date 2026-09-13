@@ -81,6 +81,12 @@ MARGIN = 1.0
 MOVE_FREE = 20.0
 MOVE_PENALTY = 0.05
 
+#: How far a fingertip or toe-tip may end from the mesh's own landmark for it
+#: before the solve is reported as wrong.  The landmarks are crude -- see
+#: below -- but a hand in the torso is 34 units from one and a hand in the
+#: mesh's hand is 2, so the question they are being asked is easy.
+PLACEMENT_LIMIT = 12.0
+
 #: A mean tolerates one deep patch, and a deep patch is exactly what a viewer
 #: sees.  Measured on the head: the skull sat 27.8 units deep inside a 26.0
 #: head with its occiput 4.4 units out the back, and the mean-squared
@@ -214,6 +220,7 @@ class Solver:
             n: np.array([1.0, 1.0, 1.0, 0.0, 0.0, 0.0]) for n in REGION_NAMES}
         self.offsets: dict[str, NDArray] = {
             n: np.zeros(3) for n in OFFSET_REGIONS}
+        self.frozen_rotation = False
 
     # -- objective -----------------------------------------------------------
 
@@ -258,6 +265,22 @@ class Solver:
 
     # -- search --------------------------------------------------------------
 
+    def freeze_rotations(self, table: dict[str, dict]) -> None:
+        """Take every region's rotation from ``table`` and stop searching it.
+
+        Sexual dimorphism is a matter of proportion, not of pose: the two
+        bodies hold their arms the same way.  Left free, the female solve
+        folded the upper arm inward to its rotation bound and buried the hand
+        in the torso -- 34.5 units from where the mesh's hand is -- while the
+        male's fitted to within 2.2.  So the pose is solved once and the
+        second sex inherits it, and only the proportions are searched again.
+        """
+        for name in REGION_NAMES:
+            entry = table.get(name) or {}
+            self.params[name][3:6] = np.asarray(
+                entry.get("rotation", (0.0, 0.0, 0.0)), dtype=np.float64)
+        self.frozen_rotation = True
+
     def solve_region(self, region: str, verbose: bool = True) -> float:
         """Search one region's six numbers, mirroring them to the other side.
 
@@ -270,6 +293,8 @@ class Solver:
         """
         midline = mirror_of(region) is None
         axes = (0, 1, 2, 3) if midline else (0, 1, 2, 3, 4, 5)
+        if self.frozen_rotation:
+            axes = (0, 1, 2)
         base = self.cost(region)
         start = base
         steps = [0.06, 0.03, 0.015, 0.0075]
@@ -343,6 +368,16 @@ class Solver:
 # -- driver ------------------------------------------------------------------
 
 
+def payload_on_disk(path: Path) -> dict | None:
+    """The shipped fit, if there is one."""
+    if not path.exists():
+        return None
+    try:
+        return json.loads(path.read_text())
+    except ValueError:                       # pragma: no cover - defensive
+        return None
+
+
 def load_scene():
     from tools.headless_loader import load_headless_scene
 
@@ -351,6 +386,38 @@ def load_scene():
     if morph is None or not morph.loaded:
         raise SystemExit("The body-surface mesh did not load; nothing to fit to.")
     return hs, morph
+
+
+def limb_placement(hs, morph, label: str) -> list[str]:
+    """Is each hand and foot still where the body mesh keeps its own?
+
+    Containment cannot answer this -- an arm folded into the torso is
+    perfectly contained -- and it is the failure this fit keeps finding.  The
+    mesh's fingertip and toe-tip landmarks are crude, but they are nowhere
+    near the torso, which is all that is being asked.
+    """
+    from faceforge.body.surface_landmarks import extract_mesh_landmarks
+
+    root = hs.named_nodes["bodyRoot"]
+    root.update_world_matrix(force=True)
+    pts, _regions, names = bone_points(root, per_bone=2000)
+    surface, _ = surface_of(morph)
+    marks = extract_mesh_landmarks(surface)
+    complaints: list[str] = []
+    probes = (("R Middle Dist.", "hand_R"), ("L Middle Dist.", "hand_L"),
+              ("R Big Toe Dist.", "foot_R"), ("L Big Toe Dist.", "foot_L"))
+    print(f"[{label}] limb placement")
+    for bone, mark in probes:
+        target = marks.get(mark)
+        m = np.array([n == bone for n in names])
+        if target is None or not m.any():
+            continue
+        gap = float(np.linalg.norm(pts[m].mean(axis=0) - np.asarray(target)))
+        flag = "  <-- NOT WHERE THE MESH KEEPS IT" if gap > PLACEMENT_LIMIT else ""
+        print(f"    {bone:<18} {gap:6.1f} from the mesh's {mark}{flag}")
+        if gap > PLACEMENT_LIMIT:
+            complaints.append(f"{bone} is {gap:.1f} from {mark}")
+    return complaints
 
 
 def measure(hs, morph, label: str) -> dict:
@@ -403,11 +470,19 @@ def main(argv: list[str] | None = None) -> int:
     depth = SurfaceDepth(pos, tris, probe)
     pts, regions, _ = bone_points(root)
     solver = Solver(pts, regions, anchors(root, jp, node_offset), depth)
+    sex = "female" if args.gender >= 0.5 else "male"
+    if sex == "female":
+        pose = (payload_on_disk(args.out) or {}).get("male") or {}
+        if pose:
+            solver.freeze_rotations(pose)
+            print("pose frozen from the male fit; only proportions are solved")
+        else:
+            print("no male fit to take the pose from; solving it free")
+
     t0 = time.time()
     table = solver.solve()
     print(f"solved in {time.time() - t0:.0f}s")
 
-    sex = "female" if args.gender >= 0.5 else "male"
     payload = {"version": 2,
                "_comment": "Per-region rotation (degrees, relative to the "
                            "parent region), per-axis scale and, for the "
@@ -431,9 +506,15 @@ def main(argv: list[str] | None = None) -> int:
                  "female": payload.get("female", {})}
                 ).apply(root, 1.0, args.gender, jp)
     after = measure(hs, morph, "after")
+    complaints = limb_placement(hs, morph, "after")
     print(f"\noutside {before['outside_pct']:.1f}% -> {after['outside_pct']:.1f}%   "
           f"median {before['median']:+.2f} -> {after['median']:+.2f}   "
           f"p95 {before['p95']:.2f} -> {after['p95']:.2f}")
+    if complaints:
+        print("\nTHIS FIT IS WRONG, whatever the containment says:")
+        for line in complaints:
+            print(f"  {line}")
+        return 1
     return 0
 
 

@@ -1057,3 +1057,56 @@ cost of the median, which is not a trade worth making.
 
 **What I could not measure my way to.** Both authored corrections came from
 looking at the model on a grid, which is where this round started.
+
+## 2026-09-12 (end) — Verifying the fit: the hands, the thigh, and every layer
+
+**Asked.** Check the fit by eye and fine-tune; make sure the muscles, the
+other soft tissue and the organs still fit; make sure the female anatomy is
+altered correctly throughout. And, separately: the hands fit the male mesh but
+end up inside the torso for the female.
+
+**The female hands.** The female solve had folded the upper arm inward to its
+rotation bound and buried the hand 34.5 units from where the mesh keeps it,
+while the male's fitted to 2.2. Sexual dimorphism is proportion, not posture,
+so the pose is now solved once and the second sex inherits it; only the
+proportions are searched again. Hands now 2.2, 1.7 and 2.3 from the mesh's at
+gender 0, 0.5 and 1.0. `tools/fit_skeleton_to_skin.py` also fails loudly now
+if a fingertip or toe-tip ends far from the mesh's own landmark for it --
+containment cannot see an arm folded into a torso, and that is twice it has
+hidden one.
+
+**The thigh.** `tools/fit_tissue_check.py`, written for this, found the
+quadriceps standing 15 units through the skin where they had stood 4. The fit
+was not at fault: under the thigh's own transform they sit *inside*, at -0.6.
+The field was. Four versions, each failing in a way the numbers being watched
+at the time could not show:
+
+- a thin-plate spline extrapolates outside its hull and tore the shoulder;
+- a blend of displacements is bounded but cannot extrapolate a scale, so a
+  muscle eight units outside a shrinking femur barely moves;
+- a blend of the region matrices extrapolates but is not closed under
+  averaging, and a 92-degree forearm turn collapsed it (stretch 2.21 to 5.37);
+- a blend of *where each region puts the point* works, with two guards.
+
+The guards are the lesson. No region may move a point further than it moved
+its own bones. And influence is limited by distance along the region tree, not
+through space: the finger bones hang beside the thigh, close enough to take
+31% of the weight on the quadriceps and seven steps away in the skeleton, and
+carrying a 92-degree pronation extrapolated 30 units. That one weight was the
+whole of the 16-unit error. Worst muscle p99 stretch 2.21 to 1.61, quadriceps
+15.9 units out to 1.2.
+
+**Every layer, both sexes.** Furthest protrusion through the surface, before
+and after, male: arm 19.3 to 6.1, back 18.9 to 5.3, shoulder 24.1 to 4.7,
+torso 17.4 to 8.2, hip 10.2 to 3.2, leg 14.8 to 10.5, hand 7.1 to 1.8, foot
+14.0 to 2.2, organs 14.8 to 4.2, vasculature 11.3 to 4.4, ligaments 11.1 to
+2.3. Female better throughout. 32 meshes of 442 past some limit at gender 0,
+14 at gender 1.
+
+**The female changes.** Measured with the fit off and on: muscles move 3.11
+against 3.32 and lose the same bulk (x0.621 against x0.609); organs and other
+soft tissue 1.81 against 2.05; the skeleton's own skin identical. The fit
+survives a sex change and does not interfere with one.
+
+**Still open.** The male adductors stand 10.5 units out where they stood 2.7;
+the female's do not. The digastric intermediate tendons stretch 4.5x.
