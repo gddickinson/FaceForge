@@ -44,6 +44,14 @@ logger = logging.getLogger(__name__)
 #: vertex lying exactly in the skin "contained"; the skin has thickness.
 MARGIN = 1.0
 
+#: A per-region margin was tried for the skull, whose scalp is thick, and it
+#: made the head worse rather than better: unable to satisfy 2.5 units
+#: anywhere, the search simply rebalanced and the occiput came out 5.65 units
+#: proud instead of 4.90.  The skull is reshaped by an authored posture
+#: instead (``fit_regions.SHAPE_POSTURE``), measured from the two bounding
+#: boxes, which is the one place where stating the answer beats searching for
+#: it.
+
 #: Containment alone is not enough, and the failure is spectacular rather than
 #: subtle: left to minimise protrusion, the search swung both forearms across
 #: the body until the hands lay inside the thighs, where nothing sticks out of
@@ -72,6 +80,34 @@ MARGIN = 1.0
 #: objective.
 MOVE_FREE = 20.0
 MOVE_PENALTY = 0.05
+
+#: A mean tolerates one deep patch, and a deep patch is exactly what a viewer
+#: sees.  Measured on the head: the skull sat 27.8 units deep inside a 26.0
+#: head with its occiput 4.4 units out the back, and the mean-squared
+#: protrusion barely noticed -- 11% of the region outside at a p95 of 0.44.
+#: Shrinking and centring it takes the worst case from 5.3 to under 2 and
+#: costs almost nothing anywhere else, so the worst case is in the objective.
+#: A mean tolerates one deep patch, and a deep patch is what a viewer sees.
+#: Pressed harder than this, though, the search starts buying a better worst
+#: case by burying a region somewhere roomy: at 3.0 the hands left their
+#: sleeves altogether.  The skull, which is the case that wanted a harder
+#: press, is reshaped by an authored posture instead.
+WORST_PERCENTILE = 98.0
+WORST_WEIGHT = 1.0
+
+#: Protrusion rewards depth without limit, so the harder the worst case is
+#: pressed the more the search wants to bury a region somewhere roomy: at
+#: WORST_WEIGHT 3 and nothing else, the right hand ended 9.4 units inside the
+#: surface, drawn up its own sleeve.  The travel limit bounds how far a bone
+#: may go; this bounds how much deeper it may end up than it started.  The
+#: unfitted skeleton is a real one in roughly the right place, so its own
+#: depth is the reference, and no anatomy has to be named to use it.
+#: Loose on purpose: it is a guard against a region being hidden somewhere
+#: roomy, not a rule about how deep a bone sits.  At 5 units it was pushing
+#: the toes and hands back out against the skin -- 84% of the toes outside --
+#: because a bone that sits comfortably inside is not a fault.
+BURY_FREE = 12.0
+BURY_PENALTY = 1.0
 
 #: Bounds on what a region may do to itself.  A skeleton that may shrink
 #: without limit fits any surface by vanishing.  The rotation bound is per
@@ -157,6 +193,7 @@ class Solver:
                  depth: SurfaceDepth) -> None:
         self.depth = depth
         self.anchors = anchor_points
+        self.rest_depth: dict[str, NDArray] = {}
         self.subtree = subtree_map()
         rng = np.random.default_rng(0)
         stray = set(regions.tolist()) - set(REGION_NAMES)
@@ -171,6 +208,8 @@ class Solver:
             if len(p) > SOLVE_POINTS:
                 p = p[rng.choice(len(p), SOLVE_POINTS, replace=False)]
             self.points[name] = p
+            self.rest_depth[name] = (depth(p) if len(p)
+                                     else np.zeros(0, dtype=np.float64))
         self.params: dict[str, NDArray] = {
             n: np.array([1.0, 1.0, 1.0, 0.0, 0.0, 0.0]) for n in REGION_NAMES}
         self.offsets: dict[str, NDArray] = {
@@ -195,10 +234,17 @@ class Solver:
             if not len(p):
                 continue
             moved = t.apply(name, p)
-            out = np.maximum(self.depth(moved) + MARGIN, 0.0)
+            d = self.depth(moved)
+            out = np.maximum(d + MARGIN, 0.0)
             travel = np.maximum(
                 np.linalg.norm(moved - p, axis=1) - MOVE_FREE, 0.0)
-            value = float(np.mean(out ** 2 + MOVE_PENALTY * travel ** 2))
+            buried = np.maximum(
+                self.rest_depth[name] - d - BURY_FREE, 0.0)
+            value = float(np.mean(out ** 2
+                                  + MOVE_PENALTY * travel ** 2
+                                  + BURY_PENALTY * buried ** 2)
+                          + WORST_WEIGHT
+                          * np.percentile(out, WORST_PERCENTILE) ** 2)
             if name == region:
                 own = value
             else:

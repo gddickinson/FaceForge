@@ -49,6 +49,45 @@ Vec3 = NDArray[np.float64]
 #: Regions allowed to move bodily as well as turn and scale.
 OFFSET_REGIONS: tuple[str, ...] = ("pelvis", "head")
 
+#: Posture: the two bodies are not only different sizes, they are in different
+#: *poses*, and no containment measure can see the difference.  A pronated
+#: forearm and a supinated one occupy almost the same sleeve; only the hand
+#: gives it away, and the hand is small.
+#:
+#: Measured on the shipped pair, the plane of the skeleton's metacarpals has
+#: its normal along Y -- the palm faces forward, the arm is supinated -- while
+#: the body mesh's hand has its normal along X, the palm facing the thigh.
+#: The angle between them is 88.5 degrees on the male mesh and 88.0 on the
+#: female, and a turn of 92 degrees about the elbow-to-wrist axis aligns them
+#: to within a cosine of 0.988.
+#:
+#: Each entry is ``region: (proximal anchor, distal anchor, degrees)``, and the
+#: axis is taken from the skeleton's own joints, so it follows the asset rather
+#: than a number written here.
+AXIAL_POSTURE: dict[str, tuple[str, str, float]] = {
+    "forearm_R": ("elbow_R", "wrist_R", 92.0),
+    "forearm_L": ("elbow_L", "wrist_L", -92.0),
+}
+
+#: Posture of shape: a region whose proportions are stated rather than
+#: searched for, applied before the solved fit refines it.
+#:
+#: The skull is the one place where stating the answer beats searching for it.
+#: It is 19.8 units wide and 29.1 deep, and it has to live inside a head that
+#: is 21.6 x 26.0 on the male mesh and 20.8 x 25.3 on the female -- deeper
+#: than the head it goes in, with about two units of scalp to spare on each
+#: side.  Every objective tried either widened the cranium until it exactly
+#: filled the head with no scalp at all, or left the occiput standing four to
+#: five units out the back, because that protrusion is a small patch and a
+#: skull cannot be pulled back by scaling about a joint underneath it.
+#:
+#: So the depth is set to 22 units and the width to 17.6, both leaving two
+#: units of cover, and the skull is moved forward to sit in the face rather
+#: than the nape.  The solved table refines this per sex.
+SHAPE_POSTURE: dict[str, dict[str, tuple[float, float, float]]] = {
+    "head": {"scale": (0.89, 0.76, 0.97), "offset": (0.0, -3.0, -1.0)},
+}
+
 
 @dataclass(frozen=True)
 class RegionDef:
@@ -201,6 +240,29 @@ def _lowest_of(pivots: dict, prefix: str, offset_of, fallback: Vec3) -> Vec3:
     return points[int(np.argmin([float(p[2]) for p in points]))]
 
 
+def posture_shape(region: str) -> tuple[Vec3, Vec3]:
+    """The authored ``(scale, offset)`` for a region; identity if unlisted."""
+    entry = SHAPE_POSTURE.get(region) or {}
+    return (np.asarray(entry.get("scale", (1.0, 1.0, 1.0)), dtype=np.float64),
+            np.asarray(entry.get("offset", (0.0, 0.0, 0.0)), dtype=np.float64))
+
+
+def posture_rotations(anchor_points: dict[str, Vec3]) -> dict[str, Vec3]:
+    """The authored posture, as a rotation vector in degrees per region."""
+    out: dict[str, Vec3] = {}
+    for region, (proximal, distal, degrees) in AXIAL_POSTURE.items():
+        a = anchor_points.get(proximal)
+        b = anchor_points.get(distal)
+        if a is None or b is None:
+            continue
+        axis = np.asarray(b, dtype=np.float64) - np.asarray(a, dtype=np.float64)
+        length = float(np.linalg.norm(axis))
+        if length < 1e-9:                    # pragma: no cover - defensive
+            continue
+        out[region] = axis / length * float(degrees)
+    return out
+
+
 class RegionTransforms:
     """The resolved affine of every region, anchors and rotations carried.
 
@@ -220,24 +282,31 @@ class RegionTransforms:
         self._rot: dict[str, NDArray] = {}
         self._src: dict[str, Vec3] = {}
         self._dst: dict[str, Vec3] = {}
+        posture = posture_rotations(anchor_points)
+        zero = np.zeros(3)
         for rd in REGIONS:
             entry = table.get(rd.name) or {}
-            local = rotation_matrix(
-                self._amount * np.asarray(
-                    entry.get("rotation", (0.0, 0.0, 0.0)), dtype=np.float64))
+            # The authored posture first, then whatever the fit solved on top
+            # of it.  Both blend with ``amount``, so a half-applied fit is a
+            # half-turned forearm rather than a sheared one.
+            local = (rotation_matrix(self._amount * posture.get(rd.name, zero))
+                     @ rotation_matrix(self._amount * np.asarray(
+                         entry.get("rotation", (0.0, 0.0, 0.0)),
+                         dtype=np.float64)))
             parent_rot = (np.eye(3) if rd.parent is None
                           else self._rot[rd.parent])
             rot = parent_rot @ local
-            scale = np.asarray(entry.get("scale", (1.0, 1.0, 1.0)),
-                               dtype=np.float64)
+            posture_scale, posture_offset = posture_shape(rd.name)
+            scale = (np.asarray(entry.get("scale", (1.0, 1.0, 1.0)),
+                                dtype=np.float64) * posture_scale)
             scale = 1.0 + self._amount * (scale - 1.0)
             src = anchor_points.get(rd.anchor)
             if src is None:                  # pragma: no cover - defensive
                 src = np.zeros(3)
             base = (src if rd.parent is None
                     else self.apply(rd.parent, src[None, :])[0])
-            off = np.asarray(entry.get("offset", (0.0, 0.0, 0.0)),
-                             dtype=np.float64)
+            off = (np.asarray(entry.get("offset", (0.0, 0.0, 0.0)),
+                              dtype=np.float64) + posture_offset)
             self._rot[rd.name] = rot
             self._mat[rd.name] = rot @ np.diag(scale)
             self._src[rd.name] = np.asarray(src, dtype=np.float64)

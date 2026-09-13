@@ -73,6 +73,32 @@ always had.  The arm bent instead of swinging, and the hand was the one region
 that ended against the rotation bound, because it had to express the whole
 arm's turn by itself.
 
+### Posture
+
+The two bodies are not only different sizes, they are in different *poses*,
+and a containment measure is blind to the difference.  Two things are
+therefore **authored** rather than searched for, in `fit_regions.py`:
+
+* **The forearms are pronated 92 degrees.**  The plane of the skeleton's
+  metacarpals has its normal along Y -- the palm faces forward, the arm is
+  supinated -- while the body mesh's hand has its normal along X, the palm
+  facing the thigh.  The angle between them is 88.5 degrees on the male mesh
+  and 88.0 on the female, and a turn of 92 about the elbow-to-wrist axis
+  aligns them to a cosine of 0.988.  A pronated forearm and a supinated one
+  fill almost the same sleeve, so no amount of searching would have found it.
+  After the fit the palms agree to 4.8 degrees.
+* **The skull is reshaped.**  It is 19.8 units wide and 29.1 deep, and has to
+  live inside a head 21.6 x 26.0 on the male mesh and 20.8 x 25.3 on the
+  female: deeper than the head it goes in, with about two units of scalp to
+  spare.  Every objective tried either widened the cranium until it exactly
+  filled the head with no scalp at all, or left the occiput four to five units
+  out the back, because that is a small patch and a skull cannot be pulled
+  backward by scaling about a joint underneath it.  The depth is set to 22
+  units and the width to 17.6, both leaving two units of cover, and the skull
+  is moved forward to sit in the face rather than the nape.  The solved table
+  then refines it per sex, and does: the female skull ends up shallower
+  (0.70 against 0.73) and shorter (0.89 against 0.96).
+
 The left half is the mirror of the right, and the midline regions may lengthen,
 widen and nod but not twist or lean.  Solved independently, the two halves
 found different local optima: the right hand ended 6.8 units inside the mesh
@@ -122,6 +148,17 @@ median, so a bone may move 20 units freely and pays beyond that.  The
 shoulder's real correction is 24 units and costs almost nothing; the
 degenerate wrist's 51 costs more than the rest of the objective together.
 
+**The worst case, not only the mean.**  A mean tolerates one deep patch, and a
+deep patch is exactly what a viewer sees: the skull sat 27.8 units deep inside
+a 26.0 head with its occiput 4.4 out the back, and the mean-squared protrusion
+barely noticed -- 11% of the region outside at a p95 of 0.44.  The 98th
+percentile of each region's protrusion is in the objective too.  Pressed
+harder than that, though, the search starts buying a better worst case by
+burying a region somewhere roomy: at three times the weight the hands left
+their sleeves entirely and sat 9.4 units inside the surface.  A loose guard
+against burial -- no region much deeper than it started -- catches that
+without telling a bone how deep it should be.
+
 **A shape penalty.**  A skeleton free to shrink fits any surface by vanishing,
 so each region is held toward scale 1, bounded to [0.60, 1.20] and to 20
 degrees relative to its parent.  Rotation is nearly free: turning a limb costs
@@ -151,18 +188,25 @@ Every bone vertex, signed distance to the surface, positive outside:
 | | outside | median | p95 | max |
 |---|---|---|---|---|
 | male, as loaded | 65.7% | +2.42 | 11.38 | 27.73 |
-| male, fitted | 27.1% | -1.13 | 2.07 | 7.72 |
+| male, fitted | 19.0% | -1.50 | 0.88 | 6.91 |
 | female, as loaded | 78.4% | +2.83 | 8.60 | 27.83 |
-| female, fitted | 30.2% | -0.95 | 1.71 | 6.16 |
+| female, fitted | 8.1% | -2.34 | 0.25 | 6.65 |
 
-Over the whole vertex set rather than the sample, 68.9% to 20.3% outside and
-the worst protrusion 27.9 to 8.5.  `tools/render_skeleton_fit.py --protrusion`
-draws it: blue inside, red outside.
+And on the things a containment number cannot see:
 
-What is left, in the order a drawing shows it: the crown of the skull, about 5
-units; the anterior chest wall, 3 to 4; the upper thoracic spinous processes
-behind a slim neck; the thumb, which the mesh's mitten-shaped hand has no room
-for; and the acromion.
+| | before | after |
+|---|---|---|
+| angle between the palms | 88.5 deg | 4.8 deg |
+| hip joint height | -81.0 | -91.5 |
+| upper arm length (mesh 27.8) | 40.4 | 31.0 |
+| middle fingertip to the mesh's | 62.7 | 2.0 |
+| skull depth inside a 26.0 head | 29.1 | 22.6 |
+| occiput proud of the head | 7.2 | 0.0 |
+| crown proud of the scalp | 27.5 | 3.3 |
+
+What is left: the crown of the skull, about 3 units; the acromion; the thumb,
+which the mesh's mitten-shaped hand has no room for; and a graze along the
+fingers and toes.
 
 ## Carrying the soft tissue
 
@@ -223,14 +267,16 @@ switched off entirely.
 
 ## Still open
 
-* The crown of the skull stands about 5 units proud of the scalp.
-* The anterior chest wall and the upper thoracic spinous processes pull in
-  opposite directions and the thorax has one matrix for both.  Splitting the
-  thoracic spine from the rib cage would give the fit the freedom it wants.
-* The mesh's hand is a mitten; the thumb has nowhere to go.
+* The crown of the skull stands about 3 units proud of the scalp.
+* The thumb: the mesh's hand is a mitten and has nowhere to put one.
+* The fingers and toes graze the skin along their length rather than sitting
+  inside it.
+* Dropping the pelvis 10 units puts 2.2x edge stretch into the adductors at
+  the 99th percentile, against 1.75 before.  It is the price of the posture
+  change and it is in the soft tissue, not the bone.
 * The fit is solved against the male and the female surface separately and
   lerped between them.  Nothing checks that the lerp of two fits is the fit of
   the lerped surface, and it will not be exactly.
-* The joint DOF axes are body axes, so a limb the fit has turned by 10 to 20
-  degrees is animated about an axis no longer quite perpendicular to it.
-  Small, but it is there while the fit is on.
+* The joint DOF axes are body axes, so a limb the fit has turned -- and the
+  forearm is now turned 92 degrees -- is animated about an axis no longer
+  perpendicular to it.  This matters more than it did.

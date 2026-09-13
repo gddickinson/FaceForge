@@ -1010,3 +1010,50 @@ fails when the whole UI suite runs in one process, on the pre-existing 71 s
 **Still open.** The skull's crown, about 5 units. The anterior chest wall and
 the upper thoracic spinous processes pull opposite ways and share one matrix.
 The thumb, which the mesh's mitten hand has no room for.
+
+## 2026-09-12 (end) — Posture: the arms were supinated, the skull was in the nape
+
+**Reported, from looking at the model.** The skeleton's arms are supinated
+while the mesh's are pronated. The pelvis sits too high. The shoulder, elbow
+and wrist need to match better. The mesh's head is further forward than the
+skull, which should move forward into the neck. The skull should pitch down
+slightly and be resized and reshaped for both sexes.
+
+**Measured. Every one of them held.**
+
+| | measurement |
+|---|---|
+| palm planes | 88.5 deg apart (male), 88.0 (female) |
+| skull depth | 29.1 inside a 26.0 head |
+| occiput | 7.2 units out the back |
+| crown | 27.5 above the scalp |
+| hip joints | -81.0, with the mesh's hip mass far lower |
+
+**Built.** Posture, as a thing the fit carries rather than searches for.
+`AXIAL_POSTURE` turns each forearm 92 degrees about the axis its own elbow and
+wrist define; `SHAPE_POSTURE` states the skull's proportions, 22 units deep and
+17.6 wide, each leaving two units of scalp, moved forward to sit in the face.
+A pronated forearm and a supinated one fill the same sleeve, and a skull
+cannot be pulled backward by scaling about a joint underneath it, so no
+objective was ever going to find either.
+
+**And two more terms in the objective**, both from the same lesson. The 98th
+percentile of a region's protrusion, because a mean tolerates one deep patch
+and a deep patch is what you see. And a loose guard against burial, because
+pressed harder than that the search bought a better worst case by hiding the
+hands 9.4 units inside the surface.
+
+**Measured after.** Male 65.7% to 19.0% of bone vertices outside, p95 11.38 to
+0.88, worst 27.7 to 6.9. Female 78.4% to 8.1%, p95 8.60 to 0.25. Palms 88.5
+deg to 4.8. Hip joints -81.0 to -91.5. Upper arm 40.4 to 31.0 against the
+mesh's 27.8. Middle fingertip 62.7 units from the mesh's to 2.0. Skull 29.1
+deep to 22.6 inside a 26.0 head, occiput flush, crown 27.5 to 3.3. The two
+skulls now differ: the female's is shallower (0.70 against 0.73) and shorter
+(0.89 against 0.96).
+
+**Cost.** Dropping the pelvis 10 units puts 2.2x edge stretch into the
+adductors at p99, against 1.75 before. More field smoothing buys 2.02 at the
+cost of the median, which is not a trade worth making.
+
+**What I could not measure my way to.** Both authored corrections came from
+looking at the model on a grid, which is where this round started.

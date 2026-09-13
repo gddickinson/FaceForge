@@ -231,10 +231,23 @@ def test_every_region_has_an_anchor_on_a_real_skeleton(leg):
     assert "pelvic_centre" in points and "cervicothoracic" in points
 
 
-def test_identity_is_recognised_so_nothing_is_rewritten():
+def test_identity_is_recognised_so_nothing_is_rewritten(monkeypatch):
+    """With no posture and no table there is nothing to write."""
+    from faceforge.body import fit_regions
+
+    monkeypatch.setattr(fit_regions, "SHAPE_POSTURE", {})
+    monkeypatch.setattr(fit_regions, "AXIAL_POSTURE", {})
     points = {"pelvic_centre": np.zeros(3)}
     t = RegionTransforms({name: {} for name in REGION_NAMES}, points, 1.0)
     assert t.is_identity()
+
+
+def test_an_authored_posture_alone_is_not_the_identity():
+    """The skull is reshaped whether or not a fit has been solved."""
+    points = {rd.anchor: np.zeros(3) for rd in __import__(
+        "faceforge.body.fit_regions", fromlist=["REGIONS"]).REGIONS}
+    t = RegionTransforms({name: {} for name in REGION_NAMES}, points, 1.0)
+    assert not t.is_identity()
 
 
 # -- composing two skeleton changes -----------------------------------------
@@ -306,3 +319,53 @@ def test_half_a_rotation_is_half_a_rotation_not_a_squashed_one(leg):
     assert np.linalg.norm(knee - hip) == pytest.approx(60.0)
     expected = hip + rotation_matrix([0.0, 20.0, 0.0]) @ np.array([0.0, 0.0, -60.0])
     assert np.allclose(knee, expected, atol=1e-9)
+
+
+# -- posture -----------------------------------------------------------------
+
+
+def test_the_authored_posture_turns_the_forearm_about_its_own_axis(leg):
+    """Pronation: the skeleton is supinated, the body mesh is not.
+
+    No containment measure can see it -- a pronated forearm and a supinated
+    one fill almost the same sleeve -- so it is authored, from the axis the
+    skeleton's own joints define.
+    """
+    from faceforge.body.fit_regions import AXIAL_POSTURE, posture_rotations
+
+    anchors = {"elbow_R": np.array([10.0, 0.0, -50.0]),
+               "wrist_R": np.array([10.0, 0.0, -80.0])}
+    rot = posture_rotations(anchors)["forearm_R"]
+    degrees = AXIAL_POSTURE["forearm_R"][2]
+    assert np.allclose(rot, [0.0, 0.0, -degrees]), \
+        "the turn is about the elbow-to-wrist axis, here straight down"
+    assert np.linalg.norm(rot) == pytest.approx(abs(degrees))
+
+
+def test_the_two_forearms_are_turned_in_opposite_senses():
+    from faceforge.body.fit_regions import AXIAL_POSTURE
+
+    assert (AXIAL_POSTURE["forearm_R"][2]
+            == pytest.approx(-AXIAL_POSTURE["forearm_L"][2]))
+
+
+def test_the_posture_applies_even_with_no_solved_fit(leg):
+    """A shipped table is not needed for the skeleton to be reposed."""
+    root, joints, _ = leg
+    rest = world_points(find(root, "Right Tibia"))
+    fit = SkeletonFit({"male": {}, "female": {}})
+    from faceforge.body import fit_regions
+
+    original = dict(fit_regions.AXIAL_POSTURE)
+    fit_regions.AXIAL_POSTURE.clear()
+    fit_regions.AXIAL_POSTURE["shank_R"] = ("knee_R", "ankle_R", 90.0)
+    try:
+        fit.apply(root, 1.0, 0.0, joints)
+        moved = world_points(find(root, "Right Tibia"))
+    finally:
+        fit_regions.AXIAL_POSTURE.clear()
+        fit_regions.AXIAL_POSTURE.update(original)
+    # A turn about the tibia's own axis leaves its two ends where they were.
+    assert np.allclose(moved[0], rest[0], atol=1e-9)
+    assert np.allclose(moved[-1], rest[-1], atol=1e-9)
+    assert fit.applied
