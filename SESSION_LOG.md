@@ -1164,3 +1164,58 @@ identical.
 **Still open.** The digastric intermediate tendons stretch 3.2x. The face mesh
 and facial muscles have no sex of their own -- they follow the skull now, but
 nothing shapes them.
+
+## 2026-09-13 (later) — The head's soft tissue, the female organs, and a matrix
+
+**Asked.** The head muscles, skull and neck/shoulder muscles do not fit the
+skin mesh. Females do not have male reproductive organs and they do have
+breast tissue. Then render through the GUI and check every layer with the fit
+on and off, male to female.
+
+**The head's soft tissue was never moved by anything.** The neck, jaw and
+expression muscles, the face and the face features each keep their own copy of
+their rest pose and rebuild from it every frame, because each has its own
+deformer. Nothing rewrote those copies, so when the skull moved -- reshaped for
+sex, seated lower on the neck, and moved again by the fit -- the muscles on it
+stayed. `anatomy/head_tissue.py` moves them by the same field the skinning
+gets, from a captured original so nothing compounds. Measured: with the fit on
+the skull moves 23.66 and the head tissue a median 23.50, worst lag 1.81, and
+switching the fit off restores exactly. They are also excluded from the
+skeleton morph now -- "Zygomatic Maj." matches the zygomatic bone's pattern and
+was being scaled as one.
+
+**The female had male organs.** Eight of the configured organs are male
+reproductive structures and the asset set has no female equivalent of any of
+them, so they are hidden by the middle of the slider. The urethra goes too:
+both sexes have one, but this mesh is the male's, 20 cm through the penis.
+
+**And no breast.** Built as what it anatomically is: a lens from the skin down
+to the chest wall over ribs two to six, deepest at the nipple. The first
+attempt built it from the female-minus-male surface difference and was wrong
+twice -- the MakeHuman female base gains only one unit of chest projection, so
+it came out a sliver, and the inner boundary of a breast is the pectoral
+fascia, not the male skin. Men have mammary tissue too, so the depth runs from
+0.8 to 4.0 units rather than from nothing.
+
+**The matrix.** `tools/render_model_matrix.py` renders every layer, both
+sexes, fit off and on, through the application's own event bus and renderer.
+It found two things a single frame would not have.
+
+*The layer isolation was broken in the tool itself* -- a demand-loaded layer
+stays in the scene once loaded, so every frame showed everything.
+
+*And the fitted skeleton stood through the skin.* The skeleton's own skin had
+been held back from the fit, on the grounds that carrying it mangled it. That
+was measured against a field that could not extrapolate a scale; carried by
+the field as it now stands it stretches 1.17x at the 99th percentile and
+simply becomes the body the fit describes, 203 units tall rather than 227.
+Carrying it exposed the asset's welds as webs between the forearm and the hip,
+and those welds now have a test that works: real skin stretches about 1.6x
+when the arm turns, a weld across a gap stretches without limit, and the
+triangles past 2x are not drawn. That needed the index buffer to be
+streamable, which it was not -- and the first attempt at that unbound the EBO
+from the VAO and stopped every indexed mesh drawing.
+
+**Still open.** A residue of webbing remains around the hip. The breast sits
+under the skin where the surface's chest is, which is a rib lower than the
+fitted skeleton's ribs two to six.

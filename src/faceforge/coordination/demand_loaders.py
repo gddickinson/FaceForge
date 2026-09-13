@@ -604,12 +604,29 @@ class DemandLoaders:
             logger.warning("Failed to load %s: %s", layer, e)
 
     def load_organs(self) -> None:
+        """The organs, and the mammary tissue, which is one.
+
+        It is built from the body-surface pair rather than loaded from an
+        STL -- the asset set is a male cadaver and has no breast in it -- so
+        it has to be put in the scene by hand when the layer arrives.
+        """
+        self._attach_breast_tissue()
         self._load_spine_following(
             "organs", lambda: self.ctx.assets.load_organs(), "organs.json",
             extra_keys=("category",),
             physiology_group_attr="organ_group",
             physiology_register="register_organ",
             physiology_keys=("name", "category"))
+
+    def _attach_breast_tissue(self) -> None:
+        morph = getattr(self.ctx.pipeline, "gender_morph", None)
+        node = getattr(morph, "breast_node", None)
+        if node is None or node.parent is not None:
+            return
+        parent = self.ctx.node("bodyRoot")
+        if parent is not None:
+            parent.add(node)
+            logger.info("Mammary tissue added to the scene")
 
     def load_vasculature(self) -> None:
         self._load_spine_following(

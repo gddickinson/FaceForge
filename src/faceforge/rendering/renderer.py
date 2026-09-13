@@ -555,6 +555,8 @@ class GLRenderer:
             # Geometry changed -- re-stream vertex data
             gl_mesh.update_positions(mesh.geometry.positions)
             gl_mesh.update_normals(mesh.geometry.normals)
+            if mesh.geometry.indices is not None:
+                gl_mesh.update_indices(mesh.geometry.indices)
             mesh.needs_update = False
 
         # Stream vertex colors if dirty

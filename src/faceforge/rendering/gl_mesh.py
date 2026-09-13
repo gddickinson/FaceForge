@@ -114,7 +114,12 @@ class GLMesh:
             self._index_count = len(idx_data)
             self._ebo = glGenBuffers(1)
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self._ebo)
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, idx_data.nbytes, idx_data, GL_STATIC_DRAW)
+            # GL_DYNAMIC_DRAW: a mesh may stop drawing some of its triangles
+            # without changing its vertices -- the skin's welds, which are
+            # found by moving the body (faceforge.body.weld_webs).
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, idx_data.nbytes, idx_data,
+                         GL_DYNAMIC_DRAW)
+            self._index_capacity = idx_data.nbytes
 
         # Unbind VAO (leave EBO bound inside VAO state)
         glBindVertexArray(0)
@@ -129,6 +134,31 @@ class GLMesh:
     # ------------------------------------------------------------------
     # Dynamic updates
     # ------------------------------------------------------------------
+
+    def update_indices(self, indices: np.ndarray) -> None:
+        """Draw a different set of triangles from the same vertices.
+
+        Only ever fewer: the buffer is written from the front and the draw
+        count reduced, so nothing is reallocated and a longer list than the
+        one uploaded is refused rather than overrunning it.
+        """
+        if not self._uploaded or not self._has_indices or self._ebo is None:
+            return
+        data = np.ascontiguousarray(indices, dtype=np.uint32)
+        if data.nbytes > getattr(self, "_index_capacity", 0):
+            logger.warning("GLMesh: %d indices will not fit the buffer uploaded "
+                           "for %d; left as it was", len(data),
+                           self._index_capacity // 4)
+            return
+        # The element array binding is part of a VAO's state, so this must be
+        # done inside the mesh's own VAO and must not unbind the buffer
+        # afterwards: binding element array 0 would take the EBO out of the
+        # VAO and every later draw would read from nothing.
+        glBindVertexArray(self._vao)
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self._ebo)
+        glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, data.nbytes, data)
+        glBindVertexArray(0)
+        self._index_count = len(data)
 
     def update_positions(self, positions: np.ndarray) -> None:
         """Stream new position data into the existing VBO."""

@@ -14,6 +14,8 @@ from __future__ import annotations
 import logging
 from typing import Any
 
+import numpy as np
+
 from faceforge.core.events import EventType
 
 logger = logging.getLogger(__name__)
@@ -32,6 +34,7 @@ class BodyController:
         bus.subscribe(EventType.GENDER_CHANGED, self.on_gender_changed)
         bus.subscribe(EventType.GENDER_RELEASED, self.on_gender_released)
         bus.subscribe(EventType.SKELETON_FIT_TOGGLED, self.on_skeleton_fit_toggled)
+        self.ctx.after_registration_hooks.append(self.on_structures_registered)
 
     # -- Pose --------------------------------------------------------------
 
@@ -76,6 +79,7 @@ class BodyController:
         morph = getattr(self.ctx.pipeline, "gender_morph", None)
         if morph is not None and morph.loaded:
             morph.set_gender(gender)
+        self.apply_sex_specific(gender)
 
     def on_gender_released(self, gender: float = 0.0, **kw) -> None:
         """Slider release: scale the skeleton, then rebuild the soft tissue on it.
@@ -101,14 +105,13 @@ class BodyController:
         if morph is None or not morph.loaded:
             return
         morph.set_gender(gender)
+        self.apply_sex_specific(gender)
 
         root = self.ctx.node("bodyRoot")
         if root is None:
             return
         joint_setup = getattr(getattr(self.ctx, "pipeline", None), "joint_setup", None)
-        skinning = getattr(self.ctx.simulation, "soft_tissue", None)
-        soft = {id(b.mesh) for b in getattr(skinning, "bindings", ())
-                if getattr(b, "mesh", None) is not None}
+        soft = self.deformed_meshes()
         # The fit comes off first.  Both it and the sex morph rewrite the same
         # rest geometry from their own captured original, so scaling on top of
         # a fitted skeleton would leave the fit's snapshot describing a body
@@ -158,9 +161,7 @@ class BodyController:
         if fit is None or bool(enabled) == fit.applied:
             return
         joint_setup = getattr(getattr(self.ctx, "pipeline", None), "joint_setup", None)
-        skinning = getattr(self.ctx.simulation, "soft_tissue", None)
-        soft = {id(b.mesh) for b in getattr(skinning, "bindings", ())
-                if getattr(b, "mesh", None) is not None}
+        soft = self.deformed_meshes()
         gender = float(getattr(self.ctx.state.body, "gender", 0.0))
 
         warps = self.skeleton_warps(morph, root, gender, joint_setup, soft,
@@ -171,6 +172,37 @@ class BodyController:
         self.resnapshot_skinning()
         self.refresh_after_skeleton_change()
         logger.info("Skeleton fit to the body mesh: %s", "on" if enabled else "off")
+
+    def apply_sex_specific(self, gender: float) -> None:
+        """A female model must not keep the male reproductive organs.
+
+        Also registered as an after-registration hook, because the organ layer
+        is loaded on first use and may arrive long after the slider moved.
+        """
+        from faceforge.body import sex_specific
+
+        sex_specific.apply(self.ctx.node("bodyRoot"), gender)
+
+    def on_structures_registered(self) -> None:
+        """Re-apply what the sex hides, whenever a layer finishes loading."""
+        self.apply_sex_specific(
+            float(getattr(self.ctx.state.body, "gender", 0.0)))
+
+    def deformed_meshes(self) -> set[int]:
+        """Every mesh some deformer owns, which the skeleton must not scale.
+
+        The skinning's bindings, and the head's own systems: the neck, jaw and
+        expression muscles, the face and the face features each keep their own
+        rest pose and rebuild from it every frame.  A muscle whose name reads
+        like a bone -- "Zygomatic Maj." matches the zygomatic bone -- would
+        otherwise be scaled as one and then fight its own deformer.
+        """
+        from faceforge.anatomy import head_tissue
+
+        skinning = getattr(self.ctx.simulation, "soft_tissue", None)
+        out = {id(b.mesh) for b in getattr(skinning, "bindings", ())
+               if getattr(b, "mesh", None) is not None}
+        return out | head_tissue.owned_meshes(getattr(self.ctx, "pipeline", None))
 
     def skeleton_warps(self, morph: Any, root: Any, gender: float,
                        joint_setup: Any, soft: set[int],
@@ -202,40 +234,56 @@ class BodyController:
                             gender_warp: Any, fit_warp: Any) -> dict:
         """Carry the soft tissue onto the skeleton as it now is.
 
-        Everything that hangs off a bone follows both changes, chained rather
-        than added: the fit was measured on a skeleton the sex morph had
-        already scaled.
+        Everything follows both changes, chained rather than added: the fit
+        was measured on a skeleton the sex morph had already scaled.
 
-        The skin that came with the skeleton is the exception.  It was scanned
-        from these bones and already fits them; dragging it onto the surface
-        mesh's proportions is the distortion the whole option exists to avoid,
-        and it is visible -- the fitted skin comes out a head shorter and
-        broad in the shoulders.  So it follows the sex morph and nothing else,
-        and the bones simply sit a little further inside it.
+        The skin that came with the skeleton was held back from the fit for a
+        while, on the grounds that it already fits these bones and dragging it
+        onto the surface mesh's proportions is the distortion the option
+        exists to avoid.  That was measured against a field that could not
+        extrapolate, and it was wrong twice: the skin came out mangled because
+        the field was, and leaving it behind put the fitted skeleton's hands
+        and skull straight through it, which is worse than either.  Carried by
+        the field as it now stands the skin stretches 1.17x at the 99th
+        percentile and simply becomes the body the fit describes -- 203 units
+        tall rather than 227, which is the height of the surface it is being
+        fitted into.
         """
+        from faceforge.anatomy import head_tissue
         from faceforge.body.skeleton_field import compose
-        from faceforge.body.skeleton_fit import is_own_skin
 
         skinning = getattr(self.ctx.simulation, "soft_tissue", None)
         bindings = list(getattr(skinning, "bindings", ()))
-        if fit_warp is None:
-            return self.morph_soft_tissue(gender, morph,
-                                          compose(gender_warp, fit_warp),
-                                          bindings)
-        own, carried = [], []
-        for binding in bindings:
-            (own if is_own_skin(getattr(binding, "mesh", None))
-             else carried).append(binding)
-        stats = self.morph_soft_tissue(
-            gender, morph, compose(gender_warp, fit_warp), carried)
-        # With no sex morph in force there is nothing for the skeleton's own
-        # skin to be rebuilt *from*: the second pass would copy 791,729
-        # vertices back onto themselves, and build the sex field to do it.
-        if own and (gender_warp is not None or gender > 0.0):
-            extra = self.morph_soft_tissue(gender, morph, gender_warp, own)
-            stats = {k: stats.get(k, 0) + extra.get(k, 0)
-                     for k in set(stats) | set(extra)}
+        warp = compose(gender_warp, fit_warp)
+        # The head's soft tissue is carried by the same field, but it is not
+        # bound to anything, so it has to be told.
+        head_tissue.rebase(getattr(self.ctx, "pipeline", None), warp)
+        stats = self.morph_soft_tissue(gender, morph, warp, bindings)
+        self.cull_welds(bindings)
         return stats
+
+    def cull_welds(self, bindings: Any) -> int:
+        """Stop drawing the triangles that turned out not to be skin.
+
+        The asset welds the arm to the chest and the hand to the hip.  Real
+        skin stretches a little when the body moves; a weld across the gap
+        between two limbs stretches without limit and draws as a web.  See
+        :mod:`faceforge.body.weld_webs`.
+        """
+        from faceforge.body import weld_webs
+
+        tissue = getattr(self, "_soft_tissue_morph", None)
+        base_of = getattr(tissue, "base_of", None)
+        if base_of is None:
+            return 0
+        dropped = 0
+        for binding in bindings:
+            mesh = getattr(binding, "mesh", None)
+            base = None if mesh is None else base_of(mesh)
+            if base is None:
+                continue
+            dropped += weld_webs.cull(mesh, np.asarray(base).reshape(-1, 3))
+        return dropped
 
     def resnapshot_skinning(self) -> None:
         """Make the morphed body the pose-neutral body.

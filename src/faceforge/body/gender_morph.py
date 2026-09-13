@@ -1,7 +1,7 @@
 """Gender morph system: coordinates body surface morphing and bone scaling."""
 
 import logging
-from typing import Optional
+from typing import Any, Optional
 
 import numpy as np
 from numpy.typing import NDArray
@@ -20,6 +20,7 @@ from faceforge.body.surface_landmarks import (
     extract_mesh_landmarks, extract_skeleton_landmarks, load_bp3d_skin_mesh,
 )
 from faceforge.body.surface_register import fit_head_to_skull, register_onto
+from faceforge.body.breast_tissue import build as build_breast_tissue
 from faceforge.body.surface_subdivision import subdivide_pair
 from faceforge.body.surface_projection import (
     build_head_mask, closest_point_on_triangle_batch, closest_points_on_surface,
@@ -87,6 +88,9 @@ class GenderMorphSystem:
         self._skeleton_morph = SkeletonMorph(self._bone_scaler)
         self._skeleton_fit = SkeletonFit()
         self._skin_shape: Optional[SkinShapeMorph] = None
+        self._breast: Any = None
+        self._breast_mesh: Optional[MeshInstance] = None
+        self._breast_node: Optional[SceneNode] = None
         self._bone_points: Optional[NDArray] = None
         self._male_positions: Optional[NDArray[np.float32]] = None
         self._female_positions: Optional[NDArray[np.float32]] = None
@@ -216,6 +220,8 @@ class GenderMorphSystem:
         self._body_mesh_node = SceneNode(name="bodySurfaceMesh")
         self._body_mesh_node.mesh = self._body_mesh
 
+        self._build_breast_tissue(male_pos, female_pos, male_norms)
+
         self._loaded = True
         logger.info(
             "Body surface mesh loaded: %d verts, %d tris",
@@ -223,6 +229,53 @@ class GenderMorphSystem:
             len(male_geom.indices) // 3 if male_geom.indices is not None else 0,
         )
         return self._body_mesh_node
+
+    def _build_breast_tissue(self, male_pos, female_pos, normals) -> None:
+        """The tissue a female chest has and a male one does not.
+
+        Built from the surface pair itself, so it is empty at gender 0 and
+        sits exactly under the skin at every value above it; see
+        :mod:`faceforge.body.breast_tissue`.
+        """
+        if self._mesh_indices is None:
+            return
+        self._breast = build_breast_tissue(
+            male_pos, female_pos, self._mesh_indices.reshape(-1, 3), normals)
+        if self._breast is None:
+            return
+        points = self._breast.positions(0.0)
+        geometry = BufferGeometry(
+            positions=points.reshape(-1).astype(np.float32),
+            normals=np.zeros(points.size, dtype=np.float32),
+            indices=self._breast.faces.reshape(-1).astype(np.uint32),
+            vertex_count=len(points))
+        geometry.compute_normals()
+        self._breast_mesh = MeshInstance(
+            name="Mammary Tissue", geometry=geometry,
+            material=Material(color=(0.92, 0.80, 0.74), opacity=0.75,
+                              render_mode="solid"))
+        self._breast_mesh.store_rest_pose()
+        self._breast_mesh.visible = False
+        self._breast_node = SceneNode(name="mammaryTissue")
+        self._breast_node.mesh = self._breast_mesh
+
+    @property
+    def breast_node(self) -> Optional[SceneNode]:
+        """The mammary tissue, for whoever puts it in the scene."""
+        return self._breast_node
+
+    def _morph_breast_tissue(self) -> None:
+        if self._breast is None or self._breast_mesh is None:
+            return
+        points = self._breast.positions(self._gender)
+        self._breast_mesh.geometry.positions = points.reshape(-1).astype(np.float32)
+        self._breast_mesh.geometry.compute_normals()
+        self._breast_mesh.store_rest_pose()
+        self._breast_mesh.needs_update = True
+        # Nothing to see at gender 0: the two surfaces coincide there.
+        self._breast_mesh.visible = self._gender > 0.01
+        if self._breast_node is not None:
+            self._breast_node.visible = self._breast_mesh.visible
 
     def _align_to_bp3d(self, male_geom, female_geom):
         return align_to_bp3d(male_geom, female_geom, self._scale, self._translate_z)
@@ -237,6 +290,7 @@ class GenderMorphSystem:
         """
         self._gender = max(0.0, min(1.0, value))
         self._morph_body_surface()
+        self._morph_breast_tissue()
 
     def _morph_body_surface(self) -> None:
         """Lerp body surface mesh between male and female shapes."""

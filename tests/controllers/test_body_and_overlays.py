@@ -284,9 +284,14 @@ class RecordingTissueMorph:
         return {"muscles": 0, "other": 0}
 
 
-def test_the_skin_that_came_with_the_skeleton_keeps_its_own_shape(ctx, body):
-    """It was scanned from these bones; dragging it onto the surface mesh's
-    proportions is the distortion the option exists to avoid."""
+def test_the_skin_that_came_with_the_skeleton_is_carried_like_everything_else(
+        ctx, body):
+    """It was held back for a while, and that was wrong twice.
+
+    Held back, the fitted skeleton's hands and skull went straight through it.
+    The reason it was held back -- that carrying it mangled the skin -- was a
+    property of a field that could not extrapolate a scale, not of the idea.
+    """
     morph, muscle, skinning = _fit_ctx(ctx)
     skin = FakeNode("Skin", FakeMesh("Skin"))
     skinning.bindings.append(StubBinding(skin.mesh))
@@ -295,9 +300,8 @@ def test_the_skin_that_came_with_the_skeleton_keeps_its_own_shape(ctx, body):
 
     ctx.event_bus.publish(EventType.SKELETON_FIT_TOGGLED, enabled=True)
 
-    carried, own = tissue.calls
-    assert carried[0] == [muscle.mesh.name], "muscles are carried by the fit"
-    assert own[0] == ["Skin"], "the skeleton's own skin is rebuilt on its own"
+    assert len(tissue.calls) == 1, "one field, one pass, every mesh"
+    assert tissue.calls[0][0] == [muscle.mesh.name, "Skin"]
 
 
 def test_without_the_fit_every_mesh_is_rebuilt_in_one_pass(ctx, body):

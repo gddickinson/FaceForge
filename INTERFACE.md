@@ -129,6 +129,7 @@ flat when ankle dorsiflexion = pitch − hip + knee.
 | `fascia.py` | Virtual fascia constraint surfaces for muscle attachment. |
 | `fibre_field.py` | Harmonic fibre interpolation: a footprinted muscle's belly stretches between the rigid images of its two attachments instead of bowing; `build_fibre_field`, `trim_footprints`, disk-cached via `cached_fibre_field`. |
 | `fma_taxonomy.py` | Read-only access to the FMA relation graph shipped in assets/config. |
+| `head_tissue.py` | The head's soft tissue, which owns its own rest pose and so gets left behind when the skull moves: the neck, jaw and expression muscles, the face and the face features, moved by the same field the skinning gets. |
 | `head_rotation.py` | Head yaw/pitch/roll rotation with cervical vertebra distribution. |
 | `item_generators.py` | Exam item generators. Every fact comes from data; none is authored here. |
 | `jaw_muscles.py` | 22 STL jaw muscles with jaw-angle deformation. |
@@ -193,6 +194,9 @@ flat when ankle dorsiflexion = pitch − hip + knee.
 | `skeleton_field.py` | Turns a skeleton change into a smooth spatial warp: joint displacements as a thin-plate spline (`displacement_warp`), sampled on a lattice (`sampled_warp`). |
 | `skeleton_joints.py` | Shuts an articulation whose two bones scale apart (the acromioclavicular joint), from a contact patch measured on the unscaled skeleton. |
 | `skeleton_morph.py` | `SkeletonMorph`: scales the skeleton as an articulated hierarchy -- bones about the joint they hang from, joints moved to the end of the scaled bone -- so proportions change without the joints coming apart. |
+| `breast_tissue.py` | Mammary tissue as a lens from the skin to the chest wall, deepest at the nipple; built from the surface pair because the asset set is a male cadaver and has no breast in it. |
+| `sex_specific.py` | Structures that belong to one sex: the eight male reproductive organs and the male urethra, hidden for a female model. |
+| `weld_webs.py` | Triangles that turn out not to be skin, found by moving the body: the asset welds the arm to the chest, and a weld stretches without limit where skin does not. |
 | `skull_morph.py` | The part of cranial sex a merged skull mesh cannot express: the face narrows further than the vault, graded by height about the midline. Before this, the cranium, jaw, teeth and atlas were the only bone meshes the sex slider left alone. |
 | `skin_morph.py` | `SkinShapeMorph`: the female-minus-male soft-tissue field (breast, gluteal and thigh fat, waist), measured from the surface pair and transferred to the model's own skin. |
 | `soft_tissue_morph.py` | `SoftTissueMorph`: composes the skeleton warp, the muscle bulk change and the soft-tissue field onto every mesh's rest pose, always from a captured original. |
@@ -200,6 +204,7 @@ flat when ankle dorsiflexion = pitch − hip + knee.
 | `skinning_cache.py` | Disk cache for the soft-tissue binding solve. |
 | `surface_fit.py` | The refinement that pulls the registered surface mesh the last few units onto the reference skin, under edge-length constraints. |
 | `surface_landmarks.py` | Joint landmarks from the skeleton's own bones, and the same joints found on a body mesh by shape (the wrist and ankle are where a limb is narrowest). |
+| `surface_subdivision.py` | Loop subdivision of the body-surface pair at load: 10,582 vertices to 42,322, both sexes through one operator so they keep one topology. |
 | `surface_register.py` | `register_onto`: limb-by-limb registration of the body-surface mesh onto the skeleton, held inside an edge-length band; `fit_head_to_skull`. |
 | `surface_projection.py` | The geometry the fit is built from: closest point on a triangle, region-constrained projection, edges, Laplacian smoothing, normals. |
 | `soft_tissue.py` | Delta-matrix soft tissue skinning for body muscles/organs/vasculature; `resnapshot_rest` re-snapshots the rest pose after the skeleton itself moves, keeping the binding. `_joint_world` always returns a fresh array: world matrices are rewritten in place, so a rest matrix that aliased one followed the body into the gym. `INFLUENCE_CUTOFF_BAND` keeps a skin vertex's influences local, so a thigh vertex is not part-driven by the ankle; `SEED_FROM_OWNED_SKIN` lets a deep bone seed the skin lying over it, so back skin is not handed to the collar bone; `SEED_CONFIDENCE_MARGIN` makes ambiguous skin seed nothing; `GEODESIC_BRIDGE` joins the skin's 528 disconnected patches into the Dijkstra graph, which `edge_pairs` never sees. |
@@ -415,6 +420,7 @@ flat when ankle dorsiflexion = pitch − hip + knee.
 | `neck_deformation_quality.py` | Neck-muscle edge stretch and displacement per pose, with `--wrapper` for the gym-scene control |
 | `skeleton_containment.py` | Signed distance from every bone vertex to the body surface, positive outside; the sign is calibrated, not read off the winding |
 | `fit_skeleton_to_skin.py` | Solves the per-region matrices that put the skeleton inside the body-surface mesh (`--measure`, `--solve --write`) |
+| `render_model_matrix.py` | Every layer, both sexes, fit off and on, through the application's own path: the matrix, not any single frame |
 | `render_skeleton_fit.py` | Draws the skeleton in its surface, before and after the fit; `--protrusion` colours every bone vertex by how far it is outside |
 | `inspect_skeleton_fit.py` | Orthographic drawings on a labelled grid in body units, front/side/closeups and transverse sections: what the summary numbers cannot show |
 | `anthropometry.py` | Measures the morphed model back against published adult means: stature, sitting height, biacromial and bi-iliac breadth, long bones, cranial dimensions. Exits non-zero when a ratio drifts |
