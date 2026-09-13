@@ -30,7 +30,12 @@ logger = logging.getLogger(__name__)
 
 #: The groups that ride on top of the thoracic column, and the chain whose
 #: top they ride on.
-RIDING_GROUPS = ("vertebraeGroup", "skullGroup")
+#: The face features ride too, and not only so that the eyes stay in their
+#: orbits: the eyeball pivots are control points of the soft-tissue warp, so a
+#: head that descends while they stay put tells the field there is no
+#: displacement at the face.  Measured, that dropped the back of the head 6.2
+#: units while the cheek moved 0.3, and the face was pulled apart between them.
+RIDING_GROUPS = ("vertebraeGroup", "skullGroup", "faceFeatureGroup")
 THORACIC_PIVOT = "thoracic_spine_pivot_"
 
 #: Meshes this applies to: the merged skull, and nothing else.

@@ -88,9 +88,23 @@ def collect(pipeline: Any) -> list[Owned]:
     features = getattr(pipeline, "face_features", None)
     for group in ("_features", "_eyeballs"):
         for md in getattr(features, group, ()) or ():
-            if getattr(md, "rest_positions", None) is not None:
-                out.append(Owned(md, "rest_positions", getattr(md, "mesh", None)))
+            if getattr(md, "rest_positions", None) is None:
+                continue
+            # A mesh under a joint is expressed in that joint's frame, so a
+            # field evaluated in body coordinates would be read at the wrong
+            # place; and it rides with the joint anyway.
+            if _under_a_pivot(getattr(md, "node", None)):
+                continue
+            out.append(Owned(md, "rest_positions", getattr(md, "mesh", None)))
     return out
+
+
+def _under_a_pivot(node: Any) -> bool:
+    while node is not None:
+        if "pivot" in (getattr(node, "name", "") or "").lower():
+            return True
+        node = getattr(node, "parent", None)
+    return False
 
 
 def owned_meshes(pipeline: Any) -> set[int]:

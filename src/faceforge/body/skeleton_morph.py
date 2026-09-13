@@ -433,7 +433,7 @@ class SkeletonMorph:
         return control_points(root, self._backup.pivot_positions,
                               self._backup.bone_positions,
                               lambda name: self._scale_of(name, 1.0),
-                              self._node_offset, _is_pivot)
+                              self._node_offset, _is_pivot, self._exclude)
 
     def displacement_field(self, root: Any, sigma: float | None = None,
                            sampled: bool = True):

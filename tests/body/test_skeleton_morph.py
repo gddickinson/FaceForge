@@ -162,3 +162,42 @@ class TestDisplacementField:
     def test_no_control_points_is_a_no_op(self):
         warp = displacement_warp(np.zeros((0, 3)), np.zeros((0, 3)))
         np.testing.assert_allclose(warp(np.ones((5, 3))), np.zeros((5, 3)))
+
+
+class TestSoftTissueIsNotAControlPoint:
+    """A mesh the morph may not scale must not claim the field is zero there.
+
+    "Zygomatic Maj. L" is a muscle of facial expression, but it reads as the
+    zygomatic bone to a name test.  The morph rightly refuses to scale it, so
+    it stayed put -- and then reported a displacement of exactly zero in the
+    middle of the cheek while the cranium beside it reported -5.2.  The spline
+    honoured both and tore the face between them.
+    """
+
+    def _rig(self):
+        root = SceneNode(name="bodyRoot")
+        group = SceneNode(name="skullGroup")
+        root.add(group)
+        group.add(_bone("cranium", _cylinder(10.0, radius=8.0)))
+        muscle = _bone("Zygomatic Maj. L", _cylinder(3.0, radius=1.0))
+        group.add(muscle)
+        root.update_world_matrix(force=True)
+        return root, muscle
+
+    def test_an_excluded_mesh_contributes_no_control_point(self):
+        root, muscle = self._rig()
+        morph = SkeletonMorph(BoneScaler())
+        morph.apply(root, 1.0, exclude={id(muscle.mesh)})
+        pts, _ = morph.control_points(root)
+        centre = np.asarray(muscle.mesh.rest_positions,
+                            dtype=np.float64).reshape(-1, 3).mean(axis=0)
+        assert not np.any(np.linalg.norm(pts - centre, axis=1) < 1e-6)
+
+    def test_without_the_guard_it_would_report_no_displacement(self):
+        """The muscle is matched by name and left where it was: both true."""
+        root, muscle = self._rig()
+        morph = SkeletonMorph(BoneScaler())
+        morph.apply(root, 1.0, exclude={id(muscle.mesh)})
+        assert morph._scale_of("Zygomatic Maj. L", 1.0) is not None
+        np.testing.assert_allclose(muscle.mesh.geometry.positions,
+                                   muscle.mesh.rest_positions, atol=1e-6)

@@ -59,13 +59,24 @@ def control_points(root: Any, pivot_rest: dict[int, NDArray],
                    bone_rest: dict[int, NDArray],
                    has_scale: Callable[[str], Any],
                    node_offset: Callable[[Any], NDArray],
-                   is_pivot: Callable[[Any], bool]) -> tuple[NDArray, NDArray]:
+                   is_pivot: Callable[[Any], bool],
+                   exclude: set[int] | None = None) -> tuple[NDArray, NDArray]:
     """Where the skeleton was and where it went, as ``(positions, displacements)``.
 
     Every joint contributes one control point, and so does every bone that
     hangs off a group rather than a joint -- the pelvis, the sternum, the
     cranium -- so no region of the body is left without one.
+
+    ``exclude`` is the same set of ``id(mesh)`` the morph is forbidden to
+    scale: the soft tissue this field exists to carry.  Such a mesh must not
+    be a control point either.  A name test alone reads "Zygomatic Maj. L" --
+    a muscle of facial expression -- as the zygomatic bone, and because the
+    morph rightly never moved it, it reported a displacement of exactly zero
+    in the middle of the cheek while the cranium two centimetres away reported
+    -5.2.  The spline honoured both and tore the face between them: measured,
+    the scalp muscles descended 6.1 units and Orbicularis Oris 0.95.
     """
+    skip = exclude or set()
     pos: list[NDArray] = []
     disp: list[NDArray] = []
     for node in _walk(root):
@@ -82,7 +93,7 @@ def control_points(root: Any, pivot_rest: dict[int, NDArray],
         if mesh is None or node.parent is None or is_pivot(node.parent):
             continue
         rest = bone_rest.get(id(mesh))
-        if rest is None or has_scale(node.name or "") is None:
+        if rest is None or id(mesh) in skip or has_scale(node.name or "") is None:
             continue
         before = (np.asarray(rest, dtype=np.float64).reshape(-1, 3).mean(axis=0)
                   + rest_offset(node, pivot_rest))
