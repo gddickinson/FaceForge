@@ -17,7 +17,7 @@ between them, which is what a proportion change is.
 
 from __future__ import annotations
 
-from typing import Any, Callable, Iterable
+from typing import Any, Callable, Iterable, Optional
 
 import numpy as np
 from numpy.typing import NDArray
@@ -201,3 +201,29 @@ def sampled_warp(warp: Callable[[NDArray], NDArray], points: NDArray,
         return out
 
     return interp
+
+
+def compose(*warps: Optional[Callable[[NDArray], NDArray]]
+            ) -> Optional[Callable[[NDArray], NDArray]]:
+    """Chain displacement fields: each one is evaluated where the last left off.
+
+    Two skeleton changes may be in force at once -- a sex morph and a fit into
+    the body-surface mesh -- and both are expressed as a displacement of the
+    *original* body.  Adding them would be wrong: the second was measured on a
+    skeleton the first had already moved.  Evaluating them in order is not.
+    """
+    active = [w for w in warps if w is not None]
+    if not active:
+        return None
+    if len(active) == 1:
+        return active[0]
+
+    def chained(points: NDArray) -> NDArray:
+        p = np.asarray(points, dtype=np.float64).reshape(-1, 3)
+        total = np.zeros_like(p)
+        for w in active:
+            d = np.asarray(w(p + total), dtype=np.float64).reshape(-1, 3)
+            total = total + d
+        return total
+
+    return chained

@@ -50,6 +50,13 @@ class BodyTab(QScrollArea):
         self._gender_slider.slider.sliderReleased.connect(self._on_gender_released)
         self._layout.addWidget(self._gender_slider)
 
+        # The body-surface mesh is a different body from the skeleton, so one
+        # of the two has to give.  Warping the surface onto the bones damages
+        # it (docs/sex_morph.md); this moves the bones instead.
+        self._fit_skeleton = ToggleRow("Fit skeleton to body mesh", default=False)
+        self._fit_skeleton.toggled.connect(self._on_fit_skeleton_toggled)
+        self._layout.addWidget(self._fit_skeleton)
+
         # ── 1. Body Poses ──
         self._layout.addWidget(SectionLabel("Body Poses"))
         self._pose_buttons: dict[str, QPushButton] = {}
@@ -251,6 +258,9 @@ class BodyTab(QScrollArea):
 
     def _on_gender_released(self) -> None:
         self._bus.publish(EventType.GENDER_RELEASED, gender=self._gender_slider.value)
+
+    def _on_fit_skeleton_toggled(self, enabled: bool) -> None:
+        self._bus.publish(EventType.SKELETON_FIT_TOGGLED, enabled=enabled)
 
     def _on_heatmap_toggled(self, enabled: bool) -> None:
         self._bus.publish(EventType.HEATMAP_TOGGLED, enabled=enabled)

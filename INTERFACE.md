@@ -5,7 +5,8 @@ and how they connect. Update it whenever the structure changes
 (`python -m tools.export_exercise_docs` regenerates the exercise list;
 this file is maintained by hand). Rig facts that were *measured*, not
 assumed, live in `docs/exercise_animation.md`; the sex morph's measurements
-live in `docs/sex_morph.md`.
+live in `docs/sex_morph.md`, and the fit of the skeleton into the body-surface
+mesh in `docs/skeleton_fit.md`.
 
 ## Running and testing
 
@@ -35,7 +36,7 @@ FaceForge/
 ├── assets/stl            symlink to the BodyParts3D STL set (outside the repo)
 ├── tools/                headless loaders, renderers, diagnostics, README image generators
 ├── tests/                pytest; `slow` marks asset-heavy and whole-app tests
-├── docs/                 headless_cli.md, exercise_animation.md, sex_morph.md, exercises.md (generated), research/
+├── docs/                 headless_cli.md, exercise_animation.md, sex_morph.md, skeleton_fit.md, exercises.md (generated), research/
 ├── results/              generated outputs (exercise demo frames live in results/exercise_demo/)
 ├── start_faceforge.sh    launcher: the full GUI
 ├── start_exercise_viewer.sh  launcher: the standalone exercise viewer (--exercise ID, --list)
@@ -186,6 +187,8 @@ flat when ankle dorsiflexion = pitch − hip + knee.
 | `physiology.py` | Physiological simulation systems: heartbeat, blood flow, breathing, digestion, fasciculation. |
 | `region_labels.py` | Anatomical region labeling for body mesh segmentation. |
 | `skeleton.py` | Build full-body skeleton from STL batches. |
+| `fit_regions.py` | The skeleton as a tree of regions for the fit: which node belongs to which region, each region's anchor joint, and the composition rule that keeps the articulations shut. |
+| `skeleton_fit.py` | `SkeletonFit`: moves and deforms the skeleton so it sits *inside* the body-surface mesh, the opposite direction to the surface warp; matrices solved offline into `assets/config/skeleton_fit.json`. |
 | `skeleton_field.py` | Turns a skeleton change into a smooth spatial warp: joint displacements as a thin-plate spline (`displacement_warp`), sampled on a lattice (`sampled_warp`). |
 | `skeleton_joints.py` | Shuts an articulation whose two bones scale apart (the acromioclavicular joint), from a contact patch measured on the unscaled skeleton. |
 | `skeleton_morph.py` | `SkeletonMorph`: scales the skeleton as an articulated hierarchy -- bones about the joint they hang from, joints moved to the end of the scaled bone -- so proportions change without the joints coming apart. |
@@ -408,6 +411,9 @@ flat when ankle dorsiflexion = pitch − hip + knee.
 | `author_footprints.py` | Mirror authored attachment footprints to the other side, or seed them from bone proximity (measure before keeping) |
 | `export_exercise_docs.py` | Renders the catalogue to `docs/exercises.md` (`--check` for CI) |
 | `neck_deformation_quality.py` | Neck-muscle edge stretch and displacement per pose, with `--wrapper` for the gym-scene control |
+| `skeleton_containment.py` | Signed distance from every bone vertex to the body surface, positive outside; the sign is calibrated, not read off the winding |
+| `fit_skeleton_to_skin.py` | Solves the per-region matrices that put the skeleton inside the body-surface mesh (`--measure`, `--solve --write`) |
+| `render_skeleton_fit.py` | Draws the skeleton in its surface, before and after the fit; `--protrusion` colours every bone vertex by how far it is outside |
 | `skin_deformation_quality.py` | Body-skin tearing, collapse, spikes and containment per pose; `--influences`, `--cutoff`, `--seed-margin`, `--muscle-weight`, `--min-spatial`, `--bridge`, `--contact`, `--diffuse` for the tunables |
 | `skin_defect_views.py` | The skin from three viewpoints, coloured by stretch, spike or arm-weight; `--save` a baseline and `--baseline` it back for before-and-after |
 | `render_skin_proof.py` | The skin drawn in **pixels** through `Session`'s own GL renderer, four viewpoints, with engine overrides so an earlier state can be rendered from the same tree |

@@ -31,6 +31,7 @@ class BodyController:
         bus.subscribe(EventType.BODY_POSE_SET, self.on_body_pose_set)
         bus.subscribe(EventType.GENDER_CHANGED, self.on_gender_changed)
         bus.subscribe(EventType.GENDER_RELEASED, self.on_gender_released)
+        bus.subscribe(EventType.SKELETON_FIT_TOGGLED, self.on_skeleton_fit_toggled)
 
     # -- Pose --------------------------------------------------------------
 
@@ -108,19 +109,130 @@ class BodyController:
         skinning = getattr(self.ctx.simulation, "soft_tissue", None)
         soft = {id(b.mesh) for b in getattr(skinning, "bindings", ())
                 if getattr(b, "mesh", None) is not None}
+        # The fit comes off first.  Both it and the sex morph rewrite the same
+        # rest geometry from their own captured original, so scaling on top of
+        # a fitted skeleton would leave the fit's snapshot describing a body
+        # that no longer exists -- and taking the fit off afterwards would then
+        # undo the scaling with it.
+        fit = getattr(morph, "skeleton_fit", None)
+        was_fitted = fit is not None and fit.applied
+        if fit is not None:
+            fit.reset(root, getattr(joint_setup, "joint_positions", None))
         n_scaled = morph.scale_skeleton(
             root, getattr(joint_setup, "joint_positions", None), exclude=soft)
         root.update_world_matrix(force=True)
         self.ctx.scene.update()
 
-        skeleton = getattr(morph, "skeleton_morph", None)
-        warp = skeleton.displacement_field(root) if skeleton is not None else None
-        stats = self.morph_soft_tissue(gender, morph, warp)
+        warps = self.skeleton_warps(morph, root, gender, joint_setup, soft,
+                                    fit_to_mesh=was_fitted)
+        root.update_world_matrix(force=True)
+        self.ctx.scene.update()
+        stats = self.rebuild_soft_tissue(gender, morph, *warps)
         logger.info("Gender %.2f: %d bones scaled, %d muscles and %d other meshes rebuilt",
                     gender, n_scaled, stats.get("muscles", 0), stats.get("other", 0))
 
         self.resnapshot_skinning()
         self.refresh_after_skeleton_change()
+
+    # -- Fitting the skeleton into the body-surface mesh --------------------
+
+    def on_skeleton_fit_toggled(self, enabled: bool = False, **kw) -> None:
+        """Put the skeleton inside the body-surface mesh, or take it back out.
+
+        The surface mesh is a MakeHuman figure and the skeleton a
+        BodyParts3D cadaver, so one of the two has to give.  Warping the
+        surface onto the bones is measured in ``docs/sex_morph.md`` and it
+        damages the mesh, which is why it is off; this moves the *bones*
+        instead, region by region, and leaves the authored surface exactly as
+        its authors drew it (:mod:`faceforge.body.skeleton_fit`).
+
+        Everything after the move is the gender path's, for the same reasons:
+        the soft tissue is carried by a smooth field rather than through the
+        skinning, and only then is the result made the pose-neutral body.
+        """
+        morph = getattr(self.ctx.pipeline, "gender_morph", None)
+        root = self.ctx.node("bodyRoot")
+        if morph is None or not morph.loaded or root is None:
+            return
+        fit = getattr(morph, "skeleton_fit", None)
+        if fit is None or bool(enabled) == fit.applied:
+            return
+        joint_setup = getattr(getattr(self.ctx, "pipeline", None), "joint_setup", None)
+        skinning = getattr(self.ctx.simulation, "soft_tissue", None)
+        soft = {id(b.mesh) for b in getattr(skinning, "bindings", ())
+                if getattr(b, "mesh", None) is not None}
+        gender = float(getattr(self.ctx.state.body, "gender", 0.0))
+
+        warps = self.skeleton_warps(morph, root, gender, joint_setup, soft,
+                                    fit_to_mesh=bool(enabled))
+        root.update_world_matrix(force=True)
+        self.ctx.scene.update()
+        self.rebuild_soft_tissue(gender, morph, *warps)
+        self.resnapshot_skinning()
+        self.refresh_after_skeleton_change()
+        logger.info("Skeleton fit to the body mesh: %s", "on" if enabled else "off")
+
+    def skeleton_warps(self, morph: Any, root: Any, gender: float,
+                       joint_setup: Any, soft: set[int],
+                       fit_to_mesh: bool | None = None) -> tuple[Any, Any]:
+        """Move the skeleton, and return the two fields that moved it.
+
+        Two changes can be in force at once -- the sex morph and the fit into
+        the body-surface mesh -- and each was measured on the skeleton the
+        other had not yet moved.  So the sex morph's field is read with the
+        fit taken off, the fit is then re-applied, and the two are returned
+        separately because they do not apply to the same meshes.
+        """
+        joints = getattr(joint_setup, "joint_positions", None)
+        fit = getattr(morph, "skeleton_fit", None)
+        if fit_to_mesh is None:
+            fit_to_mesh = fit is not None and fit.applied
+        if fit is not None:
+            fit.reset(root, joints)
+        skeleton = getattr(morph, "skeleton_morph", None)
+        gender_warp = (skeleton.displacement_field(root)
+                       if skeleton is not None and skeleton.captured else None)
+        fit_warp = None
+        if fit is not None and fit_to_mesh:
+            fit.apply(root, 1.0, gender, joints, exclude=soft)
+            fit_warp = fit.displacement_field()
+        return gender_warp, fit_warp
+
+    def rebuild_soft_tissue(self, gender: float, morph: Any,
+                            gender_warp: Any, fit_warp: Any) -> dict:
+        """Carry the soft tissue onto the skeleton as it now is.
+
+        Everything that hangs off a bone follows both changes, chained rather
+        than added: the fit was measured on a skeleton the sex morph had
+        already scaled.
+
+        The skin that came with the skeleton is the exception.  It was scanned
+        from these bones and already fits them; dragging it onto the surface
+        mesh's proportions is the distortion the whole option exists to avoid,
+        and it is visible -- the fitted skin comes out a head shorter and
+        broad in the shoulders.  So it follows the sex morph and nothing else,
+        and the bones simply sit a little further inside it.
+        """
+        from faceforge.body.skeleton_field import compose
+        from faceforge.body.skeleton_fit import is_own_skin
+
+        skinning = getattr(self.ctx.simulation, "soft_tissue", None)
+        bindings = list(getattr(skinning, "bindings", ()))
+        if fit_warp is None:
+            return self.morph_soft_tissue(gender, morph,
+                                          compose(gender_warp, fit_warp),
+                                          bindings)
+        own, carried = [], []
+        for binding in bindings:
+            (own if is_own_skin(getattr(binding, "mesh", None))
+             else carried).append(binding)
+        stats = self.morph_soft_tissue(
+            gender, morph, compose(gender_warp, fit_warp), carried)
+        if own:
+            extra = self.morph_soft_tissue(gender, morph, gender_warp, own)
+            stats = {k: stats.get(k, 0) + extra.get(k, 0)
+                     for k in set(stats) | set(extra)}
+        return stats
 
     def resnapshot_skinning(self) -> None:
         """Make the morphed body the pose-neutral body.
@@ -147,8 +259,13 @@ class BodyController:
                        "every binding, which is slow but correct")
         self.rebind_skinning()
 
-    def morph_soft_tissue(self, gender: float, morph: Any, warp: Any) -> dict:
-        """Rebuild every muscle's and skin mesh's rest pose for ``gender``."""
+    def morph_soft_tissue(self, gender: float, morph: Any, warp: Any,
+                          bindings: Any = None) -> dict:
+        """Rebuild a muscle's or skin mesh's rest pose for ``gender``.
+
+        ``bindings`` defaults to every bound mesh; the caller passes a subset
+        when two groups need different fields (see :meth:`rebuild_soft_tissue`).
+        """
         skinning = getattr(self.ctx.simulation, "soft_tissue", None)
         if skinning is None:
             return {}
@@ -160,8 +277,10 @@ class BodyController:
         # vertices bind to, so nothing has to be named twice.
         ids = getattr(self.ctx, "skin_chain_ids", None) or {}
         chain_names = {int(v): k for k, v in ids.items()} or None
+        if bindings is None:
+            bindings = getattr(skinning, "bindings", ())
         return tissue.apply(
-            getattr(skinning, "bindings", ()), gender, warp=warp,
+            bindings, gender, warp=warp,
             skin_field=getattr(morph, "skin_shape", None),
             chain_names=chain_names,
             chain_of_joint=getattr(skinning, "_joint_chain_ids", None))
@@ -184,6 +303,19 @@ class BodyController:
                     collision.build_capsules()
                 except Exception as exc:                     # noqa: BLE001 - logged
                     logger.warning("Bone capsules not rebuilt after morph: %s", exc)
+            # A footprinted muscle is placed from its fibre field, and the
+            # field holds the rest pose it was solved on.  The morph has just
+            # rewritten that pose, so without this the field writes the old
+            # geometry back over the new one every frame -- visible with the
+            # skeleton fit on as the trapezius and deltoid in wings.
+            attachments = getattr(skinning, "attachment_system", None)
+            if attachments is not None:
+                try:
+                    attachments.refresh_rest_poses(
+                        getattr(skinning, "bindings", ()))
+                except Exception as exc:                     # noqa: BLE001 - logged
+                    logger.warning("Fibre fields not refreshed after morph: %s",
+                                   exc)
         anim = getattr(self.ctx.simulation, "body_animation", None)
         if anim is not None and hasattr(anim, "_girdle_cache"):
             anim._girdle_cache = {}

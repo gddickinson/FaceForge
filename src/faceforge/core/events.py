@@ -100,6 +100,7 @@ class EventType(Enum):
     # Gender dimorphism
     GENDER_CHANGED = auto()           # data: gender (float, 0=male, 1=female)
     GENDER_RELEASED = auto()          # data: gender (float) — slider released, trigger re-registration
+    SKELETON_FIT_TOGGLED = auto()     # data: enabled (bool) — fit the skeleton inside the body-surface mesh
 
     # Exercise demonstrations (faceforge.exercise)
     EXERCISE_SELECTED = auto()        # data: exercise_id (str), reps (int), tempo (float)

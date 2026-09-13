@@ -427,6 +427,36 @@ class MuscleAttachmentSystem:
             current = positions[idx].astype(np.float64)
             positions[idx] = (current + strength * (target - current)).astype(np.float32)
 
+    def refresh_rest_poses(self, bindings) -> int:
+        """Re-read every registered muscle's rest pose after the skeleton moved.
+
+        The fibre field and the stretch clamp both hold numbers measured on
+        the rest pose, and a sex morph or a skeleton fit rewrites that pose
+        under them.  Left stale, the field writes the muscle's *old* geometry
+        back over the new one every frame.
+        """
+        refreshed = 0
+        for binding in bindings:
+            data = self._attachments.get(id(binding))
+            mesh = getattr(binding, "mesh", None)
+            if data is None or mesh is None or mesh.rest_positions is None:
+                continue
+            rest = np.asarray(mesh.rest_positions, dtype=np.float64).reshape(-1, 3)
+            if data.fibre_field is not None and data.fibre_field.refresh_rest(rest):
+                refreshed += 1
+            if not data.footprint_masks:
+                continue
+            om, im = data.origin_mask, data.insertion_mask
+            no, ni = min(len(om), len(rest)), min(len(im), len(rest))
+            if om[:no].any() and im[:ni].any():
+                data.rest_length = max(1e-3, float(np.linalg.norm(
+                    rest[:no][om[:no]].mean(axis=0)
+                    - rest[:ni][im[:ni]].mean(axis=0))))
+        if refreshed:
+            logger.info("Fibre fields moved onto the new rest pose: %d muscles",
+                        refreshed)
+        return refreshed
+
     def has_fibre_field(self, binding: SkinBinding) -> bool:
         """True when this muscle is placed by its harmonic fibre field."""
         data = self._attachments.get(id(binding))

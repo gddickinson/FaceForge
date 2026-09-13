@@ -170,6 +170,32 @@ class FibreField:
         positions[self.solved] = (self.rest + h).astype(positions.dtype)
         return len(self.solved)
 
+    def refresh_rest(self, rest: np.ndarray) -> bool:
+        """Move the field onto a rest pose that changed under it.
+
+        The field stores the rest positions it was solved on, and ``apply``
+        writes those back verbatim when both deltas are the identity.  So
+        after a change of proportion -- a sex morph, or a fit of the skeleton
+        into a body-surface mesh -- a footprinted muscle was being snapped
+        back to the geometry it had before, while the vertices the field does
+        not drive stayed where the morph put them.  Rendered with the fit on,
+        the trapezius and deltoid came away from the thorax in wings.
+
+        ``c`` is a function of the mesh graph and the two footprints, and a
+        change of proportion touches neither.  ``m`` is a harmonic extension
+        of rest *coordinates*, so it is carried by the same displacement,
+        each footprint's share weighted by its own harmonic weight.
+        """
+        new = np.asarray(rest, dtype=np.float64).reshape(-1, 3)
+        if self.solved.size and int(self.solved.max()) >= len(new):
+            return False
+        moved = new[self.solved]
+        delta = moved - self.rest
+        for k in (0, 1):
+            self.m[:, k, :] += self.c[:, k, None] * delta
+        self.rest = moved
+        return True
+
 
 def _uniform_adjacency(n: int, edges: np.ndarray) -> csr_matrix:
     e = np.asarray(edges, dtype=np.int64).reshape(-1, 2)

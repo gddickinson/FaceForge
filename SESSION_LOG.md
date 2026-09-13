@@ -872,3 +872,66 @@ and placed into the BP3D frame and otherwise untouched.
 go from a median of 2.60 to 5.11, 95th percentile 10.02 to 15.33, worst 16.53
 to 26.57. The skeleton sits about twice as far inside the skin and pokes
 through in more places. That is the trade, taken deliberately.
+
+## 2026-09-12 (later) — Fit the skeleton to the body mesh, not the mesh to the skeleton
+
+**Asked.** A GUI option that fits the skeleton *into* the body-surface mesh —
+moving and deforming the bones so they sit well inside it — applying to the
+body-surface meshes, not to the skin layer that came with the skeleton.
+
+**Measured first.** 65.7% of the male skeleton's vertices lie outside the
+surface, a median of 2.42 units out and 11.38 at the 95th percentile; the
+cranium is outside along its whole length (max 27.7), the scapula and humerus
+by 12 to 19, and every bone of both feet. Female: 78.4%. A global scale about
+the soles never got below 60% at any factor tried — shrinking laterally pulls
+the humerus out of the mesh's sleeve into the gap beside the chest. The
+disagreement is per-limb, in direction as well as length: the forearm axes
+differ by 15 degrees, the shanks by 10.
+
+**Built.**
+- `body/fit_regions.py` — the skeleton as 17 regions, each a full 3×3 about
+  the joint it hangs from, each anchor carried by its parent so no
+  articulation can open. Trunk and head also carry a translation.
+- `body/skeleton_fit.py` — `SkeletonFit`: capture, apply, exact reset, and
+  the displacement field that carries the soft tissue.
+- `tools/fit_skeleton_to_skin.py` — the offline solve (coordinate descent on
+  squared protrusion, parents first) → `assets/config/skeleton_fit.json`,
+  one table per sex, lerped at runtime.
+- `tools/skeleton_containment.py` — signed distance to the surface, sign
+  calibrated rather than read off the winding, which is inward on this mesh.
+- `tools/render_skeleton_fit.py` — the picture, `--protrusion` colouring every
+  bone vertex blue inside to red outside.
+- GUI: **Body → Fit skeleton to body mesh**, `SKELETON_FIT_TOGGLED`, and
+  `BodyController.on_skeleton_fit_toggled`.
+
+**Measured after.** Outside 65.7% → 35.4% (male) and 78.4% → 40.5% (female);
+median +2.42 → −0.78; p95 11.38 → 2.98; worst 27.7 → 7.2. Over every vertex
+rather than the sample, 68.9% → 27.0%. Renders in `results/skeleton_fit/`.
+
+**Two things the renders caught that the arithmetic did not.**
+
+*The soft tissue tore.* A thin-plate spline extrapolates outside the hull of
+its control points, and an eight-degree turn of the shoulder girdle made it
+extrapolate hard — the trapezius and deltoid came away from the thorax in
+wings. Replaced with an inverse-distance blend of displacements measured on
+the bones, which is bounded by the largest of them wherever it is evaluated.
+Its neighbour count and smoothing were chosen on the quadriceps, which span
+the hip: worst p99 edge stretch 2.926 at 16/3, 2.022 at 48/10.
+
+*A latent defect in the fibre field.* A footprinted muscle is placed every
+frame from its harmonic field, and the field stores the rest pose it was
+solved on. Nothing refreshed that when a morph rewrote the rest pose, so the
+field wrote the old geometry back over the new one every frame. Fixed by
+`MuscleAttachmentSystem.refresh_rest_poses`, called from
+`refresh_after_skeleton_change`, so the sex morph gets it too. With the fix
+the render is byte-identical to the control with attachments switched off.
+
+**Deliberately not carried.** The skin layer that came with the skeleton. It
+was scanned from these bones and already fits them; carried by the fit it came
+out a head shorter and broad in the shoulders. It follows the sex morph and
+nothing else, and renders byte-identically with the fit on or off.
+
+**Still open.** The crown of the skull stands ~4 units proud of the scalp; the
+hands end against the ±20° rotation bound; the lerp between the two solved
+tables is not the fit of the lerped surface, and nothing checks it.
+`docs/skeleton_fit.md` has the full measurements.

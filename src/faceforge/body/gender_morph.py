@@ -12,6 +12,7 @@ from faceforge.core.config_loader import load_config
 from faceforge.loaders.asset_manager import AssetManager
 from faceforge.body.bone_scaling import BoneScaler
 from faceforge.body.edge_relaxation import enforce_edge_range
+from faceforge.body.skeleton_fit import SkeletonFit
 from faceforge.body.skeleton_morph import SkeletonMorph
 from faceforge.body.skin_morph import SkinShapeMorph
 from faceforge.body.surface_fit import align_to_bp3d, refine_onto_skin
@@ -69,6 +70,7 @@ class GenderMorphSystem:
     def __init__(self):
         self._bone_scaler = BoneScaler()
         self._skeleton_morph = SkeletonMorph(self._bone_scaler)
+        self._skeleton_fit = SkeletonFit()
         self._skin_shape: Optional[SkinShapeMorph] = None
         self._bone_points: Optional[NDArray] = None
         self._male_positions: Optional[NDArray[np.float32]] = None
@@ -229,6 +231,16 @@ class GenderMorphSystem:
     @property
     def skeleton_morph(self) -> SkeletonMorph:
         return self._skeleton_morph
+
+    @property
+    def skeleton_fit(self) -> SkeletonFit:
+        """The optional fit of the skeleton *into* the body-surface mesh.
+
+        The opposite direction to :meth:`_warp_to_skeleton`, and the one that
+        leaves the authored surface alone.  See
+        :mod:`faceforge.body.skeleton_fit`.
+        """
+        return self._skeleton_fit
 
     @property
     def skin_shape(self) -> Optional[SkinShapeMorph]:

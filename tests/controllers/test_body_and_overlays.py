@@ -96,6 +96,7 @@ def test_an_empty_pose_preset_changes_nothing(ctx, state, body):
 class StubSkeletonMorph:
     def __init__(self):
         self.fields = 0
+        self.captured = True
 
     def displacement_field(self, root):
         self.fields += 1
@@ -202,6 +203,125 @@ def test_an_unloaded_morph_does_nothing_on_release(ctx, body):
     ctx.event_bus.publish(EventType.GENDER_RELEASED, gender=0.5)
     assert morph.gender_calls == []
     assert morph.scaled == []
+
+
+# -- Fitting the skeleton into the body-surface mesh ----------------------
+
+class StubFit:
+    """Stands in for ``SkeletonFit``: records what it was asked to do."""
+
+    def __init__(self):
+        self.applied = False
+        self.applies: list[tuple] = []
+        self.resets = 0
+
+    def apply(self, root, amount=1.0, gender=0.0, joint_positions=None,
+              exclude=None):
+        self.applies.append((root.name, amount, gender, exclude or set()))
+        self.applied = True
+        return {"bones": 1, "pivots": 1}
+
+    def reset(self, root, joint_positions=None):
+        self.resets += 1
+        self.applied = False
+
+    def displacement_field(self, sigma=None, sampled=True):
+        return lambda pts: pts * 0.0
+
+
+def _fit_ctx(ctx, muscle_name="Tibialis Ant. R"):
+    morph = StubMorph()
+    morph.skeleton_fit = StubFit()
+    ctx.pipeline = SimpleNamespace(gender_morph=morph, joint_setup=None)
+    root = FakeNode("bodyRoot")
+    muscle = FakeNode(muscle_name, FakeMesh(muscle_name))
+    root.add(muscle)
+    ctx.named_nodes["bodyRoot"] = root
+    skinning = StubSkinning([StubBinding(muscle.mesh, is_muscle=True)])
+    ctx.simulation = SimpleNamespace(soft_tissue=skinning, body_animation=None)
+    ctx.joint_chain_builder = lambda: [["chain"]]
+    return morph, muscle, skinning
+
+
+def test_the_fit_moves_the_bones_and_leaves_the_skinning_to_follow(ctx, body):
+    morph, muscle, skinning = _fit_ctx(ctx)
+    ctx.event_bus.publish(EventType.SKELETON_FIT_TOGGLED, enabled=True)
+
+    fit = morph.skeleton_fit
+    assert len(fit.applies) == 1
+    name, amount, gender, excluded = fit.applies[0]
+    assert (name, amount) == ("bodyRoot", 1.0)
+    assert excluded == {id(muscle.mesh)}, "soft tissue is carried, not transformed"
+    assert skinning.resnapshots == 1
+    assert skinning._last_signature == ()
+
+
+def test_switching_the_fit_off_puts_the_skeleton_back(ctx, body):
+    morph, _, _ = _fit_ctx(ctx)
+    ctx.event_bus.publish(EventType.SKELETON_FIT_TOGGLED, enabled=True)
+    resets_after_on = morph.skeleton_fit.resets
+    ctx.event_bus.publish(EventType.SKELETON_FIT_TOGGLED, enabled=False)
+    assert morph.skeleton_fit.resets > resets_after_on
+    assert not morph.skeleton_fit.applied
+    assert len(morph.skeleton_fit.applies) == 1
+
+
+def test_toggling_to_the_state_it_is_already_in_does_no_work(ctx, body):
+    morph, _, _ = _fit_ctx(ctx)
+    ctx.event_bus.publish(EventType.SKELETON_FIT_TOGGLED, enabled=False)
+    assert morph.skeleton_fit.applies == []
+    assert morph.skeleton_fit.resets == 0
+
+
+class RecordingTissueMorph:
+    """Stands in for ``SoftTissueMorph``: records which meshes got which field."""
+
+    def __init__(self):
+        self.calls: list[tuple[list[str], bool]] = []
+
+    def apply(self, bindings, gender, warp=None, **kw):
+        self.calls.append(([b.mesh.name for b in bindings], warp is not None))
+        return {"muscles": 0, "other": 0}
+
+
+def test_the_skin_that_came_with_the_skeleton_keeps_its_own_shape(ctx, body):
+    """It was scanned from these bones; dragging it onto the surface mesh's
+    proportions is the distortion the option exists to avoid."""
+    morph, muscle, skinning = _fit_ctx(ctx)
+    skin = FakeNode("Skin", FakeMesh("Skin"))
+    skinning.bindings.append(StubBinding(skin.mesh))
+    ctx.node("bodyRoot").add(skin)
+    tissue = body._soft_tissue_morph = RecordingTissueMorph()
+
+    ctx.event_bus.publish(EventType.SKELETON_FIT_TOGGLED, enabled=True)
+
+    carried, own = tissue.calls
+    assert carried[0] == [muscle.mesh.name], "muscles are carried by the fit"
+    assert own[0] == ["Skin"], "the skeleton's own skin is rebuilt on its own"
+
+
+def test_without_the_fit_every_mesh_is_rebuilt_in_one_pass(ctx, body):
+    morph, muscle, skinning = _fit_ctx(ctx)
+    skin = FakeNode("Skin", FakeMesh("Skin"))
+    skinning.bindings.append(StubBinding(skin.mesh))
+    tissue = body._soft_tissue_morph = RecordingTissueMorph()
+
+    ctx.event_bus.publish(EventType.GENDER_RELEASED, gender=1.0)
+
+    assert len(tissue.calls) == 1
+    assert tissue.calls[0][0] == [muscle.mesh.name, "Skin"]
+
+
+def test_the_sex_slider_keeps_the_fit_it_found(ctx, body):
+    """The two changes compose; the fit is taken off, the bones rescaled, the
+    fit put back, and the two fields chained rather than added."""
+    morph, _, _ = _fit_ctx(ctx)
+    ctx.event_bus.publish(EventType.SKELETON_FIT_TOGGLED, enabled=True)
+    ctx.event_bus.publish(EventType.GENDER_RELEASED, gender=1.0)
+    fit = morph.skeleton_fit
+    assert fit.applied
+    assert len(fit.applies) == 2, "the fit is re-solved onto the scaled skeleton"
+    assert fit.applies[1][2] == 1.0, "and at the sex the slider now shows"
 
 
 # -- Re-registration after a rescale --------------------------------------
