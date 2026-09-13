@@ -81,6 +81,21 @@ MARGIN = 1.0
 MOVE_FREE = 20.0
 MOVE_PENALTY = 0.05
 
+#: The hand and the foot are tethered to the mesh's own landmarks for them --
+#: loosely, because those landmarks are crude, but at all, because the fold is
+#: the failure this search keeps finding and no protrusion measure can see it.
+#: Under a fit that is right the fingers' centroid sits 7.7 units from the
+#: mesh's hand landmark and the toes' 3.7; under the fold it is past 35.  So
+#: fourteen units are free and the penalty beyond them is steep.
+#:
+#: Tethering the *ankle* was tried and is a different matter: that landmark is
+#: the mean of a band from the lateral half of the leg and sits 13 units off
+#: the leg's axis, and pulling the ankle onto it dragged both feet out of the
+#: mesh.  These two are the points furthest from the joint above, which is a
+#: much easier thing to find.
+TETHER_FREE = 14.0
+TETHER_WEIGHT = 0.05
+
 #: How far a fingertip or toe-tip may end from the mesh's own landmark for it
 #: before the solve is reported as wrong.  The landmarks are crude -- see
 #: below -- but a hand in the torso is 34 units from one and a hand in the
@@ -200,6 +215,7 @@ class Solver:
         self.depth = depth
         self.anchors = anchor_points
         self.rest_depth: dict[str, NDArray] = {}
+        self.tethers: dict[str, NDArray] = {}
         self.subtree = subtree_map()
         rng = np.random.default_rng(0)
         stray = set(regions.tolist()) - set(REGION_NAMES)
@@ -258,10 +274,25 @@ class Solver:
                 carried.append(value)
         q = self.params[region]
         penalty = (SCALE_PENALTY * float(np.sum((q[0:3] - 1.0) ** 2))
-                   + ROT_PENALTY * float(np.sum(q[3:6] ** 2)))
+                   + ROT_PENALTY * float(np.sum(q[3:6] ** 2))
+                   + self._tether_cost(t, region))
         if not carried:
             return own + penalty
         return own + DESCENDANT_WEIGHT * float(np.mean(carried)) + penalty
+
+    def _tether_cost(self, t: RegionTransforms, region: str) -> float:
+        """How far the hands and feet have strayed from the mesh's own marks."""
+        total = 0.0
+        for name in self.subtree[region]:
+            target = self.tethers.get(name)
+            p = self.points.get(name)
+            if target is None or p is None or not len(p):
+                continue
+            centre = t.apply(name, p).mean(axis=0)
+            slack = float(np.linalg.norm(centre - target)) - TETHER_FREE
+            if slack > 0.0:
+                total += TETHER_WEIGHT * slack * slack
+        return total
 
     # -- search --------------------------------------------------------------
 
@@ -470,6 +501,15 @@ def main(argv: list[str] | None = None) -> int:
     depth = SurfaceDepth(pos, tris, probe)
     pts, regions, _ = bone_points(root)
     solver = Solver(pts, regions, anchors(root, jp, node_offset), depth)
+    from faceforge.body.surface_landmarks import extract_mesh_landmarks
+    marks = extract_mesh_landmarks(pos)
+    for side in ("R", "L"):
+        for region, mark in ((f"fingers_{side}", f"hand_{side}"),
+                             (f"toes_{side}", f"foot_{side}")):
+            target = marks.get(mark)
+            if target is not None:
+                solver.tethers[region] = np.asarray(target, dtype=np.float64)
+    print("tethered: " + ", ".join(sorted(solver.tethers)))
     sex = "female" if args.gender >= 0.5 else "male"
     if sex == "female":
         pose = (payload_on_disk(args.out) or {}).get("male") or {}
@@ -496,12 +536,6 @@ def main(argv: list[str] | None = None) -> int:
         except ValueError:
             pass
     payload[sex] = table
-    if args.write:
-        args.out.write_text(json.dumps(payload, indent=1))
-        print(f"wrote {args.out}")
-    else:
-        print("(not written; pass --write)")
-
     SkeletonFit({"male": payload.get("male", {}),
                  "female": payload.get("female", {})}
                 ).apply(root, 1.0, args.gender, jp)
@@ -511,10 +545,18 @@ def main(argv: list[str] | None = None) -> int:
           f"median {before['median']:+.2f} -> {after['median']:+.2f}   "
           f"p95 {before['p95']:.2f} -> {after['p95']:.2f}")
     if complaints:
-        print("\nTHIS FIT IS WRONG, whatever the containment says:")
+        # Checked before writing, not after: a fit that has folded the arms
+        # into the torso must not reach the shipped config at all.
+        print("\nTHIS FIT IS WRONG, whatever the containment says, "
+              "and it has NOT been written:")
         for line in complaints:
             print(f"  {line}")
         return 1
+    if args.write:
+        args.out.write_text(json.dumps(payload, indent=1))
+        print(f"wrote {args.out}")
+    else:
+        print("(not written; pass --write)")
     return 0
 
 

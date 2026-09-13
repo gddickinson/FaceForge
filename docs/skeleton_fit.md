@@ -187,10 +187,10 @@ Every bone vertex, signed distance to the surface, positive outside:
 
 | | outside | median | p95 | max |
 |---|---|---|---|---|
-| male, as loaded | 65.7% | +2.42 | 11.38 | 27.73 |
-| male, fitted | 19.0% | -1.50 | 0.88 | 6.91 |
-| female, as loaded | 78.4% | +2.83 | 8.60 | 27.83 |
-| female, fitted | 8.1% | -2.34 | 0.25 | 6.65 |
+| male, as loaded | 65.8% | +2.45 | 11.42 | 27.76 |
+| male, fitted | 18.5% | -1.57 | 0.91 | 3.32 |
+| female, as loaded | 78.5% | +2.85 | 8.63 | 27.83 |
+| female, fitted | 22.9% | -1.40 | 1.42 | 3.44 |
 
 And on the things a containment number cannot see:
 
@@ -328,6 +328,11 @@ switched off entirely.
   They are small and they end up inside, but that is a tear.
 * The crown of the skull stands about 3 units proud of the scalp.
 * The thumb: the mesh's hand is a mitten and has nowhere to put one.
+* The hand and the foot are tethered, loosely, to the mesh's own landmarks
+  for them.  Fourteen units are free -- a fit that is right puts the fingers'
+  centroid 7.7 from the mesh's hand landmark and the toes' 3.7 -- and the
+  penalty beyond that is what stops the fold.  It is a crutch: the objective
+  still cannot tell, on its own, that a hand belongs in a hand.
 * The fit is solved against the male surface and the female surface
   separately.  The pose is shared -- sexual dimorphism is proportion, not
   posture, and left free the female solve folded the arm inward and buried the

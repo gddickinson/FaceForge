@@ -20,6 +20,7 @@ from faceforge.body.surface_landmarks import (
     extract_mesh_landmarks, extract_skeleton_landmarks, load_bp3d_skin_mesh,
 )
 from faceforge.body.surface_register import fit_head_to_skull, register_onto
+from faceforge.body.surface_subdivision import subdivide_pair
 from faceforge.body.surface_projection import (
     build_head_mask, closest_point_on_triangle_batch, closest_points_on_surface,
     extract_edges, laplacian_smooth_displacements, recompute_normals,
@@ -47,6 +48,20 @@ logger = logging.getLogger(__name__)
 #: What it costs is fit: bone vertices outside the surface go from 51.2% to
 #: 70.2%, with the 95th-percentile protrusion 12.7 against 19.2.
 WARP_SURFACE_TO_SKELETON = False
+
+#: Loop subdivisions applied to the surface pair at load.
+#:
+#: The MakeHuman base meshes are 10,582 vertices and 21,160 triangles for a
+#: whole body: a median edge of 1.13 units, a 95th percentile of 3.75 and a
+#: worst of 7.72.  That is the ceiling on how smooth the figure can look at
+#: partial opacity and on how detailed the female-minus-male soft-tissue field
+#: can be, since that field is measured on these vertices.
+#:
+#: One level takes it to 42,322 vertices and 84,640 triangles, edges 0.54 /
+#: 1.82 / 4.04, in 0.07 s.  The shape is untouched to within a tenth of a
+#: per cent: the bounding diagonal goes from 228.045 to 227.910.  A second
+#: level would cost four times as much for edges the renderer cannot show.
+SUBDIVIDE_SURFACE = 1
 
 
 class GenderMorphSystem:
@@ -163,6 +178,18 @@ class GenderMorphSystem:
         male_pos, female_pos, male_norms, female_norms = self._warp_to_skeleton(
             male_pos, female_pos, male_norms, female_norms, assets
         )
+
+        if SUBDIVIDE_SURFACE and self._mesh_indices is not None:
+            male_pos, female_pos, faces = subdivide_pair(
+                male_pos, female_pos, self._mesh_indices.reshape(-1, 3),
+                SUBDIVIDE_SURFACE)
+            self._mesh_indices = faces.reshape(-1).astype(np.uint32)
+            male_geom.indices = self._mesh_indices
+            male_geom.vertex_count = len(male_pos)
+            male_norms = recompute_normals(male_pos, self._mesh_indices)
+            female_norms = recompute_normals(female_pos, self._mesh_indices)
+            logger.info("Body surface subdivided %dx: %d vertices, %d triangles",
+                        SUBDIVIDE_SURFACE, len(male_pos), len(faces))
 
         # Write warped positions back to male geometry (used for MeshInstance)
         male_geom.positions = male_pos.reshape(-1).astype(np.float32)
