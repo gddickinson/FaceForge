@@ -49,6 +49,7 @@ from numpy.typing import NDArray
 from faceforge.body.skeleton_field import (
     control_points, displacement_warp, sampled_warp,
 )
+from faceforge.body import skull_morph
 from faceforge.body.skeleton_joints import close_articulations
 
 logger = logging.getLogger(__name__)
@@ -285,6 +286,9 @@ class SkeletonMorph:
         self._walk_apply(root, gender, parent_segment=None, stats=stats)
         stats["closed"] = close_articulations(
             root, self._backup.bone_positions, self._node_offset, self._patch_cache)
+        # The skull is one mesh and its vault and face do not shrink together;
+        # see :mod:`faceforge.body.skull_morph`.
+        stats["skull"] = skull_morph.apply(root, gender, self._exclude)
 
         if joint_positions is not None:
             self._update_joint_positions(root, joint_positions)

@@ -192,6 +192,7 @@ flat when ankle dorsiflexion = pitch − hip + knee.
 | `skeleton_field.py` | Turns a skeleton change into a smooth spatial warp: joint displacements as a thin-plate spline (`displacement_warp`), sampled on a lattice (`sampled_warp`). |
 | `skeleton_joints.py` | Shuts an articulation whose two bones scale apart (the acromioclavicular joint), from a contact patch measured on the unscaled skeleton. |
 | `skeleton_morph.py` | `SkeletonMorph`: scales the skeleton as an articulated hierarchy -- bones about the joint they hang from, joints moved to the end of the scaled bone -- so proportions change without the joints coming apart. |
+| `skull_morph.py` | The part of cranial sex a merged skull mesh cannot express: the face narrows further than the vault, graded by height about the midline. Before this, the cranium, jaw, teeth and atlas were the only bone meshes the sex slider left alone. |
 | `skin_morph.py` | `SkinShapeMorph`: the female-minus-male soft-tissue field (breast, gluteal and thigh fat, waist), measured from the surface pair and transferred to the model's own skin. |
 | `soft_tissue_morph.py` | `SoftTissueMorph`: composes the skeleton warp, the muscle bulk change and the soft-tissue field onto every mesh's rest pose, always from a captured original. |
 | `muscle_morph.py` | `MuscleMorph`: thins a muscle belly perpendicular to its own long axis, tapered to nothing at the attachments. |
