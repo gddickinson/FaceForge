@@ -128,11 +128,19 @@ class EquipmentRig:
             attach = item.spec.attach
             if attach == "static":
                 continue
-            if attach == "hands":
-                pr = self.grip_point(pivots, "R", item.grip_offset)
-                pl = self.grip_point(pivots, "L", item.grip_offset)
-                if pr is None or pl is None:
-                    continue
+            if attach in ("hands", "knees"):
+                if attach == "knees":
+                    # A band round the legs is the same geometry one storey
+                    # down: the joints themselves, with no grip to allow for.
+                    kr, kl = pivots.get("knee_R"), pivots.get("knee_L")
+                    if kr is None or kl is None:
+                        continue
+                    pr, pl = _world(kr), _world(kl)
+                else:
+                    pr = self.grip_point(pivots, "R", item.grip_offset)
+                    pl = self.grip_point(pivots, "L", item.grip_offset)
+                    if pr is None or pl is None:
+                        continue
                 centre = (pr + pl) / 2.0
                 axis = pr - pl
                 q = align_x_to(axis) if np.linalg.norm(axis) > 1e-6 else None

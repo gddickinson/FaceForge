@@ -12,8 +12,8 @@ The squats are in :mod:`faceforge.exercise.catalog.lower_body`, the lunges in
 from __future__ import annotations
 
 from faceforge.exercise.catalog._helpers import (
-    ACE, BOREN, CON, CONTRERAS, DEADLIFT_SPM, ECC, ECC_CON, ESCAMILLA_DL, EXRX, ISO, NSCA,
-    P, S, ST, TRN, arms, combine, eq, grip, hinge, merge, mu, only, ph, pose, squat, stand,
+    ACE, BOREN, CON, CONTRERAS, DEADLIFT_SPM, ECC, ECC_CON, ESCAMILLA_DL, EXRX, ISO, NSCA, P,
+    S, ST, arms, eq, grip, merge, mu, only, ph, pose, squat,
 )
 from faceforge.exercise.model import Category, ExerciseDefinition
 

@@ -9,8 +9,8 @@ vertebral flexion on top.
 from __future__ import annotations
 
 from faceforge.exercise.catalog._helpers import (
-    ACE, CON, ECC, EKSTROM, ESCAMILLA_ABS, EXRX, HIPS, ISO, LOWER_CHEST, MCGILL, NEUMANN, P, S,
-    SNARR, ST, TRN, arms, eq, grip, merge, mu, only, ph, pose,
+    ACE, CON, ECC, EKSTROM, ESCAMILLA_ABS, EXRX, HIPS, ISO, MCGILL, P, S, SNARR, ST, TRN,
+    arms, eq, grip, merge, mu, only, ph, pose,
 )
 from faceforge.exercise.model import Category, ExerciseDefinition
 

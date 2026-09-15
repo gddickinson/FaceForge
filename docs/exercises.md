@@ -582,9 +582,9 @@ A rear-foot-elevated split squat: the front leg squats while the back foot rests
 
 | phase | kind | s | moving joints | cues |
 |---|---|---|---|---|
-| Lower | eccentric | 2.00 | Knee (R): flexion 20° → 100°; Hip (R): flexion 25° → 100°; Knee (L): flexion 70° → 95°; Ankle (R): dorsiflexion 5° → 10°; trunk pitch +15° | Front knee over mid-foot; back knee drops toward the floor |
+| Lower | eccentric | 2.00 | Knee (R): flexion 20° → 100°; Hip (R): flexion 25° → 100°; Knee (L): flexion 45° → 104°; Ankle (L): plantarflexion 15° → 35°; trunk pitch +15° | Front knee over mid-foot; back knee drops toward the floor |
 | Bottom | isometric | 0.30 | trunk pitch +15° |  |
-| Drive | concentric | 1.40 | Knee (R): extension 100° → 20°; Hip (R): extension 100° → 25°; Knee (L): extension 95° → 70°; Ankle (R): plantarflexion 10° → 5°; trunk pitch +8° | Push through the front heel; hips forward |
+| Drive | concentric | 1.40 | Knee (R): extension 100° → 20°; Hip (R): extension 100° → 25°; Knee (L): extension 104° → 45°; Ankle (L): dorsiflexion 35° → 15°; trunk pitch +8° | Push through the front heel; hips forward |
 | Top | isometric | 0.30 | trunk pitch +8° |  |
 
 **Muscles**
@@ -896,7 +896,7 @@ Side-lying with hips and knees bent, the top knee opens like a clam while the fe
 
 ### Lateral band walk
 
-`lateral_band_walk` · Lower body · orientation: standing · anchor: feet · rep: 3.2 s · equipment: none
+`lateral_band_walk` · Lower body · orientation: standing · anchor: feet · rep: 3.2 s · equipment: band
 
 In a quarter squat with a band around the knees or ankles, the athlete steps sideways, keeping tension on the band.
 
@@ -2728,9 +2728,9 @@ A hip hinge sideways under a locked-out overhead bell: the eyes stay on the bell
 
 | phase | kind | s | moving joints | cues |
 |---|---|---|---|---|
-| Descend | eccentric | 2.20 | Hips: flexion 0° → 55°; Spine: left lateral flexion 0° → 22°; Spine: rotation 0° → 18°; Shoulder (L): extension 5° → 10° | Push the loaded hip out and hinge sideways, not forward Free hand slides down the inside of the front leg |
+| Descend | eccentric | 2.20 | Hips: flexion 0° → 55°; Spine: rotation 0° → 18°; Shoulder (L): extension 5° → 10°; Spine: left lateral flexion 0° → 10° | Push the loaded hip out and hinge sideways, not forward Free hand slides down the inside of the front leg |
 | Bottom | isometric | 0.60 | hold | Arm vertical, eyes on the bell, both knees straight |
-| Stand | concentric | 2.00 | Hips: extension 55° → 0°; Spine: right lateral flexion 22° → 0°; Spine: rotation 18° → 0°; Shoulder (L): flexion 10° → 5° | Drive the loaded hip back under the bell to stand up |
+| Stand | concentric | 2.00 | Hips: extension 55° → 0°; Spine: rotation 18° → 0°; Shoulder (L): flexion 10° → 5°; Spine: right lateral flexion 10° → 0° | Drive the loaded hip back under the bell to stand up |
 | Top | isometric | 0.40 | hold |  |
 
 **Muscles**
@@ -2949,7 +2949,7 @@ The stroke: catch with shins vertical and arms long, drive with the legs, swing 
 
 ### Treadmill walking
 
-`treadmill_walk` · Cardio and conditioning · orientation: standing · anchor: feet · rep: 1.1 s · equipment: none
+`treadmill_walk` · Cardio and conditioning · orientation: standing · anchor: feet · rep: 1.1 s · equipment: treadmill
 
 The gait cycle at ~1.1 s per stride: heel strike, loading, mid and terminal stance, push-off, then swing.
 
@@ -2988,7 +2988,7 @@ The gait cycle at ~1.1 s per stride: heel strike, loading, mid and terminal stan
 
 ### Treadmill running
 
-`treadmill_run` · Cardio and conditioning · orientation: standing · anchor: feet · rep: 0.7 s · equipment: none
+`treadmill_run` · Cardio and conditioning · orientation: standing · anchor: feet · rep: 0.7 s · equipment: treadmill
 
 Running gait with a flight phase, greater knee flexion in swing and a mid-foot landing under the hips.
 
@@ -3130,7 +3130,7 @@ From a push-up position the knees drive alternately toward the chest while the s
 
 ### Battle ropes (alternating waves)
 
-`battle_ropes` · Cardio and conditioning · orientation: standing · anchor: feet · rep: 0.5 s · equipment: none
+`battle_ropes` · Cardio and conditioning · orientation: standing · anchor: feet · rep: 0.5 s · equipment: battle rope, battle rope
 
 In an athletic stance, the arms whip alternately to send waves down two heavy ropes.
 

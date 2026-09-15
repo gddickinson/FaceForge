@@ -275,10 +275,10 @@ flat when ankle dorsiflexion = pitch − hip + knee.
 | `__init__.py` | Exercise demonstrations: technique, moving joints and working muscles. |
 | `activation.py` | From muscle roles and phase kind to a per-frame activation level. |
 | `clip_builder.py` | ExerciseDefinition -> a playable clip with phase spans and an activation track. |
-| `equipment.py` | Procedural gym equipment, built from the scene's own primitives. |
-| `equipment_rig.py` | Keep hand-held equipment in the hands, every frame: the bar's axis passes through the ring of closed finger joints (`grip_point`). |
+| `equipment.py` | Procedural gym equipment, built from the scene's own primitives; the treadmill's belt top sits at the sole height the ground lock produces, and a battle rope turns each segment onto its own tangent (offset cylinders read as a staircase). |
+| `equipment_rig.py` | Keep hand-held equipment in the hands, every frame: the bar's axis passes through the ring of closed finger joints (`grip_point`). `attach="knees"` is the same geometry one storey down, for a loop round the legs -- the band walk shipped no band at all while hands and the room were the only attachment points. |
 | `grip_lock.py` | `GripWidthLock`: hands holding a bar stop sliding along it -- either anchored to one in the room (a pull-up) or holding a rigid two-handed implement (`EquipmentSpec.attach == "hands"`, a barbell), the case a bench press is and which used to let each hand slide 13.8 units a rep; per frame, shoulder abduction is solved (2x2 finite-difference Newton) so each hand's offset from the trunk holds its calibrated value. |
-| `model.py` | The data model for an exercise demonstration; `EquipmentSpec.hang` overrides how far below the hands a held item's origin sits (a goblet-held kettlebell, a front-racked bar). |
+| `model.py` | The data model for an exercise demonstration; `EquipmentSpec.hang` overrides how far below the hands a held item's origin sits (a goblet-held kettlebell, a front-racked bar); `EquipmentSpec.attach` also takes `"knees"`. |
 | `motion_description.py` | Turn a change of pose into the words a physiotherapist would use. |
 | `muscle_groups.py` | Functional muscle groups -> the muscle mesh names in ``assets/config/muscles``; hand/foot intrinsics (side-prefixed names) and `ALL_MUSCLE_REGIONS`. |
 | `pose_library.py` | Pose authoring for exercises: degrees in, normalised BodyState DOFs out. |

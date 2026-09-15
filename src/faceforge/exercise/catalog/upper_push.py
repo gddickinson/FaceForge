@@ -10,9 +10,9 @@ keeps rising to 60 deg.
 from __future__ import annotations
 
 from faceforge.exercise.catalog._helpers import (
-    ACE, BENCH_INCLINE, BENCH_TOP, CALATAYUD, CON, ECC, ECC_CON, EXRX, HIPS, ISO, KOLBER, NEUMANN,
-    NSCA, P, S, ST, SAETERBAKKEN, SEATED_ON_BENCH, TRN, arms, eq, grip, merge, mu, only, ph,
-    pose,
+    ACE, BENCH_INCLINE, BENCH_TOP, CALATAYUD, CON, ECC, ECC_CON, EXRX, HIPS, ISO, KOLBER,
+    NEUMANN, NSCA, P, S, SAETERBAKKEN, SEATED_ON_BENCH, ST, arms, eq, grip, merge, mu, only,
+    ph, pose,
 )
 from faceforge.exercise.model import Category, ExerciseDefinition
 

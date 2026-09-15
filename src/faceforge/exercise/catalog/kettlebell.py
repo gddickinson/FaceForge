@@ -15,8 +15,8 @@ thick, so grip is a limiting factor in the carries long before the legs are.
 from __future__ import annotations
 
 from faceforge.exercise.catalog._helpers import (
-    ACE, BOREN, CON, CONTRERAS, ECC, EKSTROM, EXRX, ISO, LAKE, MCGILL, NSCA, P, S, ST, TRN,
-    arms, eq, grip, hinge, merge, mu, only, ph, pose, squat, stand,
+    ACE, CON, ECC, EKSTROM, EXRX, HIPS, ISO, LAKE, MCGILL, NSCA, P, S, ST, TRN,
+    eq, grip, hinge, merge, mu, only, ph, pose, squat, stand,
 )
 from faceforge.exercise.model import Category, ExerciseDefinition
 
@@ -256,6 +256,14 @@ kettlebell_snatch = ExerciseDefinition(
     tags=("kettlebell", "power"),
 )
 
+#: The sideways half of the hinge is a wrapper ROLL about the hips, negative
+#: being toward the free hand.  `spine_lat_bend` alone did nothing the render
+#: could see -- the spine DOFs turn vertebrae and the shoulders hang off the
+#: pelvis root -- so this was a forward hinge pretending to be a windmill.
+_WINDMILL_ROLL = -22.0
+_WINDMILL_DOWN = merge(pose(hip_flex=55, knee_flex=8, spine_lat_bend=-10, spine_rotation=18),
+                       _OVERHEAD_R, only(shoulder_l_flex=-10, elbow_l_flex=5), grip())
+
 kettlebell_windmill = ExerciseDefinition(
     id="kettlebell_windmill", name="Kettlebell windmill", category=Category.CORE,
     description="A hip hinge sideways under a locked-out overhead bell: the eyes stay on the "
@@ -264,16 +272,10 @@ kettlebell_windmill = ExerciseDefinition(
            "Weight into the right hip; the right leg stays straight",
            "Eyes on the bell throughout"),
     phases=(
-        ph("Descend", ECC, 2.2, merge(pose(hip_flex=55, knee_flex=8, spine_lat_bend=-22,
-                                           spine_rotation=18),
-                                      _OVERHEAD_R, only(shoulder_l_flex=-10, elbow_l_flex=5),
-                                      grip()),
+        ph("Descend", ECC, 2.2, _WINDMILL_DOWN, roll=_WINDMILL_ROLL, pivot=HIPS,
            cues=("Push the loaded hip out and hinge sideways, not forward",
                  "Free hand slides down the inside of the front leg")),
-        ph("Bottom", ISO, 0.6, merge(pose(hip_flex=55, knee_flex=8, spine_lat_bend=-22,
-                                          spine_rotation=18),
-                                     _OVERHEAD_R, only(shoulder_l_flex=-10, elbow_l_flex=5),
-                                     grip()),
+        ph("Bottom", ISO, 0.6, _WINDMILL_DOWN, roll=_WINDMILL_ROLL, pivot=HIPS,
            cues=("Arm vertical, eyes on the bell, both knees straight",)),
         ph("Stand", CON, 2.0, merge(stand()[0], _OVERHEAD_R, _FREE_L, grip()),
            cues=("Drive the loaded hip back under the bell to stand up",)),

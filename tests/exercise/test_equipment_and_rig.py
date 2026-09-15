@@ -29,7 +29,7 @@ def test_every_builder_returns_valid_geometry(kind):
 
 def test_unknown_equipment_is_an_error():
     with pytest.raises(KeyError):
-        build_equipment("treadmill")
+        build_equipment("trampoline")
     assert "barbell" in known_equipment()
 
 
@@ -152,3 +152,31 @@ def test_a_spec_can_override_how_far_an_item_hangs_below_the_hands():
     defn = get_exercise_catalog()["goblet_squat"]
     again = ExerciseDefinition.from_dict(defn.to_dict())
     assert [e.hang for e in again.equipment] == [e.hang for e in defn.equipment]
+
+
+def test_a_band_round_the_knees_sits_between_them_on_the_knee_line():
+    """``attach="knees"`` is the hands' geometry one storey down.
+
+    A loop round the legs has no grip to allow for, so it takes the knee
+    pivots themselves; the band walk shipped no band at all before this,
+    because the only attachment points were hands and the room.
+    """
+    rig = EquipmentRig()
+    band = build_equipment("band")
+    rig.add(band, EquipmentSpec("band", attach="knees"))
+    pivots = dict(_hands())
+    pivots["knee_R"] = _Pivot("knee_R", (12.0, 46.0, -4.0))
+    pivots["knee_L"] = _Pivot("knee_L", (-12.0, 46.0, -4.0))
+    rig.update(pivots)
+    assert band.position == pytest.approx([0.0, 46.0, -4.0])
+    axis = quat_rotate_vec3(band.quaternion, vec3(1, 0, 0))
+    assert axis == pytest.approx([1.0, 0.0, 0.0], abs=1e-9)
+
+
+def test_a_knee_band_is_skipped_when_the_rig_has_no_knees():
+    rig = EquipmentRig()
+    band = build_equipment("band")
+    band.set_position(1.0, 2.0, 3.0)
+    rig.add(band, EquipmentSpec("band", attach="knees"))
+    rig.update(_hands())
+    assert band.position == pytest.approx([1.0, 2.0, 3.0])

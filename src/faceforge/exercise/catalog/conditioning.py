@@ -15,8 +15,8 @@ from __future__ import annotations
 import math
 
 from faceforge.exercise.catalog._helpers import (
-    ACE, CON, ECC, HIPS, HUG, ISO, KLESHNEV, NEUMANN, NSCA, P, PERRY, S, ST, TRN, arms, combine,
-    eq, grip, merge, mu, only, ph, pose,
+    ACE, CON, ECC, HIPS, HUG, ISO, KLESHNEV, NEUMANN, NSCA, P, PERRY, S, ST, TRN, arms,
+    combine, eq, grip, merge, mu, ph, pose,
 )
 from faceforge.exercise.model import Category, ExerciseDefinition, Phase
 
@@ -228,6 +228,7 @@ treadmill_walk = ExerciseDefinition(
              mu("soleus", P, 0.7), mu("hamstrings", S, 0.6), mu("tibialis_anterior", S, 0.5),
              mu("hip_flexors", S, 0.5), mu("gluteus_medius", S, 0.5), mu("erector_spinae", ST, 0.4),
              mu("adductors", S, 0.3)),
+    equipment=(eq("treadmill", attach="static"),),
     errors=("Over-striding (heel far ahead of the hips).", "Holding the handrails."),
     physio_notes=("Perry's timing: vasti in loading response, gluteus maximus from terminal "
                   "swing to loading, plantarflexors from mid-stance to push-off, tibialis "
@@ -246,6 +247,7 @@ treadmill_run = ExerciseDefinition(
              mu("soleus", P, 0.95), mu("hamstrings", P, 0.8), mu("tibialis_anterior", S, 0.6),
              mu("hip_flexors", S, 0.7), mu("gluteus_medius", S, 0.7), mu("erector_spinae", ST, 0.5),
              mu("rectus_abdominis", ST, 0.4), mu("deltoid_anterior", ST, 0.3)),
+    equipment=(eq("treadmill", attach="static"),),
     errors=("Over-striding with a heel strike far ahead.", "Excessive vertical bounce.",
             "Crossing the arms over the midline."),
     physio_notes=("Ground reaction forces of 2-3 body weights; hamstrings peak in late swing "
@@ -345,6 +347,8 @@ battle_ropes = ExerciseDefinition(
              mu("triceps_brachii", S, 0.4), mu("biceps_brachii", S, 0.4), mu("forearm_flexors", S, 0.6),
              mu("rectus_abdominis", S, 0.5), mu("obliques", S, 0.5), mu("erector_spinae", ST, 0.4),
              mu("quadriceps", ST, 0.4), mu("gluteus_maximus", ST, 0.35)),
+    equipment=(eq("battle_rope", attach="hand_r"),
+               eq("battle_rope", attach="hand_l")),
     errors=("Standing up tall.", "Using only the forearms."),
     physio_notes=("Upper-body conditioning with low joint loading; the ropes are not drawn.",),
     sources=(ACE,), camera="three_quarter", default_reps=6, tags=("cardio", "rope"),

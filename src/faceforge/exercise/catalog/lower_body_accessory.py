@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 from faceforge.exercise.catalog._helpers import (
-    ACE, BOREN, CON, CONTRERAS, DISTEFANO, ECC, EKSTROM, EXRX, HIPS, ISO, NEUMANN, NSCA, P, S,
-    ST, SEATED_ON_BENCH, SHOULDERS, TRN, arms, combine, eq, grip, merge, mu, only, ph, pose,
+    ACE, BOREN, CON, CONTRERAS, DISTEFANO, ECC, EKSTROM, EXRX, ISO, NEUMANN, NSCA, P, S,
+    SEATED_ON_BENCH, SHOULDERS, ST, TRN, arms, combine, eq, grip, merge, mu, ph, pose,
 )
 from faceforge.exercise.model import Category, ExerciseDefinition
 
@@ -12,10 +12,14 @@ from faceforge.exercise.model import Category, ExerciseDefinition
 # -90 (+ pitch) gives ankle = -90 + pitch - hip + knee.
 _BRIDGE_BOTTOM = merge(pose(hip_flex=46, knee_flex=136, ankle_flex=0), arms(abduct=30, elbow=10))
 _BRIDGE_TOP = merge(pose(hip_flex=0, knee_flex=110, ankle_flex=0), arms(abduct=30, elbow=10))
-_THRUST_BOTTOM = merge(pose(hip_flex=53, knee_flex=118, ankle_flex=0),
-                       arms(abduct=45, elbow=90), grip())
-_THRUST_TOP = merge(pose(hip_flex=0, knee_flex=90, ankle_flex=-3), arms(abduct=45, elbow=90),
-                    grip())
+#: Measured: at 45 degrees of abduction with the elbow at 90 the hands fold
+#: across the chest and the bar rode at x = -68 against a hip at -4 -- over
+#: the lifter's face, not the hip crease.  Nearly straight arms at the side
+#: put it at -6.8, 16 above the hip joint, which is where a bar on the crease
+#: sits.
+_THRUST_ARMS = (arms(abduct=18, elbow=10), grip())
+_THRUST_BOTTOM = merge(pose(hip_flex=53, knee_flex=118, ankle_flex=0), *_THRUST_ARMS)
+_THRUST_TOP = merge(pose(hip_flex=0, knee_flex=90, ankle_flex=-3), *_THRUST_ARMS)
 
 glute_bridge = ExerciseDefinition(
     id="glute_bridge", name="Glute bridge", category=Category.LOWER_BODY,
@@ -259,6 +263,9 @@ lateral_band_walk = ExerciseDefinition(
     muscles=(mu("gluteus_medius", P, 0.65), mu("tensor_fasciae_latae", S, 0.5),
              mu("gluteus_maximus", S, 0.45, note="upper fibres"), mu("quadriceps", S, 0.4),
              mu("hip_external_rotators", S, 0.4), mu("erector_spinae", ST, 0.3)),
+    # The band goes round the legs, not into a hand: `attach="knees"` centres
+    # it between the knee joints and lays its axis along the line between them.
+    equipment=(eq("band", attach="knees", length=46.0),),
     errors=("Standing up tall (loses band tension).", "Feet turning out.",
             "Dragging the trailing foot."),
     physio_notes=("Band above the knees increases gluteus medius relative to TFL compared "

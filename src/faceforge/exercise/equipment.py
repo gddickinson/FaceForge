@@ -214,12 +214,83 @@ def make_band(length: float = 60.0) -> SceneNode:
     return root
 
 
+def make_treadmill(length: float = 170.0, width: float = 72.0, deck: float = 6.0,
+                   console: float = 108.0) -> SceneNode:
+    """A treadmill facing +Z, the direction the gym body faces.
+
+    The deck top sits at ``deck`` so the ground lock's soles (y ~ 5) land on
+    the belt rather than through it.
+    """
+    root = SceneNode("equip_treadmill")
+    root.add(_part("belt", make_box(width, deck, length), RUBBER, y=deck / 2))
+    for sx in (-1.0, 1.0):
+        root.add(_part(f"rail_{'r' if sx > 0 else 'l'}", make_box(9.0, 5.0, length), FRAME,
+                       x=sx * (width / 2 + 4.0), y=deck + 2.5))
+        root.add(_part(f"post_{'r' if sx > 0 else 'l'}",
+                       make_cylinder(2.4, console, 8), FRAME,
+                       x=sx * (width / 2 - 4.0), y=console / 2, z=length / 2 - 8.0))
+        root.add(_part(f"handrail_{'r' if sx > 0 else 'l'}",
+                       make_cylinder(2.2, length * 0.42, 8), STEEL,
+                       x=sx * (width / 2 - 2.0), y=console * 0.82,
+                       z=length / 2 - 8.0 - length * 0.21, quat=_TO_Z))
+    root.add(_part("console", make_box(width * 0.9, 22.0, 5.0), FRAME,
+                   y=console, z=length / 2 - 5.0))
+    return root
+
+
+def _axis_to(direction) -> object:
+    """A quaternion taking a cylinder's +Y axis onto ``direction``."""
+    d = vec3(*direction)
+    n = float((d[0] ** 2 + d[1] ** 2 + d[2] ** 2) ** 0.5)
+    if n < 1e-9:
+        return None
+    d = d / n
+    dot = float(max(-1.0, min(1.0, d[1])))
+    if dot > 1.0 - 1e-9:
+        return None
+    if dot < -1.0 + 1e-9:
+        return quat_from_axis_angle(_X, math.pi)
+    axis = vec3(d[2], 0.0, -d[0])          # cross((0,1,0), d)
+    return quat_from_axis_angle(axis, math.acos(dot))
+
+
+def make_battle_rope(length: float = 200.0, radius: float = 3.4, waves: float = 1.4,
+                     amplitude: float = 16.0, drop: float = 55.0,
+                     segments: int = 18) -> SceneNode:
+    """One heavy rope trailing from a hand, waving, and sloping to the floor.
+
+    Built along local +Z, which is where a hand-attached item's untouched axis
+    points once ``align_x_to`` has put its +X on the line between the hands --
+    so the rope runs out in front of the athlete.  Each segment is turned onto
+    the curve's own tangent, because cylinders merely offset from one another
+    read as a staircase, which is what the first attempt rendered.
+    """
+    root = SceneNode("equip_battle_rope")
+
+    def curve(u: float) -> tuple[float, float]:
+        return (amplitude * (1.0 - u) * math.sin(2.0 * math.pi * waves * u), -drop * u * u)
+
+    for i in range(segments):
+        u0, u1 = i / segments, (i + 1) / segments
+        y0, s0 = curve(u0)
+        y1, s1 = curve(u1)
+        p0 = (y0 + s0, u0 * length)
+        p1 = (y1 + s1, u1 * length)
+        dy, dz = p1[0] - p0[0], p1[1] - p0[1]
+        span = math.hypot(dy, dz)
+        root.add(_part(f"rope_{i}", make_cylinder(radius, span * 1.25, 6), RUBBER,
+                       y=(p0[0] + p1[0]) / 2.0, z=(p0[1] + p1[1]) / 2.0,
+                       quat=_axis_to((0.0, dy, dz))))
+    return root
+
+
 EQUIPMENT_BUILDERS: dict[str, Callable[..., SceneNode]] = {
     "barbell": make_barbell, "dumbbell": make_dumbbell, "kettlebell": make_kettlebell,
     "bench": make_bench, "pullup_bar": make_pullup_bar, "plyo_box": make_plyo_box,
     "mat": make_mat, "bike": make_bike, "rower": make_rower, "jump_rope": make_jump_rope,
     "cable_handle": make_cable_handle, "band": make_band, "dip_station": make_dip_station,
-    "medicine_ball": make_medicine_ball,
+    "medicine_ball": make_medicine_ball, "treadmill": make_treadmill,
+    "battle_rope": make_battle_rope,
 }
 
 

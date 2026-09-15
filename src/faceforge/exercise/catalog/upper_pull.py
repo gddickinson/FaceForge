@@ -12,9 +12,8 @@ and 45-56 % for lower trapezius (PULLUP_YOUDAS).
 from __future__ import annotations
 
 from faceforge.exercise.catalog._helpers import (
-    ACE, ANDERSEN, BOTTON, CON, ECC, EXRX, ISO, LATPULL_HD, NEUMANN, NSCA, P, PULLUP_YOUDAS,
-    REINOLD, S, SCHOENFELD_ROW, SEATED_ON_BENCH, SIGNORILE, ST, TRN, arms, eq, grip, hinge,
-    merge, mu, only, ph, pose,
+    ANDERSEN, BOTTON, CON, ECC, EXRX, ISO, LATPULL_HD, NEUMANN, NSCA, P, PULLUP_YOUDAS,
+    REINOLD, S, SEATED_ON_BENCH, SIGNORILE, ST, arms, eq, grip, merge, mu, only, ph, pose,
 )
 from faceforge.exercise.model import Category, ExerciseDefinition
 

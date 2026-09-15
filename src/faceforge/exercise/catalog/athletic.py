@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 from faceforge.exercise.catalog._helpers import (
-    ACE, CON, ECC, EXRX, ISO, LAKE, NEUMANN, NSCA, P, S, ST, TRN, ZEBIS, arms, eq, grip, hinge,
-    merge, mu, only, ph, pose, squat, stand,
+    ACE, CON, ECC, EXRX, ISO, LAKE, NEUMANN, NSCA, P, S, ST, TRN, ZEBIS, arms, eq, grip,
+    hinge, merge, mu, ph, pose, squat,
 )
 from faceforge.exercise.model import Category, ExerciseDefinition
 

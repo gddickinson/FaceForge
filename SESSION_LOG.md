@@ -1933,14 +1933,11 @@ takes the legs down through the mat with it (measured: pitch −35 lifts the
 shoulder from 29 to 66 and puts the feet at −88, and hip extension stops at
 −27). See the module for what was done about it.
 
-Left alone, and why: the **side plank** does not lift its hips (its 10-degree
-roll about the ankles is a tip, not a lift, and the fix needs `Phase.lift` to
-work under `anchor="none"`); **lateral band walk** ships no band, because a
-band round the knees cannot follow them through `EquipmentSpec.attach`;
-**battle ropes** and the two treadmills have no equipment because no builder
-exists for them; the **kettlebell windmill** and **halo** are understated
-rather than wrong. The **rowing machine** frames as a close-up of the
-lifter's back, which is being measured separately.
+Six more were left for a second pass: the **side plank** looked flat, the
+**lateral band walk** shipped no band, **battle ropes** and the two
+**treadmills** had no equipment at all, the **hip thrust**'s bar looked wrong,
+and the **kettlebell windmill** and **halo** looked understated. Every one of
+those is settled below.
 
 ### The last four, and one pose that had to change
 
@@ -1968,3 +1965,51 @@ supposed to be filming, which is why that tile was a close-up of a back.
 **Cat-cow and the hollow body hold stay understated.** Both are shapes the
 spine makes, and the spine moves vertebrae only. The poses are anatomically
 right and the renders are honest about what the rig can show.
+
+## 2026-09-15 (last, really) — The second pass over what the sheets flagged
+
+Measuring the six left over turned four of them into defects, one into a
+feature and one into a correction of my own reading.
+
+**The hip thrust's bar was over the lifter's face.** At 45 degrees of shoulder
+abduction with the elbow at 90 the hands fold across the chest, and the bar
+rode at x = −68 against a hip at −4. Nearly straight arms at the sides
+(abduction 18, elbow 10) put it at −6.8, sixteen units above the hip joint,
+which is where a bar resting on the hip crease sits.
+
+**The Bulgarian split squat's back foot was not on its bench.** The bench top
+is at 50 and the body rises 50 units between the bottom and the top, so the
+back knee has to straighten as it goes or the foot rides up with the hips:
+at 95/70 degrees the rear ankle went 46.2 → 76.0. At 104/45, with the foot
+flattened at the top, it holds 51.3 → 55, on the bench at both ends.
+
+**`lunges.py` contained three identical copies of the Bulgarian split squat.**
+Two were dead — the module-level name was simply rebound twice — and they came
+in with the file split earlier today. 91 lines removed, and the unused imports
+the split left in nine catalogue modules with them.
+
+**The band walk now has a band.** A loop round the legs had nowhere to attach:
+`EquipmentSpec.attach` offered hands and the room. `attach="knees"` is the
+same geometry as `"hands"` one storey down — centred between the knee joints,
+its axis along the line between them — and it is two tests.
+
+**The treadmills and the battle ropes now have equipment.** `make_treadmill`
+puts its belt top at the sole height the ground lock produces, with the
+console at +Z, the direction the gym body faces. `make_battle_rope` trails a
+waving, sagging rope from each hand; the first attempt merely offset cylinders
+from one another and rendered a staircase, so each segment is turned onto the
+curve's own tangent.
+
+**The windmill was a forward hinge pretending to be a windmill.** Its
+`spine_lat_bend=-22` moved nothing; a −22 degree wrapper roll about the hips
+moves the bell from x = 9 to x = 73 and the hip from 12 to 42, which is the
+sideways half the exercise is named for.
+
+**The side plank was fine and I misread it.** Measured, the hips go 38.0 →
+56.7 between the rest and the hold — an 18.7-unit lift. It looks flat in a
+contact-sheet tile because the whole body is horizontal either way.
+
+The halo stays as it is: with the bell centred between two grip points and the
+far shoulder's adduction stopping at −31.5 degrees, both hands cannot get to
+one side of the head, so the bell travels about 17 units instead of circling.
+It is a small arc rather than a halo, and the rig has no way to make it more.

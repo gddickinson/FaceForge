@@ -15,9 +15,8 @@ moves through 38 deg hip, 33 deg knee and 13 deg ankle in the pull to the knee
 from __future__ import annotations
 
 from faceforge.exercise.catalog._helpers import (
-    ACE, BOREN, CON, CONTRERAS, DEADLIFT_SPM, DIGIOVINE, DISTEFANO, ECC, ECC_CON, ESCAMILLA_DL,
-    EXRX, ISO, NSCA, P, S, ST, SCHOENFELD, SQUAT_KIN, SQUAT_REVIEW, TRN, arms, combine, eq, grip,
-    hinge, lunge, merge, mu, only, ph, pose, squat, stand,
+    ACE, CON, DIGIOVINE, ECC, ECC_CON, EXRX, ISO, NSCA, P, S, SCHOENFELD, SQUAT_KIN,
+    SQUAT_REVIEW, ST, arms, combine, eq, grip, merge, mu, ph, squat, stand,
 )
 from faceforge.exercise.model import Category, ExerciseDefinition
 

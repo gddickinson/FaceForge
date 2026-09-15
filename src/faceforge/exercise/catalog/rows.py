@@ -9,8 +9,8 @@ The vertical pulls are in :mod:`faceforge.exercise.catalog.upper_pull`.
 from __future__ import annotations
 
 from faceforge.exercise.catalog._helpers import (
-    ACE, CON, DIGIOVINE, ECC, EXRX, ISO, NEUMANN, NSCA, P, REINOLD, S, SCHOENFELD_ROW,
-    SEATED_ON_BENCH, ST, TRN, arms, eq, grip, hinge, merge, mu, only, ph, pose,
+    ACE, CON, ECC, EXRX, ISO, NEUMANN, NSCA, P, REINOLD, S, SCHOENFELD_ROW, ST, arms, eq,
+    grip, hinge, merge, mu, ph, pose,
 )
 from faceforge.exercise.model import Category, ExerciseDefinition
 
