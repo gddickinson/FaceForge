@@ -48,10 +48,28 @@ _INCLINE_LEGS = only(hip_flex=16, knee_flex=70, ankle_flex=-5, hip_abduct=22)
 # Supine, anterior is up, so that column is the arch and it is not there.  A
 # real one needs a deformer that pins the ends and bows the middle, which is a
 # different mechanism from a joint chain, not a different number in it.
+# A standard bench press is gripped overhand, so the palms face the lifter's
+# feet.  They faced the head: measured at the bottom keyframe, the palm normal
+# ran +0.463 along the head-ward axis, and no forearm rotation alone could turn
+# it -- swept through a full circle the best available was +0.448, because it
+# is the shoulder's axial rotation that decides which way the hand ends up.
+# Shoulder rotation +30 with the forearm at 60 gives -0.364, palms to the feet,
+# with the forearm still 0.90 of the way to vertical.  The lockout keyframe was
+# already right at -0.090 and the sweep found nothing better, the palm there
+# facing mostly up at the bar as it should.
 _BENCH_BOTTOM = merge(pose(), _BENCH_LEGS,
-                      arms(flex=-15, abduct=75, rotate=-20, elbow=80, forearm=90, wrist=-70), grip())
+                      arms(flex=-15, abduct=75, rotate=30, elbow=80, forearm=60, wrist=-70), grip())
 _BENCH_TOP = merge(pose(), _BENCH_LEGS,
                    arms(flex=75, abduct=12, rotate=0, elbow=10, forearm=0, wrist=-70), grip())
+# The reverse grip is the supinated one: palms toward the head.  These are the
+# numbers the standard press used to carry, which is what made it read as a
+# reverse-grip press.
+_REVERSE_BOTTOM = merge(pose(), _BENCH_LEGS,
+                        arms(flex=-15, abduct=55, rotate=-20, elbow=80, forearm=90, wrist=-70),
+                        grip())
+_REVERSE_TOP = merge(pose(), _BENCH_LEGS,
+                     arms(flex=75, abduct=10, rotate=-10, elbow=10, forearm=60, wrist=-70),
+                     grip())
 _BENCH_EQUIP = eq("bench", attach="static", height=BENCH_TOP)
 
 barbell_bench_press = ExerciseDefinition(
@@ -380,6 +398,56 @@ dumbbell_chest_fly = ExerciseDefinition(
     sources=(NEUMANN, KOLBER, EXRX), camera="side", tags=("dumbbell",),
 )
 
-EXERCISES = (barbell_bench_press, incline_dumbbell_press, push_up, overhead_press,
+reverse_grip_bench_press = ExerciseDefinition(
+    id="reverse_grip_bench_press", name="Reverse-grip bench press",
+    category=Category.UPPER_PUSH,
+    description="Supine on a bench with a supinated (underhand) grip, the bar is lowered to "
+                "the lower sternum and pressed back over the shoulders. The underhand grip "
+                "tucks the elbows and shifts work to the clavicular pectoralis.",
+    setup=("Eyes under the bar, five points of contact (head, shoulders, hips, both feet)",
+           "Supinated grip a little inside shoulder width; wrists stacked over the elbows",
+           "Unrack with a spotter: a supinated grip is the harder one to control"),
+    orientation="supine", anchor="none", base_position=(-85.0, BENCH_TOP + 15.0, 0.0),
+    phases=(
+        ph("Lower", ECC, 2.0, _REVERSE_BOTTOM,
+           cues=("Bar to the lower sternum with the elbows tucked close to the trunk",
+                 "Pull the bar down with the lats; blades stay back and down")),
+        ph("Touch", ISO, 0.3, _REVERSE_BOTTOM, cues=("Light touch; stay tight",)),
+        ph("Press", CON, 1.5, _REVERSE_TOP,
+           cues=("Drive the bar up and back over the shoulders",
+                 "Keep the upper back tight against the bench")),
+        ph("Lockout", ISO, 0.5, _REVERSE_TOP, cues=("Elbows straight, shoulder blades down",)),
+    ),
+    muscles=(mu("pectoralis_upper", P, 0.9,
+                note="the reverse grip's point: the clavicular head takes the work"),
+             mu("pectoralis_major", P, 0.7), mu("triceps_brachii", P, 0.7),
+             mu("deltoid_anterior", S, 0.6),
+             mu("biceps_brachii", S, 0.45,
+                note="supinated, it helps hold the bar rather than merely stabilise"),
+             mu("serratus_anterior", S, 0.4),
+             mu("latissimus_dorsi", ST, 0.45,
+                note="pulls the bar down under control and holds the shoulder tight"),
+             mu("rhomboids", ST, 0.4, note="holds the blades retracted"),
+             mu("trapezius_middle", ST, 0.35, note="holds the blades retracted"),
+             mu("erector_spinae", ST, 0.3, note="braces the trunk against the bench"),
+             mu("rotator_cuff", ST, 0.35), mu("forearm_flexors", ST, 0.5),
+             mu("gluteus_maximus", ST, 0.3, note="leg drive"), mu("quadriceps", ST, 0.25)),
+    equipment=(eq("barbell", plates=2), _BENCH_EQUIP),
+    errors=("Unracking alone: the supinated grip is the one that rolls out of the hands.",
+            "Letting the elbows drift wide, which gives up the grip's advantage.",
+            "Loading it like a standard bench press."),
+    physio_notes=("The supinated grip externally rotates the humerus and tucks the elbows, "
+                  "which is what moves the emphasis to the clavicular head of pectoralis "
+                  "major and tends to be easier on the anterior shoulder than a flared "
+                  "standard grip.",
+                  "Biceps brachii is loaded here in a way it is not in a standard press, "
+                  "because a supinated forearm holds the bar rather than sitting under it."),
+    sources=(BENCH_INCLINE, CALATAYUD, KOLBER, NSCA, ECC_CON),
+    camera="side", tags=("barbell",),
+)
+
+
+EXERCISES = (barbell_bench_press, reverse_grip_bench_press, incline_dumbbell_press,
+             push_up, overhead_press,
              seated_dumbbell_shoulder_press, parallel_bar_dip, dumbbell_lateral_raise,
              triceps_pushdown, lying_triceps_extension, dumbbell_chest_fly)

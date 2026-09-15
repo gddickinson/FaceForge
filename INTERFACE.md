@@ -297,7 +297,7 @@ flat when ankle dorsiflexion = pitch − hip + knee.
 | `lower_body.py` | Squats, deadlifts, lunges and split squats. |
 | `lower_body_accessory.py` | Hip thrust, step-up, calf raise, wall sit, machine knee work and the physio staples. |
 | `upper_pull.py` | Pulling: pull-up, chin-up, pulldown, rows, face pull, curls and rotator cuff. |
-| `upper_push.py` | Pressing: bench press, incline press, push-up, overhead presses, dips, flyes, triceps. |
+| `upper_push.py` | Pressing: bench press (overhand, palms to the feet) and its reverse-grip variant (supinated, clavicular pectoralis primary and biceps a secondary), incline press, push-up, overhead presses, dips, flyes, triceps. |
 
 ### `faceforge/export/`
 

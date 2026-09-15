@@ -82,9 +82,35 @@ def test_every_muscle_region_has_a_default_chain_set():
 
 
 def test_overrides_are_all_sided_or_midline_names_and_non_empty():
+    limbs = {"spine", "ribs", "arm", "leg", "hand", "foot"}
     for name, chains in MUSCLE_CHAIN_OVERRIDES.items():
         assert chains, f"{name} has an empty override, which would mean 'no chains'"
-        assert set(chains) <= {"spine", "ribs", "arm", "leg"}, name
+        for chain in chains:
+            # "hand1".."hand5" name one digit; the bare token is all five.
+            stem = chain[:-1] if chain[-1].isdigit() else chain
+            assert stem in limbs, f"{name}: {chain}"
+            if stem != chain:
+                assert stem in ("hand", "foot"), f"{name}: {chain}"
+                assert chain[-1] in "12345", f"{name}: {chain}"
+
+
+def test_a_single_tendon_muscle_follows_the_one_digit_it_ends_in():
+    """Extensor pollicis longus has one tendon, to the thumb, not five."""
+    chains = MUSCLE_CHAIN_OVERRIDES["Ext. Poll. Long. R"]
+    assert "hand1" in chains and "hand" not in chains
+    ids = {"spine": 0, "arm_R": 1, "hand_R_1": 2, "hand_R_2": 3, "hand_R_5": 4}
+    assert resolve_sided_chains(chains, "Ext. Poll. Long. R", ids) == {0, 1, 2}
+
+
+def test_the_wrist_muscles_do_not_follow_the_fingers():
+    """Palmaris longus ends in the palmar aponeurosis, not in a phalanx.
+
+    Bound to all five digit chains it stretched 10.59x at the 99th percentile
+    when the fist closed, three times the next worst muscle in the forearm.
+    """
+    for name in ("Palmaris Longus R", "Flex. Carpi Rad. L", "Ext. Carpi Uln. Hum. R"):
+        chains = MUSCLE_CHAIN_OVERRIDES[name]
+        assert not any(c.startswith(("hand", "foot")) for c in chains), name
 
 
 def test_pectorals_follow_the_arm_and_intercostals_do_not():

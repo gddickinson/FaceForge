@@ -130,6 +130,36 @@ def _build_muscle_chain_overrides() -> dict[str, list[str]]:
           ["spine", "ribs", "arm"])
     # back_muscles: rib-attached posterior serratus
     sided(("Serratus Post. Sup.", "Serratus Post. Inf."), ["spine", "ribs"])
+
+    # arm_muscles: the forearm's region default is spine+arm+hand, which hands
+    # every one of them all five digit chains.  Half of them never reach a
+    # phalanx, and binding them to one tears them when the fist closes.
+    #
+    # Palmaris longus is the worst of it and the reason this block exists: it
+    # ends in the palmar aponeurosis and has no tendon to any finger, yet 48.6
+    # per cent of its vertices followed the digits and gripping a bar stretched
+    # its edges 10.59x at the 99th percentile -- three times the next worst
+    # muscle in the forearm, and drawn as a flat blade fanning out past the
+    # fingers.  The wrist muscles below it stop at the carpus or a metacarpal
+    # base; the metacarpals move 8 degrees with a curl, so following the arm
+    # costs them nothing.
+    sided(("Palmaris Longus", "Flex. Carpi Rad.", "Flex. Carpi Uln. Hum.",
+           "Flex. Carpi Uln. Uln.", "Ext. Carpi Rad. Long.", "Ext. Carpi Rad. Brev.",
+           "Ext. Carpi Uln. Hum.", "Ext. Carpi Uln. Uln.", "Pronator Teres Hum.",
+           "Pronator Quad.", "Supinator", "Brachioradialis"),
+          ["spine", "arm"])
+    # One tendon, one digit: the thumb's long muscles, which were bound to all
+    # five.  Extensor pollicis longus went from 2.89x to 2.70x and flexor
+    # pollicis longus held at 1.80x.
+    #
+    # Extensor indicis and extensor digiti minimi were tried the same way and
+    # are deliberately *not* here: restricting extensor indicis to digit 2 took
+    # it from 3.48x to 4.20x, because the vertices that had been following the
+    # middle finger were pulled onto the index instead of let go.  The mesh's
+    # distal end spans more than the one tendon the name implies, and pinning
+    # it harder is the wrong correction.
+    sided(("Flex. Poll. Long.", "Ext. Poll. Long.", "Ext. Poll. Brev.",
+           "Abd. Poll. Long."), ["spine", "arm", "hand1"])
     return out
 
 
@@ -195,6 +225,11 @@ def resolve_sided_chains(chain_names: Iterable[str], structure_name: str,
             for s in ([side] if side is not None else ["R", "L"]):
                 for digit in range(1, 6):
                     resolved.append(f"{name}_{s}_{digit}")
+        elif name[:-1] in ("hand", "foot") and name[-1].isdigit():
+            # "hand1" is the thumb's chain and nothing else: a muscle with one
+            # tendon should follow the one digit it ends in.
+            for s in ([side] if side is not None else ["R", "L"]):
+                resolved.append(f"{name[:-1]}_{s}_{name[-1]}")
         else:
             resolved.append(name)
     return resolve_chain_set(resolved, chain_ids)

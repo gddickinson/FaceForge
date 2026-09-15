@@ -1682,3 +1682,52 @@ sumo deadlift 0.00, triceps pushdown 0.00, bench press 0.10, overhead press
 0.18, barbell row 1.95, lying triceps extension 4.05 -- against the bench
 press's 13.83 before any of it. Six exercises' anchor positions moved in the
 catalogue sweep, all of them bar-holders, which is the lock doing its work.
+
+## 2026-09-15 (later) — The bench press was gripped underhand, and a tendon was a blade
+
+**The palms faced the head.** A standard bench press is gripped overhand, so
+the palms face the lifter's feet. Measured at the bottom keyframe, the palm
+normal ran **+0.463** along the head-ward axis -- the wrong way -- and no
+forearm rotation could fix it: swept through a full circle the best available
+was +0.448, because it is the shoulder's *axial rotation* that decides which
+way the hand ends up, and the pose had it at -20 degrees.
+
+Shoulder rotation +30 with the forearm at 60 gives **-0.364**, palms to the
+feet, with the forearm still 0.90 of the way to vertical. The lockout keyframe
+was already right at -0.090 and a two-axis sweep found nothing better; the
+palm there faces mostly up at the bar, as it should. Through the clip the
+right palm now measures -0.514 where it was +0.463.
+
+**Both grips ship now.** The numbers the standard press used to carry are what
+a reverse-grip bench press wants, so `reverse_grip_bench_press` takes them.
+The supinated grip externally rotates the humerus and tucks the elbows, which
+moves the emphasis to the **clavicular head** of pectoralis major -- it is the
+primary there at 0.9 against the sternal head's 0.7, where the standard press
+has them the other way round -- and loads **biceps brachii** as a secondary at
+0.45 rather than a stabiliser at 0.2, because a supinated forearm holds the
+bar rather than sitting under it.
+
+**A tendon was drawn as a blade.** Palmaris longus ends in the palmar
+aponeurosis and has no tendon to any finger. It was bound to all five digit
+chains -- 10,775 of its 22,179 vertices, 48.6 per cent -- so closing the fist
+round a bar tore it to **10.59x** its rest edge length at the 99th percentile,
+three times the next worst muscle in the forearm, and it rendered as a flat
+green sheet fanning out past the fingers.
+
+`MUSCLE_CHAIN_OVERRIDES` now holds the forearm muscles that never reach a
+phalanx -- palmaris longus, the four carpal flexors and extensors, the
+pronators, supinator and brachioradialis -- at `spine+arm`. The wrist muscles
+stop at the carpus or a metacarpal base and the metacarpals move 8 degrees
+with a curl, so following the arm costs them nothing. Palmaris longus:
+**10.59x -> 1.52x**, 48.6 per cent on digit chains -> 0.
+
+`resolve_sided_chains` gained `"hand1".."hand5"` for a muscle with one tendon,
+and the thumb's long muscles use it: extensor pollicis longus 2.89x -> 2.70x,
+flexor pollicis longus held at 1.80x.
+
+*Extensor indicis and extensor digiti minimi were tried the same way and are
+deliberately not there.* Restricting extensor indicis to digit 2 took it from
+3.48x to **4.20x** -- worse -- because the vertices that had been following
+the middle finger were pulled onto the index instead of let go. The mesh's
+distal end spans more than the one tendon its name implies, and pinning it
+harder is the wrong correction. It is the residual visible in the render.
