@@ -51,14 +51,15 @@ def phase_times(built, defn) -> list[float]:
     return [first.t1 - 1e-3, far.t1 - 1e-3]
 
 
-def frame_body(camera, pivots, margin: float = 1.15) -> None:
+def frame_body(camera, pivots, margin: float = 1.32) -> None:
     """Aim the preset camera at the body and widen its field of view to fit it.
 
     The scene presets are framed for a standing figure; a muscle-up is three
     metres up a bar and a supine twist is flat on the floor, so every sheet
     would otherwise be a crop of a thigh.  The body's own joint pivots give the
-    box to fit.  The camera is NOT moved back to fit it: the gym has walls, and
-    a camera pushed through one renders a flat grey rectangle.
+    box to fit -- with a margin, because the pivots stop at the skull base and
+    the head is 20 units taller.  The camera is NOT moved back to fit it: the
+    gym has walls, and a camera pushed through one renders flat grey.
     """
     import math
 

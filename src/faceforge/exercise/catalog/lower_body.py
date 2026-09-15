@@ -179,7 +179,11 @@ box_squat = ExerciseDefinition(
     ),
     muscles=_SQUAT_MUSCLES + (mu("erector_spinae", P, 0.75,
                                  note="holds the trunk through the dead stop"),),
-    equipment=(eq("barbell", plates=2), eq("plyo_box", attach="static", height=45.0)),
+    equipment=(eq("barbell", plates=2),
+               # The lifter faces +Z (body -Y maps there under the gym wrapper), so
+               # the box has to sit BEHIND them or they squat standing on it.
+               eq("plyo_box", attach="static", position=(0.0, 0.0, -38.0),
+                  height=45.0)),
     errors=("Rocking backwards on the box and losing the brace.",
             "Dropping onto it rather than sitting back under control.",
             "Letting the shins travel forward, which turns it into an ordinary squat."),

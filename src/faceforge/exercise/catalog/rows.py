@@ -45,7 +45,7 @@ barbell_bent_over_row = ExerciseDefinition(
             "Rounding the lumbar spine.", "Shrugging instead of retracting."),
     physio_notes=("High erector spinae and lumbar load; the chest-supported row removes it "
                   "(Fenwick 2009).",),
-    sources=(SCHOENFELD_ROW, NSCA, EXRX), camera="side", tags=("barbell",),
+    sources=(SCHOENFELD_ROW, NSCA, EXRX), camera="three_quarter", tags=("barbell",),
 )
 
 
@@ -213,7 +213,7 @@ pendlay_row = ExerciseDefinition(
     physio_notes=("The dead stop removes the stretch-shortening contribution and the "
                   "cheat, which is why the loads are lower than a bent-over row's and the "
                   "upper back does more of the work.",),
-    sources=(SCHOENFELD_ROW, NSCA, EXRX), camera="side", tags=("barbell", "horizontal-pull"),
+    sources=(SCHOENFELD_ROW, NSCA, EXRX), camera="three_quarter", tags=("barbell", "horizontal-pull"),
 )
 
 
@@ -252,7 +252,7 @@ inverted_row = ExerciseDefinition(
     physio_notes=("Lowering the bar or raising the feet makes it harder by moving the body "
                   "toward horizontal; it is the usual way to train a horizontal pull "
                   "without any equipment beyond a bar.",),
-    sources=(SCHOENFELD_ROW, NSCA, ACE, EXRX), camera="side",
+    sources=(SCHOENFELD_ROW, NSCA, ACE, EXRX), camera="front",
     tags=("bodyweight", "horizontal-pull"),
 )
 

@@ -46,7 +46,7 @@ front_plank = ExerciseDefinition(
             "Head hanging."),
     physio_notes=("Rectus abdominis and external oblique ~40-50 %MVIC in the standard plank "
                   "(Snarr 2014); progress by narrowing the base or lifting a limb.",),
-    sources=(SNARR, MCGILL, EKSTROM), camera="side", tags=("no equipment", "isometric", "rehab"),
+    sources=(SNARR, MCGILL, EKSTROM), camera="front", tags=("no equipment", "isometric", "rehab"),
 )
 
 side_plank = ExerciseDefinition(
@@ -116,7 +116,7 @@ sit_up = ExerciseDefinition(
     physio_notes=("The sit-up loads the lumbar spine with high compression (McGill); the "
                   "curl-up is preferred for low-back patients.", "Hip flexor (iliopsoas) "
                   "activity is substantial in the second half of the movement (Escamilla 2006)."),
-    sources=(ESCAMILLA_ABS, MCGILL, ACE), camera="side", tags=("no equipment",),
+    sources=(ESCAMILLA_ABS, MCGILL, ACE), camera="front", tags=("no equipment",),
 )
 
 crunch = ExerciseDefinition(
@@ -141,7 +141,7 @@ crunch = ExerciseDefinition(
     errors=("Pulling the head forward.", "Lifting the whole trunk (becomes a sit-up)."),
     physio_notes=("The McGill curl-up keeps lumbar loads low while training the rectus "
                   "abdominis.",),
-    sources=(ESCAMILLA_ABS, MCGILL), camera="side", tags=("no equipment", "rehab"),
+    sources=(ESCAMILLA_ABS, MCGILL), camera="front", tags=("no equipment", "rehab"),
 )
 
 _DB_START = merge(pose(hip_flex=90, knee_flex=90), arms(flex=90, elbow=5))

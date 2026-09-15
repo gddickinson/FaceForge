@@ -100,3 +100,24 @@ def test_arm_bundles_do_not_reset_the_legs(catalog):
     assert clam["hip_l_flex"] == pytest.approx(45 / 90) and clam["hip_r_abduct"] > 0.5
     rope = catalog["jump_rope"].phases[0].pose
     assert rope["knee_r_flex"] > 0.1
+
+
+def test_a_lying_body_is_never_filmed_from_the_foot_end(catalog):
+    """The gym's ``side`` preset sits at +X and a lying body's long axis IS X.
+
+    A prone or supine exercise with ``camera="side"`` therefore looks straight
+    down the body from the feet: the whole catalogue was rendered that way
+    before this was noticed.  ``front`` (+Z) is the profile.
+    """
+    end_on = [d.id for d in catalog.values()
+              if d.orientation in ("prone", "supine")
+              and d.camera in ("side", "side_left", "low_side")]
+    assert end_on == []
+
+
+def test_a_barbell_is_never_between_the_camera_and_the_lifter(catalog):
+    """A loaded bar lies along X too, so a side camera frames a plate."""
+    occluded = [d.id for d in catalog.values()
+                if any(e.kind == "barbell" and e.attach == "hands" for e in d.equipment)
+                and d.camera in ("side", "side_left", "low_side")]
+    assert occluded == []

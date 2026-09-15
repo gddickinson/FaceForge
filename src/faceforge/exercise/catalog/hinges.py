@@ -67,7 +67,7 @@ conventional_deadlift = ExerciseDefinition(
                   "pull.", "The more horizontal the trunk, the higher the spinal extensor "
                   "demand; the sumo stance is 5-9 deg more upright."),
     sources=(DEADLIFT_SPM, ESCAMILLA_DL, CONTRERAS, NSCA, ECC_CON),
-    camera="side", tags=("barbell",),
+    camera="three_quarter", tags=("barbell",),
 )
 
 
@@ -118,7 +118,7 @@ romanian_deadlift = ExerciseDefinition(
             "Bar drifting away from the legs."),
     physio_notes=("Eccentric hamstring loading; a staple for hamstring strain rehabilitation "
                   "progression.",),
-    sources=(NSCA, ACE, EXRX, ECC_CON), camera="side", tags=("barbell",),
+    sources=(NSCA, ACE, EXRX, ECC_CON), camera="three_quarter", tags=("barbell",),
 )
 
 
@@ -177,7 +177,7 @@ rack_pull = ExerciseDefinition(
     physio_notes=("Removing the bottom third removes the range where the hips and back are "
                   "at their longest moment arm, so loads well above a full deadlift are "
                   "normal; the upper back and grip usually become the limit.",),
-    sources=(DEADLIFT_SPM, NSCA, EXRX), camera="side", tags=("barbell", "posterior-chain"),
+    sources=(DEADLIFT_SPM, NSCA, EXRX), camera="three_quarter", tags=("barbell", "posterior-chain"),
 )
 
 

@@ -115,7 +115,7 @@ barbell_bench_press = ExerciseDefinition(
                   "packed at the chest; the rhomboids and middle trapezius hold the blades "
                   "retracted and depressed against the bench for the whole set, which is what "
                   "gives the press something to push from."),
-    sources=(BENCH_INCLINE, CALATAYUD, KOLBER, NSCA, ECC_CON), camera="side", tags=("barbell",),
+    sources=(BENCH_INCLINE, CALATAYUD, KOLBER, NSCA, ECC_CON), camera="front", tags=("barbell",),
 )
 
 incline_dumbbell_press = ExerciseDefinition(
@@ -148,7 +148,7 @@ incline_dumbbell_press = ExerciseDefinition(
             "Lowering the elbows far below the bench (anterior capsule strain)."),
     physio_notes=("Upper pectoralis EMG peaks at 30 deg; above 45 deg anterior deltoid "
                   "takes over.",),
-    sources=(BENCH_INCLINE, NSCA), camera="side", tags=("dumbbell",),
+    sources=(BENCH_INCLINE, NSCA), camera="front", tags=("dumbbell",),
 )
 
 # The body is inclined (head end up) by asin(shoulder height / hand-to-toe
@@ -190,7 +190,7 @@ push_up = ExerciseDefinition(
     physio_notes=("Push-up and bench press produce comparable pectoralis and triceps EMG "
                   "when load-matched (Calatayud 2015); the push-up adds serratus anterior "
                   "and trunk stabiliser demand.",),
-    sources=(CALATAYUD, ACE, NEUMANN), camera="side", tags=("no equipment",),
+    sources=(CALATAYUD, ACE, NEUMANN), camera="front", tags=("no equipment",),
 )
 
 _OHP_START = merge(pose(knee_flex=5), arms(flex=35, abduct=20, elbow=140, wrist=-20), grip())
@@ -369,7 +369,7 @@ lying_triceps_extension = ExerciseDefinition(
     errors=("Upper arms swinging toward the chest.", "Elbows flaring out."),
     physio_notes=("Keeping the upper arms angled back keeps tension on the triceps at "
                   "lockout.",),
-    sources=(NEUMANN, EXRX), camera="side", tags=("barbell",),
+    sources=(NEUMANN, EXRX), camera="front", tags=("barbell",),
 )
 
 dumbbell_chest_fly = ExerciseDefinition(
@@ -395,7 +395,7 @@ dumbbell_chest_fly = ExerciseDefinition(
             "Lowering far below the bench with heavy weight (anterior shoulder strain)."),
     physio_notes=("Loads the pectoralis at long length; keep the range modest with a "
                   "history of anterior instability.",),
-    sources=(NEUMANN, KOLBER, EXRX), camera="side", tags=("dumbbell",),
+    sources=(NEUMANN, KOLBER, EXRX), camera="front", tags=("dumbbell",),
 )
 
 reverse_grip_bench_press = ExerciseDefinition(
@@ -443,7 +443,7 @@ reverse_grip_bench_press = ExerciseDefinition(
                   "Biceps brachii is loaded here in a way it is not in a standard press, "
                   "because a supinated forearm holds the bar rather than sitting under it."),
     sources=(BENCH_INCLINE, CALATAYUD, KOLBER, NSCA, ECC_CON),
-    camera="side", tags=("barbell",),
+    camera="front", tags=("barbell",),
 )
 
 

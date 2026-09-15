@@ -153,7 +153,7 @@ barbell_biceps_curl = ExerciseDefinition(
             "Wrists curling (forearm flexors take over)."),
     physio_notes=("Supinated curls maximise biceps brachii; the brachialis works in every "
                   "forearm position (Marcolin 2018).",),
-    sources=(BOTTON, NEUMANN, EXRX), camera="side", tags=("barbell",),
+    sources=(BOTTON, NEUMANN, EXRX), camera="three_quarter", tags=("barbell",),
 )
 
 hammer_curl = ExerciseDefinition(

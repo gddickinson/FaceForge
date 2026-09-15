@@ -1862,17 +1862,28 @@ toes go through the floor. A 35° back knee puts the back toes at 6.0 against
 the front foot's 6.3 with the heel 23 up — which is the shape of the pose
 anyway.
 
-### The lying exercises were all being filmed end-on
+### Half the catalogue was being filmed from the wrong place
 
-Rendering the whole catalogue showed something the per-exercise renders never
-made obvious: the gym's `side` preset sits at **+X**, and a prone or supine
-body's long axis **is** X, so `camera="side"` on a lying exercise looks down
-the body from the feet. Every new prone/supine entry now uses `front` (+Z),
-which is the profile. The older lying exercises -- push-up, both planks,
-sit-up, crunch, the whole bench press family, the hip thrust, the leg curl --
-still carry `camera="side"` and are framed the same end-on way; that is a
-one-word change each if it is wanted, but it changes views that have been
-reviewed before, so it was left alone.
+Rendering all 117 at once showed two things the per-exercise renders never
+made obvious.
+
+The gym's `side` preset sits at **+X**, and a prone or supine body's long axis
+**is** X — so `camera="side"` on a lying exercise looks straight down the body
+from the feet. Eighteen exercises were framed that way, the whole bench press
+family among them; they now use `front` (+Z), which is the profile.
+
+A loaded barbell lies along X as well, so a side camera puts a plate in the
+lens. Eight standing barbell exercises — both deadlift variants, the rack
+pull, the rows, the curl, the push press, the power clean — were rendered as
+a black disc with a shin behind it. They now use `three_quarter`.
+
+Both are now tests (`test_a_lying_body_is_never_filmed_from_the_foot_end`,
+`test_a_barbell_is_never_between_the_camera_and_the_lifter`) so the next
+exercise added cannot quietly repeat them.
+
+The box squat's plyo box was at the origin, which is under the lifter's feet:
+the render showed a man squatting while standing on his box. The lifter faces
++Z, so the box now sits at z = −38, behind them.
 
 `tests/exercise` is green (62), the fast tier is green apart from the
 long-standing `test_obj_groups_name_the_bodyparts3d_source_ids`, and

@@ -66,7 +66,7 @@ push_press = ExerciseDefinition(
     physio_notes=("The dip is shallow and fast: its job is to load the legs elastically, "
                   "not to squat. The arms take over at about forehead height, which is why "
                   "a push press trains the top half of a strict press.",),
-    sources=(NSCA, ACE, EXRX, ECC_CON), camera="side", default_reps=5,
+    sources=(NSCA, ACE, EXRX, ECC_CON), camera="three_quarter", default_reps=5,
     tags=("barbell", "power"),
 )
 

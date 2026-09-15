@@ -43,7 +43,7 @@ glute_bridge = ExerciseDefinition(
             "Feet too far away so the hamstrings cramp."),
     physio_notes=("Gluteus maximus ~27-40 %MVIC in the bodyweight bridge; a standard early "
                   "rehabilitation exercise for hip extension.",),
-    sources=(BOREN, DISTEFANO, EKSTROM, CONTRERAS), camera="side", tags=("no equipment", "rehab"),
+    sources=(BOREN, DISTEFANO, EKSTROM, CONTRERAS), camera="front", tags=("no equipment", "rehab"),
 )
 
 barbell_hip_thrust = ExerciseDefinition(
@@ -70,7 +70,7 @@ barbell_hip_thrust = ExerciseDefinition(
             "Feet too close or too far from the bench."),
     physio_notes=("Higher gluteus maximus EMG than the back squat and deadlift at matched "
                   "loads (Contreras 2015).",),
-    sources=(CONTRERAS, NSCA, ACE), camera="side", tags=("barbell",),
+    sources=(CONTRERAS, NSCA, ACE), camera="front", tags=("barbell",),
 )
 
 step_up = ExerciseDefinition(
@@ -199,7 +199,7 @@ lying_leg_curl = ExerciseDefinition(
     errors=("Hips lifting off the bench.", "Dropping the weight on the eccentric."),
     physio_notes=("Biases the biceps femoris; the kettlebell swing and Nordic curl bias "
                   "semitendinosus (Zebis 2013).",),
-    sources=(NEUMANN, EXRX), camera="side", tags=("machine",),
+    sources=(NEUMANN, EXRX), camera="front", tags=("machine",),
 )
 
 #: Lying on the left side: the lower (left) arm lies forward on the floor, the

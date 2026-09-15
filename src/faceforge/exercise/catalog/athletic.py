@@ -138,7 +138,7 @@ power_clean = ExerciseDefinition(
             "in the first pull."),
     physio_notes=("Triple extension of hips, knees and ankles is the athletic template "
                   "shared with jumping and sprinting.",),
-    sources=(NSCA, EXRX), camera="side", default_reps=3, tags=("barbell", "power", "olympic"),
+    sources=(NSCA, EXRX), camera="three_quarter", default_reps=3, tags=("barbell", "power", "olympic"),
 )
 
 _SLAM_TOP = merge(pose(knee_flex=5, ankle_flex=-15), arms(flex=175, elbow=5), grip())

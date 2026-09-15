@@ -102,7 +102,7 @@ close_grip_bench_press = ExerciseDefinition(
                   "It is the bench variation that tends to sit easiest on the anterior "
                   "shoulder, because the tucked elbow reduces the abduction angle."),
     sources=(ANDERSEN, BENCH_INCLINE, CALATAYUD, NSCA, ECC_CON),
-    camera="side", tags=("barbell",),
+    camera="front", tags=("barbell",),
 )
 
 wide_grip_bench_press = ExerciseDefinition(
@@ -137,7 +137,7 @@ wide_grip_bench_press = ExerciseDefinition(
                   "It is also the grip with the most anterior shoulder stress, so it "
                   "suits a lifter with no impingement history and a good warm-up."),
     sources=(ANDERSEN, BENCH_INCLINE, KOLBER, NSCA, ECC_CON),
-    camera="side", tags=("barbell",),
+    camera="front", tags=("barbell",),
 )
 
 incline_barbell_bench_press = ExerciseDefinition(
@@ -168,7 +168,7 @@ incline_barbell_bench_press = ExerciseDefinition(
     physio_notes=("Clavicular pectoralis EMG peaks around 30 deg; anterior deltoid keeps "
                   "rising to 60, which is why steeper is not better for the chest.",),
     sources=(BENCH_INCLINE, CALATAYUD, NSCA, ECC_CON),
-    camera="side", tags=("barbell",),
+    camera="front", tags=("barbell",),
 )
 
 decline_barbell_bench_press = ExerciseDefinition(
@@ -201,7 +201,7 @@ decline_barbell_bench_press = ExerciseDefinition(
                   "The range is shorter than a flat bench's, which is part of why loads "
                   "tend to be higher."),
     sources=(BENCH_INCLINE, CALATAYUD, EXRX, NSCA, ECC_CON),
-    camera="side", tags=("barbell",),
+    camera="front", tags=("barbell",),
 )
 
 floor_press = ExerciseDefinition(
@@ -243,7 +243,7 @@ floor_press = ExerciseDefinition(
                   "It is a common choice when a lifter's shoulder does not tolerate the "
                   "bottom of a full-range bench press."),
     sources=(CALATAYUD, KOLBER, NSCA, EXRX, ECC_CON),
-    camera="side", tags=("barbell",),
+    camera="front", tags=("barbell",),
 )
 
 EXERCISES = (close_grip_bench_press, wide_grip_bench_press, incline_barbell_bench_press,
