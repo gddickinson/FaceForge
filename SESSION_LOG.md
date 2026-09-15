@@ -1597,13 +1597,25 @@ whose width is free to change. The lock is built for either now. Bench press
 slide 13.83 -> **0.10**, with shoulder abduction still travelling 12 to 78
 degrees and back, so the movement keeps its shape.
 
-**The bench press had no arch and a passive back.** Five points of contact
-with a slight arch was in the setup cues and in none of the geometry. It is a
-set-up position rather than a movement, so both keyframes carry the same ten
-degrees of lumbar extension -- the modest arch of general training, not the
-competition powerlifter's -- and nothing about it changes between them.
-Measured, that moves the thoracic spine 1.03 units, and the trunk stays on
-the bench (lowest trunk bone 57.75 against a bench top of 58.0).
+**The bench press had no arch and a passive back.** The arch is still
+missing, and the attempt to add it is worth recording as a failure.
+
+Ten degrees of `spine_flex` extension went into both keyframes on the
+strength of a headless measurement that showed 1.03 units of thoracic pivot
+movement. Rendered with the plates hidden, the arched and flat frames are
+indistinguishable, and a proper sweep says why: from -30 to +30 degrees
+against a supine trunk, `spine_flex` leaves the **sternum at 89.71**, the
+**shoulders at 68.56** and the **lowest lumbar pivot at 64.56** -- all three
+unmoved -- and shifts only the top of the lumbar chain, about a unit per 30
+degrees. The 1.03 figure was a pivot displacement summed over all three axes
+on a different code path; it never corresponded to anything visible.
+
+A bench arch is the opposite shape to what this DOF makes: pelvis and
+shoulders down, the middle of the back lifted off the bench. A serial chain
+driven from the pelvis cannot produce it, and the ribcage would have to follow
+the thoracic pivots to show it at all -- the sternum not moving by a
+thousandth across a 60-degree sweep says it does not. So the pose carries no
+arch rather than a number that moves nothing.
 
 The back is not passive in a bench press. Latissimus dorsi is a shoulder
 extensor and adductor, so it resists the bar on the way down and keeps the
@@ -1611,7 +1623,7 @@ humerus packed at the chest; the rhomboids and middle trapezius hold the
 blades retracted and depressed for the whole set, which is what gives the
 press something to push from. The lat goes from 0.30 to 0.45 with a note
 covering both directions, and rhomboids (0.40), middle trapezius (0.35) and
-erector spinae (0.30, holding the arch) join it. All four are stabilisers, so
+erector spinae (0.30, bracing the trunk) join it. All four are stabilisers, so
 the activation model holds them at full level through every phase -- measured
 0.45 on the lats at each of nine samples across the rep, the lowering
 included.

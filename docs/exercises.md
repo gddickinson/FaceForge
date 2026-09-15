@@ -759,7 +759,7 @@ Supine on a bench, the bar is lowered to the lower sternum with the elbows at ~4
 **Muscles**
 - *Primary movers:* Pectoralis major 90 %; Anterior deltoid 75 %; Triceps brachii 70 %
 - *Synergists:* Serratus anterior 40 %
-- *Stabilisers:* Latissimus dorsi / teres major 45 % — pulls the bar down under control and holds the shoulder tight off the chest; Rhomboids 40 % — holds the blades retracted; Middle trapezius 35 % — holds the blades retracted; Erector spinae 30 % — holds the arch; Rotator cuff 35 %; Biceps brachii 20 %; Forearm flexors (grip) 45 %; Gluteus maximus 30 % — leg drive; Quadriceps 25 %
+- *Stabilisers:* Latissimus dorsi / teres major 45 % — pulls the bar down under control and holds the shoulder tight off the chest; Rhomboids 40 % — holds the blades retracted; Middle trapezius 35 % — holds the blades retracted; Erector spinae 30 % — braces the trunk against the bench; Rotator cuff 35 %; Biceps brachii 20 %; Forearm flexors (grip) 45 %; Gluteus maximus 30 % — leg drive; Quadriceps 25 %
 
 **Common errors**
 - Elbows flared to 90 deg (raises impingement risk and shoulder strain).

@@ -33,16 +33,18 @@ _INCLINE_LEGS = only(hip_flex=16, knee_flex=70, ankle_flex=-5, hip_abduct=22)
 # differs between the two keyframes because the rig's shoulder Euler order
 # couples axial rotation to abduction; the hand's world orientation is the
 # same in both.
-# The arch.  Five points of contact -- head, shoulders, hips, both feet -- with
-# the shoulder blades pulled back and down and a natural lumbar extension held
-# throughout; the hips never leave the bench.  It is a set-up position, not a
-# movement, so both keyframes carry the same value and nothing about it changes
-# between them.  Ten degrees is the modest arch of general training rather than
-# the competition powerlifter's.
-_BENCH_ARCH = only(spine_flex=-10)
-_BENCH_BOTTOM = merge(pose(), _BENCH_LEGS, _BENCH_ARCH,
+# No arch here, though the set-up cues call for one, because `spine_flex`
+# cannot produce it on this rig.  Swept from -30 to +30 degrees against a
+# supine trunk it leaves the sternum at 89.71 and the shoulders at 68.56 and
+# the lowest lumbar pivot at 64.56 -- all three unmoved -- and shifts only the
+# top of the lumbar chain, about a unit per 30 degrees.  A bench arch is the
+# opposite shape: pelvis and shoulders down, the middle lifted off the bench,
+# which a chain driven from the pelvis cannot make and which the ribcage would
+# have to follow to show at all.  Authoring a number that moves nothing would
+# only make the pose look done.
+_BENCH_BOTTOM = merge(pose(), _BENCH_LEGS,
                       arms(flex=-15, abduct=75, rotate=-20, elbow=80, forearm=90, wrist=-70), grip())
-_BENCH_TOP = merge(pose(), _BENCH_LEGS, _BENCH_ARCH,
+_BENCH_TOP = merge(pose(), _BENCH_LEGS,
                    arms(flex=75, abduct=12, rotate=0, elbow=10, forearm=0, wrist=-70), grip())
 _BENCH_EQUIP = eq("bench", attach="static", height=BENCH_TOP)
 
@@ -72,7 +74,7 @@ barbell_bench_press = ExerciseDefinition(
                      "tight off the chest"),
              mu("rhomboids", ST, 0.4, note="holds the blades retracted"),
              mu("trapezius_middle", ST, 0.35, note="holds the blades retracted"),
-             mu("erector_spinae", ST, 0.3, note="holds the arch"),
+             mu("erector_spinae", ST, 0.3, note="braces the trunk against the bench"),
              mu("rotator_cuff", ST, 0.35), mu("biceps_brachii", ST, 0.2),
              mu("forearm_flexors", ST, 0.45), mu("gluteus_maximus", ST, 0.3, note="leg drive"),
              mu("quadriceps", ST, 0.25)),
