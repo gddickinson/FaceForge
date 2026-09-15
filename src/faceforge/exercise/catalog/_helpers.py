@@ -23,6 +23,24 @@ LOWER_CHEST = (0.0, 0.0, -45.0)
 BENCH_TOP = 58.0
 SEATED_ON_BENCH = (0.0, BENCH_TOP + 10.0 + 81.0, 0.0)
 
+#: Feet on the floor either side of a flat bench (measured 2026-09-11: with
+#: the pelvis on a 58-high pad the thighs must slope 10 deg below the trunk
+#: and the knees bend 70 for the soles to reach the floor; at hip 35 / knee 90
+#: the feet rested on the bench top).  Shared by the whole bench family.
+def bench_legs() -> dict[str, float]:
+    from faceforge.exercise.pose_library import only
+
+    return only(hip_flex=-10, knee_flex=70, ankle_flex=-5, hip_abduct=22)
+
+
+#: The same, for a bench pitched 30 deg up about the hips: the pitch carries
+#: the legs down with it, and 26 deg more hip flexion keeps the soles on the
+#: floor (measured foot height 3.5; the flat-bench legs put them 20 below).
+def incline_legs() -> dict[str, float]:
+    from faceforge.exercise.pose_library import only
+
+    return only(hip_flex=16, knee_flex=70, ankle_flex=-5, hip_abduct=22)
+
 
 def ph(name: str, kind: PhaseKind, duration: float, pose_: dict, pitch: float = 0.0,
        cues=(), act: dict | None = None, lift: float = 0.0, travel=(0.0, 0.0), pivot=None,

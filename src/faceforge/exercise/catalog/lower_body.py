@@ -331,6 +331,163 @@ bulgarian_split_squat = ExerciseDefinition(
     tags=("dumbbell", "unilateral"),
 )
 
-EXERCISES = (bodyweight_squat, barbell_back_squat, goblet_squat, front_squat,
+box_squat = ExerciseDefinition(
+    id="box_squat", name="Box squat", category=Category.LOWER_BODY,
+    description="A back squat to a box, sitting back onto it and pausing before standing. The "
+                "box fixes the depth and the pause removes the bounce.",
+    setup=("Box set so the crease of the hip finishes at or just below the knee",
+           "Sit back rather than down: shins stay near vertical",
+           "Pause on the box without relaxing the trunk, then drive up"),
+    phases=(
+        ph("Sit back", ECC, 2.2, merge(squat(105, 95, 38)[0], _BAR_ON_BACK), pitch=38,
+           cues=("Push the hips back to the box; keep the shins vertical",)),
+        ph("Pause", ISO, 0.8, merge(squat(105, 95, 38)[0], _BAR_ON_BACK), pitch=38,
+           cues=("Sit, do not slump: stay braced and keep the weight on the feet",)),
+        ph("Drive", CON, 1.4, merge(stand()[0], _BAR_ON_BACK), pitch=0.0,
+           cues=("Chest and hips rise together off the box",)),
+        ph("Lockout", ISO, 0.4, merge(stand()[0], _BAR_ON_BACK), pitch=0.0),
+    ),
+    muscles=_SQUAT_MUSCLES + (mu("erector_spinae", P, 0.75,
+                                 note="holds the trunk through the dead stop"),),
+    equipment=(eq("barbell", plates=2), eq("plyo_box", attach="static", height=45.0)),
+    errors=("Rocking backwards on the box and losing the brace.",
+            "Dropping onto it rather than sitting back under control.",
+            "Letting the shins travel forward, which turns it into an ordinary squat."),
+    physio_notes=("Sitting back with vertical shins increases the hip contribution and "
+                  "reduces the knee's, which is why it is a common posterior-chain squat "
+                  "variant.",
+                  "The pause removes the stretch-shortening contribution, so the drive "
+                  "starts from a dead stop."),
+    sources=(SQUAT_KIN, SQUAT_REVIEW, NSCA, EXRX), tags=("barbell", "posterior-chain"),
+)
+
+pause_squat = ExerciseDefinition(
+    id="pause_squat", name="Pause squat", category=Category.LOWER_BODY,
+    description="A back squat held for two to three seconds at the bottom. The pause kills "
+                "the bounce and exposes any position that was being hidden by speed.",
+    setup=("Set up as for a back squat", "Descend under control to full depth",
+           "Hold without relaxing, then drive: the brace must not change"),
+    phases=(
+        ph("Descent", ECC, 2.2, merge(squat(120, 125, 32)[0], _BAR_ON_BACK), pitch=32,
+           cues=("Controlled descent to depth",)),
+        ph("Pause", ISO, 2.5, merge(squat(120, 125, 32)[0], _BAR_ON_BACK), pitch=32,
+           cues=("Stay tight: knees out, chest up, weight over mid-foot",
+                 "Do not relax into the bottom")),
+        ph("Ascent", CON, 1.6, merge(stand()[0], _BAR_ON_BACK), pitch=0.0,
+           cues=("Drive from a dead stop; hips and chest together",)),
+        ph("Lockout", ISO, 0.4, merge(stand()[0], _BAR_ON_BACK), pitch=0.0),
+    ),
+    muscles=_SQUAT_MUSCLES + (mu("erector_spinae", P, 0.8, note="the pause is its test"),),
+    equipment=(eq("barbell", plates=2),),
+    errors=("Relaxing at the bottom and re-bracing to stand.",
+            "Letting the chest drop through the pause.",
+            "Using a load that only works with a bounce."),
+    physio_notes=("Removing the stretch-shortening contribution lowers the load that can be "
+                  "moved and raises the demand on the position, which is why it is used as "
+                  "a technique lift rather than a maximal one.",),
+    sources=(SQUAT_KIN, SCHOENFELD, NSCA), tags=("barbell", "technique"),
+)
+
+deficit_deadlift = ExerciseDefinition(
+    id="deficit_deadlift", name="Deficit deadlift", category=Category.LOWER_BODY,
+    description="A conventional deadlift standing on a low platform, so the bar starts below "
+                "the usual height. The extra range is all at the hardest part of the lift.",
+    setup=("Stand on a 5 to 10 cm platform with the bar at normal height",
+           "Set the back before the bar moves: the deeper start punishes a rounded one",
+           "Everything else is a conventional deadlift"),
+    phases=_deadlift_phases(pitch_start=82, knee_start=75, pitch_mid=55, knee_mid=25),
+    muscles=(mu("gluteus_maximus", P, 0.95), mu("hamstrings", P, 0.9),
+             mu("erector_spinae", P, 0.9, note="the deficit lengthens its hardest range"),
+             mu("quadriceps", P, 0.7, note="more knee flexion at the start than a floor pull"),
+             mu("adductors", S, 0.5), mu("trapezius_middle", S, 0.55),
+             mu("latissimus_dorsi", S, 0.6), mu("forearm_flexors", S, 0.7),
+             mu("rectus_abdominis", ST, 0.5), mu("obliques", ST, 0.45)),
+    equipment=(eq("barbell", plates=2),),
+    errors=("Adding depth before the back can hold a neutral position at normal height.",
+            "A deficit so high the hips shoot up to start the bar.",
+            "Keeping the same load as a floor deadlift."),
+    physio_notes=("The deficit adds range at the bottom, where the moment arm on the hips "
+                  "and low back is longest, so loads are lower than a floor pull's.",),
+    sources=(DEADLIFT_SPM, ESCAMILLA_DL, NSCA, EXRX), tags=("barbell", "posterior-chain"),
+)
+
+rack_pull = ExerciseDefinition(
+    id="rack_pull", name="Rack pull", category=Category.LOWER_BODY,
+    description="A deadlift started from pins at about knee height. The bottom third is gone, "
+                "which leaves the lockout and lets the load go up.",
+    setup=("Pins set so the bar starts at or just below the knee",
+           "Shins vertical, bar against the legs, lats set",
+           "Push the floor away and finish the hips: do not lean back"),
+    phases=(
+        ph("Pull", CON, 1.2, merge(pose(knee_flex=3), arms(flex=-3), grip()),
+           cues=("Drive the hips through to the bar",)),
+        ph("Lockout", ISO, 0.6, merge(pose(knee_flex=3), arms(flex=-3), grip()),
+           cues=("Stand tall; glutes locked, ribs down, no lay-back",)),
+        ph("Lower", ECC, 1.4, merge(squat(72, 22, 50)[0], arms(flex=50), grip()), pitch=50,
+           cues=("Hips back to return the bar to the pins",)),
+        ph("Pins", ISO, 0.5, merge(squat(72, 22, 50)[0], arms(flex=50), grip()), pitch=50,
+           cues=("Let it settle; the next rep starts from a dead stop",)),
+    ),
+    muscles=(mu("gluteus_maximus", P, 0.9), mu("erector_spinae", P, 0.85),
+             mu("hamstrings", P, 0.7), mu("trapezius_middle", P, 0.7),
+             mu("trapezius_upper", S, 0.6), mu("latissimus_dorsi", S, 0.6),
+             mu("rhomboids", S, 0.55),
+             mu("forearm_flexors", P, 0.85, note="the load is usually grip-limited"),
+             mu("quadriceps", S, 0.4), mu("rectus_abdominis", ST, 0.5),
+             mu("obliques", ST, 0.4)),
+    equipment=(eq("barbell", plates=2),),
+    errors=("Leaning back at the top, which loads the lumbar spine and proves nothing.",
+            "Bouncing the bar off the pins.",
+            "Treating the heavier load as a deadlift number."),
+    physio_notes=("Removing the bottom third removes the range where the hips and back are "
+                  "at their longest moment arm, so loads well above a full deadlift are "
+                  "normal; the upper back and grip usually become the limit.",),
+    sources=(DEADLIFT_SPM, NSCA, EXRX), camera="side", tags=("barbell", "posterior-chain"),
+)
+
+single_leg_romanian_deadlift = ExerciseDefinition(
+    id="single_leg_romanian_deadlift", name="Single-leg Romanian deadlift",
+    category=Category.LOWER_BODY,
+    description="A hinge on one leg with the other extending behind as a counterweight. The "
+                "balance demand makes it a hip-stability exercise as much as a hamstring one.",
+    setup=("Stand on one leg with a soft knee", "Hinge at the hip; the free leg extends behind "
+           "in line with the trunk", "Keep the hips square: the free hip must not open up"),
+    phases=(
+        ph("Hinge", ECC, 2.2, merge(pose(hip_r_flex=80, knee_r_flex=18, hip_l_flex=-27,
+                                         knee_l_flex=10),
+                                    arms(flex=70, elbow=8), grip()), pitch=80,
+           cues=("Hips back, back flat, free leg rising as the trunk falls",)),
+        ph("Bottom", ISO, 0.5, merge(pose(hip_r_flex=80, knee_r_flex=18, hip_l_flex=-27,
+                                          knee_l_flex=10),
+                                     arms(flex=70, elbow=8), grip()), pitch=80,
+           cues=("Trunk and free leg in one line; hips level",)),
+        ph("Stand", CON, 1.6, merge(pose(hip_r_flex=3, knee_r_flex=8, hip_l_flex=-5,
+                                         knee_l_flex=10), arms(flex=3, elbow=8), grip()),
+           cues=("Drive the standing hip forward to stand tall",)),
+        ph("Top", ISO, 0.4, merge(pose(hip_r_flex=3, knee_r_flex=8, hip_l_flex=-5,
+                                       knee_l_flex=10), arms(flex=3, elbow=8), grip())),
+    ),
+    muscles=(mu("hamstrings", P, 0.9, note="of the standing leg"),
+             mu("gluteus_maximus", P, 0.85),
+             mu("gluteus_medius", P, 0.8, note="keeps the pelvis level on one leg"),
+             mu("erector_spinae", P, 0.75), mu("hip_external_rotators", S, 0.6),
+             mu("obliques", S, 0.55, note="resists the pelvis rotating open"),
+             mu("adductors", S, 0.45), mu("tibialis_anterior", S, 0.45, note="balance"),
+             mu("quadriceps", S, 0.35), mu("forearm_flexors", ST, 0.5)),
+    equipment=(eq("kettlebell", attach="hand_l", radius=10.0),),
+    errors=("Letting the free hip rotate open, which turns it into a side bend.",
+            "Rounding the back to reach lower.",
+            "Locking the standing knee."),
+    physio_notes=("A frontal- and transverse-plane task as much as a sagittal one: gluteus "
+                  "medius and the deep rotators hold the pelvis while the hamstrings do the "
+                  "hinge.",),
+    sources=(BOREN, CONTRERAS, NSCA, ACE), camera="side",
+    tags=("kettlebell", "unilateral", "posterior-chain"),
+)
+
+
+EXERCISES = (box_squat, pause_squat, deficit_deadlift, rack_pull,
+             single_leg_romanian_deadlift,
+             bodyweight_squat, barbell_back_squat, goblet_squat, front_squat,
              conventional_deadlift, sumo_deadlift, romanian_deadlift, forward_lunge,
              reverse_lunge, bulgarian_split_squat)

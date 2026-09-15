@@ -292,6 +292,9 @@ flat when ankle dorsiflexion = pitch − hip + knee.
 | `__init__.py` | The exercise catalogue, by category. |
 | `_helpers.py` | Constructors and shared source citations for the catalogue modules. |
 | `athletic.py` | Power and athletic movements: kettlebell swing, jumps, power clean, slam, burpee. |
+| `bench_variants.py` | The bench press by what is changed about it: close and wide grip, incline, decline, floor press. |
+| `press_variants.py` | Pressing away from the bench: push press, Arnold press, close-grip push-up, overhead triceps extension. |
+| `kettlebell.py` | The kettlebell family beyond the swing: deadlift, clean, press, thruster, high pull, snatch, windmill, halo, the two carries and the Turkish get-up. |
 | `conditioning.py` | Cyclic conditioning: bike, rower, walking, running, jump rope, jacks, climbers, ropes. |
 | `core_stability.py` | Trunk: planks, sit-up, crunch, dead bug, bird dog, twist, knee raise, Pallof press. |
 | `lower_body.py` | Squats, deadlifts, lunges and split squats. |

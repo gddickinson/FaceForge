@@ -357,6 +357,143 @@ band_external_rotation = ExerciseDefinition(
     sources=(REINOLD, NEUMANN), unilateral=True, camera="front", tags=("band", "rehab"),
 )
 
-EXERCISES = (pull_up, chin_up, lat_pulldown, barbell_bent_over_row, single_arm_dumbbell_row,
+wide_grip_pull_up = _vertical_pull(
+    "wide_grip_pull_up", "Wide-grip pull-up",
+    "A pull-up taken well outside the shoulders. The wider grip shortens the range and "
+    "shifts the pull toward scapular adduction, which is why it is felt across the upper "
+    "back rather than down the lat.",
+    bottom_arms=arms(flex=10, abduct=172, rotate=90, elbow=5, forearm=-90),
+    top_arms=arms(flex=0, abduct=60, rotate=90, elbow=125, forearm=-90),
+    muscles=(mu("latissimus_dorsi", P, 0.95), mu("trapezius_middle", P, 0.7),
+             mu("rhomboids", P, 0.65), mu("biceps_brachii", S, 0.6),
+             mu("trapezius_lower", S, 0.6), mu("deltoid_posterior", S, 0.55),
+             mu("infraspinatus_teres_minor", S, 0.5), mu("brachialis", S, 0.5),
+             mu("pectoralis_major", S, 0.35),
+             mu("forearm_flexors", ST, 0.8, note="a wide grip is harder to hold"),
+             mu("rectus_abdominis", ST, 0.4), mu("obliques", ST, 0.3)),
+    sources=(PULLUP_YOUDAS, ANDERSEN, LATPULL_HD, NSCA),
+    setup=("Grip well outside the shoulders, palms forward",
+           "Chest up, shoulders down before the first inch",
+           "Expect fewer reps than a standard grip: the range is shorter but the leverage is worse"),
+    errors=("Going so wide the elbows cannot finish flexing.",
+            "Shrugging into the top instead of depressing the blades.",
+            "Kipping to make up for the leverage."),
+    notes=("A wider grip reduces elbow flexion range and increases the shoulder adduction "
+           "component, so the mid-trapezius and rhomboids take more of it than in a "
+           "shoulder-width pull-up.",),
+    tags=("bodyweight", "vertical-pull"),
+)
+
+neutral_grip_pull_up = _vertical_pull(
+    "neutral_grip_pull_up", "Neutral-grip pull-up",
+    "Palms facing each other on parallel handles. The neutral forearm is the position most "
+    "shoulders and elbows tolerate best, and it lets brachialis and brachioradialis "
+    "contribute more than a pronated grip does.",
+    bottom_arms=arms(flex=10, abduct=150, rotate=45, elbow=5, forearm=0),
+    top_arms=arms(flex=0, abduct=30, rotate=45, elbow=145, forearm=0),
+    muscles=(mu("latissimus_dorsi", P, 0.95), mu("biceps_brachii", P, 0.75),
+             mu("brachialis", P, 0.75, note="the neutral forearm's muscle"),
+             mu("brachioradialis", S, 0.7), mu("trapezius_lower", S, 0.55),
+             mu("rhomboids", S, 0.5), mu("trapezius_middle", S, 0.5),
+             mu("deltoid_posterior", S, 0.45), mu("infraspinatus_teres_minor", S, 0.45),
+             mu("forearm_flexors", ST, 0.75), mu("rectus_abdominis", ST, 0.4),
+             mu("obliques", ST, 0.3)),
+    sources=(PULLUP_YOUDAS, BOTTON, NSCA),
+    setup=("Parallel handles, palms facing each other", "Shoulders down and back before pulling",
+           "Drive the elbows down toward the ribs"),
+    errors=("Letting the elbows flare forward, which turns it into a row.",
+            "Half reps: the neutral grip makes the top easier to fake."),
+    notes=("A neutral forearm puts brachialis and brachioradialis in their strongest "
+           "positions, which is why most people can do more of these than pronated "
+           "pull-ups.",),
+    tags=("bodyweight", "vertical-pull"),
+)
+
+pendlay_row = ExerciseDefinition(
+    id="pendlay_row", name="Pendlay row", category=Category.UPPER_PULL,
+    description="A barbell row from a dead stop on the floor with the trunk parallel to it. "
+                "Every rep starts from rest, so there is no stretch to use and no swing.",
+    setup=("Trunk parallel to the floor, bar over the mid-foot",
+           "Back flat and held there: the trunk angle does not change",
+           "Pull to the lower sternum and return the bar to the floor"),
+    orientation="standing", anchor="feet", base_position=(0.0, 0.0, 0.0),
+    phases=(
+        ph("Pull", CON, 1.0, merge(hinge(85, 20)[0],
+                                   arms(flex=80, abduct=25, elbow=110, forearm=-90, wrist=-10),
+                                   grip()), pitch=85,
+           cues=("Explode the bar to the lower sternum with the trunk still",)),
+        ph("Squeeze", ISO, 0.3, merge(hinge(85, 20)[0],
+                                      arms(flex=80, abduct=25, elbow=110, forearm=-90,
+                                           wrist=-10), grip()), pitch=85,
+           cues=("Blades together; do not let the chest drop",)),
+        ph("Lower", ECC, 1.0, merge(hinge(85, 20)[0],
+                                    arms(flex=88, abduct=8, elbow=8, forearm=-90, wrist=-10),
+                                    grip()), pitch=85,
+           cues=("Put it back on the floor; do not lower it slowly and hover",)),
+        ph("Dead stop", ISO, 0.5, merge(hinge(85, 20)[0],
+                                        arms(flex=88, abduct=8, elbow=8, forearm=-90,
+                                             wrist=-10), grip()), pitch=85,
+           cues=("Let it rest: the next rep starts from nothing",)),
+    ),
+    muscles=(mu("latissimus_dorsi", P, 0.9), mu("rhomboids", P, 0.8),
+             mu("trapezius_middle", P, 0.8), mu("deltoid_posterior", S, 0.65),
+             mu("biceps_brachii", S, 0.6), mu("brachialis", S, 0.5),
+             mu("trapezius_lower", S, 0.5), mu("infraspinatus_teres_minor", S, 0.45),
+             mu("erector_spinae", P, 0.8, note="holds the parallel trunk for every rep"),
+             mu("hamstrings", ST, 0.55), mu("gluteus_maximus", ST, 0.5),
+             mu("forearm_flexors", ST, 0.6), mu("rectus_abdominis", ST, 0.45)),
+    equipment=(eq("barbell", plates=2),),
+    errors=("Raising the trunk to help the bar up: the angle is the exercise.",
+            "Turning it into a bent-over row by never touching the floor.",
+            "Rounding the back to reach the bar at the start."),
+    physio_notes=("The dead stop removes the stretch-shortening contribution and the "
+                  "cheat, which is why the loads are lower than a bent-over row's and the "
+                  "upper back does more of the work.",),
+    sources=(SCHOENFELD_ROW, NSCA, EXRX), camera="side", tags=("barbell", "horizontal-pull"),
+)
+
+inverted_row = ExerciseDefinition(
+    id="inverted_row", name="Inverted row", category=Category.UPPER_PULL,
+    description="A horizontal pull under a fixed bar with the heels on the floor. The load is "
+                "set by how horizontal the body is, which makes it the scalable partner to "
+                "the pull-up.",
+    setup=("Bar at about hip height, heels on the floor, body straight from ear to heel",
+           "Shoulders down and back before the pull", "Chest to the bar, elbows about 45 deg"),
+    orientation="supine", anchor="feet", base_position=(0.0, 0.0, 0.0),
+    phases=(
+        ph("Pull", CON, 1.4, merge(pose(hip_flex=-5, knee_flex=5),
+                                   arms(flex=95, abduct=30, elbow=115, forearm=-90), grip()),
+           cues=("Pull the chest to the bar; keep the hips up",)),
+        ph("Top", ISO, 0.5, merge(pose(hip_flex=-5, knee_flex=5),
+                                  arms(flex=95, abduct=30, elbow=115, forearm=-90), grip()),
+           cues=("Blades together, body still a plank",)),
+        ph("Lower", ECC, 1.8, merge(pose(hip_flex=-5, knee_flex=5),
+                                    arms(flex=100, abduct=10, elbow=10, forearm=-90), grip()),
+           cues=("Lower to straight arms without letting the hips sag",)),
+        ph("Hang", ISO, 0.4, merge(pose(hip_flex=-5, knee_flex=5),
+                                   arms(flex=100, abduct=10, elbow=10, forearm=-90), grip())),
+    ),
+    muscles=(mu("latissimus_dorsi", P, 0.8), mu("rhomboids", P, 0.8),
+             mu("trapezius_middle", P, 0.8), mu("deltoid_posterior", S, 0.65),
+             mu("biceps_brachii", S, 0.65), mu("brachialis", S, 0.55),
+             mu("trapezius_lower", S, 0.55), mu("infraspinatus_teres_minor", S, 0.5),
+             mu("rectus_abdominis", P, 0.6, note="the body is a plank throughout"),
+             mu("gluteus_maximus", S, 0.5), mu("erector_spinae", S, 0.5),
+             mu("forearm_flexors", ST, 0.6)),
+    equipment=(eq("pullup_bar", attach="static", height=70.0),),
+    errors=("Letting the hips sag so the chest reaches the bar first.",
+            "Shrugging rather than retracting.",
+            "Setting the bar so high the body is nearly upright, which removes the load."),
+    physio_notes=("Lowering the bar or raising the feet makes it harder by moving the body "
+                  "toward horizontal; it is the usual way to train a horizontal pull "
+                  "without any equipment beyond a bar.",),
+    sources=(SCHOENFELD_ROW, NSCA, ACE, EXRX), camera="side",
+    tags=("bodyweight", "horizontal-pull"),
+)
+
+
+EXERCISES = (wide_grip_pull_up, neutral_grip_pull_up, pendlay_row,
+             inverted_row,
+             pull_up, chin_up, lat_pulldown, barbell_bent_over_row, single_arm_dumbbell_row,
              seated_cable_row, face_pull, barbell_biceps_curl, hammer_curl, reverse_fly,
              band_external_rotation)

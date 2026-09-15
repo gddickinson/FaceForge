@@ -1731,3 +1731,54 @@ deliberately not there.* Restricting extensor indicis to digit 2 took it from
 the middle finger were pulled onto the index instead of let go. The mesh's
 distal end spans more than the one tendon its name implies, and pinning it
 harder is the wrong correction. It is the residual visible in the render.
+
+## 2026-09-15 (later) — 29 more exercises: bench variations, kettlebells, and the rest
+
+The catalogue went from 64 to **93**. Every one validates against the rig's
+joint limits, builds a playable clip, and places the body without a warning
+from `render_exercise_demo --probe --all` -- the 13 warnings in that sweep are
+all pre-existing.
+
+**The bench press by what is changed about it** (`bench_variants.py`, 5):
+close grip, wide grip, incline barbell, decline barbell, floor press. Grip
+width is set by shoulder abduction at the bottom -- 45, 75 and 92 degrees give
+78, 110 and 132 units between the hands. A wider grip abducts the shoulder
+further and shortens the bar path, so pectoralis major takes more and triceps
+less; a narrower one tucks the elbow and lengthens the path, so the triceps
+take it (ANDERSEN). Incline sits at 30 degrees because clavicular pectoralis
+peaks there and anterior deltoid keeps rising past it (BENCH_INCLINE). The
+floor press loses the bottom third, the stretch and the leg drive, which
+leaves the lockout.
+
+**The kettlebell family** (`kettlebell.py`, 11): deadlift, clean, single-arm
+press, thruster, high pull, snatch, windmill, halo, front rack carry, farmer's
+carry, Turkish get-up. Three things shape all of them and are written into the
+module docstring: the mass hangs below and behind the handle, so a racked or
+overhead bell is a lever rather than a weight over the hand; loading one side
+makes a frontal-plane problem for the obliques and gluteus medius; and the
+handle is thick, so grip ends the carries before the legs do. With the swing
+and the goblet squat that is 14 kettlebell exercises.
+
+**Pressing away from the bench** (`press_variants.py`, 4): push press, Arnold
+press, close-grip push-up, overhead triceps extension. The last is there
+because the long head of triceps crosses the shoulder, so a pushdown cannot
+load it at length and an overhead extension can.
+
+**Pulling** (into `upper_pull.py`, 4): wide-grip and neutral-grip pull-ups,
+Pendlay row, inverted row. The neutral grip is the one brachialis and
+brachioradialis are strongest in; the Pendlay row's dead stop on the floor is
+what stops the trunk helping.
+
+**Squats and hinges** (into `lower_body.py`, 5): box squat, pause squat,
+deficit deadlift, rack pull, single-leg Romanian deadlift. Both new modules
+reuse `_squat_phases` and `_deadlift_phases` rather than re-authoring the
+pattern.
+
+Two angles were caught by the validator rather than by eye: a neutral-grip
+pull-up at 150 degrees of elbow flexion (the rig allows 145) and a single-leg
+RDL at 35 degrees of hip extension (it allows 27). Both are in the definitions
+at the allowed value.
+
+`upper_pull.py` is now 499 lines and `lower_body.py` 493, which is why the
+bench, press and kettlebell families went into modules of their own rather
+than into `upper_push.py` at 453.
