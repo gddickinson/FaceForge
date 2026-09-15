@@ -51,7 +51,7 @@ def phase_times(built, defn) -> list[float]:
     return [first.t1 - 1e-3, far.t1 - 1e-3]
 
 
-def frame_body(camera, pivots, margin: float = 1.32) -> None:
+def frame_body(camera, pivots, size, margin: float = 1.32) -> None:
     """Aim the preset camera at the body and widen its field of view to fit it.
 
     The scene presets are framed for a standing figure; a muscle-up is three
@@ -76,6 +76,10 @@ def frame_body(camera, pivots, margin: float = 1.32) -> None:
         return
     camera.set_target(*centre)
     camera.fov = min(90.0, max(28.0, math.degrees(2.0 * math.atan(radius * margin / distance))))
+    # Camera caches its projection and only `set_aspect` invalidates it, so a
+    # bare `camera.fov = ...` renders at the old field of view.  (It did: every
+    # figure in the first sweep was framed by the target alone.)
+    camera.set_aspect(*size)
 
 
 def render_sheets(ids, out: Path, per_sheet: int, size, all_muscles: bool) -> list[Path]:
@@ -106,7 +110,7 @@ def render_sheets(ids, out: Path, per_sheet: int, size, all_muscles: bool) -> li
                     demo.evaluate(t)
                     demo.smc.set_camera_preset(session.camera, defn.camera,
                                                target=defn.camera_target)
-                    frame_body(session.camera, pivots)
+                    frame_body(session.camera, pivots, size)
                     image = session.render()
                     tiles.append((f"{exercise_id} [{i + 1}]",
                                   Image.fromarray(image[:, :, :3]).resize(TILE)))
