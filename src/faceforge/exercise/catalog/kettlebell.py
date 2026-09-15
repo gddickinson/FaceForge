@@ -16,7 +16,7 @@ from __future__ import annotations
 
 from faceforge.exercise.catalog._helpers import (
     ACE, CON, ECC, EKSTROM, EXRX, HIPS, ISO, LAKE, MCGILL, NSCA, P, S, ST, TRN,
-    eq, grip, hinge, merge, mu, only, ph, pose, squat, stand,
+    eq, grip, hinge, lunge, merge, mu, only, ph, pose, squat, stand,
 )
 from faceforge.exercise.model import Category, ExerciseDefinition
 
@@ -410,33 +410,75 @@ farmers_carry = ExerciseDefinition(
     tags=("kettlebell", "carry", "grip"),
 )
 
+#: The get-up is the one exercise here that changes orientation mid-rep, which
+#: `Phase.orientation` exists for: the first four phases are supine, the next
+#: three standing, and the last comes back down.  A phase carrying its own
+#: orientation is placed by that orientation's own base, so `base_position`
+#: below applies to the supine half only.
+#:
+#: Supine, the loaded arm is vertical at 90 degrees of shoulder flexion, not
+#: the 175 that means vertical when standing, and as the trunk comes up under
+#: it the flexion has to come off by the same angle the trunk gains.
+_TGU_SPREAD = merge(pose(hip_abduct=28, knee_flex=5),
+                    only(shoulder_r_flex=-8, shoulder_r_abduct=45, elbow_r_flex=8,
+                         shoulder_l_flex=-8, shoulder_l_abduct=45, elbow_l_flex=8),
+                    grip())
+_TGU_SET = merge(pose(hip_r_flex=45, knee_r_flex=112, ankle_r_flex=45,
+                      hip_l_abduct=35, knee_l_flex=5),
+                 only(shoulder_r_flex=90, shoulder_r_abduct=5, elbow_r_flex=5,
+                      shoulder_l_flex=0, shoulder_l_abduct=45, elbow_l_flex=8),
+                 grip())
+_TGU_ELBOW = merge(pose(hip_r_flex=75, knee_r_flex=112, ankle_r_flex=45,
+                        hip_l_flex=30,
+                        hip_l_abduct=30, knee_l_flex=5,
+                        spine_rotation=-18),
+                   only(shoulder_r_flex=60, shoulder_r_abduct=5, elbow_r_flex=5,
+                        shoulder_l_flex=0, shoulder_l_abduct=50, elbow_l_flex=95),
+                   grip())
+_TGU_HAND = merge(pose(hip_r_flex=90, knee_r_flex=112, ankle_r_flex=45,
+                       hip_l_flex=52,
+                       hip_l_abduct=30, knee_l_flex=5,
+                       spine_rotation=-14),
+                  only(shoulder_r_flex=45, shoulder_r_abduct=5, elbow_r_flex=5,
+                       shoulder_l_flex=0, shoulder_l_abduct=55, elbow_l_flex=10),
+                  grip())
+# A 140-degree back knee folds the shank up behind the thigh -- that ankle
+# measured 60 units in the air.  At 60 the shin lies along the floor: knee
+# 13.5, ankle 16.0, toes 6.2, which is a half-kneel.
+_TGU_KNEEL = merge(lunge("r", 90, 95, -20, 60, pitch=6, ankle_back=-40)[0],
+                   _OVERHEAD_R, only(shoulder_l_flex=8, shoulder_l_abduct=25, elbow_l_flex=10),
+                   grip())
+_TGU_STAND = merge(stand()[0], _OVERHEAD_R, _FREE_L, grip())
+
 turkish_get_up = ExerciseDefinition(
     id="turkish_get_up", name="Turkish get-up", category=Category.CORE,
-    description="Standing up from lying down with a bell locked out overhead, and lying back "
-                "down again. Five positions, each of which has to be owned before the next.",
-    setup=("On the back, bell pressed in the right hand, right knee bent, foot flat",
-           "Left arm and leg at about 45 deg from the body",
-           "Eyes on the bell until standing"),
+    description="Standing up from flat on the floor with a bell locked out overhead, and "
+                "lying back down again. Five positions, each of which has to be owned before "
+                "the next.",
+    setup=("Start on the back, spread-eagled, the bell on the floor in the right hand",
+           "Roll it to the chest, press it, then bend the right knee and put that foot flat",
+           "Left arm and leg stay at about 45 deg from the body; eyes on the bell until "
+           "standing"),
+    orientation="supine", anchor="none", base_position=(-85.0, 15.0, 0.0),
     phases=(
-        ph("Roll to elbow", CON, 1.6,
-           merge(pose(hip_r_flex=75, knee_r_flex=95, spine_flex=25, spine_rotation=-20),
-                 _OVERHEAD_R, only(shoulder_l_abduct=45, elbow_l_flex=90), grip()),
+        ph("On the floor", ISO, 1.0, _TGU_SPREAD,
+           cues=("Flat on the back, arms and legs at 45 deg, bell on the floor in the hand",
+                 "Roll onto the side to take hold of it, never reach across for it")),
+        ph("Press the bell", CON, 1.2, _TGU_SET,
+           cues=("Press it to a straight arm over the shoulder",
+                 "Bend the right knee, that foot flat; the left limbs stay out at 45")),
+        ph("Roll to the elbow", CON, 1.6, _TGU_ELBOW, pitch=30, pivot=HIPS,
            cues=("Punch the bell up and roll onto the left elbow",)),
-        ph("To the hand", CON, 1.2,
-           merge(pose(hip_r_flex=70, knee_r_flex=95, spine_flex=15, spine_rotation=-15),
-                 _OVERHEAD_R, only(shoulder_l_abduct=55, elbow_l_flex=10), grip()),
+        ph("To the hand", CON, 1.2, _TGU_HAND, pitch=45, pivot=HIPS,
            cues=("Straighten the left arm; chest open, shoulder packed",)),
-        ph("Sweep to kneel", TRN, 1.6,
-           merge(pose(hip_r_flex=55, knee_r_flex=90, hip_l_flex=-20, knee_l_flex=90),
-                 _OVERHEAD_R, only(shoulder_l_abduct=50, elbow_l_flex=10), grip()),
+        ph("Sweep to half-kneel", TRN, 1.6, _TGU_KNEEL, pitch=6, orientation="standing",
+           position=(0.0, 148.0, 0.0),
            cues=("Bridge the hips and sweep the left leg through to a half-kneel",)),
-        ph("Stand", CON, 1.6, merge(stand()[0], _OVERHEAD_R, _FREE_L, grip()),
+        ph("Stand", CON, 1.6, _TGU_STAND, orientation="standing",
            cues=("Windshield-wiper the back foot round, then stand",)),
-        ph("Lockout", ISO, 0.6, merge(stand()[0], _OVERHEAD_R, _FREE_L, grip()),
+        ph("Lockout", ISO, 0.6, _TGU_STAND, orientation="standing",
            cues=("Tall, bell stacked over the shoulder",)),
-        ph("Reverse", ECC, 3.0,
-           merge(pose(hip_r_flex=75, knee_r_flex=95, spine_flex=25, spine_rotation=-20),
-                 _OVERHEAD_R, only(shoulder_l_abduct=45, elbow_l_flex=90), grip()),
+        ph("Reverse to the floor", ECC, 3.0, _TGU_SET,
            cues=("Retrace every step back down to the floor",)),
     ),
     muscles=(mu("obliques", P, 0.85), mu("rectus_abdominis", P, 0.75),
@@ -447,14 +489,15 @@ turkish_get_up = ExerciseDefinition(
              mu("triceps_brachii", S, 0.5), mu("hamstrings", S, 0.5),
              mu("trapezius_upper", S, 0.5), mu("latissimus_dorsi", S, 0.5),
              mu("forearm_flexors", ST, 0.5), mu("adductors", ST, 0.4)),
-    equipment=(eq("kettlebell", attach="hand_r", radius=11.0), eq("mat", attach="static")),
+    equipment=(eq("kettlebell", attach="hand_r", radius=11.0),
+               eq("mat", attach="static")),
     errors=("Rushing between positions instead of owning each one.",
             "Letting the bell arm drift out of the vertical.",
             "Looking away from the bell before standing."),
     physio_notes=("Usually taught as a movement screen as much as an exercise: it asks for "
                   "an overhead shoulder, thoracic rotation, hip mobility and a half-kneeling "
                   "position in one sequence, and it exposes whichever is missing.",),
-    sources=(EKSTROM, MCGILL, NSCA, ACE, EXRX), camera="side", default_reps=1,
+    sources=(EKSTROM, MCGILL, NSCA, ACE, EXRX), camera="three_quarter", default_reps=1,
     tags=("kettlebell", "core", "unilateral"),
 )
 

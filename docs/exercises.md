@@ -1637,7 +1637,7 @@ An overhead press driven by a short dip and drive of the legs. The legs start th
 
 ### Arnold press
 
-`arnold_press` · Upper body: push · orientation: standing · anchor: feet · rep: 4.5 s · equipment: dumbbell, dumbbell, bench
+`arnold_press` · Upper body: push · orientation: seated · anchor: none · rep: 4.5 s · equipment: dumbbell, dumbbell, bench
 
 A seated dumbbell press that starts with the palms facing the lifter and rotates to face forward on the way up, adding an external-rotation range a straight press never enters.
 
@@ -2826,25 +2826,27 @@ Walking with a heavy bell in each hand. The trunk's job is to stay square while 
 
 ### Turkish get-up
 
-`turkish_get_up` · Core and trunk · orientation: standing · anchor: feet · rep: 9.6 s · equipment: kettlebell, mat
+`turkish_get_up` · Core and trunk · orientation: supine · anchor: none · rep: 11.8 s · equipment: kettlebell, mat
 
-Standing up from lying down with a bell locked out overhead, and lying back down again. Five positions, each of which has to be owned before the next.
+Standing up from flat on the floor with a bell locked out overhead, and lying back down again. Five positions, each of which has to be owned before the next.
 
 **Setup**
-- On the back, bell pressed in the right hand, right knee bent, foot flat
-- Left arm and leg at about 45 deg from the body
-- Eyes on the bell until standing
+- Start on the back, spread-eagled, the bell on the floor in the right hand
+- Roll it to the chest, press it, then bend the right knee and put that foot flat
+- Left arm and leg stay at about 45 deg from the body; eyes on the bell until standing
 
 **Phases** (pose reached at the end of each; joint motion from the previous)
 
 | phase | kind | s | moving joints | cues |
 |---|---|---|---|---|
-| Roll to elbow | concentric | 1.60 | hold | Punch the bell up and roll onto the left elbow |
-| To the hand | concentric | 1.20 | Elbow (L): extension 90° → 10°; Shoulder (L): abduction 45° → 55°; Spine: extension 25° → 15°; Hip (R): extension 75° → 70° | Straighten the left arm; chest open, shoulder packed |
-| Sweep to kneel | transition | 1.60 | Knee (L): flexion 0° → 90°; Hip (L): extension 0° → 20°; Spine: extension 15° → 0°; Spine: rotation 15° → 0° | Bridge the hips and sweep the left leg through to a half-kneel |
-| Stand | concentric | 1.60 | Knees: extension 90° → 0°; Hip (R): extension 55° → 0°; Shoulder (L): adduction 50° → 8°; Hip (L): flexion 20° → 0° | Windshield-wiper the back foot round, then stand |
+| On the floor | isometric | 1.00 | Knee (R): extension 112° → 5°; Shoulder (R): extension 90° → 8°; Ankle (R): plantarflexion 45° → 0°; Hip (R): extension 45° → 0° | Flat on the back, arms and legs at 45 deg, bell on the floor in the hand Roll onto the side to take hold of it, never reach across for it |
+| Press the bell | concentric | 1.20 | Knee (R): flexion 5° → 112°; Shoulder (R): flexion 8° → 90°; Ankle (R): dorsiflexion 0° → 45°; Hip (R): flexion 0° → 45° | Press it to a straight arm over the shoulder Bend the right knee, that foot flat; the left limbs stay out at 45 |
+| Roll to the elbow | concentric | 1.60 | Elbow (L): flexion 8° → 95°; Hip (L): flexion 0° → 30°; Hip (R): flexion 45° → 75°; Shoulder (R): extension 90° → 60°; trunk pitch +30° | Punch the bell up and roll onto the left elbow |
+| To the hand | concentric | 1.20 | Elbow (L): extension 95° → 10°; Hip (L): flexion 30° → 52°; Hip (R): flexion 75° → 90°; Shoulder (R): extension 60° → 45°; trunk pitch +45° | Straighten the left arm; chest open, shoulder packed |
+| Sweep to half-kneel | transition | 1.60 | Shoulder (R): flexion 45° → 175°; Hip (L): extension 52° → 20°; Knee (L): flexion 5° → 60°; Ankle (L): plantarflexion 0° → 40°; trunk pitch +6° | Bridge the hips and sweep the left leg through to a half-kneel |
+| Stand | concentric | 1.60 | Knee (R): extension 95° → 0°; Hip (R): extension 90° → 0°; Knee (L): extension 60° → 0°; Ankle (L): dorsiflexion 40° → 0° | Windshield-wiper the back foot round, then stand |
 | Lockout | isometric | 0.60 | hold | Tall, bell stacked over the shoulder |
-| Reverse | eccentric | 3.00 | Knee (R): flexion 0° → 95°; Elbow (L): flexion 10° → 90°; Hip (R): flexion 0° → 75°; Shoulder (L): abduction 8° → 45° | Retrace every step back down to the floor |
+| Reverse to the floor | eccentric | 3.00 | Knee (R): flexion 0° → 112°; Shoulder (R): extension 175° → 90°; Ankle (R): dorsiflexion 0° → 45°; Hip (R): flexion 0° → 45° | Retrace every step back down to the floor |
 
 **Muscles**
 - *Primary movers:* Obliques 85 %; Rectus abdominis 75 %; Rotator cuff 80 % — holds the lockout through every position; Anterior deltoid 70 %; Gluteus maximus 70 %

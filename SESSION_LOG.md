@@ -2069,3 +2069,54 @@ in z against the ±25 a halo needs. Cobra was replaced when the rig could not
 show it; the halo is kept, because unlike cobra its muscles, cues and sources
 are all still right and only the amplitude is short. The measurement is in the
 module and in the rig doc.
+
+## 2026-09-15 (later) — The Turkish get-up never lay down
+
+Reported: the get-up looks wrong, it should start on the floor with the bell
+in a hand on the ground. It should, and it did not: **`orientation` was never
+set**, so the whole rep defaulted to `standing` while the setup text said "on
+the back". The figure stood up throughout with the bell already overhead, and
+there was no start position at all — the first phase was already "roll to the
+elbow".
+
+It is re-authored as eight phases and is the first thing in the catalogue to
+use `Phase.orientation`: four supine, three standing, then back down. Four
+things had to be measured.
+
+**Supine, the arms rest 13 units above the mat.** The wrist is anterior to the
+shoulder in the rest pose, and on your back anterior is up, so a spread-eagled
+arm at zero flexion floats. Eight degrees of extension lays it down and puts
+the bell's centre at 14.2 with an 11-unit radius — resting on the mat.
+
+**The planted foot could not reach the floor at all.** At hip 75 / knee 95 it
+floated 55 units in the set-up and was 8 below the mat by "to the hand". The
+fold that lands it is `60 sin(hip − pitch) + 47 sin(hip − knee − pitch) = 0`:
+knee 112 throughout, with the hip gaining whatever the trunk gains (45 → 75 →
+90). The flat-foot rule then asks for 67 degrees of dorsiflexion against the
+rig's 45, so the heel is down and the toes are up.
+
+**The free leg swung through the floor** as the trunk came up — −41 units at
+the elbow, −58 at the hand — until that hip flexed by the same angle the trunk
+gained, which is the hinge rule.
+
+**The half-kneel floated 60 units**, because it borrows the standing
+orientation's base while sitting 55 below a standing figure; `Phase.position`
+places it. Its back shin was in the air too: a 140-degree back knee folds the
+shank up behind the thigh, and 60 lays it along the floor (knee 13.5, ankle
+16.0, toes 6.2).
+
+All eight phases probe clean and the rendered sheet shows the five positions.
+
+### Then the same check over the whole catalogue
+
+Comparing every definition's *words* with its `orientation` found one more:
+**`arnold_press`** says "Seated" and has hips and knees at 90 in every phase,
+authored `standing` with `anchor="feet"` — a man sitting on nothing that the
+ground lock folds onto the floor, exactly the `overhead_triceps_extension`
+fault. Seated now.
+
+`tools/audit_exercise_placement.py` is the generalisation. `--probe` looks at
+the feet and the hands only, and only against the exercise's own anchor, which
+is why the get-up's planted foot could float while the probe read the other
+one and called it fine. The audit walks **every joint pivot** and reports the
+lowest per phase: through the floor, or nothing touching down.

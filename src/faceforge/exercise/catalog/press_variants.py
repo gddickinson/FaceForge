@@ -77,6 +77,12 @@ arnold_press = ExerciseDefinition(
                 "straight press never enters.",
     setup=("Seated, dumbbells at chest height with the palms toward you",
            "Rotate the palms out as the weights rise", "Finish with the palms forward overhead"),
+    # Every phase has the hips and knees at 90 and the setup says "seated":
+    # authored standing, that is a man sitting on nothing, which the ground
+    # lock then folds onto the floor.  Same fault as the overhead triceps
+    # extension, found by comparing each definition's words with its
+    # orientation.
+    orientation="seated", anchor="none", base_position=SEATED_ON_BENCH,
     phases=(
         ph("Start", ISO, 0.4, merge(pose(hip_flex=90, knee_flex=90),
                                     arms(flex=35, abduct=5, rotate=-70, elbow=130,
