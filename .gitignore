@@ -54,13 +54,9 @@ proof_metrics.json
 captures/
 *_captures/
 
-# macOS
-# NOTE: `git check-ignore .DS_Store` reports NO MATCH, which looks like this
-# pattern is broken.  It is not.  assets/.DS_Store is already TRACKED (`git
-# ls-files --error-unmatch assets/.DS_Store` succeeds), and ignore rules never
-# apply to paths in the index -- check-ignore correctly reports no match for
-# them.  The pattern below does cover every untracked .DS_Store.  To finish the
-# job, as with src/faceforge.egg-info above:
-#     git rm --cached assets/.DS_Store
-# Left for a human to run: it rewrites the index.
+# macOS.  Nine of these were tracked, which is why `git check-ignore` used to
+# report NO MATCH for them: an ignore rule never applies to a path already in
+# the index, so the pattern looked broken when it was the index that was
+# wrong.  They are untracked now (`git rm --cached`, which leaves the files on
+# disk for Finder to keep rewriting) and check-ignore matches.
 .DS_Store
