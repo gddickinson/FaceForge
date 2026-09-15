@@ -402,6 +402,11 @@ class AssetLoadSequence:
         skinning.build_skin_joints(chains)
         logger.info("Skin joints built: %d joints in %d chains",
                     len(skinning.joints), len(chains))
+        # The body surface is the male/female model itself, and it deforms
+        # like any other skin; see `demand_loaders.register_body_surface`.
+        from faceforge.coordination.demand_loaders import register_body_surface
+
+        register_body_surface(ctx, skinning)
 
     def build_joint_chains(self) -> list:
         """Build the kinematic chains, filling ``ctx.skin_chain_ids``.

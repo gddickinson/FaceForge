@@ -176,7 +176,7 @@ flat when ankle dorsiflexion = pitch − hip + knee.
 | `diagnostics.py` | Skinning diagnostics: detect mesh vertices displaced beyond expected limits. |
 | `dof_ranges.py` | The body's joint degrees of freedom: range, sign convention and anatomical name. |
 | `edge_relaxation.py` | Distance-constraint relaxation: `relax_edges` (one-sided, for poses) and `enforce_edge_range` (two-sided, so a projection cannot flatten a limb). |
-| `gender_morph.py` | The sex morph's front door: the male/female surface pair, the skeleton morph and the soft-tissue field. `WARP_SURFACE_TO_SKELETON` is off: the surface meshes keep their authored shape, which costs fit and buys a body that looks like one (see `docs/sex_morph.md`). |
+| `gender_morph.py` | The sex morph's front door: the male/female surface pair, the skeleton morph and the soft-tissue field. `WARP_SURFACE_TO_SKELETON` is off: the surface meshes keep their authored shape, which costs fit and buys a body that looks like one (see `docs/sex_morph.md`). The lerped shape is the surface's *rest* pose, written to `rest_positions` as well as to the vertex buffer, because the skinning deforms it from there. |
 | `ground_contact.py` | Keep the feet (or hands) on the floor while the joints move; hands anchored to a point (a bar) are measured at the closed-finger ring. |
 | `hand_points.py` | `finger_ring_centre`: the centroid of the closed finger joints, where a held bar's axis passes (shared by the equipment rig and the ground lock). |
 | `joint_angles.py` | The two dimorphic features that are angles rather than proportions: the carrying angle at the elbow and genu valgum at the knee, each two degrees wider in the female. Only the difference is applied; the absolutes are the donor's. |
@@ -237,7 +237,7 @@ flat when ankle dorsiflexion = pitch − hip + knee.
 | `asset_load_sequence.py` | The startup load, as an explicit ordered sequence of named stages. |
 | `body_anchors.py` | The shoulder / ribcage / thoracic anchors the neck muscles follow, read in the **body** frame: `wrapper_cancel` undoes the `scene_wrapper` so a live pivot can be compared with a rest snapshot taken before scene mode existed. |
 | `joint_chains.py` | The kinematic chains the skinning binds to (arm chain from the clavicle); shared by the app and the headless tools |
-| `demand_loaders.py` | Load anatomy groups the first time the user asks to see them; `SKIN_CHAIN_Z_MARGIN` / `SKIN_SPATIAL_LIMIT` are the skin binding's two-tier eligibility filter, named so they can be measured. |
+| `demand_loaders.py` | Load anatomy groups the first time the user asks to see them; `SKIN_CHAIN_Z_MARGIN` / `SKIN_SPATIAL_LIMIT` are the skin binding's two-tier eligibility filter, named so they can be measured. `register_body_surface` binds the sex morph's own surface -- the male/female model -- to the chains the same way, because it is the same kind of object and nothing else was deforming it. |
 | `loading_pipeline.py` | Sequential asset loading chain with progress reporting. |
 | `render_mode_sync.py` | Keep newly loaded meshes in step with the render mode already on screen. |
 | `scene_builder.py` | Constructs the scene graph from loaded assets. |

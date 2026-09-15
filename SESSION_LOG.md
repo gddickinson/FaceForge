@@ -1365,3 +1365,55 @@ spend the sampling: at 1.5 the spray is down to about six triangles for
 +3.4s on the toggle. That is a trade against the 1.50s responsiveness budget
 the coarse lattice was chosen for in the first place, so the spacing has been
 left at 3.0 rather than reversed quietly.
+
+## 2026-09-14 (later still) — The male and female models were never skinned
+
+Reported: the skin meshes do not move with exercise, for either sex.
+
+Two different meshes go by "skin" here and only one of them was bound. The
+BP3D **skin layer** is registered by `load_skin` and deforms correctly --
+measured through the exercise runtime, a squat moves it up to 72.91 units and
+a rendered demo shows it bending around the whole body. The **body-surface
+mesh** is the male/female model itself: it comes from `GenderMorphSystem`
+rather than from an STL layer, so `load_skin` never saw it, nothing else
+registered it, and it was in no binding at all. Posed into a squat it moved
+**0.00 units, maximum, over 42,322 vertices** while the bones bent inside it.
+
+Two things were missing.
+
+*A rest pose.* `_morph_body_surface` lerps the male and female shapes into the
+vertex buffer, and the lerped shape is the surface's rest pose at that sex --
+but it was only ever written to `geometry.positions`, which is where the
+skinning writes its *output*. It is written to `rest_positions` too now.
+
+*A binding.* `register_body_surface` hands it to the skinning exactly as
+`load_skin` hands over the skin: every chain, and the same two-tier spatial
+filter (`SKIN_CHAIN_Z_MARGIN`, `SKIN_SPATIAL_LIMIT`), because it is the same
+kind of object -- one closed surface over the whole body. It runs at the end
+of `build_skinning`, as soon as the chains exist.
+
+It is also the surface the skeleton fit aims at, so `rebuild_soft_tissue`
+holds it back from the fit's own field: carrying it there would move the
+target while measuring against it.
+
+Measured after, with hips, knees, shoulders and elbows flexed:
+
+| | moves | median | max | edge stretch p99 | over 2x |
+|---|---|---|---|---|---|
+| male surface | 56.7% | 46.34 | 151.01 | 1.83 | 1042 / 126,960 |
+| female surface | 56.7% | 40.60 | 147.03 | 1.48 | 456 / 126,960 |
+| BP3D skin (shipped) | — | — | — | 2.03 | 24,761 / 2,379,747 |
+
+So the surface deforms slightly *better* than the skin already shipping, at
+0.8% of edges past 2x against the skin's 1.0%. The 56.7% that move are the
+limbs; the trunk is rigid because this pose does not bend the spine, and the
+BP3D skin behaves identically.
+
+Nothing else moved. At rest the surface is still the authored MakeHuman shape
+to 8e-6 -- float32 -- at both sexes, so the fit's target and the breast lens's
+source are untouched; the sex morph still reshapes it (median 5.85, max
+11.42); and the fit still leaves it exactly alone (max move 0.0000).
+
+Confirmed in pixels: a bodyweight squat rendered through the application's own
+event bus, showing the surface alone, stands at t=0 and is folded at the knees
+and hips at t=0.40, its world height going 127.6 -> 70.3 -> 127.6.

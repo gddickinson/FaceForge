@@ -274,7 +274,14 @@ class BodyController:
         from faceforge.body.skeleton_field import compose
 
         skinning = getattr(self.ctx.simulation, "soft_tissue", None)
-        bindings = list(getattr(skinning, "bindings", ()))
+        # The body surface is bound to the skinning so it moves with the body,
+        # but it is also the surface the fit aims at: carrying it by the fit's
+        # own field would move the target while measuring against it.  The sex
+        # morph already gives it its shape, vertex for vertex.
+        surface = getattr(getattr(self.ctx.pipeline, "gender_morph", None),
+                          "body_mesh", None)
+        bindings = [b for b in getattr(skinning, "bindings", ())
+                    if b.mesh is not surface]
         warp = compose(gender_warp, fit_warp)
         self._tissue_warp = warp
         # The head's soft tissue is carried by the same field, but it is not

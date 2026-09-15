@@ -312,6 +312,42 @@ def _rebind_skin_in_separated_pose(ctx, skinning, meshes, **solve_kwargs) -> Non
             sim.step(1 / 60)
 
 
+def register_body_surface(ctx: Any, skinning: Any) -> bool:
+    """Bind the male/female body surface to the chains, like the skin it is.
+
+    The surface arrives from the sex morph rather than from an STL layer, so
+    it was never handed to the skinning and never deformed: posed into a
+    squat, the model stood still while the bones and the BP3D skin bent
+    around it.  It binds exactly as ``load_skin`` binds the skin -- every
+    chain, the same two-tier spatial filter -- because it is the same kind of
+    object, a closed surface over the whole body.
+
+    It is *also* the surface the skeleton fit aims at, so it must never be
+    moved by the fit's own field; :meth:`BodyController.rebuild_soft_tissue`
+    holds it back.
+    """
+    morph = getattr(getattr(ctx, "pipeline", None), "gender_morph", None)
+    mesh = getattr(morph, "body_mesh", None)
+    if skinning is None or mesh is None or not getattr(morph, "loaded", False):
+        return False
+    if any(b.mesh is mesh for b in getattr(skinning, "bindings", ())):
+        return True
+    chain_ids = getattr(ctx, "skin_chain_ids", None)
+    if not chain_ids:
+        return False
+    try:
+        _attach_muscle_field(skinning)
+        skinning.register_skin_mesh(
+            mesh, is_muscle=False, allowed_chains=set(chain_ids.values()),
+            chain_z_margin=SKIN_CHAIN_Z_MARGIN, spatial_limit=SKIN_SPATIAL_LIMIT)
+    except Exception as exc:                     # noqa: BLE001 - logged
+        logger.warning("Body surface not bound to the skinning: %s", exc)
+        return False
+    logger.info("Body surface bound to the skinning: %d vertices",
+                mesh.geometry.vertex_count)
+    return True
+
+
 def register_muscle_layer(skinning: Any, layer: str, meshes: list, defs: list[dict],
                           chain_ids: dict[str, int], *,
                           default_chains: list[str] | None = None,

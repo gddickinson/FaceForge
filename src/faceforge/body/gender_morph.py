@@ -293,13 +293,21 @@ class GenderMorphSystem:
         self._morph_breast_tissue()
 
     def _morph_body_surface(self) -> None:
-        """Lerp body surface mesh between male and female shapes."""
+        """Lerp body surface mesh between male and female shapes.
+
+        The lerped shape is the surface's *rest* pose at that sex, not its
+        drawn position, so it is written to both.  The skinning deforms this
+        mesh like any other -- without a rest pose to deform from, the
+        male and female models stood still while the body squatted.
+        """
         if not self._loaded or self._body_mesh is None:
             return
 
         g = self._gender
         morphed = self._male_positions * (1.0 - g) + self._female_positions * g
-        self._body_mesh.geometry.positions = morphed.reshape(-1).astype(np.float32)
+        flat = morphed.reshape(-1).astype(np.float32)
+        self._body_mesh.geometry.positions = flat
+        self._body_mesh.rest_positions = flat.copy()
 
         # Lerp and renormalize normals
         norms = self._male_normals * (1.0 - g) + self._female_normals * g
