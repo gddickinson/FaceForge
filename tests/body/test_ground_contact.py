@@ -5,7 +5,10 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from faceforge.body.ground_contact import GroundLock, rest_body_position
+from faceforge.body.ground_contact import (
+    GroundLock, rest_body_position, rest_lowest_mesh_y,
+)
+from faceforge.core.mesh import BufferGeometry, MeshInstance
 from faceforge.core.math_utils import quat_from_axis_angle, vec3
 from faceforge.core.scene_graph import Scene, SceneNode
 
@@ -159,3 +162,72 @@ def test_a_hanging_body_hangs_by_its_closed_fingers_not_its_wrists():
     floor = GroundLock("hands")
     floor.calibrate(pivots, (0.0, 203.0, 0.0), STANDING, floor_y=0.0)
     assert not getattr(floor, "_grip", False)
+
+
+# -- standing on the floor rather than above it ------------------------------
+
+
+def _sole(pivots, body_z: float = -198.0):
+    """Hang a one-triangle sole under the right ankle, at ``body_z``."""
+    ankle = pivots["ankle_R"]
+    local = body_z - rest_body_position(ankle)[2]
+    pts = np.array([[0.0, 0.0, local], [2.0, 0.0, local], [0.0, 2.0, local + 1.0]],
+                   dtype=np.float32)
+    node = SceneNode("R Calcaneus")
+    node.mesh = MeshInstance(
+        name="R Calcaneus",
+        geometry=BufferGeometry(positions=pts.ravel(),
+                                normals=np.zeros(pts.size, dtype=np.float32)))
+    ankle.add(node)
+    return node
+
+
+def test_rest_lowest_mesh_y_reads_the_sole_through_the_pivot_chain():
+    scene, _wrapper, pivots = _rig()
+    _sole(pivots, body_z=-198.0)
+    scene.update()
+    from faceforge.core.math_utils import mat4_compose
+
+    m = mat4_compose(vec3(0.0, 203.0, 0.0), STANDING, vec3(1.0, 1.0, 1.0))
+    assert rest_lowest_mesh_y(pivots["ankle_R"].parent.parent.parent, m) == pytest.approx(5.0)
+
+
+def test_the_target_stands_the_sole_on_the_floor_not_the_pivot():
+    """An ankle pivot is inside the ankle; the sole is what touches the floor.
+
+    Measured in the gym before this, the lock held the lowest foot pivot at
+    7.9 and the figure stood 4.5 units of skin clear of the platform.
+    """
+    scene, wrapper, pivots = _rig()
+    sole = _sole(pivots, body_z=-198.0)   # sole rests at world y = 5
+    scene.update()
+    lock = GroundLock("feet")
+    lock.calibrate(pivots, (0.0, 203.0, 0.0), STANDING, floor_y=0.0)
+    assert lock.sole_clearance == pytest.approx(5.0)
+    # The pivot target drops by exactly the clearance, so the sole lands on 0.
+    assert lock._target_y == pytest.approx(203.0 - 194.0 - 5.0)
+    lock.update(wrapper, pivots)
+    scene.update()
+    g = sole.mesh.geometry
+    pts = np.asarray(g.positions, dtype=np.float64).reshape(-1, 3)
+    w = np.asarray(sole.world_matrix, dtype=np.float64)
+    assert (pts @ w[:3, :3].T + w[:3, 3])[:, 1].min() == pytest.approx(0.0, abs=1e-6)
+
+
+def test_without_a_floor_the_pivot_height_still_stands():
+    scene, _wrapper, pivots = _rig()
+    _sole(pivots)
+    scene.update()
+    lock = GroundLock("feet")
+    lock.calibrate(pivots, (0.0, 203.0, 0.0), STANDING)      # no floor_y
+    assert lock.sole_clearance == 0.0
+    assert lock._target_y == pytest.approx(203.0 - 194.0)
+
+
+def test_a_bare_rig_has_no_sole_to_measure_and_is_unchanged():
+    """The fallback: no meshes, so the pivot height is still the answer."""
+    scene, _wrapper, pivots = _rig()
+    lock = GroundLock("feet")
+    lock.calibrate(pivots, (0.0, 203.0, 0.0), STANDING, floor_y=0.0)
+    assert lock.sole_clearance == 0.0
+    assert lock._target_y == pytest.approx(203.0 - 194.0)

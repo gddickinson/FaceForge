@@ -142,6 +142,11 @@ def load_headless_scene() -> HeadlessScene:
         skinning.build_skin_joints(joint_chains)
         logger.info("Skin joints built: %d joints in %d chains",
                      len(skinning.joints), len(joint_chains))
+        # The male/female body surface, bound the way the app binds it, so a
+        # headless render deforms as the application does.
+        from faceforge.coordination.demand_loaders import register_body_surface
+
+        register_body_surface(skinning, pipeline.gender_morph, chain_ids)
 
     # Muscle attachments and bone collision, as the app's
     # AssetLoadSequence.build_attachment_systems installs them.

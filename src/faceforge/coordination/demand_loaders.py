@@ -312,7 +312,8 @@ def _rebind_skin_in_separated_pose(ctx, skinning, meshes, **solve_kwargs) -> Non
             sim.step(1 / 60)
 
 
-def register_body_surface(ctx: Any, skinning: Any) -> bool:
+def register_body_surface(skinning: Any, gender_morph: Any,
+                          chain_ids: dict[str, int] | None) -> bool:
     """Bind the male/female body surface to the chains, like the skin it is.
 
     The surface arrives from the sex morph rather than from an STL layer, so
@@ -325,14 +326,16 @@ def register_body_surface(ctx: Any, skinning: Any) -> bool:
     It is *also* the surface the skeleton fit aims at, so it must never be
     moved by the fit's own field; :meth:`BodyController.rebuild_soft_tissue`
     holds it back.
+
+    Takes the morph and the chain ids rather than the application context, so
+    ``tools/headless_loader.py`` binds it the same way and a headless render
+    deforms as the application does.
     """
-    morph = getattr(getattr(ctx, "pipeline", None), "gender_morph", None)
-    mesh = getattr(morph, "body_mesh", None)
-    if skinning is None or mesh is None or not getattr(morph, "loaded", False):
+    mesh = getattr(gender_morph, "body_mesh", None)
+    if skinning is None or mesh is None or not getattr(gender_morph, "loaded", False):
         return False
     if any(b.mesh is mesh for b in getattr(skinning, "bindings", ())):
         return True
-    chain_ids = getattr(ctx, "skin_chain_ids", None)
     if not chain_ids:
         return False
     try:

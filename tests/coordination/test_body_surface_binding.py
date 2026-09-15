@@ -38,16 +38,16 @@ class FakeSkinning:
         self.bindings.append(SimpleNamespace(mesh=mesh))
 
 
-def _ctx(mesh, loaded: bool = True, chains: dict | None = None):
-    morph = SimpleNamespace(body_mesh=mesh, loaded=loaded)
-    return SimpleNamespace(
-        pipeline=SimpleNamespace(gender_morph=morph),
-        skin_chain_ids=({"spine": 0, "arm_R": 1} if chains is None else chains))
+def _morph(mesh, loaded: bool = True):
+    return SimpleNamespace(body_mesh=mesh, loaded=loaded)
+
+
+CHAINS = {"spine": 0, "arm_R": 1}
 
 
 def test_the_surface_is_bound_to_every_chain():
     mesh, skinning = FakeMesh(), FakeSkinning()
-    assert register_body_surface(_ctx(mesh), skinning) is True
+    assert register_body_surface(skinning, _morph(mesh), CHAINS) is True
     assert [b.mesh for b in skinning.bindings] == [mesh]
     kw = skinning.calls[0]
     assert kw["is_muscle"] is False
@@ -58,18 +58,18 @@ def test_the_surface_is_bound_to_every_chain():
 
 def test_binding_twice_does_not_bind_twice():
     mesh, skinning = FakeMesh(), FakeSkinning()
-    ctx = _ctx(mesh)
-    register_body_surface(ctx, skinning)
-    assert register_body_surface(ctx, skinning) is True
+    morph = _morph(mesh)
+    register_body_surface(skinning, morph, CHAINS)
+    assert register_body_surface(skinning, morph, CHAINS) is True
     assert len(skinning.bindings) == 1
 
 
 def test_nothing_happens_without_a_loaded_morph_or_chains():
     mesh = FakeMesh()
-    assert register_body_surface(_ctx(mesh, loaded=False), FakeSkinning()) is False
-    assert register_body_surface(_ctx(mesh, chains={}), FakeSkinning()) is False
-    assert register_body_surface(_ctx(None), FakeSkinning()) is False
-    assert register_body_surface(_ctx(mesh), None) is False
+    assert register_body_surface(FakeSkinning(), _morph(mesh, loaded=False), CHAINS) is False
+    assert register_body_surface(FakeSkinning(), _morph(mesh), {}) is False
+    assert register_body_surface(FakeSkinning(), _morph(None), CHAINS) is False
+    assert register_body_surface(None, _morph(mesh), CHAINS) is False
 
 
 def test_a_failed_solve_is_reported_not_raised():
@@ -77,4 +77,4 @@ def test_a_failed_solve_is_reported_not_raised():
         def register_skin_mesh(self, mesh, **kw):
             raise ValueError("no chains reach it")
 
-    assert register_body_surface(_ctx(FakeMesh()), Angry()) is False
+    assert register_body_surface(Angry(), _morph(FakeMesh()), CHAINS) is False

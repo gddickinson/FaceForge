@@ -1417,3 +1417,46 @@ source are untouched; the sex morph still reshapes it (median 5.85, max
 Confirmed in pixels: a bodyweight squat rendered through the application's own
 event bus, showing the surface alone, stands at t=0 and is folded at the knees
 and hips at t=0.40, its world height going 127.6 -> 70.3 -> 127.6.
+
+## 2026-09-14 (later still) — The ground lock anchored a pivot, not a sole
+
+The lock keeps a chosen support in place by translating the wrapper, and its
+foot target came from the pivots' own rest height, on the stated grounds that
+"standing places the soles on the floor". It does not: an ankle pivot is
+inside the ankle. Measured in the gym through a squat:
+
+| | before | after |
+|---|---|---|
+| lowest foot pivot | 7.9 | 4.8 |
+| lowest foot bone | 5.9 | 2.8 |
+| lowest point of the skin | 4.5 | 1.4 |
+| lowest point of the body | 0.0 standing, **-44.0** mid-squat | 0.0 throughout |
+
+So the body stood about 4.5 units clear of the floor -- 4 cm at this model's
+scale -- steady and self-consistent, but in the air. `calibrate` now measures
+how far the body's lowest point rests above `floor_y` once, in the rest pose,
+and lowers the pivot target by exactly that. The per-frame anchor is still the
+pivot it always was, which is what keeps it cheap; only the target moved. A
+rig with no meshes (a test, a bare skeleton) has nothing to measure and keeps
+the old target, so the fallback is the previous behaviour rather than a guess.
+
+The `-44.0` is a second bug the same probe exposed: `tools/headless_loader.py`
+did not bind the body surface either, so in a headless render the male/female
+model was carried down bodily by the wrapper in its standing shape and drove
+its feet 44 units through the floor. `register_body_surface` now takes the
+morph and the chain ids rather than the application context, and the headless
+loader calls it where the app does -- the parity rule these tools are held to.
+
+Checked across the exercise catalogue: every feet-anchored exercise holds its
+anchor with drift 0.00 over the clip, at 4.8 instead of 7.9. The four that
+drift are the jumps, which leave the floor by design, and `jumping_jack` sits
+at 4.8 + its authored `lift=3.0`. Hands-anchored exercises are untouched at
+3.0; `mountain_climber`'s feet-below-floor flag is on that same untouched
+branch and pre-dates this.
+
+**A correction.** I had described the figure in an earlier demo render as
+floating, and it is less visible than that suggested: the demo camera tracks
+the body, so a three-unit drop moves both and the frames look alike. The gap
+was real and is now measured at contact -- the lowest visible point sits 0.43
+units above the platform's top -- but the evidence for it is the measurement,
+not the picture.

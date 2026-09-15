@@ -406,7 +406,9 @@ class AssetLoadSequence:
         # like any other skin; see `demand_loaders.register_body_surface`.
         from faceforge.coordination.demand_loaders import register_body_surface
 
-        register_body_surface(ctx, skinning)
+        register_body_surface(skinning,
+                              getattr(ctx.pipeline, "gender_morph", None),
+                              getattr(ctx, "skin_chain_ids", None))
 
     def build_joint_chains(self) -> list:
         """Build the kinematic chains, filling ``ctx.skin_chain_ids``.

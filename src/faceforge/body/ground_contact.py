@@ -36,6 +36,49 @@ _HEIGHT_PIVOTS = {
 _PLANE_PIVOTS = {"feet": ("ankle_R", "ankle_L"), "hands": ("wrist_R", "wrist_L")}
 
 
+def _body_root(node):
+    """The ``bodyRoot`` above a pivot, or None."""
+    while node is not None:
+        if getattr(node, "name", "") == "bodyRoot":
+            return node
+        node = node.parent
+    return None
+
+
+def rest_lowest_mesh_y(root, placement) -> float | None:
+    """Lowest world y of every mesh under ``root`` at rest, or None if bare.
+
+    Only the y row of the placement is applied, because only y is wanted and
+    the body carries several million vertices.  Rest positions are used where
+    a mesh has them, so a mesh the skinning has already deformed still reports
+    where it *rests*.
+    """
+    if root is None:
+        return None
+    row, offset_y = placement[1, :3], float(placement[1, 3])
+    low: float | None = None
+    stack = [(root, np.zeros(3))]
+    while stack:
+        node, offset = stack.pop()
+        for child in getattr(node, "children", ()):
+            stack.append((child, offset + np.asarray(child.position,
+                                                     dtype=np.float64)))
+        mesh = getattr(node, "mesh", None)
+        geometry = getattr(mesh, "geometry", None)
+        if geometry is None:
+            continue
+        rest = getattr(mesh, "rest_positions", None)
+        pts = np.asarray(rest if rest is not None else geometry.positions,
+                         dtype=np.float64).reshape(-1, 3)
+        count = int(getattr(geometry, "vertex_count", len(pts)) or len(pts))
+        pts = pts[:count]
+        if not len(pts):
+            continue
+        y = float(((pts + offset) @ row).min() + offset_y)
+        low = y if low is None else min(low, y)
+    return low
+
+
 def rest_body_position(node, stop_name: str = "bodyRoot") -> np.ndarray:
     """Body-frame rest position of a pivot: local translations summed up to ``stop_name``."""
     total = np.zeros(3)
@@ -61,6 +104,9 @@ class GroundLock:
         #: the floor contact).
         self.side = side
         self._target_y: float | None = None
+        #: How far the body's lowest point rested above the floor before the
+        #: target was lowered onto it; 0.0 when there was nothing to measure.
+        self.sole_clearance = 0.0
         self._target_xz: np.ndarray | None = None
         self.last_delta = np.zeros(3)
 
@@ -85,9 +131,18 @@ class GroundLock:
                   floor_y: float | None = None) -> None:
         """Targets from the pivots' rest positions under the base placement.
 
-        For feet the rest height is the answer (standing places the soles on
-        the floor).  Hands rest at the body's sides, so their height target is
-        the floor plus the palm's thickness unless ``floor_y`` is None.
+        Hands rest at the body's sides, so their height target is the floor
+        plus the palm's thickness unless ``floor_y`` is None.
+
+        For feet the pivots' own rest height was taken as the answer, on the
+        grounds that standing places the soles on the floor.  It does not: an
+        ankle pivot is inside the ankle.  Measured in the gym, the lock held
+        the lowest foot pivot at 7.9 and the figure stood 5.9 units of bone
+        and 4.5 units of skin clear of the platform, floating.  So the pivot
+        target is lowered by however far the body's lowest point rests above
+        ``floor_y`` -- one measurement of the rest pose, and the per-frame
+        anchor stays the pivot it always was.  Without meshes (a bare rig, a
+        test) there is nothing to measure and the pivot height still stands.
         """
         if self.anchor == "none":
             return
@@ -111,6 +166,13 @@ class GroundLock:
         self._target_y = min(ys)
         if self.anchor == "hands" and floor_y is not None:
             self._target_y = float(floor_y) + self.HAND_CONTACT_HEIGHT
+        elif self.anchor == "feet" and floor_y is not None:
+            root = next((_body_root(pivots.get(n)) for n in self._height_pivots()
+                         if pivots.get(n) is not None), None)
+            sole = rest_lowest_mesh_y(root, m)
+            if sole is not None:
+                self.sole_clearance = sole - float(floor_y)
+                self._target_y = min(ys) - self.sole_clearance
         self._target_xz = np.mean(plane, axis=0)
 
     def set_target(self, point) -> None:
