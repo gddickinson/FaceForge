@@ -300,6 +300,16 @@ kettlebell_windmill = ExerciseDefinition(
     tags=("kettlebell", "core", "unilateral"),
 )
 
+#: The halo is the one exercise in this module the rig cannot show.  A bell
+#: held by two hands sits at the midpoint of the two grip points, so circling
+#: it round the head means getting both hands to one side of the head --
+#: which the shoulders will not do.  Measured over seven arm configurations,
+#: the hands never come closer than 75 units apart (the shoulders are 21 out
+#: on each side and adduction stops at -31.5 degrees) except with both arms
+#: straight overhead, at 37, where the bell is on the midline anyway.  The
+#: bell's whole available excursion is about +-8 in x and 11 in z against the
+#: +-25 a halo needs.  What plays is a small arc over the head; the muscles,
+#: cues and sources are right and the shape is as close as the shoulders get.
 kettlebell_halo = ExerciseDefinition(
     id="kettlebell_halo", name="Kettlebell halo", category=Category.UPPER_PUSH,
     description="The bell circles the head close to it, held upside down by the horns. A "

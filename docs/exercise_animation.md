@@ -92,6 +92,51 @@ pose in the catalogue is built with `pose_library.squat()` / `hinge()`, which
 apply it. A deep squat with a 35° trunk lean, hips 120°, knees 120° needs 35°
 of dorsiflexion — the range deep squatting is known to require.
 
+### What the whole catalogue measured (2026-09-15)
+
+Rendering all 117 exercises in one pass (`tools/render_exercise_grid.py`)
+turned up four facts about the rig that are worth having in one place,
+because each of them had already cost an exercise.
+
+**The spine DOFs move no joint at all.** Item 2 above says the arms hang off
+the pelvis root; the magnitude is exact. With `spine_flex`, `spine_lat_bend`
+or `spine_rotation` at full range, `shoulder_R`, `hip_R`, `wrist_R` and
+`knee_R` sit at **the same coordinates to 0.1 units** as at rest. The
+vertebrae and what is skinned to them do turn, so the back's contour changes;
+nothing else does. A pose whose whole shape is a trunk lean — a triangle, an
+overhead side bend, a windmill, a cobra — must lean with `Phase.roll` or
+`Phase.pitch` about `Phase.pivot`, and keep the spine DOF as the anatomical
+detail it is. Authored the other way round, triangle pose renders as a man
+standing perfectly upright with his arms out.
+
+**A lying body's long axis is world X, and a supine lifter's bar is world Z.**
+The gym's `side` camera preset sits at +X, so `camera="side"` on a prone or
+supine exercise films it from the feet; eighteen exercises were framed that
+way. `front` (+Z) is the profile — except for a supine lifter holding a
+barbell, whose bar then points at the lens: the floor press rendered as two
+black discs over the torso. Standing, the bar lies along X and it is `side`
+that frames a plate. Either way the answer is an oblique camera, and both
+rules are tests in `tests/exercise/test_catalog.py`.
+
+**`base_position` does not place a foot-anchored body.** The ground lock
+re-anchors to the feet's own rest position, so the base is only a starting
+point. Measured on the rowing machine: base x of −40, −120, −190 and −240 all
+left the hip at 98.6–163.6. Static equipment has to be placed at the body,
+not the body at the equipment.
+
+**Rolling a body tips its legs with it.** The legs are rigid with the pelvis,
+so a wrapper roll about the hips lifts the far foot: 25 degrees on a
+42-degree stance put the back toes 72 units up. Adducting that hip puts them
+back down, at the cost of stance width — a trade, not a fix.
+
+**Two hands cannot get to one side of the head.** A two-handed item sits at
+the midpoint of the grip points, so a kettlebell halo needs both hands past
+the midline. The shoulders are 21 units out on each side and adduction stops
+at −31.5°: measured over seven configurations the hands never come closer
+than 75 units apart, except with both arms straight overhead (37), where the
+bell is on the midline anyway. The bell's whole excursion is about ±8 in x
+and 11 in z, against the ±25 a halo needs.
+
 ### Keeping the feet on the floor
 
 The rig's root is the pelvis, so flexing the legs lifts the feet and pitching

@@ -131,3 +131,40 @@ def test_a_barbell_is_never_between_the_camera_and_the_lifter(catalog):
         return d.camera in blocked
 
     assert [d.id for d in catalog.values() if bad(d)] == []
+
+
+#: A tag that names an implement, and the equipment kinds that satisfy it.
+#: The lat pulldown's bar is modelled as a barbell, which is what it is.
+IMPLEMENT_TAGS = {
+    "barbell": {"barbell"},
+    "dumbbell": {"dumbbell"},
+    "kettlebell": {"kettlebell"},
+    "band": {"band"},
+    "bar": {"pullup_bar", "dip_station", "barbell"},
+    "rope": {"jump_rope", "battle_rope"},
+    "cable": {"cable_handle", "barbell"},
+    "box": {"plyo_box"},
+    "medicine ball": {"medicine_ball"},
+    "machine": {"bike", "rower", "treadmill", "bench", "cable_handle"},
+}
+
+#: Equipment that is a load rather than a surface to lie or stand on.
+LOADED_KINDS = {"barbell", "dumbbell", "kettlebell", "medicine_ball", "cable_handle", "band"}
+
+
+def test_an_exercise_that_names_an_implement_ships_one(catalog):
+    """The band walk, the battle ropes and both treadmills shipped nothing.
+
+    Nothing caught it: the definitions validated, built a clip and placed the
+    body, and the renders simply showed an athlete miming.
+    """
+    missing = [(d.id, tag) for d in catalog.values() for tag, kinds in IMPLEMENT_TAGS.items()
+               if tag in d.tags and not kinds & set(d.equipment_names)]
+    assert missing == []
+
+
+def test_no_equipment_means_no_equipment(catalog):
+    """The other direction: a mat is furniture, a kettlebell is not."""
+    carrying = [(d.id, sorted(set(d.equipment_names) & LOADED_KINDS)) for d in catalog.values()
+                if "no equipment" in d.tags and set(d.equipment_names) & LOADED_KINDS]
+    assert carrying == []

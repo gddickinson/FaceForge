@@ -2040,3 +2040,32 @@ poses measured: the underneath arm cannot be got above the mat once the hips
 are down (that shoulder sits about 5 units up and the arm is 60 long).
 Tucked and adducted, elbow nearly shut, is the least of them at −8.3, and is
 what an arm does when you lie on it.
+
+### Closing the loop: the facts go where facts go, and a gap gets a test
+
+Three tidying jobs after the third pass.
+
+**The measured rig facts moved into `docs/exercise_animation.md`.** That file
+is where `INTERFACE.md` says measured rig facts live, and this session's were
+only in this log. Four went in: the spine DOFs move `shoulder_R`, `hip_R`,
+`wrist_R` and `knee_R` by 0.0 units at full range; a lying body's long axis is
+world X while a supine lifter's bar is world Z, so `side` and `front` are each
+wrong for one of them; `base_position` does not place a foot-anchored body;
+and rolling a body tips its legs with it.
+
+**Two tests now guard the gap that let four exercises ship nothing.** The band
+walk, the battle ropes and both treadmills validated, built playable clips and
+placed the body correctly while the athlete mimed, and nothing caught it.
+`test_an_exercise_that_names_an_implement_ships_one` maps each implement tag
+to the kinds that satisfy it; `test_no_equipment_means_no_equipment` is the
+other direction.
+
+**The halo was measured properly rather than assumed.** Seven arm
+configurations: the hands never come closer than 75 units apart — the
+shoulders are 21 out on each side and adduction stops at −31.5 degrees —
+except with both arms straight overhead, at 37, where the bell is on the
+midline anyway. The bell's whole available excursion is about ±8 in x and 11
+in z against the ±25 a halo needs. Cobra was replaced when the rig could not
+show it; the halo is kept, because unlike cobra its muscles, cues and sources
+are all still right and only the amplitude is short. The measurement is in the
+module and in the rig doc.
