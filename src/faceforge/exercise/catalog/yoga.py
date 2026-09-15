@@ -112,9 +112,13 @@ warrior_two = ExerciseDefinition(
 #: the spine DOFs turn vertebrae, and the shoulders hang off the pelvis root,
 #: so 30 degrees of lateral flexion moved nothing the render could see
 #: (shoulder_R stayed at x=25.2; a 40-degree roll puts it at 110).
-_TRI_ROLL = 40.0
-_TRI = merge(pose(spine_lat_bend=12, hip_r_abduct=42, hip_r_rotate=40, hip_r_flex=25,
-                  knee_r_flex=5, ankle_r_flex=10, hip_l_abduct=42, hip_l_rotate=-12,
+_TRI_ROLL = 25.0
+#: Rolling a body whose legs are rigid with its pelvis lifts the far foot:
+#: at a 42-degree stance the back toes went to 72 with a 25-degree roll.  The
+#: back hip adducts to put them back (toe 6.4 against the front foot's 7.9),
+#: which costs stance width -- the price of the lean.
+_TRI = merge(pose(spine_lat_bend=12, hip_r_abduct=44, hip_r_rotate=40, hip_r_flex=25,
+                  knee_r_flex=5, ankle_r_flex=10, hip_l_abduct=-8, hip_l_rotate=-12,
                   knee_l_flex=5, ankle_l_flex=8),
              only(shoulder_r_flex=0, shoulder_r_abduct=95, elbow_r_flex=3,
                   shoulder_l_flex=0, shoulder_l_abduct=95, elbow_l_flex=3))
@@ -292,37 +296,45 @@ downward_dog = ExerciseDefinition(
     tags=("yoga", "isometric", "no equipment"),
 )
 
-def _cobra(extension: float, arm_flex: float, elbow: float) -> dict[str, float]:
-    """Cobra at ``extension`` degrees of spinal extension.
+#: Cobra proper -- pelvis on the mat, chest lifted by spinal extension alone
+#: -- is not a pose this rig can show.  The spine DOFs turn vertebrae and the
+#: shoulders hang off the pelvis root, so 40 degrees of extension moved the
+#: shoulder 0.0 units; a wrapper pitch about the hips lifts the chest (29 ->
+#: 66) but takes the legs to -88 with it, and hip extension stops at -27.
+#: Pitching about the KNEES instead is the pose the rig does have: the shins
+#: stay down, the thighs and pelvis lift, the chest comes up.  That is an
+#: upward-facing dog, so that is what this is called.
+_DOG_PITCH = -18.0
+KNEES = (0.0, 0.0, -141.0)
 
-    The hip flexion is not technique: it is the measured correction for the
-    wrapper turning about the head.  A fifth of the extension angle holds the
-    legs on the mat (feet 44.6 without it, 10.8 with it at 40 deg).
-    """
-    return merge(pose(spine_flex=-extension, hip_flex=0.2 * extension, knee_flex=5,
-                      ankle_flex=-45),
-                 arms(flex=arm_flex, abduct=15, elbow=elbow))
+
+def _updog(extension: float, arm_flex: float, elbow: float) -> dict[str, float]:
+    return merge(pose(spine_flex=-extension, hip_flex=0, knee_flex=5, ankle_flex=-45),
+                 arms(flex=arm_flex, abduct=12, elbow=elbow))
 
 
-_COBRA = _cobra(40.0, 15.0, 115.0)
-_COBRA_DOWN = _cobra(4.0, 35.0, 120.0)
+_UPDOG = _updog(20.0, 20.0, 30.0)
+_UPDOG_DOWN = _updog(5.0, 45.0, 110.0)
 
-cobra_pose = ExerciseDefinition(
-    id="cobra_pose", name="Cobra (bhujangasana)", category=Category.MOBILITY,
-    description="Lying face down, the chest lifts into spinal extension with the hips and legs "
-                "staying on the floor and the hands only assisting.",
-    setup=("Hands under the shoulders, elbows close to the ribs",
-           "Press the tops of the feet and the pubic bone into the floor",
-           "Lead with the chest, not the chin; lift only as far as the back is comfortable"),
-    orientation="prone", anchor="none", base_position=(-85.0, 25.0, 0.0),
+upward_dog = ExerciseDefinition(
+    id="upward_dog", name="Upward-facing dog (urdhva mukha svanasana)",
+    category=Category.MOBILITY,
+    description="From lying face down, the arms straighten and the chest, hips and thighs lift "
+                "clear of the mat, leaving only the hands and the tops of the feet on it. "
+                "Back extension with the shoulders pulled down and open.",
+    setup=("Hands under the shoulders, tops of the feet on the mat",
+           "Press the floor away until the arms are straight and the thighs lift",
+           "Shoulders down away from the ears; lead with the chest, not the chin"),
+    orientation="prone", anchor="none", base_position=(-85.0, 19.0, 0.0),
     phases=(
-        ph("Lift the chest", CON, 2.0, _COBRA,
-           cues=("Draw the chest forward and up; shoulders down away from the ears",
-                 "Keep a little weight in the hands -- let the back do the work")),
-        ph("Hold", ISO, 7.0, _COBRA,
-           cues=("Breathe into the front of the ribs; legs stay heavy",)),
-        ph("Lower", ECC, 1.8, _COBRA_DOWN, cues=("Lower the chest slowly to the floor",)),
-        ph("Rest", TRN, 1.2, _COBRA_DOWN),
+        ph("Lift the chest", CON, 2.0, _UPDOG, pitch=_DOG_PITCH, pivot=KNEES,
+           cues=("Press the hands down and draw the chest forward and up",
+                 "Thighs leave the mat; only the hands and the feet stay")),
+        ph("Hold", ISO, 7.0, _UPDOG, pitch=_DOG_PITCH, pivot=KNEES,
+           cues=("Breathe into the front of the ribs; shoulder blades down the back",)),
+        ph("Lower", ECC, 1.8, _UPDOG_DOWN, pitch=-5.0, pivot=KNEES,
+           cues=("Lower the chest and the hips slowly back to the mat",)),
+        ph("Rest", TRN, 1.2, _UPDOG_DOWN, pitch=-5.0, pivot=KNEES),
     ),
     muscles=(mu("erector_spinae", P, 0.75), mu("multifidus", P, 0.65),
              mu("quadratus_lumborum", S, 0.5),
@@ -333,12 +345,13 @@ cobra_pose = ExerciseDefinition(
              mu("hip_flexors", S, 0.4, note="lengthened"),
              mu("deltoid_posterior", ST, 0.4)),
     equipment=_MAT,
-    errors=("Pushing up with the arms until the shoulders shrug and the low back pinches.",
-            "Throwing the head back.",
-            "Lifting the hips and thighs off the floor (that is upward dog)."),
-    physio_notes=("A prone extension exercise of the McKenzie type; commonly prescribed for "
+    errors=("Shrugging up to the ears instead of drawing the shoulder blades down.",
+            "Throwing the head back and pinching the low back.",
+            "Leaving the thighs on the mat -- that is a cobra, a different pose."),
+    physio_notes=("A prone extension exercise of the McKenzie family; commonly prescribed for "
                   "flexion-intolerant low back pain and avoided where extension reproduces "
-                  "symptoms.",),
+                  "symptoms. Cobra is the lower-effort version, with the pelvis staying "
+                  "down.",),
     sources=(YOGA_EMG, STRETCH_PAGE, ACE), camera="front", default_reps=1,
     tags=("yoga", "isometric", "rehab", "no equipment"),
 )
@@ -385,4 +398,4 @@ cat_cow = ExerciseDefinition(
 )
 
 EXERCISES = (chair_pose, warrior_two, triangle_pose, tree_pose, high_lunge,
-             downward_dog, cobra_pose, cat_cow)
+             downward_dog, upward_dog, cat_cow)

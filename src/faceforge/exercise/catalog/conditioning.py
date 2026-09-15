@@ -156,13 +156,16 @@ rowing_machine = ExerciseDefinition(
              mu("biceps_brachii", S, 0.75), mu("forearm_flexors", ST, 0.6),
              mu("rectus_abdominis", S, 0.4), mu("gastrocnemius", S, 0.4),
              mu("hip_flexors", S, 0.4), mu("tibialis_anterior", S, 0.35)),
-    equipment=(eq("rower", attach="static"),),
+    equipment=(# The foot lock decides where the athlete sits -- base_position does
+               # not move them (measured: hip x holds 98.6..163.6 whatever the
+               # base) -- so the machine is placed under them instead.
+               eq("rower", attach="static", position=(150.0, 0.0, 0.0)),),
     errors=("Opening the back before the legs have finished (shooting the slide).",
             "Pulling with the arms early.", "Rounding the lumbar spine at the catch.",
             "Rushing the recovery."),
     physio_notes=("Drive:recovery about 1:2 in time; the trunk should not go past ~25 deg "
                   "of forward lean at the catch.",),
-    sources=(KLESHNEV, NSCA), camera="side", default_reps=4, tags=("machine", "cardio"),
+    sources=(KLESHNEV, NSCA), camera="three_quarter", default_reps=4, tags=("machine", "cardio"),
 )
 
 #: Gait cycle landmarks (% cycle of the RIGHT leg): hip, knee, ankle in degrees (PERRY).

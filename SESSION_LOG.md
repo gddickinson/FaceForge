@@ -1941,3 +1941,30 @@ band round the knees cannot follow them through `EquipmentSpec.attach`;
 exists for them; the **kettlebell windmill** and **halo** are understated
 rather than wrong. The **rowing machine** frames as a close-up of the
 lifter's back, which is being measured separately.
+
+### The last four, and one pose that had to change
+
+**Cobra is not a pose this rig has.** Its whole shape is spinal extension with
+the pelvis on the mat, and the spine DOFs move no joint at all. Pitching about
+the hips lifts the shoulder from 29 to 66 but puts the feet at −88, and hip
+extension stops at −27. Pitching about the **knees** is the pose the rig does
+have: the shins stay down (feet 7.6), the thighs and pelvis lift (hip 45.7,
+knee 28.5) and the chest comes up — which is an upward-facing dog, so that is
+what it is now called. The module says why cobra is absent.
+
+**Triangle pose leans, and pays for it.** Rolling a body whose legs are rigid
+with its pelvis lifts the far foot: a 25-degree roll on a 42-degree stance put
+the back toes at 72. Adducting the back hip to −8 puts them back at 6.4
+against the front foot's 7.9, at the cost of stance width. Measured, kept,
+and written down as a trade rather than a fix.
+
+**The rowing machine's athlete was never on it.** `base_position` does not
+place a foot-anchored body: at base x of −40, −120, −190 and −240 the hip held
+98.6–163.6 every time, because the ground lock re-anchors to the feet's own
+rest position. The rower moves to the athlete (x = 150) instead, and the
+camera to `three_quarter` — at `side` it sat 50 units from a body it was
+supposed to be filming, which is why that tile was a close-up of a back.
+
+**Cat-cow and the hollow body hold stay understated.** Both are shapes the
+spine makes, and the spine moves vertebrae only. The poses are anatomically
+right and the renders are honest about what the rig can show.

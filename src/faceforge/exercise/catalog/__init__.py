@@ -17,7 +17,7 @@ Contents
 ``athletic``               kettlebell swing, jumps, power clean, medicine ball slam, burpee
 ``kettlebell``             cleans, snatches, presses, carries, the windmill and the get-up
 ``calisthenics``           muscle-up, L-sit, pistol, archer and pike push-ups, Nordic curl
-``yoga``                   eight held asanas: chair, warrior II, triangle, tree, dog, cobra, cat-cow
+``yoga``                   eight held asanas: chair, warrior II, triangle, tree, both dogs, cat-cow
 ``stretches``              static stretches and mobility drills
 
 :func:`get_exercise_catalog` returns every definition keyed by id, validated.
