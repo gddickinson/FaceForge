@@ -136,9 +136,18 @@ class ExerciseRuntime:
             self._build_equipment(defn)
 
         # Hands gripping a fixed point (a pull-up bar) must not slide along it.
+        # A grip width is fixed by whatever the hands are holding.  Either the
+        # hands are anchored to a bar in the room (a pull-up), or they hold a
+        # rigid two-handed implement between them -- `attach="hands"` is the
+        # barbell case, as against `hand_r`/`hand_l` for a dumbbell in each
+        # hand, whose width is free to change.  Without this the bench press's
+        # hands slid 13.8 units along the bar each rep, the grip opening from
+        # 110 units to 138 and closing again.
+        holds_a_bar = any(spec.attach == "hands" for spec in defn.equipment)
+        anchored_to_a_bar = (defn.anchor == "hands"
+                             and defn.anchor_point is not None)
         self.grip_lock = None
-        if (defn.anchor == "hands" and defn.anchor_point is not None
-                and self.body_animation is not None):
+        if (holds_a_bar or anchored_to_a_bar) and self.body_animation is not None:
             self.grip_lock = GripWidthLock(self.body_animation, self.scene, self.pivots)
 
         # The ground lock plants one foot; this brings the other down to it.

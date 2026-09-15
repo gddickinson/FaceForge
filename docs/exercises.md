@@ -751,15 +751,15 @@ Supine on a bench, the bar is lowered to the lower sternum with the elbows at ~4
 
 | phase | kind | s | moving joints | cues |
 |---|---|---|---|---|
-| Lower | eccentric | 2.00 | Forearms: supination 0° → 90°; Shoulders: extension 75° → 15°; Elbows: flexion 10° → 80°; Shoulders: abduction 12° → 75° | Bar to the lower sternum, elbows ~45 deg from the trunk Forearms vertical |
+| Lower | eccentric | 2.00 | Forearms: supination 0° → 90°; Shoulders: extension 75° → 15°; Elbows: flexion 10° → 80°; Shoulders: abduction 12° → 75° | Bar to the lower sternum, elbows ~45 deg from the trunk Forearms vertical Pull the bar down with the lats; blades stay back and down |
 | Touch | isometric | 0.30 | hold | Light touch; stay tight |
-| Press | concentric | 1.50 | Forearms: pronation 90° → 0°; Shoulders: flexion 15° → 75°; Elbows: extension 80° → 10°; Shoulders: adduction 75° → 12° | Drive the bar up and slightly back over the shoulders Push the feet into the floor |
+| Press | concentric | 1.50 | Forearms: pronation 90° → 0°; Shoulders: flexion 15° → 75°; Elbows: extension 80° → 10°; Shoulders: adduction 75° → 12° | Drive the bar up and slightly back over the shoulders Push the feet into the floor Keep the upper back tight against the bench |
 | Lockout | isometric | 0.50 | hold | Elbows straight, shoulder blades down |
 
 **Muscles**
 - *Primary movers:* Pectoralis major 90 %; Anterior deltoid 75 %; Triceps brachii 70 %
 - *Synergists:* Serratus anterior 40 %
-- *Stabilisers:* Latissimus dorsi / teres major 30 % — controls the descent; Rotator cuff 35 %; Biceps brachii 20 %; Forearm flexors (grip) 45 %; Gluteus maximus 30 % — leg drive; Quadriceps 25 %
+- *Stabilisers:* Latissimus dorsi / teres major 45 % — pulls the bar down under control and holds the shoulder tight off the chest; Rhomboids 40 % — holds the blades retracted; Middle trapezius 35 % — holds the blades retracted; Erector spinae 30 % — holds the arch; Rotator cuff 35 %; Biceps brachii 20 %; Forearm flexors (grip) 45 %; Gluteus maximus 30 % — leg drive; Quadriceps 25 %
 
 **Common errors**
 - Elbows flared to 90 deg (raises impingement risk and shoulder strain).
@@ -770,6 +770,7 @@ Supine on a bench, the bar is lowered to the lower sternum with the elbows at ~4
 **Physiotherapy notes**
 - Pectoralis major dominates the bottom of the lift; triceps and anterior deltoid carry the mid and upper range.
 - A narrower grip with the elbows tucked shifts work to the clavicular pectoralis, anterior deltoid and triceps.
+- The back is not passive. Latissimus dorsi is a shoulder extensor and adductor, so it resists the bar on the way down and keeps the humerus packed at the chest; the rhomboids and middle trapezius hold the blades retracted and depressed against the bench for the whole set, which is what gives the press something to push from.
 
 **Sources**
 - Effect of five bench inclinations on EMG of pectoralis major, anterior deltoid and triceps, 2020 (shoulder abduction ~45 deg at the bottom, 2 s / 2 s tempo, pec ~27, AD 26-33, TB ~15 %MVIC at 60 %1RM) https://pmc.ncbi.nlm.nih.gov/articles/PMC7579505/

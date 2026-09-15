@@ -1555,3 +1555,63 @@ Across all 63 exercises the anchor still holds with drift 0.00, apart from the
 jumps and step-ups that leave the floor by design and the two hands-anchored
 exercises, whose numbers are unchanged because the lock is built only for
 feet. Split squats remain untouched: their anchor names a side.
+
+## 2026-09-15 — A thumb that would not close, and hands that slid along the bar
+
+**The thumb stuck out of every grip.** Measured on a deadlift bar, the four
+fingers sat 1.55 units from the bar's axis and the thumb 7.85. Two causes,
+both the same mistake: the thumb's rotations were authored in the fingers'
+axes, and the thumb does not share them.
+
+The thumb's metacarpal leaves the wrist about 45 degrees out of the palm --
+the rest segment runs [0.71, -0.03, -0.70] against the index's near-vertical
+[0.33, -0.24, -0.88] -- so in its own pivot frame:
+
+* *Curl about X swings the tip backwards out of the hand.* Driven harder it
+  got worse, not better: at curl 0.50 the thumb tip was 2.95 from the index
+  tip, at 0.94 it was 8.34, at 1.00 with full opposition 9.22. Zeroing the
+  thumb entirely gave 3.24 against the shipped code's 7.85 -- doing nothing
+  beat it, which is the measure of how wrong the axis was. About **Y** the
+  same angles bring it to 1.69.
+* *Opposition's other two components pushed it out.* Modelled as flexion
+  about X plus pronation about Y plus adduction about Z, which describes the
+  motion correctly and these axes incorrectly. With the curl moved to Y,
+  dropping the X term took the thumb from 4.91 to 2.82 and dropping Z as well
+  to **1.84**, against the fingers' 1.55. Opposition in this rig is the Y
+  rotation and only that.
+
+Verified on both hands and in pixels: deadlift R thumb 1.84 (fingers 1.55),
+L 1.69 (fingers 2.30); back squat R 1.94, L 2.59. The renders show the thumb
+wrapped with the fingers where it used to jut away from the bar.
+
+**The hands slid along the bench press bar.** 13.83 units each, every rep --
+the grip opening from 110.3 to 138.0 and closing again. `GripWidthLock`
+existed for exactly this and was only ever built for an exercise whose hands
+are anchored to a bar in the room, which a bench press's are not: the bar
+moves with the lifter.
+
+What fixes the width is not the anchor but the *implement*. An
+`EquipmentSpec` with `attach="hands"` is a rigid thing held between both of
+them -- a barbell -- as against `hand_r`/`hand_l` for a dumbbell in each hand,
+whose width is free to change. The lock is built for either now. Bench press
+slide 13.83 -> **0.10**, with shoulder abduction still travelling 12 to 78
+degrees and back, so the movement keeps its shape.
+
+**The bench press had no arch and a passive back.** Five points of contact
+with a slight arch was in the setup cues and in none of the geometry. It is a
+set-up position rather than a movement, so both keyframes carry the same ten
+degrees of lumbar extension -- the modest arch of general training, not the
+competition powerlifter's -- and nothing about it changes between them.
+Measured, that moves the thoracic spine 1.03 units, and the trunk stays on
+the bench (lowest trunk bone 57.75 against a bench top of 58.0).
+
+The back is not passive in a bench press. Latissimus dorsi is a shoulder
+extensor and adductor, so it resists the bar on the way down and keeps the
+humerus packed at the chest; the rhomboids and middle trapezius hold the
+blades retracted and depressed for the whole set, which is what gives the
+press something to push from. The lat goes from 0.30 to 0.45 with a note
+covering both directions, and rhomboids (0.40), middle trapezius (0.35) and
+erector spinae (0.30, holding the arch) join it. All four are stabilisers, so
+the activation model holds them at full level through every phase -- measured
+0.45 on the lats at each of nine samples across the rep, the lowering
+included.

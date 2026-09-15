@@ -33,9 +33,16 @@ _INCLINE_LEGS = only(hip_flex=16, knee_flex=70, ankle_flex=-5, hip_abduct=22)
 # differs between the two keyframes because the rig's shoulder Euler order
 # couples axial rotation to abduction; the hand's world orientation is the
 # same in both.
-_BENCH_BOTTOM = merge(pose(), _BENCH_LEGS,
+# The arch.  Five points of contact -- head, shoulders, hips, both feet -- with
+# the shoulder blades pulled back and down and a natural lumbar extension held
+# throughout; the hips never leave the bench.  It is a set-up position, not a
+# movement, so both keyframes carry the same value and nothing about it changes
+# between them.  Ten degrees is the modest arch of general training rather than
+# the competition powerlifter's.
+_BENCH_ARCH = only(spine_flex=-10)
+_BENCH_BOTTOM = merge(pose(), _BENCH_LEGS, _BENCH_ARCH,
                       arms(flex=-15, abduct=75, rotate=-20, elbow=80, forearm=90, wrist=-70), grip())
-_BENCH_TOP = merge(pose(), _BENCH_LEGS,
+_BENCH_TOP = merge(pose(), _BENCH_LEGS, _BENCH_ARCH,
                    arms(flex=75, abduct=12, rotate=0, elbow=10, forearm=0, wrist=-70), grip())
 _BENCH_EQUIP = eq("bench", attach="static", height=BENCH_TOP)
 
@@ -49,15 +56,23 @@ barbell_bench_press = ExerciseDefinition(
     orientation="supine", anchor="none", base_position=(-85.0, BENCH_TOP + 15.0, 0.0),
     phases=(
         ph("Lower", ECC, 2.0, _BENCH_BOTTOM, cues=("Bar to the lower sternum, elbows ~45 deg "
-                                                 "from the trunk", "Forearms vertical")),
+                                                 "from the trunk", "Forearms vertical",
+                                                 "Pull the bar down with the lats; blades "
+                                                 "stay back and down")),
         ph("Touch", ISO, 0.3, _BENCH_BOTTOM, cues=("Light touch; stay tight",)),
         ph("Press", CON, 1.5, _BENCH_TOP, cues=("Drive the bar up and slightly back over the "
-                                              "shoulders", "Push the feet into the floor")),
+                                              "shoulders", "Push the feet into the floor",
+                                              "Keep the upper back tight against the bench")),
         ph("Lockout", ISO, 0.5, _BENCH_TOP, cues=("Elbows straight, shoulder blades down",)),
     ),
     muscles=(mu("pectoralis_major", P, 0.9), mu("deltoid_anterior", P, 0.75),
              mu("triceps_brachii", P, 0.7), mu("serratus_anterior", S, 0.4),
-             mu("latissimus_dorsi", ST, 0.3, note="controls the descent"),
+             mu("latissimus_dorsi", ST, 0.45,
+                note="pulls the bar down under control and holds the shoulder "
+                     "tight off the chest"),
+             mu("rhomboids", ST, 0.4, note="holds the blades retracted"),
+             mu("trapezius_middle", ST, 0.35, note="holds the blades retracted"),
+             mu("erector_spinae", ST, 0.3, note="holds the arch"),
              mu("rotator_cuff", ST, 0.35), mu("biceps_brachii", ST, 0.2),
              mu("forearm_flexors", ST, 0.45), mu("gluteus_maximus", ST, 0.3, note="leg drive"),
              mu("quadriceps", ST, 0.25)),
@@ -68,7 +83,12 @@ barbell_bench_press = ExerciseDefinition(
     physio_notes=("Pectoralis major dominates the bottom of the lift; triceps and anterior "
                   "deltoid carry the mid and upper range.", "A narrower grip with the elbows "
                   "tucked shifts work to the clavicular pectoralis, anterior deltoid and "
-                  "triceps."),
+                  "triceps.",
+                  "The back is not passive. Latissimus dorsi is a shoulder extensor and "
+                  "adductor, so it resists the bar on the way down and keeps the humerus "
+                  "packed at the chest; the rhomboids and middle trapezius hold the blades "
+                  "retracted and depressed against the bench for the whole set, which is what "
+                  "gives the press something to push from."),
     sources=(BENCH_INCLINE, CALATAYUD, KOLBER, NSCA, ECC_CON), camera="side", tags=("barbell",),
 )
 
