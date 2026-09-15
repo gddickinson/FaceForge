@@ -67,11 +67,19 @@ side_plank = ExerciseDefinition(
         ph("Hold", ISO, 6.0,
            merge(pose(), arms(flex=0, abduct=90, elbow=90, side="l"), arms(flex=0, abduct=0, elbow=70, side="r")),
            roll=10.0, pivot=(0.0, 0.0, -190.0), cues=("Hips forward, ribs stacked over the pelvis",)),
+        # The underneath arm cannot be got above the mat once the hips are
+        # down: the left shoulder sits about 5 units up and the arm is 60
+        # long, so every pose measured put that hand below the floor (-23.5
+        # abducted, -13.5 flexed).  Tucked in -- adducted, elbow nearly shut
+        # -- is both the least of them and what an arm actually does when you
+        # lie on it.
         ph("Lower", ECC, 1.5,
-           merge(pose(), arms(flex=90, abduct=0, elbow=90, side="l"), arms(flex=0, abduct=0, elbow=70, side="r")),
+           merge(pose(), arms(flex=20, abduct=-25, elbow=140, side="l"),
+                 arms(flex=0, abduct=0, elbow=70, side="r")),
            roll=0, pivot=(0.0, 0.0, -190.0), cues=("Lower the hips to the floor",)),
         ph("Rest", TRN, 1.0,
-           merge(pose(), arms(flex=90, abduct=0, elbow=90, side="l"), arms(flex=0, abduct=0, elbow=70, side="r"))),
+           merge(pose(), arms(flex=20, abduct=-25, elbow=140, side="l"),
+                 arms(flex=0, abduct=0, elbow=70, side="r"))),
     ),
     muscles=(mu("obliques", P, 0.7, side="L"), mu("quadratus_lumborum", P, 0.6, side="L"),
              mu("gluteus_medius", P, 0.6, side="L"), mu("transversus_abdominis", S, 0.5),

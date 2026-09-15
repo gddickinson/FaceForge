@@ -158,8 +158,13 @@ rowing_machine = ExerciseDefinition(
              mu("hip_flexors", S, 0.4), mu("tibialis_anterior", S, 0.35)),
     equipment=(# The foot lock decides where the athlete sits -- base_position does
                # not move them (measured: hip x holds 98.6..163.6 whatever the
-               # base) -- so the machine is placed under them instead.
-               eq("rower", attach="static", position=(150.0, 0.0, 0.0)),),
+               # base) -- so the machine is placed under them instead.  The
+               # athlete's hips sit at greater x than their feet, which is the
+               # opposite way round to the ergometer's own geometry, so it is
+               # turned about: footplate to the measured ankle at x = 56, seat
+               # under the hips at the finish.
+               eq("rower", attach="static", position=(116.0, 0.0, 0.0),
+                  rotation_deg=(0, 180, 0)),),
     errors=("Opening the back before the legs have finished (shooting the slide).",
             "Pulling with the arms early.", "Rounding the lumbar spine at the catch.",
             "Rushing the recovery."),

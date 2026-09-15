@@ -1691,8 +1691,8 @@ A push-up with the hands about shoulder width and the elbows tucked, which is th
 |---|---|---|---|---|
 | Lower | eccentric | 1.80 | Elbows: flexion 0° → 95°; Shoulders: extension 70° → 38°; Shoulders: abduction 10° → 20°; trunk pitch -8° | Chest to the floor with the elbows close to the ribs |
 | Bottom | isometric | 0.30 | trunk pitch -8° | Stay a plank: no sagging, no piking |
-| Press | concentric | 1.30 | Elbows: extension 95° → 0°; Shoulders: flexion 38° → 70°; Shoulders: adduction 20° → 10°; trunk pitch -20° | Push the floor away and finish by straightening the elbows |
-| Top | isometric | 0.40 | trunk pitch -20° |  |
+| Press | concentric | 1.30 | Elbows: extension 95° → 0°; Shoulders: flexion 38° → 70°; Shoulders: adduction 20° → 10°; trunk pitch -18° | Push the floor away and finish by straightening the elbows |
+| Top | isometric | 0.40 | trunk pitch -18° |  |
 
 **Muscles**
 - *Primary movers:* Triceps brachii 85 %; Pectoralis major 70 %; Serratus anterior 65 % — holds the scapula against the ribs; Rectus abdominis 60 % — the plank is half the exercise
@@ -2442,9 +2442,9 @@ Supported on one forearm and the side of the feet, the hips lift so the body for
 
 | phase | kind | s | moving joints | cues |
 |---|---|---|---|---|
-| Lift | concentric | 1.50 | Shoulder (L): abduction 0° → 90°; Shoulder (L): extension 90° → 0° | Lift the hips until the body is straight from head to feet |
+| Lift | concentric | 1.50 | Shoulder (L): abduction 25° → 90°; Elbow (L): extension 140° → 90°; Shoulder (L): extension 20° → 0° | Lift the hips until the body is straight from head to feet |
 | Hold | isometric | 6.00 | hold | Hips forward, ribs stacked over the pelvis |
-| Lower | eccentric | 1.50 | Shoulder (L): adduction 90° → 0°; Shoulder (L): flexion 0° → 90° | Lower the hips to the floor |
+| Lower | eccentric | 1.50 | Shoulder (L): adduction 90° → 25°; Elbow (L): flexion 90° → 140°; Shoulder (L): flexion 0° → 20° | Lower the hips to the floor |
 | Rest | transition | 1.00 | hold |  |
 
 **Muscles**

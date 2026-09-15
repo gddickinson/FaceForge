@@ -2013,3 +2013,30 @@ The halo stays as it is: with the bell centred between two grip points and the
 far shoulder's adduction stopping at −31.5 degrees, both hands cannot get to
 one side of the head, so the bell travels about 17 units instead of circling.
 It is a small arc rather than a halo, and the rig has no way to make it more.
+
+### The third pass, and one thing I got backwards
+
+The regression probe over the twenty changed exercises flagged four more.
+
+**The treadmill's belt was a plinth.** A 6-unit deck with the soles at the
+floor buried the feet; 2 units is a belt.
+
+**The close-grip push-up inherited the push-up's −20 top pitch but not its
+hand width**, and came out 2.9 below the mat. −18 puts it at +2.8.
+
+**The rowing machine was the right idea placed backwards.** Moving it to the
+athlete's hips (x = 150) put the seat under them but the footplate 154 units
+past their feet, because the athlete's hips sit at *greater* x than their
+feet and the ergometer's own geometry runs the other way. Turned about
+(`rotation_deg=(0, 180, 0)`) at x = 116, the footplate meets the measured
+ankle at 56 and the seat sits under the hips at the finish. The probe still
+flags the feet at 36 — they are on the footplate, which is what a rower is.
+
+**The side plank's resting arm I made worse before I made it better.**
+Swinging the supporting forearm to 90 degrees of flexion measured −13.5; my
+first "fix" — leaving it abducted as in the hold — measured −23.5, because in
+side-lying abduction drives the underneath arm straight into the floor. Seven
+poses measured: the underneath arm cannot be got above the mat once the hips
+are down (that shoulder sits about 5 units up and the arm is 60 long).
+Tucked and adducted, elbow nearly shut, is the least of them at −8.3, and is
+what an arm does when you lie on it.

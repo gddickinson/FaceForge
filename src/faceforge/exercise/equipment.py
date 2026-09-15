@@ -214,7 +214,7 @@ def make_band(length: float = 60.0) -> SceneNode:
     return root
 
 
-def make_treadmill(length: float = 170.0, width: float = 72.0, deck: float = 6.0,
+def make_treadmill(length: float = 170.0, width: float = 72.0, deck: float = 2.0,
                    console: float = 108.0) -> SceneNode:
     """A treadmill facing +Z, the direction the gym body faces.
 
