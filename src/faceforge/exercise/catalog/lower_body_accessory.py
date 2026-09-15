@@ -70,7 +70,7 @@ barbell_hip_thrust = ExerciseDefinition(
             "Feet too close or too far from the bench."),
     physio_notes=("Higher gluteus maximus EMG than the back squat and deadlift at matched "
                   "loads (Contreras 2015).",),
-    sources=(CONTRERAS, NSCA, ACE), camera="front", tags=("barbell",),
+    sources=(CONTRERAS, NSCA, ACE), camera="three_quarter", tags=("barbell",),
 )
 
 step_up = ExerciseDefinition(

@@ -15,7 +15,8 @@ is why these belong after training or in their own session.
 from __future__ import annotations
 
 from faceforge.exercise.catalog._helpers import (
-    ACE, BEHM, CON, ECC, ISO, NEUMANN, NSCA, P, S, ST, STRETCH_ACSM, STRETCH_PAGE, TRN,
+    ACE, BEHM, CON, ECC, HIPS, ISO, NEUMANN, NSCA, P, S, ST, STRETCH_ACSM, STRETCH_PAGE,
+    TRN,
     arms, eq, flat_foot_ankle, merge, mu, only, ph, pose,
 )
 from faceforge.exercise.model import Category, ExerciseDefinition
@@ -165,7 +166,11 @@ calf_stretch = ExerciseDefinition(
     tags=("stretch", "no equipment"),
 )
 
-_SIDE_BEND = merge(pose(spine_lat_bend=-28, knee_flex=5, hip_flex=3),
+#: Same as the triangle: the lean is a wrapper roll, negative being to the
+#: body's left, away from the raised arm.  `spine_lat_bend` alone rendered as
+#: a man standing perfectly upright with one arm in the air.
+_BEND_ROLL = -28.0
+_SIDE_BEND = merge(pose(spine_lat_bend=-12, knee_flex=5, hip_flex=3),
                    only(shoulder_r_flex=15, shoulder_r_abduct=165, elbow_r_flex=8,
                         shoulder_l_flex=5, shoulder_l_abduct=15, elbow_l_flex=10))
 _SIDE_UP = merge(pose(knee_flex=5),
@@ -182,10 +187,10 @@ overhead_side_bend = ExerciseDefinition(
            "Bend sideways only -- do not let the trunk rotate or fold forward"),
     anchor="feet", unilateral=True,
     phases=(
-        ph("Bend over", ECC, 2.5, _SIDE_BEND,
+        ph("Bend over", ECC, 2.5, _SIDE_BEND, roll=_BEND_ROLL, pivot=HIPS,
            cues=("Reach up and over; keep both feet flat",
                  "Lengthen the upper side rather than collapsing into the lower one")),
-        ph("Hold", ISO, 18.0, _SIDE_BEND,
+        ph("Hold", ISO, 18.0, _SIDE_BEND, roll=_BEND_ROLL, pivot=HIPS,
            cues=("Breathe into the upper ribs; the stretch should be a broad pull, not a pinch",)),
         ph("Come up", CON, 2.0, _SIDE_UP, cues=("Return to upright with the arm still up",)),
         ph("Rest", TRN, 1.2, _STAND),

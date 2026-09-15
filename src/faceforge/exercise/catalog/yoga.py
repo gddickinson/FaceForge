@@ -13,7 +13,7 @@ measured surface EMG across poses and skill levels.
 from __future__ import annotations
 
 from faceforge.exercise.catalog._helpers import (
-    ACE, CON, ECC, ISO, NEUMANN, NSCA, P, S, ST, STRETCH_ACSM, STRETCH_PAGE, TRN,
+    ACE, CON, ECC, HIPS, ISO, NEUMANN, NSCA, P, S, ST, STRETCH_ACSM, STRETCH_PAGE, TRN,
     YOGA_EMG, YOGA_KIN,
     arms, eq, flat_foot_ankle, merge, mu, only, ph, pose,
 )
@@ -108,7 +108,12 @@ warrior_two = ExerciseDefinition(
     tags=("yoga", "isometric", "unilateral", "no equipment"),
 )
 
-_TRI = merge(pose(spine_lat_bend=30, hip_r_abduct=42, hip_r_rotate=40, hip_r_flex=25,
+#: The trunk's tilt is a wrapper ROLL about the hips, not `spine_lat_bend`:
+#: the spine DOFs turn vertebrae, and the shoulders hang off the pelvis root,
+#: so 30 degrees of lateral flexion moved nothing the render could see
+#: (shoulder_R stayed at x=25.2; a 40-degree roll puts it at 110).
+_TRI_ROLL = 40.0
+_TRI = merge(pose(spine_lat_bend=12, hip_r_abduct=42, hip_r_rotate=40, hip_r_flex=25,
                   knee_r_flex=5, ankle_r_flex=10, hip_l_abduct=42, hip_l_rotate=-12,
                   knee_l_flex=5, ankle_l_flex=8),
              only(shoulder_r_flex=0, shoulder_r_abduct=95, elbow_r_flex=3,
@@ -126,10 +131,10 @@ triangle_pose = ExerciseDefinition(
            "Stack the shoulders: the top arm points at the ceiling, not forward"),
     anchor="feet", unilateral=True,
     phases=(
-        ph("Tip over", ECC, 2.5, _TRI,
+        ph("Tip over", ECC, 2.5, _TRI, roll=_TRI_ROLL, pivot=HIPS,
            cues=("Hinge sideways from the hip, not by folding the waist",
                  "Keep both legs straight; lengthen both sides of the trunk")),
-        ph("Hold", ISO, 9.0, _TRI,
+        ph("Hold", ISO, 9.0, _TRI, roll=_TRI_ROLL, pivot=HIPS,
            cues=("Chest open to the side; breathe into the top ribs",)),
         ph("Come up", CON, 2.0, _TRI_UP,
            cues=("Press into the back foot and lift with the side of the trunk",)),

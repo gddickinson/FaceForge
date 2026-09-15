@@ -78,7 +78,9 @@ muscle_up = ExerciseDefinition(
                   "dip; the transition loads the shoulder at end-range internal rotation, "
                   "which is why it is taught after both.",),
     sources=(PULLUP_YOUDAS, KOLBER, NSCA, ACE), camera="three_quarter",
-    camera_target=(0.0, 230.0, 0.0), default_reps=3, tags=("bodyweight", "bar", "skill"),
+    # The preset keeps its offset from the target, so a high target lifts the
+    # camera with it: 230 put it at y=285 and the rep was filmed from above.
+    camera_target=(0.0, 195.0, 0.0), default_reps=3, tags=("bodyweight", "bar", "skill"),
 )
 
 # ── Parallel bars: the L-sit ───────────────────────────────────────────

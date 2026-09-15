@@ -1888,3 +1888,56 @@ the render showed a man squatting while standing on his box. The lifter faces
 `tests/exercise` is green (62), the fast tier is green apart from the
 long-standing `test_obj_groups_name_the_bodyparts3d_source_ids`, and
 `docs/exercises.md` is regenerated at 117 exercises.
+
+## 2026-09-15 (last) — What looking at all 117 actually found
+
+`tools/render_exercise_grid.py` was written to make this possible at all: one
+scene, one GL session, two frames per exercise, twelve to a contact sheet,
+twenty sheets. Reviewing them found six real defects, four of them mine.
+
+**The field-of-view fit was a no-op.** `Camera` caches its projection matrix
+and only `set_aspect` invalidates it, so `camera.fov = …` rendered at the
+previous field of view. Every figure in the first sweep was framed by its
+look-at target alone, which is why standing exercises came out cropped at the
+ribs while I congratulated myself on the framing.
+
+**`close_grip_push_up` was authored standing.** It rendered as a man stood
+upright with his arms in the air. It is prone now, hands anchored, on the
+push-up's own measured pitches.
+
+**`overhead_triceps_extension` was standing with hips and knees at 90 degrees**
+— a man sitting on nothing, which the ground lock then folded onto the floor.
+`SEATED_ON_BENCH` was already imported in that module and unused, which is
+about as clear a clue as a file can leave. It is `orientation="seated"` now.
+
+**A supine lifter's bar runs along Z.** Fixing the lying exercises to `front`
+(+Z) fixed the profile but pointed the camera straight down the barbell: the
+floor press rendered as two black discs over the torso. The nine supine
+barbell exercises use `three_quarter`. The test now knows both cases.
+
+**The box squat's box was at the origin**, which is under the lifter's feet.
+
+**The spine DOFs turn vertebrae, not the body.** This is in CLAUDE.md — the
+arm chains hang off `bodyRoot`, not the thoracic spine — and I authored four
+poses as if it were not. Measured: `spine_flex`, `spine_lat_bend` and
+`spine_rotation` at full range move `shoulder_R`, `hip_R`, `wrist_R` and
+`knee_R` by **0.0 units**. Triangle pose rendered as a man standing upright
+with his arms out, and the overhead side bend as a man standing upright with
+one arm up. Both now lean with a wrapper `roll` about the hips (40 and −28
+degrees; the shoulder moves from x = 25 to x = 110), with the spine DOF kept
+at a third of its old value as the anatomical detail it actually is.
+
+Cobra is the same problem without the same answer: its whole shape is spinal
+extension with the pelvis on the floor, and a wrapper pitch about the hips
+takes the legs down through the mat with it (measured: pitch −35 lifts the
+shoulder from 29 to 66 and puts the feet at −88, and hip extension stops at
+−27). See the module for what was done about it.
+
+Left alone, and why: the **side plank** does not lift its hips (its 10-degree
+roll about the ankles is a tip, not a lift, and the fix needs `Phase.lift` to
+work under `anchor="none"`); **lateral band walk** ships no band, because a
+band round the knees cannot follow them through `EquipmentSpec.attach`;
+**battle ropes** and the two treadmills have no equipment because no builder
+exists for them; the **kettlebell windmill** and **halo** are understated
+rather than wrong. The **rowing machine** frames as a close-up of the
+lifter's back, which is being measured separately.

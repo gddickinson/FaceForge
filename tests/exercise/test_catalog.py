@@ -116,8 +116,18 @@ def test_a_lying_body_is_never_filmed_from_the_foot_end(catalog):
 
 
 def test_a_barbell_is_never_between_the_camera_and_the_lifter(catalog):
-    """A loaded bar lies along X too, so a side camera frames a plate."""
-    occluded = [d.id for d in catalog.values()
-                if any(e.kind == "barbell" and e.attach == "hands" for e in d.equipment)
-                and d.camera in ("side", "side_left", "low_side")]
-    assert occluded == []
+    """A loaded bar lies across the lifter, so one axis always looks down it.
+
+    Standing, the bar runs along X and a ``side`` camera frames a plate;
+    supine, the lifter turns ninety degrees with it, the bar runs along Z and
+    it is ``front`` that looks down the bar (the floor press rendered as two
+    black discs over the torso).  Either way the answer is an oblique camera.
+    """
+    def bad(d):
+        if not any(e.kind == "barbell" and e.attach == "hands" for e in d.equipment):
+            return False
+        blocked = ("front", "front_wide", "low_front", "back") if d.orientation == "supine" \
+            else ("side", "side_left", "low_side")
+        return d.camera in blocked
+
+    assert [d.id for d in catalog.values() if bad(d)] == []

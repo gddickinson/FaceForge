@@ -115,7 +115,7 @@ barbell_bench_press = ExerciseDefinition(
                   "packed at the chest; the rhomboids and middle trapezius hold the blades "
                   "retracted and depressed against the bench for the whole set, which is what "
                   "gives the press something to push from."),
-    sources=(BENCH_INCLINE, CALATAYUD, KOLBER, NSCA, ECC_CON), camera="front", tags=("barbell",),
+    sources=(BENCH_INCLINE, CALATAYUD, KOLBER, NSCA, ECC_CON), camera="three_quarter", tags=("barbell",),
 )
 
 incline_dumbbell_press = ExerciseDefinition(
@@ -369,7 +369,7 @@ lying_triceps_extension = ExerciseDefinition(
     errors=("Upper arms swinging toward the chest.", "Elbows flaring out."),
     physio_notes=("Keeping the upper arms angled back keeps tension on the triceps at "
                   "lockout.",),
-    sources=(NEUMANN, EXRX), camera="front", tags=("barbell",),
+    sources=(NEUMANN, EXRX), camera="three_quarter", tags=("barbell",),
 )
 
 dumbbell_chest_fly = ExerciseDefinition(
@@ -443,7 +443,7 @@ reverse_grip_bench_press = ExerciseDefinition(
                   "Biceps brachii is loaded here in a way it is not in a standard press, "
                   "because a supinated forearm holds the bar rather than sitting under it."),
     sources=(BENCH_INCLINE, CALATAYUD, KOLBER, NSCA, ECC_CON),
-    camera="front", tags=("barbell",),
+    camera="three_quarter", tags=("barbell",),
 )
 
 

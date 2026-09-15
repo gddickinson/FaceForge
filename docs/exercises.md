@@ -1676,7 +1676,7 @@ A seated dumbbell press that starts with the palms facing the lifter and rotates
 
 ### Close-grip push-up
 
-`close_grip_push_up` · Upper body: push · orientation: standing · anchor: feet · rep: 3.8 s · equipment: mat
+`close_grip_push_up` · Upper body: push · orientation: prone · anchor: hands · rep: 3.8 s · equipment: mat
 
 A push-up with the hands about shoulder width and the elbows tucked, which is the bodyweight version of a close-grip bench press.
 
@@ -1689,10 +1689,10 @@ A push-up with the hands about shoulder width and the elbows tucked, which is th
 
 | phase | kind | s | moving joints | cues |
 |---|---|---|---|---|
-| Lower | eccentric | 1.80 | Elbows: flexion 8° → 95°; Shoulders: abduction 20° → 35°; Shoulders: flexion 95° → 100°; Shoulders: external rotation 5° → 10° | Chest to the floor with the elbows close to the ribs |
-| Bottom | isometric | 0.30 | hold | Stay a plank: no sagging, no piking |
-| Press | concentric | 1.30 | Elbows: extension 95° → 8°; Shoulders: adduction 35° → 20°; Shoulders: extension 100° → 95°; Shoulders: internal rotation 10° → 5° | Push the floor away and finish by straightening the elbows |
-| Top | isometric | 0.40 | hold |  |
+| Lower | eccentric | 1.80 | Elbows: flexion 0° → 95°; Shoulders: extension 70° → 38°; Shoulders: abduction 10° → 20°; trunk pitch -8° | Chest to the floor with the elbows close to the ribs |
+| Bottom | isometric | 0.30 | trunk pitch -8° | Stay a plank: no sagging, no piking |
+| Press | concentric | 1.30 | Elbows: extension 95° → 0°; Shoulders: flexion 38° → 70°; Shoulders: adduction 20° → 10°; trunk pitch -20° | Push the floor away and finish by straightening the elbows |
+| Top | isometric | 0.40 | trunk pitch -20° |  |
 
 **Muscles**
 - *Primary movers:* Triceps brachii 85 %; Pectoralis major 70 %; Serratus anterior 65 % — holds the scapula against the ribs; Rectus abdominis 60 % — the plank is half the exercise
@@ -1715,7 +1715,7 @@ A push-up with the hands about shoulder width and the elbows tucked, which is th
 
 ### Overhead triceps extension
 
-`overhead_triceps_extension` · Upper body: push · orientation: standing · anchor: feet · rep: 4.2 s · equipment: dumbbell, bench
+`overhead_triceps_extension` · Upper body: push · orientation: seated · anchor: none · rep: 4.2 s · equipment: dumbbell, bench
 
 Elbow extension with the arm overhead. The long head of triceps crosses the shoulder, so only an overhead position loads it at length.
 
@@ -3942,9 +3942,9 @@ A wide stance with both legs straight; the trunk tilts sideways over the front l
 
 | phase | kind | s | moving joints | cues |
 |---|---|---|---|---|
-| Tip over | eccentric | 2.50 | Spine: right lateral flexion 0° → 30°; Hip (R): flexion 0° → 25°; Hip (L): internal rotation 0° → 12°; Ankles: dorsiflexion 0° → 10° | Hinge sideways from the hip, not by folding the waist Keep both legs straight; lengthen both sides of the trunk |
+| Tip over | eccentric | 2.50 | Hip (R): flexion 0° → 25°; Hip (L): internal rotation 0° → 12°; Spine: right lateral flexion 0° → 12°; Ankles: dorsiflexion 0° → 10° | Hinge sideways from the hip, not by folding the waist Keep both legs straight; lengthen both sides of the trunk |
 | Hold | isometric | 9.00 | hold | Chest open to the side; breathe into the top ribs |
-| Come up | concentric | 2.00 | Spine: left lateral flexion 30° → 0°; Hip (R): extension 25° → 0°; Hip (L): external rotation 12° → 0°; Ankles: plantarflexion 10° → 0° | Press into the back foot and lift with the side of the trunk |
+| Come up | concentric | 2.00 | Hip (R): extension 25° → 0°; Hip (L): external rotation 12° → 0°; Spine: left lateral flexion 12° → 0°; Ankles: plantarflexion 10° → 0° | Press into the back foot and lift with the side of the trunk |
 | Rest | transition | 1.00 | hold |  |
 
 **Muscles**
@@ -4288,9 +4288,9 @@ Standing with one arm overhead, the trunk bends away from that side: the whole l
 
 | phase | kind | s | moving joints | cues |
 |---|---|---|---|---|
-| Bend over | eccentric | 2.50 | Shoulder (R): abduction 8° → 165°; Spine: left lateral flexion 0° → 28°; Shoulder (R): flexion 5° → 15°; Shoulder (L): abduction 8° → 15° | Reach up and over; keep both feet flat Lengthen the upper side rather than collapsing into the lower one |
+| Bend over | eccentric | 2.50 | Shoulder (R): abduction 8° → 165°; Spine: left lateral flexion 0° → 12°; Shoulder (R): flexion 5° → 15°; Shoulder (L): abduction 8° → 15° | Reach up and over; keep both feet flat Lengthen the upper side rather than collapsing into the lower one |
 | Hold | isometric | 18.00 | hold | Breathe into the upper ribs; the stretch should be a broad pull, not a pinch |
-| Come up | concentric | 2.00 | Spine: right lateral flexion 28° → 0°; Shoulder (R): adduction 165° → 150°; Shoulder (R): extension 15° → 10° | Return to upright with the arm still up |
+| Come up | concentric | 2.00 | Shoulder (R): adduction 165° → 150°; Spine: right lateral flexion 12° → 0°; Shoulder (R): extension 15° → 10° | Return to upright with the arm still up |
 | Rest | transition | 1.20 | Shoulder (R): adduction 150° → 8°; Elbow (L): extension 10° → 5°; Shoulder (R): extension 10° → 5°; Shoulder (L): adduction 12° → 8° |  |
 
 **Muscles**

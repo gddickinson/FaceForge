@@ -20,8 +20,8 @@ press is driven.
 from __future__ import annotations
 
 from faceforge.exercise.catalog._helpers import (
-    ACE, CALATAYUD, CON, ECC, ECC_CON, EXRX, ISO, KOLBER, NSCA, P, S, ST, SEATED_ON_BENCH, TRN,
-    arms, eq, grip, merge, mu, only, ph, pose, squat, stand,
+    ACE, CALATAYUD, CON, ECC, ECC_CON, EXRX, ISO, KOLBER, NSCA, P, S, ST, SEATED_ON_BENCH,
+    arms, eq, grip, merge, mu, ph, pose, squat, stand,
 )
 from faceforge.exercise.model import Category, ExerciseDefinition
 
@@ -113,28 +113,27 @@ arnold_press = ExerciseDefinition(
     sources=(NSCA, ACE, EXRX, KOLBER), camera="front", tags=("dumbbell",),
 )
 
+# The push-up's measured pitches (upper_push): the straight body is inclined
+# head-up ~20 deg on locked arms and ~8 at the bottom.  Close grip only narrows
+# the elbows -- 20 deg of abduction at the bottom instead of 45.
+_CGPU_TOP = merge(pose(ankle_flex=45), arms(flex=70, abduct=10, elbow=0))
+_CGPU_BOTTOM = merge(pose(ankle_flex=45), arms(flex=38, abduct=20, elbow=95))
+
 close_grip_push_up = ExerciseDefinition(
     id="close_grip_push_up", name="Close-grip push-up", category=Category.UPPER_PUSH,
     description="A push-up with the hands about shoulder width and the elbows tucked, which "
                 "is the bodyweight version of a close-grip bench press.",
     setup=("Hands under the shoulders, not narrower", "Elbows brush the ribs on the way down",
            "Body straight from ear to heel throughout"),
+    orientation="prone", anchor="hands", base_position=(-85.0, 30.0, 0.0),
     phases=(
-        ph("Lower", ECC, 1.8, merge(pose(hip_flex=-3, knee_flex=3),
-                                    arms(flex=100, abduct=35, rotate=10, elbow=95,
-                                         forearm=-80, wrist=-60), grip(curl=20)),
+        ph("Lower", ECC, 1.8, _CGPU_BOTTOM, pitch=-8,
            cues=("Chest to the floor with the elbows close to the ribs",)),
-        ph("Bottom", ISO, 0.3, merge(pose(hip_flex=-3, knee_flex=3),
-                                     arms(flex=100, abduct=35, rotate=10, elbow=95,
-                                          forearm=-80, wrist=-60), grip(curl=20)),
+        ph("Bottom", ISO, 0.3, _CGPU_BOTTOM, pitch=-8,
            cues=("Stay a plank: no sagging, no piking",)),
-        ph("Press", CON, 1.3, merge(pose(hip_flex=-3, knee_flex=3),
-                                    arms(flex=95, abduct=20, rotate=5, elbow=8,
-                                         forearm=-80, wrist=-60), grip(curl=20)),
+        ph("Press", CON, 1.3, _CGPU_TOP, pitch=-20,
            cues=("Push the floor away and finish by straightening the elbows",)),
-        ph("Top", ISO, 0.4, merge(pose(hip_flex=-3, knee_flex=3),
-                                  arms(flex=95, abduct=20, rotate=5, elbow=8,
-                                       forearm=-80, wrist=-60), grip(curl=20))),
+        ph("Top", ISO, 0.4, _CGPU_TOP, pitch=-20),
     ),
     muscles=(mu("triceps_brachii", P, 0.85), mu("pectoralis_major", P, 0.7),
              mu("deltoid_anterior", S, 0.6),
@@ -150,7 +149,7 @@ close_grip_push_up = ExerciseDefinition(
     physio_notes=("At the same tempo a push-up and a bench press produce comparable muscle "
                   "activity for a comparable relative load, so a close-grip push-up is a "
                   "reasonable stand-in for a close-grip bench.",),
-    sources=(CALATAYUD, NSCA, ACE, EXRX), camera="side", tags=("bodyweight",),
+    sources=(CALATAYUD, NSCA, ACE, EXRX), camera="front", tags=("bodyweight",),
 )
 
 overhead_triceps_extension = ExerciseDefinition(
@@ -161,6 +160,7 @@ overhead_triceps_extension = ExerciseDefinition(
     setup=("Seated or standing, weight held overhead in both hands",
            "Upper arms stay vertical and close to the head",
            "Lower behind the head until the stretch, then extend"),
+    orientation="seated", anchor="none", base_position=SEATED_ON_BENCH,
     phases=(
         ph("Lower", ECC, 2.0, merge(pose(hip_flex=90, knee_flex=90),
                                     arms(flex=160, abduct=12, rotate=10, elbow=135,
