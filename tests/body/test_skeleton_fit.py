@@ -179,6 +179,28 @@ def test_the_surface_it_is_fitted_to_is_never_moved(leg):
     assert np.array_equal(surface.mesh.geometry.positions, before)
 
 
+def test_the_breast_cut_from_the_surface_is_never_moved_either(leg):
+    """The lens's outer face *is* the skin, so the fit has nothing to add.
+
+    ``mammaryTissue`` hangs off ``bodyRoot`` and matches no membership
+    pattern, so it inherited the root region and was carried down with the
+    pelvis: measured, 11 units below the skin it was cut from at gender 0 and
+    15 below at gender 1.
+    """
+    root, joints, _ = leg
+    breast = bone("Mammary Tissue", [[0, -16, -56], [2, -15, -54]])
+    holder = SceneNode(name="mammaryTissue")
+    holder.add(breast)
+    root.add(holder)
+    root.update_world_matrix(force=True)
+    before = np.array(breast.mesh.geometry.positions, copy=True)
+    SkeletonFit(table(pelvis={"scale": [2.0, 2.0, 2.0],
+                              "offset": [5.0, 5.0, 5.0]})
+                ).apply(root, 1.0, 0.0, joints)
+    assert np.array_equal(breast.mesh.geometry.positions, before)
+    assert node_offset(holder)[2] == pytest.approx(0.0)
+
+
 def test_soft_tissue_the_skinning_owns_is_left_to_the_skinning(leg):
     root, joints, muscle = leg
     before = np.array(muscle.mesh.geometry.positions, copy=True)

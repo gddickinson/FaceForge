@@ -26,6 +26,9 @@ class BodyController:
 
     def __init__(self, ctx: Any) -> None:
         self.ctx = ctx
+        #: The field in force, kept so a layer that loads later can be moved
+        #: onto the skeleton as it now is rather than as it was at startup.
+        self._tissue_warp: Any = None
 
     def subscribe(self) -> None:
         bus = self.ctx.event_bus
@@ -184,9 +187,21 @@ class BodyController:
         sex_specific.apply(self.ctx.node("bodyRoot"), gender)
 
     def on_structures_registered(self) -> None:
-        """Re-apply what the sex hides, whenever a layer finishes loading."""
+        """Catch up a layer that arrived after the body had already moved.
+
+        Demand-loaded layers appear in the pose the asset was authored in, so
+        whatever the sex morph and the fit have already done to the skeleton
+        has to be done to them too.  The brain is the one that shows: loaded
+        with the fit on, it arrived a whole head-height above the body.
+        """
         self.apply_sex_specific(
             float(getattr(self.ctx.state.body, "gender", 0.0)))
+        if self._tissue_warp is not None:
+            from faceforge.anatomy import head_tissue
+
+            head_tissue.rebase(getattr(self.ctx, "pipeline", None),
+                               self._tissue_warp,
+                               brain_group=self.brain_group())
 
     def deformed_meshes(self) -> set[int]:
         """Every mesh some deformer owns, which the skeleton must not scale.
@@ -202,7 +217,13 @@ class BodyController:
         skinning = getattr(self.ctx.simulation, "soft_tissue", None)
         out = {id(b.mesh) for b in getattr(skinning, "bindings", ())
                if getattr(b, "mesh", None) is not None}
-        return out | head_tissue.owned_meshes(getattr(self.ctx, "pipeline", None))
+        return out | head_tissue.owned_meshes(getattr(self.ctx, "pipeline", None),
+                                              self.brain_group())
+
+    def brain_group(self) -> Any:
+        """The brain, which hangs off its own group and so follows nothing."""
+        node = getattr(self.ctx, "node", None)
+        return node("brainGroup") if callable(node) else None
 
     def skeleton_warps(self, morph: Any, root: Any, gender: float,
                        joint_setup: Any, soft: set[int],
@@ -255,9 +276,11 @@ class BodyController:
         skinning = getattr(self.ctx.simulation, "soft_tissue", None)
         bindings = list(getattr(skinning, "bindings", ()))
         warp = compose(gender_warp, fit_warp)
+        self._tissue_warp = warp
         # The head's soft tissue is carried by the same field, but it is not
         # bound to anything, so it has to be told.
-        head_tissue.rebase(getattr(self.ctx, "pipeline", None), warp)
+        head_tissue.rebase(getattr(self.ctx, "pipeline", None), warp,
+                           brain_group=self.brain_group())
         stats = self.morph_soft_tissue(gender, morph, warp, bindings)
         self.cull_welds(bindings)
         return stats

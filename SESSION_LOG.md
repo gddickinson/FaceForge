@@ -1219,3 +1219,84 @@ from the VAO and stopped every indexed mesh drawing.
 **Still open.** A residue of webbing remains around the hip. The breast sits
 under the skin where the surface's chest is, which is a rib lower than the
 fitted skeleton's ribs two to six.
+
+## 2026-09-14 — Four defects the sex morph and the fit left in the head, chest and pelvis
+
+Four things reported together, and they turned out to have almost nothing in
+common except that each was a mesh nobody had told about a change.
+
+**The face was torn, not dragged.** At gender 1 the scalp muscles descended
+6.2 units and Orbicularis Oris 0.95 — a 5.3-unit differential across a face
+20 units tall. The soft tissue follows a thin-plate spline through the
+skeleton's own displacements, and a spline interpolates its control points
+*exactly*, so one lying control point is not smoothed away: it is honoured,
+and the mesh is torn to reach it. Three were lying.
+
+*"Zygomatic Maj. L" is a muscle of facial expression* and reads as the
+zygomatic bone to the name test that decides which bones carry a dimorphism
+factor. `SkeletonMorph.apply` already knows a name test is not enough of a
+guard and takes an `exclude` set of meshes it must never touch; `control_points`
+did not. So the morph correctly left the muscle alone, and the muscle then
+reported a displacement of exactly zero in the middle of the cheek while the
+cranium two centimetres away reported −5.2.
+
+*The eyeball pivots sit under `faceFeatureGroup`*, which `seat_on_neck` did
+not carry, so they held the field at zero over the orbits while the head came
+down around them.
+
+*And face-feature records under a pivot* were being rebased as though their
+vertices were in body coordinates. They are in the pivot's frame, and they
+ride with it anyway.
+
+After: every head part follows the field to within 0.05 units, and the head
+descends as one piece — −4.3 at the mouth to −6.4 at the occiput, which is
+exactly a 0.95 scale about the cranial centroid plus the seat. Jaw −5.53 and
+lower teeth −5.66 in world coordinates against the cranium's −5.17. Face-mesh
+stretch p99 1.17 → 1.13.
+
+**The brain floated a whole head above the body.** It hangs off `brainGroup`
+rather than off the skull, deliberately, so it stays visible when the skull is
+hidden — and the cost was that nothing carried it when the skull moved. With
+the fit on the skull came down from z +0.1..+27.6 to −21.7..+2.5 and the brain
+stayed at +5.6..+27.1. It is soft tissue in the cranial vault, so it now rides
+the same field the neck, jaw and expression muscles do. Brain vertices outside
+the body surface: 100% → 13.5% with the fit, 7.3% at gender 1, and exactly
+reversible. The brain-in-cranium relationship is unchanged by the fit (5.7%
+outside before, 6.6% after — the brainstem leaving through the foramen magnum,
+which is the asset's own baseline).
+
+Demand-loaded layers now catch up on arrival: the controller keeps the field in
+force and re-applies it from `on_structures_registered`, so a brain loaded
+*after* the fit is not left in the pose the asset was authored in.
+
+**A female model kept the shaft of the penis.** The male-only list was kept by
+hand and had gone stale: it named the glans but neither erectile body, and
+neither deferent duct. Twelve organs in `organs.json` are categorised
+reproductive and it named eight. The asset set is a male cadaver, so *every*
+reproductive organ in it is a male one — the list is read from the config now,
+plus the male urethra by name. Measured through the event bus: 13 structures
+hidden at gender ≥ 0.5 and back at 0, in every order of loading, toggling,
+fitting and per-structure override.
+
+**And the breast left the skin it was cut from.** `mammaryTissue` hangs off
+`bodyRoot` and matches no membership pattern in `fit_regions`, so it inherited
+the root region and was carried down with the pelvis: 11 units below the skin
+at gender 0, 15 at gender 1. Its outer face *is* the chest's skin, and the fit
+never moves the surface, so it never had anything to gain from being moved.
+Skipped now, and it sits on the skin exactly — centroid z −56.4 male, −54.4
+female, identical with the fit on and off. With the skeleton actually inside
+the body, the lens's inner face lies 1.4–1.7 units from pectoralis major and
+1.1–1.2 from the rib cage: on the pectoral fascia, which is where a breast
+sits.
+
+**One measurement that was not a defect.** The pectoral muscles looked welded
+in place while their ribs descended 22 units under the fit. They are placed by
+the attachment system every frame, and the probe was not stepping the
+simulation. With `Simulation.step` running they track the ribs exactly
+(−24.0 → −44.4 against the fourth rib's −20.0 → −42.1). Worth recording
+because the wrong reading was very convincing.
+
+**Still open.** The residue of webbing around the hip. And the unfitted
+skeleton's head sits a head-height above the MakeHuman surface's crown, which
+is the mismatch the fit option exists to correct rather than a bug in itself —
+but it means every head layer looks wrong until the fit is switched on.

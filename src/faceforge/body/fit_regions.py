@@ -150,10 +150,18 @@ _MEMBERSHIP: tuple[tuple[str, str], ...] = (
 #: fitted *to*, so moving it would be circular; the rest are soft tissue with
 #: their own deformers, which rebuild their vertex buffers every frame from
 #: rest arrays this would not be writing.
+#:
+#: ``mammaryTissue`` is here for the surface mesh's reason rather than the
+#: soft tissue's: it is cut from that surface -- its outer face *is* the skin
+#: of the chest -- so it is already where the fit is trying to put things.
+#: It hangs off ``bodyRoot`` and matches no membership pattern, so without
+#: this it inherited the root region and was carried down with the pelvis:
+#: measured, the lens left the skin it was cut from and sat 11 units below it
+#: at gender 0 and 15 below at gender 1.
 SKIP_SUBTREES: frozenset[str] = frozenset({
-    "bodyMeshGroup", "faceGroup", "faceFeatureGroup", "fasciaGroup",
-    "brainGroup", "stlMuscleGroup", "exprMuscleGroup", "platysmaGroup",
-    "neckMuscleGroup",
+    "bodyMeshGroup", "mammaryTissue", "faceGroup", "faceFeatureGroup",
+    "fasciaGroup", "brainGroup", "stlMuscleGroup", "exprMuscleGroup",
+    "platysmaGroup", "neckMuscleGroup",
 })
 
 #: The region a node under ``bodyRoot`` belongs to until something says otherwise.

@@ -129,7 +129,7 @@ flat when ankle dorsiflexion = pitch − hip + knee.
 | `fascia.py` | Virtual fascia constraint surfaces for muscle attachment. |
 | `fibre_field.py` | Harmonic fibre interpolation: a footprinted muscle's belly stretches between the rigid images of its two attachments instead of bowing; `build_fibre_field`, `trim_footprints`, disk-cached via `cached_fibre_field`. |
 | `fma_taxonomy.py` | Read-only access to the FMA relation graph shipped in assets/config. |
-| `head_tissue.py` | The head's soft tissue, which owns its own rest pose and so gets left behind when the skull moves: the neck, jaw and expression muscles, the face and the face features, moved by the same field the skinning gets. |
+| `head_tissue.py` | The head's soft tissue, which owns its own rest pose and so gets left behind when the skull moves: the neck, jaw and expression muscles, the face, the face features and the brain, moved by the same field the skinning gets. `brain_meshes` reaches the brain, which hangs off its own group so it can outlive a hidden skull and therefore follows nothing on its own. |
 | `head_rotation.py` | Head yaw/pitch/roll rotation with cervical vertebra distribution. |
 | `item_generators.py` | Exam item generators. Every fact comes from data; none is authored here. |
 | `jaw_muscles.py` | 22 STL jaw muscles with jaw-angle deformation. |
@@ -195,7 +195,7 @@ flat when ankle dorsiflexion = pitch − hip + knee.
 | `skeleton_joints.py` | Shuts an articulation whose two bones scale apart (the acromioclavicular joint), from a contact patch measured on the unscaled skeleton. |
 | `skeleton_morph.py` | `SkeletonMorph`: scales the skeleton as an articulated hierarchy -- bones about the joint they hang from, joints moved to the end of the scaled bone -- so proportions change without the joints coming apart. |
 | `breast_tissue.py` | Mammary tissue as a lens from the skin to the chest wall, deepest at the nipple; built from the surface pair because the asset set is a male cadaver and has no breast in it. |
-| `sex_specific.py` | Structures that belong to one sex: the eight male reproductive organs and the male urethra, hidden for a female model. |
+| `sex_specific.py` | Structures that belong to one sex, hidden for a female model: every organ `organs.json` calls reproductive (the asset set is a male cadaver, so they all are) plus the male urethra. Read from the config rather than listed here, because a hand-kept list went stale and hid the glans but not the shaft. |
 | `weld_webs.py` | Triangles that turn out not to be skin, found by moving the body: the asset welds the arm to the chest, and a weld stretches without limit where skin does not. |
 | `skull_morph.py` | The part of cranial sex a merged skull mesh cannot express: the face narrows further than the vault, graded by height about the midline. Before this, the cranium, jaw, teeth and atlas were the only bone meshes the sex slider left alone. |
 | `skin_morph.py` | `SkinShapeMorph`: the female-minus-male soft-tissue field (breast, gluteal and thigh fat, waist), measured from the surface pair and transferred to the model's own skin. |
@@ -420,7 +420,7 @@ flat when ankle dorsiflexion = pitch − hip + knee.
 | `neck_deformation_quality.py` | Neck-muscle edge stretch and displacement per pose, with `--wrapper` for the gym-scene control |
 | `skeleton_containment.py` | Signed distance from every bone vertex to the body surface, positive outside; the sign is calibrated, not read off the winding |
 | `fit_skeleton_to_skin.py` | Solves the per-region matrices that put the skeleton inside the body-surface mesh (`--measure`, `--solve --write`) |
-| `render_model_matrix.py` | Every layer, both sexes, fit off and on, through the application's own path: the matrix, not any single frame |
+| `render_model_matrix.py` | Every layer, both sexes, fit off and on, through the application's own path: the matrix, not any single frame. The `head` layer frames itself on the live skull and brain, which the fit moves 24 units |
 | `render_skeleton_fit.py` | Draws the skeleton in its surface, before and after the fit; `--protrusion` colours every bone vertex by how far it is outside |
 | `inspect_skeleton_fit.py` | Orthographic drawings on a labelled grid in body units, front/side/closeups and transverse sections: what the summary numbers cannot show |
 | `anthropometry.py` | Measures the morphed model back against published adult means: stature, sitting height, biacromial and bi-iliac breadth, long bones, cranial dimensions. Exits non-zero when a ratio drifts |

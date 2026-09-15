@@ -1,6 +1,6 @@
 """A female model must not keep the male organs, and should have breast tissue.
 
-The BodyParts3D set is a male cadaver: eight of the configured organs are male
+The BodyParts3D set is a male cadaver: twelve of the configured organs are male
 reproductive structures and there is no female equivalent of any of them in the
 asset set, nor a breast.
 """
@@ -21,7 +21,8 @@ from faceforge.core.scene_graph import SceneNode
 @pytest.fixture
 def organs():
     root = SceneNode(name="bodyRoot")
-    for name in ("Prostate", "Left Testis", "Urethra", "Liver", "Heart"):
+    for name in ("Prostate", "Left Testis", "Urethra", "Corpus Cavernosum",
+                 "Corpus Spongiosum", "R Deferent Duct", "Liver", "Heart"):
         node = SceneNode(name=name)
         node.mesh = MeshInstance(
             name=name,
@@ -46,6 +47,31 @@ def test_a_female_model_keeps_no_male_organ(organs):
     assert seen["Prostate"] is False
     assert seen["Left Testis"] is False
     assert seen["Liver"] is True and seen["Heart"] is True
+
+
+def test_the_whole_penis_goes_not_just_its_tip(organs):
+    """The hand-kept list named the glans and neither erectile body.
+
+    A female model lost the tip and kept the shaft.  The list is read from
+    ``organs.json`` now: every organ it calls reproductive is a male one,
+    because the cadaver was.
+    """
+    sex_specific.apply(organs, 1.0)
+    seen = visible(organs)
+    assert seen["Corpus Cavernosum"] is False
+    assert seen["Corpus Spongiosum"] is False
+    assert seen["R Deferent Duct"] is False
+
+
+def test_every_reproductive_organ_in_the_config_is_on_the_list():
+    from faceforge.core.config_loader import load_config
+
+    data = load_config("organs.json")
+    items = data if isinstance(data, list) else list(data.values())
+    reproductive = {i["name"] for i in items if isinstance(i, dict)
+                    and str(i.get("category", "")).lower() == "reproductive"}
+    assert reproductive, "the config should have reproductive organs in it"
+    assert reproductive <= sex_specific.male_only()
 
 
 def test_the_male_urethra_goes_too(organs):

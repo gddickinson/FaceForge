@@ -30,7 +30,13 @@ LAYERS: dict[str, tuple[tuple[str, ...], tuple[str, ...]]] = {
     "organs": ((), ("organs",)),
     "vasculature": ((), ("vasculature",)),
     "skin": ((), ("skin",)),
+    # The head is framed on itself: the skull moves 24 units when the fit
+    # goes on, so a body-framed picture of it is a few pixels either way.
+    "head": (("bodyMeshGroup", "skullGroup", "brainGroup"), ("brain",)),
 }
+
+#: Layers framed on the head rather than on the whole body.
+HEAD_LAYERS = frozenset({"head"})
 
 #: Groups never wanted in these pictures.
 ALWAYS_HIDE = ("faceGroup", "faceFeatureGroup", "fasciaGroup", "brainGroup")
@@ -38,6 +44,37 @@ ALWAYS_HIDE = ("faceGroup", "faceFeatureGroup", "fasciaGroup", "brainGroup")
 VIEWS = {"front": 0.0, "side": 90.0, "three-quarter": 40.0}
 
 SEXES = (("male", 0.0), ("female", 1.0))
+
+
+def _frame(root, groups, fallback_centre, fallback_radius):
+    """Centre and reach of ``groups`` as they stand, in world coordinates.
+
+    Read live rather than authored: the head is one of the things the fit
+    moves most, so where to point the camera is an answer only the current
+    scene has.
+    """
+    lo, hi = None, None
+    for name in groups:
+        node = root.find(name)
+        if node is None:
+            continue
+        stack = [node]
+        while stack:
+            item = stack.pop()
+            stack.extend(item.children)
+            mesh = getattr(item, "mesh", None)
+            if mesh is None or getattr(mesh, "geometry", None) is None:
+                continue
+            geo = mesh.geometry
+            pts = np.asarray(geo.positions, dtype=np.float64).reshape(-1, 3)
+            pts = pts[:geo.vertex_count]
+            world = np.asarray(item.world_matrix, dtype=np.float64)
+            pts = pts @ world[:3, :3].T + world[:3, 3]
+            lo = pts.min(axis=0) if lo is None else np.minimum(lo, pts.min(axis=0))
+            hi = pts.max(axis=0) if hi is None else np.maximum(hi, pts.max(axis=0))
+    if lo is None:
+        return fallback_centre, fallback_radius
+    return (lo + hi) / 2.0, float(np.linalg.norm(hi - lo) / 2.0)
 
 
 def main(argv=None) -> int:
@@ -104,6 +141,11 @@ def main(argv=None) -> int:
                             node.visible = True
                             node = node.parent
                     ctx.scene.update()
+                    look_at, reach = centre, radius
+                    if name in HEAD_LAYERS:
+                        look_at, reach = _frame(root, ("skullGroup",
+                                                       "brainGroup"),
+                                                centre, radius)
                     if "bodyMeshGroup" in show:
                         for mesh, _m in ctx.scene.collect_meshes():
                             if mesh.name == "body_surface":
@@ -111,10 +153,10 @@ def main(argv=None) -> int:
                                 mesh.material.wireframe_color = (0.35, .75, .95)
                     for view in args.views.split(","):
                         az = math.radians(VIEWS[view.strip()])
-                        eye = centre + np.array(
-                            [math.sin(az), -math.cos(az), 0.12]) * radius * 2.3
+                        eye = look_at + np.array(
+                            [math.sin(az), -math.cos(az), 0.12]) * reach * 2.3
                         session.camera.look_at(np.asarray(eye),
-                                               np.asarray(centre))
+                                               np.asarray(look_at))
                         tag = f"{name}_{sex}_{'fit' if fit else 'nofit'}"
                         path = OUT_DIR / f"{tag}_{view.strip()}.png"
                         session.save_png(path)

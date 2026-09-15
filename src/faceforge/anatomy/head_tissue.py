@@ -12,6 +12,14 @@ when the skull moved -- and it now moves a good deal, being reshaped for sex
 and seated lower on the neck, and moved again by the skeleton fit -- the
 muscles on it stayed exactly where they were.
 
+The brain is the same problem arrived at from the other end.  It hangs off
+``brainGroup`` rather than off the skull, deliberately, so that it stays
+visible when the skull is hidden; the cost is that nothing in the scene graph
+carries it when the skull moves.  Measured with the fit on, the skull came
+down from z +0.1..+27.6 to -21.7..+2.5 and the brain stayed at +5.6..+27.1 --
+a whole head-height above the body, outside the skin entirely.  It is soft
+tissue inside the cranial vault, so it belongs here.
+
 This walks those systems and moves their rest poses by the same field the
 skinning gets.  Each system's original is captured the first time and every
 later call recomputes from it, so the result never compounds and switching a
@@ -63,7 +71,27 @@ class Owned:
             self.refresh()
 
 
-def collect(pipeline: Any) -> list[Owned]:
+def brain_meshes(brain_group: Any) -> list[Any]:
+    """Every mesh under ``brainGroup``.
+
+    Their vertices are already in body coordinates -- the group sits on
+    ``bodyRoot`` with an identity transform -- so the field can be read at
+    them directly.
+    """
+    out: list[Any] = []
+    if brain_group is None:
+        return out
+    stack = [brain_group]
+    while stack:
+        node = stack.pop()
+        stack.extend(getattr(node, "children", ()))
+        mesh = getattr(node, "mesh", None)
+        if mesh is not None and getattr(mesh, "rest_positions", None) is not None:
+            out.append(mesh)
+    return out
+
+
+def collect(pipeline: Any, brain_group: Any = None) -> list[Owned]:
     """Every rest pose in the head that no one else is moving."""
     from faceforge.anatomy import neck_fibre_strain
 
@@ -96,6 +124,9 @@ def collect(pipeline: Any) -> list[Owned]:
             if _under_a_pivot(getattr(md, "node", None)):
                 continue
             out.append(Owned(md, "rest_positions", getattr(md, "mesh", None)))
+
+    for mesh in brain_meshes(brain_group):
+        out.append(Owned(mesh, "rest_positions", mesh))
     return out
 
 
@@ -107,7 +138,7 @@ def _under_a_pivot(node: Any) -> bool:
     return False
 
 
-def owned_meshes(pipeline: Any) -> set[int]:
+def owned_meshes(pipeline: Any, brain_group: Any = None) -> set[int]:
     """``id(mesh)`` of everything in the head that owns its own rest pose.
 
     The skeleton morph is handed this as an exclusion.  Without it a muscle
@@ -115,14 +146,15 @@ def owned_meshes(pipeline: Any) -> set[int]:
     the zygomatic bone's pattern -- and then fights the head's own deformer
     for the same vertex buffer.
     """
-    return {id(r.mesh) for r in collect(pipeline) if r.mesh is not None}
+    return {id(r.mesh) for r in collect(pipeline, brain_group)
+            if r.mesh is not None}
 
 
 def rebase(pipeline: Any, warp: Optional[Callable[[NDArray], NDArray]],
-           exclude: set[int] | None = None) -> int:
+           exclude: set[int] | None = None, brain_group: Any = None) -> int:
     """Move every head rest pose by ``warp``.  ``None`` puts them all back."""
     skip = exclude or set()
-    records = collect(pipeline)
+    records = collect(pipeline, brain_group)
     moved = 0
     for record in records:
         if record.mesh is not None and id(record.mesh) in skip:
