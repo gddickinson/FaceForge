@@ -1460,3 +1460,62 @@ the body, so a three-unit drop moves both and the frames look alike. The gap
 was real and is now measured at contact -- the lowest visible point sits 0.43
 units above the platform's top -- but the evidence for it is the measurement,
 not the picture.
+
+## 2026-09-15 — The stance was already flat; one foot was in the air
+
+Asked to fix the foot posture so the stance is flat. It already was, and the
+measurement says so plainly: in the standing rest pose the right foot's heel
+sits at z −196.92 and its ball at −197.09, a difference of 0.17 over a foot 26
+units long — **0.6 degrees** from horizontal. The BP3D skin over it measures
+−0.3 degrees and the body surface +0.2. Through a whole bodyweight squat both
+feet hold 0.6 degrees, and a side-on close-up render shows the sole flat on
+the floor at the top and at the bottom of the rep. My earlier remark that the
+figure "reads as slightly on tiptoe" was a misreading of a perspective render
+and should not have been made without measuring.
+
+What the measurement did find is that **one foot was in the air**. The ground
+lock translates the whole body so its lowest support sits on the floor — one
+translation for two feet, which is enough only while the feet end a pose at
+the same height. They do not, because the donor is a real body:
+
+    knee-to-ankle, rest    R [-0.68, 1.35, -46.75]
+                           L [-2.66, 5.77, -46.55]     about 7 degrees apart
+    femur length           R 60.37   L 58.58
+
+Standing costs nothing — the ankles sit 0.4 units apart. Bend the same joints
+by the same angles and the rotation amplifies it: at the bottom of a squat the
+ankles ended **6.8 units apart**, so the lock planted the right foot and left
+the left one hanging. The rig itself is sound: both legs turn the same angle
+about the same axis for the same DOF (89.92 against 89.99 at the hip, 144.96
+against 144.42 at the knee), so this is anatomy, not a bug.
+
+`FootLevelLock` closes it the way `GripWidthLock` closes a grip — measure,
+probe for the slope, take a Newton step — with three things learned by
+measuring:
+
+*The ankle must follow the knee.* The sole is flat when ankle dorsiflexion
+equals pitch minus hip plus knee. Moving the knee alone broke that identity
+and tilted the sole 43 degrees, driving the toes 2.2 units through the floor
+and levering the heel 17 units up. Both are written in degrees, since the
+knee's range is 145 and the ankle's 45.
+
+*The probe must move what the step moves.* Measuring the slope with the ankle
+held still answers a different question, and the step then overshot: the left
+foot went 1.9 units past the right instead of meeting it.
+
+*A lock that cannot reach must not try.* Deadlift knees are nearly straight
+and cannot extend further, so the solve chased a foot it could never reach —
+45 degrees of knee on a Romanian deadlift, still missing by 19 units. It now
+keeps its work only if it halves the gap, and otherwise restores the pose
+exactly as the clip authored it.
+
+Result, at the bottom of a bodyweight squat: the two feet **0.02 units apart**
+against 6.46 before, both soles still flat at 0.6 degrees, for 25 degrees of
+knee. Across the catalogue: Romanian deadlift 45 degrees of wasted knee down
+to 2.6, conventional deadlift's gap 13.4 down to 4.4, split squats untouched
+because their anchor names a side, and the hands-anchored exercises untouched
+because the lock is only built for feet.
+
+**Still open.** `step_up` holds a 44-unit gap by design (a foot on a box) and
+`conventional_deadlift` still ends 4.4 units apart — the knee alone cannot
+close every pose, and the hip would have to join the solve to do better.

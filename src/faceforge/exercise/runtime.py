@@ -28,6 +28,7 @@ from dataclasses import dataclass, field
 from typing import Any, Callable
 
 from faceforge.body.ground_contact import GroundLock
+from faceforge.body.foot_level import FootLevelLock
 from faceforge.exercise.grip_lock import GripWidthLock
 from faceforge.exercise.clip_builder import (
     LIFT_KEY, TRAVEL_X_KEY, TRAVEL_Z_KEY, ExerciseClip, build_exercise_clip,
@@ -97,6 +98,7 @@ class ExerciseRuntime:
     built: ExerciseClip | None = None
     ground_lock: GroundLock | None = None
     grip_lock: GripWidthLock | None = None
+    foot_level: FootLevelLock | None = None
     rig: EquipmentRig = field(default_factory=EquipmentRig)
     _lift: float = 0.0
     _travel: tuple[float, float] = (0.0, 0.0)
@@ -139,6 +141,15 @@ class ExerciseRuntime:
                 and self.body_animation is not None):
             self.grip_lock = GripWidthLock(self.body_animation, self.scene, self.pivots)
 
+        # The ground lock plants one foot; this brings the other down to it.
+        # Not for a single-leg anchor, whose trailing foot is on its toes or a
+        # bench and is *meant* to be at another height.
+        self.foot_level = None
+        if (defn.anchor == "feet" and defn.anchor_side is None
+                and self.body_animation is not None):
+            self.foot_level = FootLevelLock(self.body_animation, self.scene,
+                                            self.pivots)
+
         if self.muscle_activation is not None:
             self.muscle_activation.set_levels({})
 
@@ -170,6 +181,7 @@ class ExerciseRuntime:
         self.built = None
         self.ground_lock = None
         self.grip_lock = None
+        self.foot_level = None
 
     def _build_equipment(self, defn: ExerciseDefinition) -> None:
         for spec in defn.equipment:
@@ -191,6 +203,8 @@ class ExerciseRuntime:
                         float(state_dict.get(TRAVEL_Z_KEY, 0.0)))
         if self.grip_lock is not None:
             self.grip_lock.apply(state_dict)
+        if self.foot_level is not None:
+            self.foot_level.apply(state_dict)
         if self._orig_on_body is not None:
             self._orig_on_body(state_dict)
         if self.apply_live_body is not None:

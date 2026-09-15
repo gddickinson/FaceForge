@@ -36,6 +36,12 @@ _HEIGHT_PIVOTS = {
 _PLANE_PIVOTS = {"feet": ("ankle_R", "ankle_L"), "hands": ("wrist_R", "wrist_L")}
 
 
+def height_pivot_names(anchor: str = "feet", side: str | None = None) -> tuple[str, ...]:
+    """The pivots whose lowest world point defines contact, optionally one side."""
+    names = _HEIGHT_PIVOTS[anchor]
+    return names if side is None else tuple(n for n in names if f"_{side}" in n)
+
+
 def _body_root(node):
     """The ``bodyRoot`` above a pivot, or None."""
     while node is not None:
@@ -111,8 +117,7 @@ class GroundLock:
         self.last_delta = np.zeros(3)
 
     def _height_pivots(self) -> tuple[str, ...]:
-        names = _HEIGHT_PIVOTS[self.anchor]
-        return names if self.side is None else tuple(n for n in names if f"_{self.side}" in n)
+        return height_pivot_names(self.anchor, self.side)
 
     def _plane_pivots(self) -> tuple[str, ...]:
         names = _PLANE_PIVOTS[self.anchor]
