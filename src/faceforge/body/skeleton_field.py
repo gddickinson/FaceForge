@@ -176,7 +176,17 @@ def sampled_warp(warp: Callable[[NDArray], NDArray], points: NDArray,
     smooth by construction, so sampling it on a lattice a few units across and
     interpolating is the same answer for a fraction of the work.  Points
     outside the lattice fall back to the exact warp, so nothing is clamped.
+
+    Only the nodes within ``margin`` of a control point are evaluated.  The
+    lattice spans the body's bounding box and a standing body fills less than
+    a third of its own box -- the rest is the air between the legs, beside
+    the arms and above the head -- so most nodes were being paid for to
+    describe how nothing moves.  A cell whose eight corners were not all
+    evaluated is not interpolated; a query there falls back to the exact warp,
+    the same escape the lattice's outside already uses.
     """
+    from scipy.spatial import cKDTree
+
     pts = np.asarray(points, dtype=np.float64).reshape(-1, 3)
     step = float(LATTICE_SPACING if spacing is None else spacing)
     lo = pts.min(axis=0) - margin
@@ -184,13 +194,25 @@ def sampled_warp(warp: Callable[[NDArray], NDArray], points: NDArray,
     counts = np.maximum(np.ceil((hi - lo) / step).astype(int) + 1, 2)
     axes = [lo[a] + np.arange(counts[a]) * step for a in range(3)]
     grid = np.stack(np.meshgrid(*axes, indexing="ij"), axis=-1).reshape(-1, 3)
-    values = warp(grid).reshape(counts[0], counts[1], counts[2], 3)
+    live = cKDTree(pts).query(grid, k=1)[0] <= margin
+    values = np.zeros((len(grid), 3), dtype=np.float64)
+    if live.any():
+        values[live] = warp(grid[live])
+    values = values.reshape(counts[0], counts[1], counts[2], 3)
+    near = live.reshape(counts[0], counts[1], counts[2])
+    usable = (near[:-1, :-1, :-1] & near[1:, :-1, :-1] & near[:-1, 1:, :-1]
+              & near[:-1, :-1, 1:] & near[1:, 1:, :-1] & near[1:, :-1, 1:]
+              & near[:-1, 1:, 1:] & near[1:, 1:, 1:])
 
     def interp(query: NDArray) -> NDArray:
         q = np.asarray(query, dtype=np.float64).reshape(-1, 3)
         f = (q - lo) / step
         i0 = np.floor(f).astype(np.int64)
         inside = np.all((i0 >= 0) & (i0 < np.asarray(counts) - 1), axis=1)
+        if inside.any():
+            where = np.flatnonzero(inside)
+            cell = i0[where]
+            inside[where[~usable[cell[:, 0], cell[:, 1], cell[:, 2]]]] = False
         out = np.empty_like(q)
         if not inside.all():
             outside = ~inside

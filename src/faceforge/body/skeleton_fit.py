@@ -37,8 +37,8 @@ import numpy as np
 from numpy.typing import NDArray
 
 from faceforge.body.fit_regions import (
-    REGION_NAMES, ROOT_REGION, RegionTransforms, SKIP_SUBTREES, anchors,
-    blend_tables, region_of, tree_distance,
+    DIGIT_REGIONS, REGION_NAMES, ROOT_REGION, RegionTransforms, SKIP_SUBTREES,
+    anchors, blend_tables, region_of, tree_distance,
 )
 
 #: Region name to its column in the per-query weight table.
@@ -450,6 +450,7 @@ def _inverse_distance_warp(points: NDArray, regions: NDArray, transforms: Any):
     src = np.stack([transforms.anchor_pair(n)[0] for n in names])
     dst = np.stack([transforms.anchor_pair(n)[1] for n in names])
     steps = tree_distance()
+    digit = np.asarray(DIGIT_REGIONS, dtype=bool)
     reach = np.zeros(len(names))
     for r, name in enumerate(names):
         own = ids == r
@@ -458,6 +459,13 @@ def _inverse_distance_warp(points: NDArray, regions: NDArray, transforms: Any):
             reach[r] = float(np.linalg.norm(moved - pts[own], axis=1).max())
     tree = cKDTree(pts)
     k = int(min(FIELD_NEIGHBOURS, len(pts)))
+    # A second tree over everything that is not a digit.  Which part of the
+    # body a point belongs to has to be answered from this one: a thigh's
+    # *surface* is 7.5 units out from its own femur and 1.5 from the finger
+    # hanging beside it, so every one of the nearest bones can be a phalanx.
+    solid = ~digit[ids]
+    solid_tree = cKDTree(pts[solid]) if solid.any() else None
+    solid_ids = ids[solid]
 
     def warp(query: NDArray) -> NDArray:
         q = np.asarray(query, dtype=np.float64).reshape(-1, 3)
@@ -471,7 +479,22 @@ def _inverse_distance_warp(points: NDArray, regions: NDArray, transforms: Any):
         # Whichever region owns the nearest bone is the part of the body this
         # point belongs to; a neighbour from further than REGION_REACH steps
         # away along the tree is a different part that merely hangs close.
-        keep = steps[near[:, 0][:, None], near] <= REGION_REACH
+        #
+        # Except that the nearest bone is allowed to be a *digit* only if
+        # nothing else is near, because a digit is the one thing that hangs
+        # beside another part of the body -- see `fit_regions.DIGIT_REGIONS`.
+        # Anchoring thigh skin on a phalanx inverted this guard: it kept the
+        # hand, which is what the finger belongs to, and threw away the thigh,
+        # which is what the skin belongs to, so the skin flew off with the arm
+        # and sprayed across the gap at the hip.
+        if solid_tree is None:
+            anchor = near[:, 0]
+        else:
+            anchor = solid_ids[solid_tree.query(q, k=1)[1]]
+        # A digit's own skin has no non-digit bone but its hand or foot,
+        # which is one step away and so keeps the digits; thigh skin anchors
+        # on the thigh, and the fingers beside it are seven steps away and go.
+        keep = steps[anchor[:, None], near] <= REGION_REACH
         w = np.where(keep, 1.0 / (d + FIELD_SMOOTHING), 0.0)
         total = w.sum(axis=1, keepdims=True)
         w = np.divide(w, total, out=np.zeros_like(w), where=total > 0)

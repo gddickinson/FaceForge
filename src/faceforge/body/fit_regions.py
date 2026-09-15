@@ -123,6 +123,20 @@ REGIONS: tuple[RegionDef, ...] = (
 
 REGION_NAMES: tuple[str, ...] = tuple(r.name for r in REGIONS)
 
+#: The regions that hang beside another part of the body rather than sitting
+#: at the end of their own.  With the arms down, the finger bones hang beside
+#: the thigh and the toes beside the other foot, near enough that the nearest
+#: bone to a patch of thigh skin is a phalanx: measured, 14,178 skin vertices
+#: -- 1.8 per cent -- have a finger or a toe as their nearest bone while the
+#: skinning binds them to the leg or the trunk.  So a digit is never evidence
+#: for which part of the body a point belongs to.  Nothing is lost for the
+#: digits themselves: the nearest region to finger skin that is not a digit is
+#: the hand, one step away.
+DIGIT_REGIONS: tuple[bool, ...] = tuple(
+    name.startswith("fingers_") or name.startswith("toes_")
+    for name in REGION_NAMES
+)
+
 #: Which region a node belongs to, by name.  A node that matches nothing
 #: inherits its parent's region, so only the heads of subtrees are listed.
 #: ``{side}`` is filled from the last capturing group.

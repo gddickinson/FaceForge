@@ -1300,3 +1300,68 @@ because the wrong reading was very convincing.
 skeleton's head sits a head-height above the MakeHuman surface's crown, which
 is the mismatch the fit option exists to correct rather than a bug in itself —
 but it means every head layer looks wrong until the fit is switched on.
+
+## 2026-09-14 (later) — What actually sprays the skin across the hip
+
+With the fit **off** the skin renders as a clean body. With it **on** there is
+a spray of stray triangles across the gap between each hand and hip. That had
+been recorded as "a residue of webbing" -- leftovers of the weld the asset
+puts between the hand and the hip, which `weld_webs` culls by stretch.
+
+It is not that. Four hypotheses, each measured and each wrong:
+
+* **Stretch.** The spray's triangles stretch by a median of **1.00**. They are
+  not stretched at all, so no threshold on stretch can ever find them.
+* **Small components.** The skin already has 528 connected components and 381
+  of them are under 32 triangles *before* the fit; culling them changes the
+  render barely at all, and the spray is attached to the main 1.53M-triangle
+  sheet anyway.
+* **Sticking out of the body.** The BP3D skin protrudes from the MakeHuman
+  surface all over (p90 +0.96, p99 +3.90), and the spray's median depth is
+  +0.75. A threshold that caught 137 of the 330 would drop 9.7% of all skin.
+* **A bad binding.** The spray's vertices sit a median 16.7 units from the
+  bone that drives them, against p50 6.47 and p90 17.44 for the skin at
+  large. Entirely ordinary.
+
+What it is: **the lattice the field is sampled on**. The skinning contributes
+*nothing* to these vertices -- drawn position equals rest position to 0.0 --
+so the displacement is the fit's field alone, and `FIELD_LATTICE = 3.0` is
+coarser than the gap between the hand and the thigh. One lattice node serves
+both sides, and trilinear interpolation across it drags skin off each surface
+into the middle. Rendered with the field evaluated exactly rather than on the
+lattice, the gap is **completely clean**.
+
+Exact is not shippable: 51s against 8s for the whole toggle with every layer
+loaded. So two things were done instead.
+
+**The lattice skips the air.** It spans the body's bounding box, and a
+standing body fills less than a third of it; every node of the space between
+the legs and beside the arms was being evaluated to describe how nothing
+moves. Only nodes within `margin` of a control point are evaluated now, and a
+cell whose eight corners were not all evaluated falls back to the exact warp,
+the escape the lattice's outside already used. Identical on the body to the
+last floating-point bit, marginally *more* accurate outside it, and:
+
+| spacing | before | after |
+|---|---|---|
+| 3.0 (shipped) | 2.59s | 2.13s |
+| 1.5 | 9.79s | 5.56s |
+| 1.0 | 27.80s | 14.06s |
+
+**A digit is never evidence for which part of the body a point belongs to.**
+The field decides that from the region owning the nearest bone, then keeps
+only the regions within `REGION_REACH` steps of it. With the arms down the
+finger bones hang beside the thigh, and a thigh's *surface* is 7.5 units out
+from its own femur and 1.5 from the finger beside it -- so the guard inverted:
+it kept the hand, which is what the finger belongs to, and threw away the
+thigh, which is what the skin belongs to. Measured, 14,178 skin vertices --
+1.8 per cent -- took their body part from a finger or a toe. The anchor comes
+from a second tree over the non-digit bones now; a digit's own skin still
+anchors on its hand or foot, one step away, which keeps the digits. 19 of 442
+meshes past a limit in `fit_tissue_check` before, 18 after.
+
+**Still open.** The hip spray itself. It is the lattice, and the fix is to
+spend the sampling: at 1.5 the spray is down to about six triangles for
++3.4s on the toggle. That is a trade against the 1.50s responsiveness budget
+the coarse lattice was chosen for in the first place, so the spacing has been
+left at 3.0 rather than reversed quietly.

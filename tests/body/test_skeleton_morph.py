@@ -159,6 +159,48 @@ class TestDisplacementField:
         far = np.array([[900.0, 900.0, 900.0]])
         np.testing.assert_allclose(fast(far), exact(far), atol=1e-6)
 
+    def test_the_lattice_skips_the_air_and_still_gives_the_same_answer(self):
+        """A standing body fills less than a third of its own bounding box.
+
+        The rest is the air between the legs, beside the arms and above the
+        head, and every node of it was being evaluated to describe how nothing
+        moves.  Only the nodes within ``margin`` of a control point are
+        evaluated now; a cell whose eight corners were not all evaluated falls
+        back to the exact warp, as outside the lattice already did.
+        """
+        rng = np.random.default_rng(7)
+        # Two legs and two arms, far apart: mostly air.
+        pts = np.vstack([
+            rng.normal(size=(60, 3)) * (8, 5, 40) + (0, 0, -40),
+            rng.normal(size=(40, 3)) * (2, 2, 30) + (10, 0, -110),
+            rng.normal(size=(40, 3)) * (2, 2, 30) + (-10, 0, -110),
+            rng.normal(size=(40, 3)) * (2, 2, 30) + (26, 0, -70),
+            rng.normal(size=(40, 3)) * (2, 2, 30) + (-26, 0, -70),
+        ])
+
+        def exact(q):
+            q = np.asarray(q, dtype=np.float64).reshape(-1, 3)
+            return np.stack([3.0 * np.sin(q[:, 2] * 0.05),
+                             2.0 * np.cos(q[:, 0] * 0.08),
+                             1.5 * np.sin(q[:, 0] * 0.06)], axis=1)
+
+        asked = []
+
+        def counted(q):
+            q = np.asarray(q, dtype=np.float64).reshape(-1, 3)
+            asked.append(len(q))
+            return exact(q)
+
+        field = sampled_warp(counted, pts, spacing=3.0)
+        nodes = asked[0]
+        # The whole box, for comparison with what was actually evaluated.
+        lo, hi = pts.min(axis=0) - 12.0, pts.max(axis=0) + 12.0
+        whole = np.prod(np.ceil((hi - lo) / 3.0).astype(int) + 1)
+        assert nodes < 0.7 * whole, f"{nodes} of {whole} nodes evaluated"
+
+        on_body = pts + rng.normal(size=pts.shape) * 1.5
+        assert np.abs(field(on_body) - exact(on_body)).max() < 0.05
+
     def test_no_control_points_is_a_no_op(self):
         warp = displacement_warp(np.zeros((0, 3)), np.zeros((0, 3)))
         np.testing.assert_allclose(warp(np.ones((5, 3))), np.zeros((5, 3)))
