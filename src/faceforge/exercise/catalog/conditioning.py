@@ -35,14 +35,57 @@ _PEDAL_TIMING = {
 }
 
 
+# The leg is solved from the crank rather than swung by a cosine.  Driving hip,
+# knee and ankle from the same cos(theta) made every joint an even function of
+# the crank angle, so 45 and 315 degrees produced the *same* pose and the foot
+# retraced one line instead of going round: measured over a revolution, the
+# ankle path had singular values [16.8, 1.7, 0] where a circle needs two alike,
+# and a radius ratio of 9.5 where a circle gives 1.  The legs pistoned in and
+# out.
+#
+# Segment lengths measured on the rig: femur 60.4, shank 46.8.  A correct fit
+# puts the knee at about 30 deg at the bottom of the stroke and 110 at the top,
+# which is a hip-to-pedal distance of 103.5 and 62.5 -- so the crank radius is
+# half their difference and the bottom bracket sits their mean from the hip.
+_THIGH, _SHANK = 60.37, 46.77
+_CRANK_R = 20.5
+#: Bottom bracket relative to the hip, in the trunk's frame: forward and below.
+_BB_FORWARD, _BB_DOWN = 25.0, 79.1
+
+
+def _pedal_ik(theta_deg: float) -> tuple[float, float, float]:
+    """Hip flexion, knee flexion and ankle angle for one crank angle.
+
+    ``theta`` is measured from the forward horizontal, increasing the way the
+    crank turns, so 90 is the top of the stroke and 270 the bottom.
+    """
+    a = math.radians(theta_deg)
+    # Pedal position in the sagittal plane, forward (+f) and up (+u) from the hip.
+    f = _BB_FORWARD + _CRANK_R * math.cos(a)
+    u = -_BB_DOWN + _CRANK_R * math.sin(a)
+    d = math.hypot(f, u)
+    d = min(d, (_THIGH + _SHANK) * 0.999)        # never ask for a straighter leg than exists
+    # Knee from the law of cosines; hip is the thigh's angle from straight down.
+    cos_interior = (_THIGH ** 2 + _SHANK ** 2 - d ** 2) / (2 * _THIGH * _SHANK)
+    knee = 180.0 - math.degrees(math.acos(max(-1.0, min(1.0, cos_interior))))
+    cos_at_hip = (_THIGH ** 2 + d ** 2 - _SHANK ** 2) / (2 * _THIGH * d)
+    at_hip = math.degrees(math.acos(max(-1.0, min(1.0, cos_at_hip))))
+    to_pedal = math.degrees(math.atan2(f, -u))   # 0 = straight down, +ve forward
+    hip = to_pedal + at_hip
+    # The ankle plantarflexes slightly to finish the downstroke and dorsiflexes
+    # to clear the top, which is a quarter-turn behind the crank's vertical.
+    ankle = -5.0 + 10.0 * math.sin(a - math.radians(45.0))
+    return hip, knee, ankle
+
+
 def _pedal_phase(i: int, n: int, seconds: float) -> Phase:
     theta = 360.0 * i / n                       # right crank angle at the END of the phase
     kw = {}
     for side, offset in (("r", 0.0), ("l", 180.0)):
-        a = math.radians(theta + offset)
-        kw[f"hip_{side}_flex"] = 85 + 25 * math.cos(a)
-        kw[f"knee_{side}_flex"] = 75 + 37 * math.cos(a)
-        kw[f"ankle_{side}_flex"] = -5 + 10 * math.cos(a)
+        hip, knee, ankle = _pedal_ik(theta + offset)
+        kw[f"hip_{side}_flex"] = hip
+        kw[f"knee_{side}_flex"] = knee
+        kw[f"ankle_{side}_flex"] = ankle
     act = {}
     for group, (start, end, level) in _PEDAL_TIMING.items():
         for side, offset in (("R", 0.0), ("L", 180.0)):

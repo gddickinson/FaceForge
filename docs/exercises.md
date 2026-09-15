@@ -2881,14 +2881,14 @@ Seated pedalling at ~60 rpm: the hip and knee extensors drive the downstroke, th
 
 | phase | kind | s | moving joints | cues |
 |---|---|---|---|---|
-| Crank 45 deg | concentric | 0.12 | Knee (R): extension 112° → 101°; Knee (L): flexion 38° → 49°; Hip (R): extension 110° → 103°; Hip (L): flexion 60° → 67°; trunk pitch +25° |  |
-| Crank 90 deg | concentric | 0.12 | Knee (L): flexion 49° → 75°; Knee (R): extension 101° → 75°; Hip (L): flexion 67° → 85°; Hip (R): extension 103° → 85°; trunk pitch +25° |  |
-| Crank 135 deg | concentric | 0.12 | Knee (L): flexion 75° → 101°; Knee (R): extension 75° → 49°; Hip (L): flexion 85° → 103°; Hip (R): extension 85° → 67°; trunk pitch +25° |  |
-| Crank 180 deg | concentric | 0.12 | Knee (R): extension 49° → 38°; Knee (L): flexion 101° → 112°; Hip (L): flexion 103° → 110°; Hip (R): extension 67° → 60°; trunk pitch +25° | Smooth circles: push over the top, scrape the mud off at the bottom |
-| Crank 225 deg | concentric | 0.12 | Knee (L): extension 112° → 101°; Knee (R): flexion 38° → 49°; Hip (L): extension 110° → 103°; Hip (R): flexion 60° → 67°; trunk pitch +25° |  |
-| Crank 270 deg | concentric | 0.12 | Knee (R): flexion 49° → 75°; Knee (L): extension 101° → 75°; Hip (R): flexion 67° → 85°; Hip (L): extension 103° → 85°; trunk pitch +25° |  |
-| Crank 315 deg | concentric | 0.12 | Knee (L): extension 75° → 49°; Knee (R): flexion 75° → 101°; Hip (L): extension 85° → 67°; Hip (R): flexion 85° → 103°; trunk pitch +25° |  |
-| Crank 360 deg | concentric | 0.12 | Knee (R): flexion 101° → 112°; Knee (L): extension 49° → 38°; Hip (R): flexion 103° → 110°; Hip (L): extension 67° → 60°; trunk pitch +25° | Smooth circles: push over the top, scrape the mud off at the bottom |
+| Crank 45 deg | concentric | 0.12 | Knee (L): extension 85° → 57°; Knee (R): flexion 64° → 91°; Hip (R): flexion 57° → 70°; Hip (L): extension 39° → 31°; trunk pitch +25° |  |
+| Crank 90 deg | concentric | 0.12 | Knee (L): extension 57° → 33°; Knee (R): flexion 91° → 108°; Ankle (L): plantarflexion 5° → 12°; Ankle (R): dorsiflexion 5° → 2°; trunk pitch +25° |  |
+| Crank 135 deg | concentric | 0.12 | Hip (R): extension 67° → 53°; Hip (L): flexion 29° → 39°; trunk pitch +25° |  |
+| Crank 180 deg | concentric | 0.12 | Knee (L): flexion 37° → 64°; Knee (R): extension 106° → 85°; Hip (L): flexion 39° → 57°; Hip (R): extension 53° → 39°; trunk pitch +25° | Smooth circles: push over the top, scrape the mud off at the bottom |
+| Crank 225 deg | concentric | 0.12 | Knee (R): extension 85° → 57°; Knee (L): flexion 64° → 91°; Hip (L): flexion 57° → 70°; Hip (R): extension 39° → 31°; trunk pitch +25° |  |
+| Crank 270 deg | concentric | 0.12 | Knee (R): extension 57° → 33°; Knee (L): flexion 91° → 108°; Ankle (L): dorsiflexion 5° → 2°; Ankle (R): plantarflexion 5° → 12°; trunk pitch +25° |  |
+| Crank 315 deg | concentric | 0.12 | Hip (L): extension 67° → 53°; Hip (R): flexion 29° → 39°; trunk pitch +25° |  |
+| Crank 360 deg | concentric | 0.12 | Knee (R): flexion 37° → 64°; Knee (L): extension 106° → 85°; Hip (R): flexion 39° → 57°; Hip (L): extension 53° → 39°; trunk pitch +25° | Smooth circles: push over the top, scrape the mud off at the bottom |
 
 **Muscles**
 - *Primary movers:* Quadriceps 90 %; Gluteus maximus 80 %
