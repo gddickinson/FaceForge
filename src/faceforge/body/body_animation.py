@@ -255,10 +255,18 @@ class BodyAnimationSystem:
     # Finger spread: fan pattern at MCP (metacarpal) joints
     _FINGER_SPREAD = {2: 12.0, 3: 3.0, 4: -6.0, 5: -12.0}  # degrees per unit
 
-    # Thumb opposition: combined flexion + pronation + adduction at CMC
-    _THUMB_OP_FLEX = 50.0
+    # Thumb opposition.  It was modelled as flexion about X plus pronation
+    # about Y plus adduction about Z, which is the right description of the
+    # motion but the wrong description of *these* axes: the thumb's metacarpal
+    # leaves the wrist about 45 degrees out of the palm, so in its own pivot
+    # frame the X and Z components carry the tip out of the hand rather than
+    # across it.  Measured on a deadlift bar, with the curl already corrected
+    # to Y, the thumb sat 4.91 units from the bar axis against the fingers'
+    # 1.55; dropping the X term brought it to 2.82 and dropping the Z term as
+    # well to 1.84.  Opposition here is the Y rotation, and only that.
+    _THUMB_OP_FLEX = 0.0
     _THUMB_OP_PRONATE = 40.0
-    _THUMB_OP_ADDUCT = 30.0
+    _THUMB_OP_ADDUCT = 0.0
 
     # Toe curl distribution: MTP 47%, PIP 33%, DIP 20%
     _TOE_CURL_DIST = {"mt": 0.47, "prox": 0.33, "mid": 0.20, "dist": 0.0}
@@ -392,24 +400,32 @@ class BodyAnimationSystem:
                 if pivot is None:
                     continue
 
+                # The thumb curls about Y, not X.  Its metacarpal leaves the
+                # wrist at about 45 degrees out of the palm -- measured on the
+                # rest skeleton the segment runs [0.71, -0.03, -0.70] -- so a
+                # rotation about X swings the tip backwards out of the hand
+                # rather than across it.  Driven about X the grip got *worse*
+                # the harder it closed: gripping a deadlift bar the four
+                # fingers sat 1.55 units from the bar axis and the thumb 7.85,
+                # sticking out of every render.  About Y the same angles bring
+                # it to 1.69.  Zeroing the thumb altogether gave 3.24, which
+                # is the measure of how wrong the axis was: doing nothing beat
+                # it.
+                curl_deg = (curl_val * max_deg if curl_val >= 0
+                            else curl_val * abs(self._FINGER_MIN_CURL) * 0.1)
                 if seg == "mc":
                     # CMC joint: combined opposition motion
                     flex = thumb_op * self._THUMB_OP_FLEX
                     pronate = thumb_op * self._THUMB_OP_PRONATE * mirror
                     adduct = thumb_op * self._THUMB_OP_ADDUCT * mirror
-                    # Also apply curl to thumb MC
-                    if curl_val >= 0:
-                        flex += curl_val * max_deg
                     q = quat_from_euler(
-                        deg_to_rad(-flex), deg_to_rad(pronate), deg_to_rad(adduct), "XYZ",
+                        deg_to_rad(-flex),
+                        deg_to_rad(pronate + curl_deg * mirror),
+                        deg_to_rad(adduct), "XYZ",
                     )
                 else:
-                    # Thumb phalanges: just curl
-                    if curl_val >= 0:
-                        angle = curl_val * max_deg
-                    else:
-                        angle = curl_val * abs(self._FINGER_MIN_CURL) * 0.1
-                    q = quat_from_euler(deg_to_rad(-angle), 0.0, 0.0, "XYZ")
+                    # Thumb phalanges: curl, about the same axis as the CMC.
+                    q = quat_from_euler(0.0, deg_to_rad(curl_deg * mirror), 0.0, "XYZ")
                 pivot.set_quaternion(q)
 
     def _apply_feet(self, state: BodyState) -> None:
