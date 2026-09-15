@@ -2586,12 +2586,12 @@ On hands and knees, one arm and the opposite leg extend to horizontal while the 
 
 | phase | kind | s | moving joints | cues |
 |---|---|---|---|---|
-| Extend right arm, left leg | concentric | 1.50 | Hip (L): extension 90° → 5°; Knee (L): extension 90° → 5°; Shoulder (R): flexion 90° → 170°; Ankle (L): dorsiflexion 40° → 10° | Reach the heel back and the hand forward; hips level |
+| Extend right arm, left leg | concentric | 1.50 | Hip (L): extension 90° → 5°; Forearms: supination 90° → 0°; Knee (L): extension 90° → 5°; Shoulder (R): flexion 90° → 170° | Reach the heel back and the hand forward; hips level |
 | Hold | isometric | 1.50 | hold | Do not let the pelvis rotate |
-| Return | eccentric | 1.50 | Hip (L): flexion 5° → 90°; Knee (L): flexion 5° → 90°; Shoulder (R): extension 170° → 90°; Ankle (L): plantarflexion 10° → 40° | Back to all fours without shifting the weight |
-| Extend left arm, right leg | concentric | 1.50 | Hip (R): extension 90° → 5°; Knee (R): extension 90° → 5°; Shoulder (L): flexion 90° → 170°; Ankle (R): dorsiflexion 40° → 10° |  |
+| Return | eccentric | 1.50 | Hip (L): flexion 5° → 90°; Forearms: pronation 0° → 90°; Knee (L): flexion 5° → 90°; Shoulder (R): extension 170° → 90° | Back to all fours without shifting the weight |
+| Extend left arm, right leg | concentric | 1.50 | Hip (R): extension 90° → 5°; Forearms: supination 90° → 0°; Knee (R): extension 90° → 5°; Shoulder (L): flexion 90° → 170° |  |
 | Hold | isometric | 1.50 | hold |  |
-| Return | eccentric | 1.50 | Hip (R): flexion 5° → 90°; Knee (R): flexion 5° → 90°; Shoulder (L): extension 170° → 90°; Ankle (R): plantarflexion 10° → 40° |  |
+| Return | eccentric | 1.50 | Hip (R): flexion 5° → 90°; Forearms: pronation 0° → 90°; Knee (R): flexion 5° → 90°; Shoulder (L): extension 170° → 90° |  |
 
 **Muscles**
 - *Primary movers:* Erector spinae 60 %; Multifidus / rotatores 60 %; Gluteus maximus 60 %
@@ -3363,12 +3363,12 @@ Squat down and place the hands, kick the feet back to a push-up position, return
 
 | phase | kind | s | moving joints | cues |
 |---|---|---|---|---|
-| Squat down | eccentric | 0.40 | Shoulders: flexion 10° → 110°; Hips: flexion 40° → 125°; Knees: flexion 40° → 120°; Ankles: dorsiflexion 15° → 40°; trunk pitch +45° | Hands to the floor just in front of the feet |
-| Kick back | concentric | 0.35 | Hips: extension 125° → 0°; Knees: extension 120° → 0°; Shoulders: extension 110° → 90°; Elbows: extension 10° → 0° | Jump the feet back into a plank; hips level |
+| Squat down | eccentric | 0.40 | Shoulders: flexion 10° → 110°; Forearms: pronation 0° → 90°; Hips: flexion 40° → 125°; Knees: flexion 40° → 120°; trunk pitch +45° | Hands to the floor just in front of the feet |
+| Kick back | concentric | 0.35 | Hips: extension 125° → 0°; Knees: extension 120° → 0°; Forearms: supination 90° → 0°; Wrists: flexion 70° → 0° | Jump the feet back into a plank; hips level |
 | Push-up | eccentric | 0.40 | Elbows: flexion 0° → 95°; Shoulders: extension 90° → 55°; Shoulders: abduction 15° → 45° | Chest to the floor |
 | Press | concentric | 0.35 | Elbows: extension 95° → 0°; Shoulders: flexion 55° → 90°; Shoulders: adduction 45° → 15° |  |
-| Feet in | concentric | 0.35 | Hips: flexion 0° → 125°; Knees: flexion 0° → 120°; Shoulders: flexion 90° → 110°; Elbows: flexion 0° → 10°; trunk pitch +45° | Jump the feet back under the hips |
-| Jump | concentric | 0.30 | Hips: extension 125° → 0°; Knees: extension 120° → 5°; Ankles: plantarflexion 40° → 30°; Shoulders: flexion 110° → 170° | Stand and jump, arms overhead |
+| Feet in | concentric | 0.35 | Hips: flexion 0° → 125°; Knees: flexion 0° → 120°; Forearms: pronation 0° → 90°; Wrists: extension 0° → 70°; trunk pitch +45° | Jump the feet back under the hips |
+| Jump | concentric | 0.30 | Hips: extension 125° → 0°; Knees: extension 120° → 5°; Forearms: supination 90° → 0°; Ankles: plantarflexion 40° → 30° | Stand and jump, arms overhead |
 | Land | eccentric | 0.35 | Shoulders: extension 170° → 10°; Ankles: dorsiflexion 30° → 15°; Hips: flexion 0° → 40°; Knees: flexion 5° → 40°; trunk pitch +15° | Land soft, straight into the next rep |
 
 **Muscles**

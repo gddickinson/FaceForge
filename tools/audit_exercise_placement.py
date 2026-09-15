@@ -39,6 +39,10 @@ FLOATING = 26.0
 #: Exercises that are supposed to be off the floor, and why.
 AIRBORNE_ANCHORS = {"hands"}          # hanging from a bar, on parallel bars
 AIRBORNE_TAGS = {"plyometric"}        # a jump has a flight phase
+#: Equipment that holds the body up, so "nothing touching down" is the point:
+#: a leg extension's shins are in the air and its rower's feet are on a plate.
+SUPPORTING_KINDS = {"bench", "bike", "rower", "dip_station", "plyo_box", "pullup_bar",
+                    "treadmill"}
 
 
 def audit(ids, quiet: bool) -> int:
@@ -63,7 +67,8 @@ def audit(ids, quiet: bool) -> int:
             if ys[low] < THROUGH:
                 note = f"<-- {names[low]} is {abs(ys[low]):.1f} through the floor"
             elif ys[low] > FLOATING and defn.anchor not in AIRBORNE_ANCHORS \
-                    and not (set(defn.tags) & AIRBORNE_TAGS) and not phase.lift:
+                    and not (set(defn.tags) & AIRBORNE_TAGS) and not phase.lift \
+                    and not (SUPPORTING_KINDS & set(defn.equipment_names)):
                 note = f"<-- nothing is touching down (lowest {names[low]} at {ys[low]:.1f})"
             rows.append((span.name, float(ys[low]), names[low], note))
         demo.runtime.stop()

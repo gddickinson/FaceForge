@@ -15,7 +15,7 @@ from __future__ import annotations
 from faceforge.exercise.catalog._helpers import (
     ACE, CON, ECC, HIPS, ISO, NEUMANN, NSCA, P, S, ST, STRETCH_ACSM, STRETCH_PAGE, TRN,
     YOGA_EMG, YOGA_KIN,
-    arms, eq, flat_foot_ankle, merge, mu, only, ph, pose,
+    arms, eq, flat_palm, flat_foot_ankle, merge, mu, only, ph, pose,
 )
 from faceforge.exercise.model import Category, ExerciseDefinition
 
@@ -254,8 +254,8 @@ high_lunge = ExerciseDefinition(
 
 _DD_PITCH = 38.0
 _DOWN_DOG = merge(pose(hip_flex=100, knee_flex=5, ankle_flex=25),
-                  arms(flex=90 + _DD_PITCH, abduct=10, elbow=0))
-_DD_PLANK = merge(pose(ankle_flex=45), arms(flex=70, abduct=10, elbow=0))
+                  arms(flex=90 + _DD_PITCH, abduct=10, elbow=0), flat_palm())
+_DD_PLANK = merge(pose(ankle_flex=45), arms(flex=70, abduct=10, elbow=0), flat_palm())
 
 downward_dog = ExerciseDefinition(
     id="downward_dog", name="Downward-facing dog (adho mukha svanasana)",
@@ -310,7 +310,7 @@ KNEES = (0.0, 0.0, -141.0)
 
 def _updog(extension: float, arm_flex: float, elbow: float) -> dict[str, float]:
     return merge(pose(spine_flex=-extension, hip_flex=0, knee_flex=5, ankle_flex=-45),
-                 arms(flex=arm_flex, abduct=12, elbow=elbow))
+                 arms(flex=arm_flex, abduct=12, elbow=elbow), flat_palm())
 
 
 _UPDOG = _updog(20.0, 20.0, 30.0)
@@ -358,11 +358,11 @@ upward_dog = ExerciseDefinition(
 
 # On all fours the dorsum of each foot lies on the floor: fully plantarflexed.
 _QUAD = merge(pose(hip_flex=90, knee_flex=90, ankle_flex=-45),
-              arms(flex=90, abduct=5, elbow=0))
+              arms(flex=90, abduct=5, elbow=0), flat_palm())
 _CAT = merge(pose(spine_flex=42, hip_flex=90, knee_flex=90, ankle_flex=-45),
-             arms(flex=92, abduct=8, elbow=0))
+             arms(flex=92, abduct=8, elbow=0), flat_palm())
 _COW = merge(pose(spine_flex=-38, hip_flex=92, knee_flex=90, ankle_flex=-45),
-             arms(flex=88, abduct=5, elbow=0))
+             arms(flex=88, abduct=5, elbow=0), flat_palm())
 
 cat_cow = ExerciseDefinition(
     id="cat_cow", name="Cat-cow (marjaryasana-bitilasana)", category=Category.MOBILITY,

@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from faceforge.exercise.catalog._helpers import (
     ACE, CON, ECC, EKSTROM, ESCAMILLA_ABS, EXRX, HIPS, ISO, MCGILL, P, S, SNARR, ST, TRN,
-    arms, eq, grip, merge, mu, only, ph, pose,
+    arms, eq, flat_palm, grip, merge, mu, only, ph, pose,
 )
 from faceforge.exercise.model import Category, ExerciseDefinition
 
@@ -182,7 +182,8 @@ dead_bug = ExerciseDefinition(
 )
 
 # On all fours the dorsum of each foot lies on the floor: plantarflexed ~25 deg.
-_QUAD = merge(pose(hip_flex=90, knee_flex=90, ankle_flex=-40), arms(flex=90, abduct=5, elbow=0))
+_QUAD = merge(pose(hip_flex=90, knee_flex=90, ankle_flex=-40),
+              arms(flex=90, abduct=5, elbow=0), flat_palm())
 
 bird_dog = ExerciseDefinition(
     id="bird_dog", name="Bird dog", category=Category.CORE,

@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from faceforge.exercise.catalog._helpers import (
     ACE, BENCH_INCLINE, BENCH_TOP, CALATAYUD, CON, ECC, ECC_CON, EXRX, HIPS, ISO, KOLBER,
-    NEUMANN, NSCA, P, S, SAETERBAKKEN, SEATED_ON_BENCH, ST, arms, eq, grip, merge, mu, only,
+    NEUMANN, NSCA, P, S, SAETERBAKKEN, SEATED_ON_BENCH, ST, arms, eq, flat_palm, grip, merge, mu, only,
     ph, pose,
 )
 from faceforge.exercise.model import Category, ExerciseDefinition
@@ -155,8 +155,8 @@ incline_dumbbell_press = ExerciseDefinition(
 # length): ~20 deg on straight arms, ~12 at the bottom.  Tilting a prone body
 # head-up turns its anterior direction toward the head, so the arms stay
 # vertical over the hands at 90 deg MINUS the incline (measured on the rig).
-_PU_TOP = merge(pose(ankle_flex=45), arms(flex=70, abduct=10, elbow=0))
-_PU_BOTTOM = merge(pose(ankle_flex=45), arms(flex=38, abduct=45, elbow=95))
+_PU_TOP = merge(pose(ankle_flex=45), arms(flex=70, abduct=10, elbow=0), flat_palm())
+_PU_BOTTOM = merge(pose(ankle_flex=45), arms(flex=38, abduct=45, elbow=95), flat_palm())
 
 push_up = ExerciseDefinition(
     id="push_up", name="Push-up", category=Category.UPPER_PUSH,

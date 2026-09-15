@@ -2120,3 +2120,41 @@ the feet and the hands only, and only against the exercise's own anchor, which
 is why the get-up's planted foot could float while the probe read the other
 one and called it fine. The audit walks **every joint pivot** and reports the
 lowest per phase: through the floor, or nothing touching down.
+
+## 2026-09-15 (last) — The push-up was done on the ends of the wrists
+
+Asked to check every exercise for the get-up's class of fault, I wrote
+`tools/audit_exercise_placement.py`: every joint pivot, every phase, the
+lowest one. It flagged **87 phases across 117 exercises**, in three classes.
+
+**The hands.** Every hands-flat-on-the-floor exercise buried its fingers 10 to
+27 units under the mat. I guessed the poses were missing wrist extension,
+added it, and measured: 70 degrees moved the fingertips **5 units**, not the
+16 that rotating a 17-unit hand should give. So I measured the wrist DOF
+itself in the body frame — and it is fine, swinging the hand a full 26 units.
+What it cannot do is lift the fingers when the *shoulder* has carried its
+flexion axis 70 degrees round with it.
+
+The half that matters is **pronation**. Pronated 90 and extended 70 (the rig's
+limit), the knuckles come level with the wrist — which is what a flat palm is
+— and the middle fingertip goes from 17.2 under the mat to 9.9. A close-up
+render before and after is the proof: before, both forearms end abruptly at
+the mat with the hands gone; after, the hand lies on it. `flat_palm()` is in
+`_helpers.py` and is merged into all twelve: both push-ups, the archer and
+pike, both dogs, cat-cow, bird dog, mountain climber, the burpee.
+
+**The feet.** Toe tips 4 to 26 under, on the treadmills, both jumps, the jump
+rope, the power clean, the high lunge, the calf raise and the bike. Same shape
+of problem at the other end: a foot whose toes are tucked under has them
+straight in this rig, because `toe_curl` is never authored.
+
+**Five were not faults at all.** The leg extension, lying leg curl, seated
+cable row, decline bench and rowing machine are held up *by their machines* --
+the rower's feet at 36 are on its footplate. The audit knows about supporting
+equipment now.
+
+66 phases remain flagged. What is left of the hand class is the last 20
+degrees the rig's wrist does not have; the honest fix is for the ground lock
+to anchor the lowest hand point rather than the wrist at a fixed 3, the same
+correction the feet already got (`sole_clearance`). That is a rig change with
+a wide blast radius and it is written down here rather than made in a hurry.

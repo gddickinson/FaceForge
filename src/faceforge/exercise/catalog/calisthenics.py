@@ -14,7 +14,7 @@ from __future__ import annotations
 
 from faceforge.exercise.catalog._helpers import (
     ACE, BENCH_TOP, CALATAYUD, CON, ECC, EKSTROM, EXRX, ISO, KOLBER, MCGILL, NSCA, P,
-    PULLUP_YOUDAS, S, ST, TRN, arms, eq, flat_foot_ankle, grip, merge, mu, only, ph, pose,
+    PULLUP_YOUDAS, S, ST, TRN, arms, eq, flat_palm, flat_foot_ankle, grip, merge, mu, only, ph, pose,
 )
 from faceforge.exercise.model import Category, ExerciseDefinition
 
@@ -178,10 +178,11 @@ pistol_squat = ExerciseDefinition(
 # and toes on the floor, the straight body inclined head-up ~20 deg on locked
 # arms and ~8 at the bottom, which is why the pitches are negative.
 
-_ARCHER_TOP = merge(pose(ankle_flex=45), arms(flex=65, abduct=40, elbow=0))
+_ARCHER_TOP = merge(pose(ankle_flex=45), arms(flex=65, abduct=40, elbow=0), flat_palm())
 _ARCHER_R = merge(pose(ankle_flex=45),
                   only(shoulder_r_flex=35, shoulder_r_abduct=55, elbow_r_flex=95,
-                       shoulder_l_flex=45, shoulder_l_abduct=75, elbow_l_flex=10))
+                       shoulder_l_flex=45, shoulder_l_abduct=75, elbow_l_flex=10),
+                  flat_palm())
 
 archer_push_up = ExerciseDefinition(
     id="archer_push_up", name="Archer push-up", category=Category.CALISTHENICS,
@@ -226,12 +227,12 @@ archer_push_up = ExerciseDefinition(
 # hip-to-toe is shorter than hand-to-hip through a vertical arm.
 _PIKE_TOP_PITCH, _PIKE_BOTTOM_PITCH = 35.0, 58.0
 _PIKE_TOP = merge(pose(hip_flex=100, knee_flex=5, ankle_flex=45),
-                  arms(flex=90 + _PIKE_TOP_PITCH, abduct=12, elbow=0))
+                  arms(flex=90 + _PIKE_TOP_PITCH, abduct=12, elbow=0), flat_palm())
 # Bending the elbows drops the shoulder 37 units (65.9 -> 29.2 measured), and
 # the body hangs from the anchored hands, so the trunk has to steepen by the
 # same amount or the feet go through the floor: 58 deg puts them back at 9.8.
 _PIKE_BOTTOM = merge(pose(hip_flex=100, knee_flex=5, ankle_flex=45),
-                     arms(flex=88, abduct=40, elbow=100))
+                     arms(flex=88, abduct=40, elbow=100), flat_palm())
 
 pike_push_up = ExerciseDefinition(
     id="pike_push_up", name="Pike push-up", category=Category.CALISTHENICS,

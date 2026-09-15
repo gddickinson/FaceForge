@@ -21,7 +21,7 @@ from __future__ import annotations
 
 from faceforge.exercise.catalog._helpers import (
     ACE, CALATAYUD, CON, ECC, ECC_CON, EXRX, ISO, KOLBER, NSCA, P, S, ST, SEATED_ON_BENCH,
-    arms, eq, grip, merge, mu, ph, pose, squat, stand,
+    arms, eq, flat_palm, grip, merge, mu, ph, pose, squat, stand,
 )
 from faceforge.exercise.model import Category, ExerciseDefinition
 
@@ -122,8 +122,8 @@ arnold_press = ExerciseDefinition(
 # The push-up's measured pitches (upper_push): the straight body is inclined
 # head-up ~20 deg on locked arms and ~8 at the bottom.  Close grip only narrows
 # the elbows -- 20 deg of abduction at the bottom instead of 45.
-_CGPU_TOP = merge(pose(ankle_flex=45), arms(flex=70, abduct=10, elbow=0))
-_CGPU_BOTTOM = merge(pose(ankle_flex=45), arms(flex=38, abduct=20, elbow=95))
+_CGPU_TOP = merge(pose(ankle_flex=45), arms(flex=70, abduct=10, elbow=0), flat_palm())
+_CGPU_BOTTOM = merge(pose(ankle_flex=45), arms(flex=38, abduct=20, elbow=95), flat_palm())
 
 close_grip_push_up = ExerciseDefinition(
     id="close_grip_push_up", name="Close-grip push-up", category=Category.UPPER_PUSH,

@@ -42,6 +42,20 @@ def incline_legs() -> dict[str, float]:
     return only(hip_flex=16, knee_flex=70, ankle_flex=-5, hip_abduct=22)
 
 
+#: A palm flat on the floor.  Without it the hand simply continues the line of
+#: the forearm: measured on the push-up, the middle fingertip sat 17.2 units
+#: under the mat and a close-up render showed both hands vanish into it -- the
+#: figure was pressing on the ends of its wrists.  Pronation is the half that
+#: matters most, because it is what turns the wrist's flexion axis into one
+#: that can lift the fingers at all; extension alone moved them 5 units.
+#: Pronated 90 and extended 70 (the rig's limit) puts the knuckles level with
+#: the wrist, which is a flat palm, with the fingertips a few units low.
+def flat_palm() -> dict[str, float]:
+    from faceforge.exercise.pose_library import only
+
+    return only(forearm_rotate=-90, wrist_flex=-70)
+
+
 def ph(name: str, kind: PhaseKind, duration: float, pose_: dict, pitch: float = 0.0,
        cues=(), act: dict | None = None, lift: float = 0.0, travel=(0.0, 0.0), pivot=None,
        position=None, orientation=None, easing: str = "ease_in_out", roll: float = 0.0,

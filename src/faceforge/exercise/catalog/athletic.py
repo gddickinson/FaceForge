@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from faceforge.exercise.catalog._helpers import (
-    ACE, CON, ECC, EXRX, ISO, LAKE, NEUMANN, NSCA, P, S, ST, TRN, ZEBIS, arms, eq, grip,
+    ACE, CON, ECC, EXRX, ISO, LAKE, NEUMANN, NSCA, P, S, ST, TRN, ZEBIS, arms, combine, eq, flat_palm, grip,
     hinge, merge, mu, ph, pose, squat,
 )
 from faceforge.exercise.model import Category, ExerciseDefinition
@@ -168,7 +168,7 @@ medicine_ball_slam = ExerciseDefinition(
     sources=(ACE, NSCA), camera="side", default_reps=4, tags=("medicine ball", "power"),
 )
 
-_BURPEE_ARMS_DOWN = arms(flex=110, abduct=15, elbow=10)
+_BURPEE_ARMS_DOWN = combine(arms(flex=110, abduct=15, elbow=10), flat_palm())
 
 burpee = ExerciseDefinition(
     id="burpee", name="Burpee", category=Category.ATHLETIC,

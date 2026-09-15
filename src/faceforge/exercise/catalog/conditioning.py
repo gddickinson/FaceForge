@@ -16,7 +16,7 @@ import math
 
 from faceforge.exercise.catalog._helpers import (
     ACE, CON, ECC, HIPS, HUG, ISO, KLESHNEV, NEUMANN, NSCA, P, PERRY, S, ST, TRN, arms,
-    combine, eq, grip, merge, mu, ph, pose,
+    combine, eq, flat_palm, grip, merge, mu, ph, pose,
 )
 from faceforge.exercise.model import Category, ExerciseDefinition, Phase
 
@@ -309,7 +309,7 @@ jumping_jack = ExerciseDefinition(
     sources=(ACE,), camera="front", default_reps=6, tags=("cardio", "no equipment"),
 )
 
-_CLIMB_ARMS = arms(flex=90, abduct=10, elbow=0)
+_CLIMB_ARMS = combine(arms(flex=90, abduct=10, elbow=0), flat_palm())
 
 mountain_climber = ExerciseDefinition(
     id="mountain_climber", name="Mountain climber", category=Category.CONDITIONING,
