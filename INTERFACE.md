@@ -165,7 +165,7 @@ flat when ankle dorsiflexion = pitch − hip + knee.
 | module | purpose |
 |---|---|
 | `blood_flow.py` | Blood flow particle effect module. |
-| `body_animation.py` | Body animation: spine flex/bend/rotation, limb articulation, breathing; scapulohumeral rhythm as a glide on the thorax with clavicle elevation (`_apply_girdle`); pronation is the outermost wrist rotation. |
+| `body_animation.py` | Body animation: spine flex/bend/rotation, limb articulation, breathing; `attach_ribs_to_spine` hangs each rib, cartilage and the sternum off the vertebra it articulates with, because the thoracic pivots carried only their own vertebra and the thorax stayed behind when the spine bent; scapulohumeral rhythm as a glide on the thorax with clavicle elevation (`_apply_girdle`); pronation is the outermost wrist rotation. |
 | `body_constraints.py` | Body joint limit enforcement via simple clamping. |
 | `body_muscles.py` | On-demand body muscle loading and management. |
 | `bone_scaling.py` | Female/male scale factor per bone, from `assets/config/gender_dimorphism.json`; matches a bone name only on whole words, so "Tibialis" is not a tibia. |

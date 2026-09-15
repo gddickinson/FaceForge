@@ -33,15 +33,21 @@ _INCLINE_LEGS = only(hip_flex=16, knee_flex=70, ankle_flex=-5, hip_abduct=22)
 # differs between the two keyframes because the rig's shoulder Euler order
 # couples axial rotation to abduction; the hand's world orientation is the
 # same in both.
-# No arch here, though the set-up cues call for one, because `spine_flex`
-# cannot produce it on this rig.  Swept from -30 to +30 degrees against a
-# supine trunk it leaves the sternum at 89.71 and the shoulders at 68.56 and
-# the lowest lumbar pivot at 64.56 -- all three unmoved -- and shifts only the
-# top of the lumbar chain, about a unit per 30 degrees.  A bench arch is the
-# opposite shape: pelvis and shoulders down, the middle lifted off the bench,
-# which a chain driven from the pelvis cannot make and which the ribcage would
-# have to follow to show at all.  Authoring a number that moves nothing would
-# only make the pose look done.
+# No arch, though the set-up cues call for one, because no DOF on this rig
+# makes the shape.  `spine_flex` bends the trunk as a chain from the pelvis; a
+# bench arch fixes both ends -- pelvis and shoulders on the bench -- and lifts
+# the middle clear of it.  Measured on the sternum across a 60-degree sweep,
+# now that the ribs follow the vertebrae, it slides 10 units head-ward along
+# the spine and lifts 0.32:
+#
+#     spine_flex   y (anterior)   z (superior)
+#          -30        -16.40         -21.47
+#            0        -16.71         -26.66
+#          +30        -15.97         -31.53
+#
+# Supine, anterior is up, so that column is the arch and it is not there.  A
+# real one needs a deformer that pins the ends and bows the middle, which is a
+# different mechanism from a joint chain, not a different number in it.
 _BENCH_BOTTOM = merge(pose(), _BENCH_LEGS,
                       arms(flex=-15, abduct=75, rotate=-20, elbow=80, forearm=90, wrist=-70), grip())
 _BENCH_TOP = merge(pose(), _BENCH_LEGS,

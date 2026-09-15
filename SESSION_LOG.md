@@ -1627,3 +1627,58 @@ erector spinae (0.30, bracing the trunk) join it. All four are stabilisers, so
 the activation model holds them at full level through every phase -- measured
 0.45 on the lats at each of nine samples across the rep, the lowering
 included.
+
+
+## 2026-09-15 (later) — The thorax follows the spine now; the arch still does not
+
+Two items were left open: the ribcage not following the thoracic pivots, and
+a bench arch needing a mechanism that fixes both ends and lifts the middle.
+The first is fixed. The second is not, and the measurement that settles it is
+worth more than the attempt was.
+
+**The ribs hang off the spine now.** The thoracic pivots carried their own
+vertebra and disc and nothing else -- `thoracic_spine_pivot_0` held `T2` and
+`T1-T2 Disc` -- while all 24 ribs, 16 costal cartilages and the sternum hung
+off `<bone>_breath_pivot` under `rib_cage`, a *sibling* of the spine on
+`bodyRoot`. So the spine could bend and the thorax would stay where it was.
+
+`attach_ribs_to_spine` reparents each of those 41 pivots onto the vertebra its
+rib articulates with, reading the level from the bone's own name and sending
+the sternum, manubrium and xiphoid to the top of the chain. Rest positions are
+summed up the chain rather than read from world matrices, because it runs
+while the skeleton is still being assembled, and the reparenting preserves
+each pivot's rest position exactly -- so a binding solved against the rest pose
+is undisturbed and only what happens when the spine moves is different.
+
+Measured across a 60-degree sweep: the sternum travels 10 units where it did
+not move by a thousandth before, the ribs average 1.2 units of displacement at
+30 degrees, and at zero every one of 115 thoracic bones is where it was.
+Breathing still moves the ribs (max 3.60, mean 1.18).
+
+**The arch is still not possible, and now for a reason that is measured rather
+than guessed.** I re-added it on the strength of that 10-unit sternum travel,
+which was the wrong axis to read -- the body frame's +Z is head-ward, and a
+supine lifter's *up* is the frame's -Y. Broken out properly, across the same
+sweep:
+
+| spine_flex | y (anterior = up, supine) | z (superior) |
+|---|---|---|
+| -30 | -16.40 | -21.47 |
+| 0 | -16.71 | -26.66 |
+| +30 | -15.97 | -31.53 |
+
+The chest slides **10 units head-ward** and lifts **0.32**. `spine_flex` bends
+the trunk as a chain from the pelvis; a bench arch fixes both ends -- pelvis
+and shoulders on the bench -- and bows the middle clear of it. That is a
+different mechanism from a joint chain, not a different number in one, so the
+pose carries no arch and the comment in the catalogue carries the table.
+
+That is twice I read a displacement on the wrong axis and reported an arch
+that was not there. The measurement to trust for anything supine is the
+anterior component, not the largest one.
+
+**The grip lock, checked across every bar.** Slide per hand over a rep:
+sumo deadlift 0.00, triceps pushdown 0.00, bench press 0.10, overhead press
+0.18, barbell row 1.95, lying triceps extension 4.05 -- against the bench
+press's 13.83 before any of it. Six exercises' anchor positions moved in the
+catalogue sweep, all of them bar-holders, which is the lock doing its work.

@@ -1,5 +1,6 @@
 """Body animation: spine flex/bend/rotation, limb articulation, breathing."""
 
+import logging
 import math
 
 import numpy as np
@@ -13,6 +14,8 @@ from faceforge.core.scene_graph import SceneNode
 from faceforge.core.config_loader import load_skeleton_config
 from faceforge.body.joint_pivots import JointPivotSetup
 from faceforge.body.dof_ranges import dof_range
+
+logger = logging.getLogger(__name__)
 
 
 def _rad(pattern: str, value: float) -> float:
@@ -512,3 +515,67 @@ class BodyAnimationSystem:
             # Offset rib vertices by -centroid so rotation is local
             reparent_under_pivot(node, pivot, centroid)
             self._rib_pivots.append(pivot)
+
+        self.attach_ribs_to_spine()
+
+    #: Ordinal in a rib or cartilage name -> the thoracic level it belongs to.
+    _RIB_ORDINALS = {"1st": 1, "2nd": 2, "3rd": 3, "4th": 4, "5th": 5, "6th": 6,
+                     "7th": 7, "8th": 8, "9th": 9, "10th": 10, "11th": 11,
+                     "12th": 12}
+    #: Names with no ordinal that still belong to the top of the thorax.
+    _STERNAL = ("Sternum", "Manubrium", "Xiphoid")
+
+    def attach_ribs_to_spine(self) -> int:
+        """Hang each rib off the vertebra it articulates with.
+
+        The thoracic pivots carried only their own vertebra and disc; the
+        ribs, the costal cartilages and the sternum hung off ``rib_cage``, a
+        sibling of the spine on ``bodyRoot``.  So the spine could bend and the
+        thorax would not come with it.  Measured on a supine trunk, sweeping
+        ``spine_flex`` from -30 to +30 degrees left the sternum at 89.71
+        throughout -- it did not move by a thousandth -- and with the ribs
+        attached it travels ten units over the same sweep.
+
+        The reparenting preserves each pivot's rest position, so a binding
+        solved against the rest pose is undisturbed; only what happens when
+        the spine moves is different.  Rest positions are summed up the chain
+        rather than read from world matrices, because this runs while the
+        skeleton is still being assembled and nothing has been updated yet.
+        """
+        carries: dict[int, SceneNode] = {}
+        for pivot in self.thoracic_pivots:
+            group = pivot["group"] if isinstance(pivot, dict) else pivot
+            for child in getattr(group, "children", ()):
+                name = getattr(child, "name", "") or ""
+                if len(name) > 1 and name[0] == "T" and name[1:].isdigit():
+                    carries[int(name[1:])] = group
+        if not carries:
+            return 0
+
+        def rest_position(node) -> np.ndarray:
+            out = np.zeros(3)
+            while node is not None and getattr(node, "name", "") != "bodyRoot":
+                out = out + np.asarray(node.position, dtype=np.float64)
+                node = node.parent
+            return out
+
+        top = carries[min(carries)]
+        moved = 0
+        for pivot in list(self._rib_pivots):
+            name = getattr(pivot, "name", "") or ""
+            level = next((v for k, v in self._RIB_ORDINALS.items() if k in name), None)
+            if level is None:
+                target = top if any(k in name for k in self._STERNAL) else None
+            else:
+                target = carries.get(level) or carries[min(carries, key=lambda n: abs(n - level))]
+            if target is None or pivot.parent is target:
+                continue
+            here = rest_position(pivot)
+            pivot.parent.remove(pivot)
+            target.add(pivot)
+            offset = here - rest_position(target)
+            pivot.set_position(float(offset[0]), float(offset[1]), float(offset[2]))
+            moved += 1
+        if moved:
+            logger.info("Ribs attached to the thoracic spine: %d pivots", moved)
+        return moved
