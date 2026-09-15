@@ -42,6 +42,8 @@ class Category(str, Enum):
     CORE = "Core and trunk"
     CONDITIONING = "Cardio and conditioning"
     ATHLETIC = "Athletic and power"
+    CALISTHENICS = "Calisthenics and bodyweight skill"
+    MOBILITY = "Yoga, stretches and mobility"
 
 
 #: Default peak level for a role when the definition does not give one.

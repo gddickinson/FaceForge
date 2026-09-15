@@ -301,6 +301,9 @@ flat when ankle dorsiflexion = pitch − hip + knee.
 | `lower_body_accessory.py` | Hip thrust, step-up, calf raise, wall sit, machine knee work and the physio staples. |
 | `upper_pull.py` | Pulling: pull-up, chin-up, pulldown, rows, face pull, curls and rotator cuff. |
 | `upper_push.py` | Pressing: bench press (overhand, palms to the feet) and its reverse-grip variant (supinated, clavicular pectoralis primary and biceps a secondary), incline press, push-up, overhead presses, dips, flyes, triceps. |
+| `calisthenics.py` | Bodyweight skill, where the limit is a position rather than a load: muscle-up, L-sit, pistol squat, archer and pike push-ups, the Nordic curl (authored as resisted knee *extension*: `knee_flex = -pitch` keeps the shins on the floor as the body falls), hollow body hold, bench dip. |
+| `yoga.py` | Eight held asanas, entered / held / released: chair, warrior II, triangle, tree, high lunge, downward dog, cobra, cat-cow. The prime mover is whatever holds the shape, so most of the work is isometric. |
+| `stretches.py` | Static stretches and mobility drills. The convention here inverts the rest of the catalogue: the muscle listed PRIMARY is the one being *lengthened*, so the heatmap colours what the stretch is for. Side-lying was measured and abandoned: on its side the body's frontal plane is vertical, so 10 deg of shoulder abduction separates the hands by 100 units and the underneath one sits below the mat. |
 
 ### `faceforge/export/`
 
@@ -419,6 +422,7 @@ flat when ankle dorsiflexion = pitch − hip + knee.
 |---|---|
 | `headless_loader.py` | Skeleton + joint chains + skinning without Qt/GL; `load_layer`, `register_layer`, `apply_pose` |
 | `render_exercise_demo.py` | Exercise demo through the real GL renderer; `--probe` measures placement without GL |
+| `render_exercise_grid.py` | The whole catalogue in contact sheets: one scene, one GL session, two frames per exercise, 12 to a sheet (`--category`, `--tag`, `--exercise`). What you look at after editing the catalogue |
 | `author_footprints.py` | Mirror authored attachment footprints to the other side, or seed them from bone proximity (measure before keeping) |
 | `export_exercise_docs.py` | Renders the catalogue to `docs/exercises.md` (`--check` for CI) |
 | `neck_deformation_quality.py` | Neck-muscle edge stretch and displacement per pose, with `--wrapper` for the gym-scene control |

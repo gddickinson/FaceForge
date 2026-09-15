@@ -1782,3 +1782,98 @@ at the allowed value.
 `upper_pull.py` is now 499 lines and `lower_body.py` 493, which is why the
 bench, press and kettlebell families went into modules of their own rather
 than into `upper_push.py` at 453.
+
+## 2026-09-15 (later still) — 24 more: calisthenics, yoga and stretches, and five poses the rig refused
+
+The catalogue went from 93 to **117** in three new modules
+(`calisthenics.py`, `yoga.py`, `stretches.py`) under two new categories, and
+`tools/render_exercise_grid.py` was written because checking 117 exercises one
+render at a time is not something anyone does twice: one scene, one GL
+session, two frames per exercise, twelve to a contact sheet.
+
+**`calisthenics.py`** (8): muscle-up, L-sit, pistol squat, archer push-up,
+pike push-up, Nordic hamstring curl, hollow body hold, bench dip. The limit in
+these is a position rather than a load, so each entry's notes say what the
+easier version is.
+
+**`yoga.py`** (8): chair, warrior II, triangle, tree, high lunge, downward
+dog, cobra, cat-cow. Entered, held, released — so the work is isometric and
+the prime mover is whatever holds the shape.
+
+**`stretches.py`** (8): standing forward fold, standing quadriceps, wall calf
+(both knee positions, because gastrocnemius crosses the knee and soleus does
+not), overhead side bend, chest opener, supine knee-to-chest, supine
+figure-four, supine spinal twist. These invert the catalogue's convention:
+the muscle listed PRIMARY is the one being *lengthened*, so the heatmap
+colours what the stretch is for. It is stated at the top of the module,
+because a reader would otherwise take it for a bug.
+
+### Five poses the rig would not hold, and what the measurements said
+
+Every one of these was found by `render_exercise_demo --probe`, not by eye,
+and fixed against a measured sweep rather than by nudging numbers.
+
+**The Nordic curl is knee *extension*.** Kneeling upright is the prone body
+pitched 90° head-up about the knee. As the body falls forward by φ the shins
+stay on the floor, so the knee angle is 90 − φ: the hamstrings resist the knee
+straightening, which is why it is written `knee_flex = -pitch`. At that exact
+relation the shank still sloped 13°, leaving the knee 25 units off the floor,
+so `_SHANK_ON_FLOOR = 13.0` is added at every pitch; the knee then sits at
+11.0 with the ankle at 14.2 and does not move (56.9 → 58.7 in x across the
+whole descent), which is what "the ankles are held" means.
+
+**A pike push-up cannot be as piked as it looks.** With hands and feet both on
+the floor and the legs straight, hip-to-toe is shorter than hand-to-hip
+through a vertical arm, so the hips cannot rise past ~100 units: at 55° of
+trunk pitch the feet floated 54 units, at 35° they sat at 3.5. Bending the
+elbows then drops the shoulder 37 units (65.9 → 29.2), and since the body
+hangs from the anchored hands the trunk has to steepen to 58° at the bottom or
+the feet go 49 units through the floor.
+
+**Wide hands sink the body.** The archer push-up re-used the push-up's
+pitches (−20 top, −8 bottom) and put the feet 20 units under the mat: at
+40-55° of shoulder abduction the shoulders sit lower, so the body needs far
+less head-up tilt — −7 and 0. Foot height moves 2.7 units per degree of pitch
+here, which is why this is not a thing to guess.
+
+**A bench dip lifts the feet unless the hips extend.** The hands are fixed, so
+pressing up raises the hips 45 units and the heels with them. Hip flexion of
+88° at both ends put the feet at 50 at the top; 84° at the bottom and 63° at
+the top holds them at 8.8 and 8.7. The measured sensitivity is 1.5-1.8 units
+of foot height per degree of hip flexion.
+
+**Cobra lifts the legs, not the chest.** The wrapper turns about the body
+origin, which is at the head, so 40° of spinal extension swung the *lower*
+body up: the feet measured 44.6 with the pelvis supposedly on the mat. Hip
+flexion of a fifth of the extension angle puts them back (10.8), and it is
+written as a function of the extension so the correction follows it rather
+than being a magic number in one pose.
+
+**Side-lying was measured and abandoned.** The open-book rotation was the
+obvious thoracic drill, but on its side the body's frontal plane is vertical:
+10° of shoulder abduction separated the two hands by 100 units and left the
+underneath one 25 below the mat, and the rig's adduction limit (−31.5°) cannot
+close that. Supine keeps abduction in the plane of the floor, so the pose
+became a supine spinal twist, which measures clean (hands 25.3, feet 9.7).
+
+The high lunge lost its straight back leg to the same kind of limit: hip
+extension stops at 27°, so a straight back leg lands under the hip and the
+toes go through the floor. A 35° back knee puts the back toes at 6.0 against
+the front foot's 6.3 with the heel 23 up — which is the shape of the pose
+anyway.
+
+### The lying exercises were all being filmed end-on
+
+Rendering the whole catalogue showed something the per-exercise renders never
+made obvious: the gym's `side` preset sits at **+X**, and a prone or supine
+body's long axis **is** X, so `camera="side"` on a lying exercise looks down
+the body from the feet. Every new prone/supine entry now uses `front` (+Z),
+which is the profile. The older lying exercises -- push-up, both planks,
+sit-up, crunch, the whole bench press family, the hip thrust, the leg curl --
+still carry `camera="side"` and are framed the same end-on way; that is a
+one-word change each if it is wanted, but it changes views that have been
+reviewed before, so it was left alone.
+
+`tests/exercise` is green (62), the fast tier is green apart from the
+long-standing `test_obj_groups_name_the_bodyparts3d_source_ids`, and
+`docs/exercises.md` is regenerated at 117 exercises.

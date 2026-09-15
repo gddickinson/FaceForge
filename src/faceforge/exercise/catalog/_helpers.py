@@ -129,3 +129,14 @@ SCHOENFELD_ROW = ("Fenwick CM, Brown SH, McGill SM 2009. Comparison of different
 KOLBER = "Kolber MJ et al. 2010. Shoulder injuries attributed to resistance training. JSCR 24(6):1696"
 REINOLD = ("Reinold MM et al. 2004. EMG analysis of the rotator cuff and deltoid during "
            "shoulder external rotation exercises. JOSPT 34(7):385")
+YOGA_EMG = ("Ni M et al. 2014. Muscle utilization patterns vary by skill levels of the "
+            "practitioners across specific yoga poses (asanas). Complement Ther Med 22(4):662")
+YOGA_KIN = ("Salem GJ et al. 2013. Physical demand profiles of hatha yoga postures performed "
+            "by older adults. Evid Based Complement Alternat Med 2013:165763")
+STRETCH_ACSM = ("Garber CE et al. 2011. ACSM position stand: quantity and quality of exercise. "
+                "MSSE 43(7):1334 (flexibility: static holds of 10-30 s, 2-3 days per week)")
+STRETCH_PAGE = ("Page P 2012. Current concepts in muscle stretching for exercise and "
+                "rehabilitation. IJSPT 7(1):109")
+BEHM = ("Behm DG et al. 2016. Acute effects of muscle stretching on physical performance, "
+        "range of motion and injury incidence in healthy active individuals: a systematic "
+        "review. Appl Physiol Nutr Metab 41(1):1")
