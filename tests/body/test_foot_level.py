@@ -12,7 +12,7 @@ import numpy as np
 import pytest
 
 from faceforge.body.foot_level import (
-    ANKLE_PER_KNEE, KNEE_RANGE, TOLERANCE, FootLevelLock,
+    ANKLE_PER, ANKLE_PER_KNEE, JOINT_COST, KNEE_RANGE, TOLERANCE, FootLevelLock,
 )
 
 
@@ -33,9 +33,11 @@ class Rig:
     real leg.
     """
 
-    def __init__(self, left_high: float = 6.8, gain: float = -8.0) -> None:
+    def __init__(self, left_high: float = 6.8, gain: float = -8.0,
+                 hip_gain: float = 0.0) -> None:
         self.left_high = left_high
         self.gain = gain
+        self.hip_gain = hip_gain
         self.pivots = {"ankle_R": FakeNode(0.0), "ankle_L": FakeNode(left_high)}
         self.poses = 0
 
@@ -43,10 +45,12 @@ class Rig:
     def apply(self, state, dt):
         self.poses += 1
         if "ankle_R" in self.pivots:
-            self.pivots["ankle_R"] = FakeNode(self.gain * state.knee_r_flex)
+            self.pivots["ankle_R"] = FakeNode(
+                self.gain * state.knee_r_flex + self.hip_gain * state.hip_r_flex)
         if "ankle_L" in self.pivots:
             self.pivots["ankle_L"] = FakeNode(
-                self.left_high + self.gain * state.knee_l_flex)
+                self.left_high + self.gain * state.knee_l_flex
+                + self.hip_gain * state.hip_l_flex)
 
     def update(self):
         pass
@@ -112,3 +116,44 @@ def test_a_rig_without_ankles_is_inert():
     state = {"knee_l_flex": 0.0}
     assert lock.apply(state) == {}
     assert state == {"knee_l_flex": 0.0}
+
+
+# -- the hip joins when the knee cannot ---------------------------------------
+
+
+def test_the_hip_takes_it_when_the_knee_does_nothing():
+    """A deadlift's knees are near straight; the hip is the joint with range."""
+    rig = Rig(gain=0.0, hip_gain=-8.0)
+    lock = _lock(rig)
+    state = {"knee_l_flex": 0.0, "hip_l_flex": 0.0, "ankle_l_flex": 0.0}
+    errors = lock.apply(state)
+    assert max(errors.values()) <= TOLERANCE, errors
+    assert state["hip_l_flex"] == pytest.approx(6.8 / 8.0, abs=1e-3)
+    assert state["knee_l_flex"] == pytest.approx(0.0, abs=1e-9)
+
+
+def test_the_hips_ankle_coupling_runs_the_other_way():
+    """Dorsiflexion is pitch minus hip plus knee, so a flexing hip gives back."""
+    assert ANKLE_PER["hip"] == pytest.approx(-90.0 / 45.0)
+    assert ANKLE_PER["knee"] == pytest.approx(145.0 / 45.0)
+    rig = Rig(gain=0.0, hip_gain=-8.0)
+    state = {"knee_l_flex": 0.0, "hip_l_flex": 0.0, "ankle_l_flex": 0.0}
+    _lock(rig).apply(state)
+    assert state["ankle_l_flex"] == pytest.approx(
+        state["hip_l_flex"] * ANKLE_PER["hip"], rel=1e-6)
+
+
+def test_the_knee_is_spent_before_the_hip_when_both_would_do():
+    """Both joints reach the foot equally; the cheap one should do the work.
+
+    A gap small enough to close in one step, so the ratio is the costs' and
+    not ``MAX_STEP``'s: clipping the knee's share leaves the hip carrying more
+    than it was asked to.
+    """
+    rig = Rig(left_high=1.0, gain=-8.0, hip_gain=-8.0)
+    state = {"knee_l_flex": 0.0, "hip_l_flex": 0.0, "ankle_l_flex": 0.0}
+    _lock(rig).apply(state)
+    assert abs(state["knee_l_flex"]) > abs(state["hip_l_flex"])
+    # ...in the ratio their costs set, the knee being the cheaper.
+    assert (abs(state["knee_l_flex"]) / abs(state["hip_l_flex"])
+            == pytest.approx(JOINT_COST["hip"] / JOINT_COST["knee"], rel=1e-3))

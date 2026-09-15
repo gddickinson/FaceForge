@@ -30,8 +30,16 @@ levered the heel 17 units into the air, a sole tilted 43 degrees.  Both are
 written in degrees through `dof_ranges`, because the knee's range is 145
 degrees and the ankle's 45 and the identity is an identity between angles.
 
-The hip is left as the clip authored it, which keeps the movement's shape; the
-ground lock still decides the body's height and where it stands.
+The knee is preferred and the hip helps when it cannot cope.  A deadlift's
+knees are nearly straight, so lowering that foot needs an extension the knee
+does not have, and the solve missed by 4.4 units with the knee alone; the hip
+has the range but moving it is what the eye reads as the shape of the lift, so
+it is charged four times the knee's cost and the step spends as little of it
+as will do.  Its ankle coupling runs the other way -- dorsiflexion is pitch
+minus hip plus knee -- so a hip that flexes owes the ankle the same angle
+back.
+
+The ground lock still decides the body's height and where it stands.
 """
 
 from __future__ import annotations
@@ -44,13 +52,19 @@ from faceforge.body.dof_ranges import dof_range
 from faceforge.body.ground_contact import height_pivot_names
 from faceforge.core.state import BodyState
 
-#: Normalised knee step used to measure the slope.
+#: Normalised step used to measure each joint's slope.
 PROBE_STEP = 0.02
-#: Largest normalised knee change per iteration, so a poor local slope cannot
-#: snap the leg straight.
+#: Largest normalised change per joint per iteration, so a poor local slope
+#: cannot snap the leg straight.
 MAX_STEP = 0.35
-#: Knees flex; they do not hyperextend.  1.0 is the full 145 degrees.
-KNEE_RANGE = (0.0, 1.0)
+#: The joints the solve may move, and what each may be set to.  Knees flex and
+#: do not hyperextend; the hip's bound is loose because the joint-limit file is
+#: applied by the caller afterwards, as it is for the grip lock.
+JOINT_RANGE = {"knee": (0.0, 1.0), "hip": (-1.0, 2.0)}
+KNEE_RANGE = JOINT_RANGE["knee"]
+#: What a unit of each joint costs the solve.  The knee is the cheap one: a
+#: hip is the angle that reads as the shape of a lift.
+JOINT_COST = {"knee": 1.0, "hip": 4.0}
 #: Height difference below which the feet count as level, in body units.
 TOLERANCE = 0.05
 
@@ -71,10 +85,17 @@ ACCEPT_FRACTION = 0.5
 
 SIDES = ("R", "L")
 
-#: Normalised ankle change per unit of normalised knee change that keeps the
-#: sole flat: the identity is between degrees, and the two ranges differ.
-ANKLE_PER_KNEE = (dof_range("knee_{s}_flex").degrees
-                  / dof_range("ankle_{s}_flex").degrees)
+#: Normalised ankle change per unit of each joint that keeps the sole flat.
+#: Dorsiflexion is pitch minus hip plus knee, so the knee adds and the hip
+#: subtracts; the ratios are degrees over degrees because the identity is one
+#: between angles and the three ranges are 145, 90 and 45.
+_ANKLE_DEG = dof_range("ankle_{s}_flex").degrees
+ANKLE_PER = {
+    "knee": dof_range("knee_{s}_flex").degrees / _ANKLE_DEG,
+    "hip": -dof_range("hip_{s}_flex").degrees / _ANKLE_DEG,
+}
+#: Kept for the knee's own coupling, which is the one the tests name.
+ANKLE_PER_KNEE = ANKLE_PER["knee"]
 
 
 class FootLevelLock:
@@ -114,14 +135,15 @@ class FootLevelLock:
     # -- api ------------------------------------------------------------------
 
     def apply(self, state_dict: dict) -> dict[str, float]:
-        """Adjust ``knee_{r,l}_flex`` and its ankle in ``state_dict`` (in place).
+        """Adjust the higher leg's knee, hip and ankle in ``state_dict``.
 
         Returns each foot's remaining height above the target.  The target is
         the lower foot as the frame arrived, fixed for the whole solve:
         recomputing it each iteration let an overshoot make the other foot the
         higher one, and the two then traded places instead of converging.
         """
-        keys = {s: f"knee_{s.lower()}_flex" for s in SIDES}
+        joints = {s: {j: f"{j}_{s.lower()}_flex" for j in JOINT_RANGE}
+                  for s in SIDES}
         ankles = {s: f"ankle_{s.lower()}_flex" for s in SIDES}
         self._pose(state_dict)
         start = self.heights()
@@ -138,35 +160,52 @@ class FootLevelLock:
         # must not leave a bent knee behind for nothing.  Measured before this,
         # a Romanian deadlift -- knees near straight, so the foot is out of
         # reach downward -- took 45 degrees of knee and still missed by 19.
-        authored = {k: state_dict.get(k) for k in
-                    list(keys.values()) + list(ankles.values())}
+        authored = {k: state_dict.get(k)
+                    for s in SIDES
+                    for k in list(joints[s].values()) + [ankles[s]]}
         for _ in range(self.iterations):
             high = max(SIDES, key=lambda s: errors[s])
             if errors[high] <= TOLERANCE:
                 break
-            base = float(state_dict.get(keys[high], 0.0))
+            base = {j: float(state_dict.get(joints[high][j], 0.0))
+                    for j in JOINT_RANGE}
             ankle_base = float(state_dict.get(ankles[high], 0.0))
-            # The probe moves the ankle too, because the step will.  Measuring
-            # the slope with the ankle held still answers a different question
-            # and the step then overshoots: the left foot went 1.9 units past
-            # the right instead of meeting it.
-            probe = dict(state_dict)
-            probe[keys[high]] = base + PROBE_STEP
-            probe[ankles[high]] = ankle_base + PROBE_STEP * ANKLE_PER_KNEE
-            self._pose(probe)
-            probed = self.heights()
-            if probed is None:
+            here = errors[high] + target
+            # One probe per joint, each moving the ankle the way the step will.
+            # Measuring a slope with the ankle held still answers a different
+            # question, and the step then overshoots: the left foot went 1.9
+            # units past the right instead of meeting it.
+            slope = {}
+            for name in JOINT_RANGE:
+                probe = dict(state_dict)
+                probe[joints[high][name]] = base[name] + PROBE_STEP
+                probe[ankles[high]] = ankle_base + PROBE_STEP * ANKLE_PER[name]
+                self._pose(probe)
+                probed = self.heights()
+                if probed is None:
+                    return errors
+                slope[name] = (probed[high] - here) / PROBE_STEP
+            # One equation, two unknowns: take the least-costly step that
+            # solves it, so the knee does the work it can and the hip only
+            # makes up what is left.
+            denom = sum(slope[j] ** 2 / JOINT_COST[j] for j in JOINT_RANGE)
+            if denom < 1e-12:
                 break
-            slope = (probed[high] - (errors[high] + target)) / PROBE_STEP
-            if abs(slope) < 1e-6:
+            scale = -errors[high] / denom
+            moved = {}
+            for name in JOINT_RANGE:
+                step = float(np.clip(scale * slope[name] / JOINT_COST[name],
+                                     -MAX_STEP, MAX_STEP))
+                moved[name] = float(np.clip(base[name] + step,
+                                            *JOINT_RANGE[name]))
+            if all(abs(moved[j] - base[j]) < 1e-9 for j in JOINT_RANGE):
                 break
-            step = float(np.clip(-errors[high] / slope, -MAX_STEP, MAX_STEP))
-            moved = float(np.clip(base + step, *KNEE_RANGE))
-            if abs(moved - base) < 1e-9:
-                break
-            state_dict[keys[high]] = moved
-            # The sole stays flat only if the ankle takes the same angle.
-            state_dict[ankles[high]] = ankle_base + (moved - base) * ANKLE_PER_KNEE
+            for name in JOINT_RANGE:
+                state_dict[joints[high][name]] = moved[name]
+            # The sole stays flat only if the ankle takes back what the joints
+            # above it just spent.
+            state_dict[ankles[high]] = ankle_base + sum(
+                (moved[j] - base[j]) * ANKLE_PER[j] for j in JOINT_RANGE)
             self._pose(state_dict)
             now = self.heights()
             if now is None:

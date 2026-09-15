@@ -1519,3 +1519,39 @@ because the lock is only built for feet.
 **Still open.** `step_up` holds a 44-unit gap by design (a foot on a box) and
 `conventional_deadlift` still ends 4.4 units apart — the knee alone cannot
 close every pose, and the hip would have to join the solve to do better.
+
+### The hip joins the solve
+
+The knee alone left four exercises short, because a knee that is already
+straight has no extension left to reach the floor with: the conventional
+deadlift ended 4.4 units apart, the Romanian deadlift 4.5, a wall sit 2.7.
+
+The hip has the range. It is also the angle that reads as the shape of a lift,
+so it is not simply added as a second knob: the step is now one equation in
+two unknowns, solved for the least costly solution with the hip charged four
+times the knee (`JOINT_COST`). Where the knee can do the work it still does;
+where it cannot, the hip makes up the difference and no more. Its ankle
+coupling runs the other way -- dorsiflexion is pitch minus hip plus knee -- so
+a hip that flexes owes the ankle the same angle back, and `ANKLE_PER` holds
+both ratios in degrees over degrees because the three ranges are 145, 90 and
+45.
+
+| exercise | knee only | knee + hip | knee used | hip used |
+|---|---|---|---|---|
+| bodyweight squat | 1.11 | **0.43** | 13.8 deg | 1.8 deg |
+| barbell back squat | 0.67 | **0.42** | 13.9 | 1.5 |
+| kettlebell swing | 0.70 | **0.63** | 17.4 | 1.3 |
+| wall sit | 2.70 | **0.40** | 3.8 | 2.3 |
+| conventional deadlift | 4.43 | **0.54** | 21.0 | 6.3 |
+| Romanian deadlift | 4.50 | **1.43** | 15.0 | 16.9 |
+
+Every gap is now inside 1.5 units and most inside 0.65, against 6.8 before any
+of this. The knee moves *less* than it did with the knee alone -- 13.8 degrees
+against 25.4 on a squat -- because sharing the correction conditions the solve
+better. The Romanian deadlift spends the most hip, 16.9 degrees, which is what
+a hinge with straight knees has to spend.
+
+Across all 63 exercises the anchor still holds with drift 0.00, apart from the
+jumps and step-ups that leave the floor by design and the two hands-anchored
+exercises, whose numbers are unchanged because the lock is built only for
+feet. Split squats remain untouched: their anchor names a side.
