@@ -12,7 +12,7 @@ from __future__ import annotations
 from faceforge.exercise.catalog._helpers import (
     ACE, BENCH_INCLINE, BENCH_TOP, CALATAYUD, CON, ECC, ECC_CON, EXRX, HIPS, ISO, KOLBER,
     NEUMANN, NSCA, P, S, SAETERBAKKEN, SEATED_ON_BENCH, ST, arms, eq, flat_palm, grip, merge,
-    mu, only, ph, pose, toes_tucked
+    bench_legs, incline_legs, mu, only, ph, pose, toes_tucked
 )
 from faceforge.exercise.model import Category, ExerciseDefinition
 
@@ -20,16 +20,10 @@ from faceforge.exercise.model import Category, ExerciseDefinition
 #: so the foot is not one rigid wedge balanced on its longest toe.
 _TUCKED = toes_tucked(45.0)
 
-# Feet on the floor either side of the bench (measured 2026-09-11: with the
-# pelvis on a 58-high pad the thighs must slope 10 deg below the trunk and
-# the knees bend 70 for the soles to reach the floor; at hip 35 / knee 90
-# the feet rested on the bench top).
-_BENCH_LEGS = only(hip_flex=-10, knee_flex=70, ankle_flex=-5, hip_abduct=22)
-# The incline press pitches the whole body 30 deg about the hips, which
-# carries the legs down with it: 26 deg more hip flexion keeps the soles on
-# the floor (measured foot height 3.5; the flat-bench legs put them 20
-# below the floor).
-_INCLINE_LEGS = only(hip_flex=16, knee_flex=70, ankle_flex=-5, hip_abduct=22)
+# These were a second, identical copy of `_helpers.bench_legs` /
+# `incline_legs`, so a correction to one left the other wrong.  One copy now.
+_BENCH_LEGS = bench_legs()
+_INCLINE_LEGS = incline_legs()
 # Hand DOFs measured on the rig (wrist-frame probe, 2026-09-10): the finger
 # flexion axis lies along the bar (15 deg off at the bottom, 12 at lockout),
 # the palm faces the bar (19 deg from vertical) with the wrist extended 70

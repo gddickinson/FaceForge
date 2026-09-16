@@ -224,3 +224,16 @@ def test_a_flat_foot_keeps_its_toes_flat(catalog):
                 if abs(flat_foot_ankle(phase.pitch, hip, knee) - ankle) < 5.0 and toe > 5.0:
                     bent.append((defn.id, phase.name, side))
     assert bent == []
+
+
+def test_a_free_standing_frame_is_never_between_the_camera_and_the_athlete(catalog):
+    """The gym's `side` preset stands at +X, and so does a pull-up upright.
+
+    The frame's span is 170, so its near post sits at x = +85 squarely in the
+    line of sight: the hanging knee raise rendered as a man with a black bar
+    down his middle.  The dip station is not caught by this -- its uprights are
+    inside the athlete, not outside him -- so the rule names the kind.
+    """
+    blocked = [d.id for d in catalog.values()
+               if "pullup_bar" in d.equipment_names and d.camera == "side"]
+    assert blocked == []

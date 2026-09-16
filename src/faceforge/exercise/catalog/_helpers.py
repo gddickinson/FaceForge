@@ -23,14 +23,23 @@ LOWER_CHEST = (0.0, 0.0, -45.0)
 BENCH_TOP = 58.0
 SEATED_ON_BENCH = (0.0, BENCH_TOP + 10.0 + 81.0, 0.0)
 
-#: Feet on the floor either side of a flat bench (measured 2026-09-11: with
-#: the pelvis on a 58-high pad the thighs must slope 10 deg below the trunk
-#: and the knees bend 70 for the soles to reach the floor; at hip 35 / knee 90
-#: the feet rested on the bench top).  Shared by the whole bench family.
+#: Feet on the floor either side of a flat bench, shared by the whole bench
+#: family.  Re-measured 2026-09-16: knee 70 left the lowest foot pivot **7.3
+#: above the floor** -- every flat-bench lifter in the catalogue had his feet
+#: dangling.  More knee flexion is what lowers them, not less (the thigh is
+#: nearly horizontal, so the shank swings the foot down as it folds): 78 gives
+#: 3.3, 85 gives 0.2 and 92 goes 2.0 through, all at ankle -5.
+#:
+#: The ankle is a trade-off and 85/-5 is the measured best of it.  The supine
+#: foot-flat rule (``-90 + pitch - hip + knee``) wants +5 here, which does
+#: flatten the sole -- but dorsiflexing the ankle also lifts the whole foot,
+#: about half a unit a degree, and 85/+5 measured 4.9 in the air while 92/+12
+#: was worse again at 5.8.  A foot on its forefoot with the heel 3.7 up is
+#: closer to a bench setup than a flat foot 5 units off the floor.
 def bench_legs() -> dict[str, float]:
     from faceforge.exercise.pose_library import only
 
-    return only(hip_flex=-10, knee_flex=70, ankle_flex=-5, hip_abduct=22)
+    return only(hip_flex=-10, knee_flex=85, ankle_flex=-5, hip_abduct=22)
 
 
 #: The same, for a bench pitched 30 deg up about the hips: the pitch carries

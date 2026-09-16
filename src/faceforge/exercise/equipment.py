@@ -64,10 +64,21 @@ def _part(name: str, geometry: BufferGeometry, color: int, x: float = 0.0, y: fl
 
 
 def make_barbell(length: float = 280.0, bar_radius: float = 1.8, plates: int = 1,
-                 plate_radius: float = 29.0, plate_thick: float = 4.0) -> SceneNode:
-    """An Olympic bar along +X with ``plates`` per side."""
+                 plate_radius: float = 29.0, plate_thick: float = 4.0,
+                 cable_to: tuple[float, float, float] | None = None) -> SceneNode:
+    """An Olympic bar along +X with ``plates`` per side.
+
+    ``cable_to`` draws a cable from the bar's centre to a far point in the
+    item's own frame, for the machine bars that are not loaded with plates: a
+    lat pulldown is a barbell in the hands here, and without its cable it
+    rendered as a man holding a bar over his head for no reason.  The other
+    cable exercises got theirs from `make_cable_handle`; this one was missed
+    because it is not a handle.
+    """
     root = SceneNode("equip_barbell")
     root.add(_part("bar", make_cylinder(bar_radius, length, 12), STEEL, quat=_TO_X, shininess=90))
+    if cable_to is not None:
+        root.add(_cable(cable_to))
     sleeve_start = length / 2 - 42.0
     for side in (1.0, -1.0):
         for i in range(plates):
@@ -254,6 +265,23 @@ def make_medicine_ball(radius: float = 12.0) -> SceneNode:
     return root
 
 
+def _cable(cable_to, segments: int = 8) -> SceneNode | None:
+    """A run of cable from the item's origin to ``cable_to``, as one node."""
+    far = vec3(*cable_to)
+    span = float((far[0] ** 2 + far[1] ** 2 + far[2] ** 2) ** 0.5)
+    if span < 1e-6:
+        return None
+    node = SceneNode("cable")
+    step = far / segments
+    seg_len = span / segments
+    for i in range(segments):
+        centre = step * (i + 0.5)
+        node.add(_part(f"cable_{i}", make_cylinder(0.9, seg_len * 1.1, 6), STEEL,
+                       x=float(centre[0]), y=float(centre[1]), z=float(centre[2]),
+                       quat=_axis_to(tuple(far))))
+    return node
+
+
 def make_cable_handle(cable_to=(0.0, 130.0, 0.0), radius: float = 1.6,
                       segments: int = 8) -> SceneNode:
     """A handle along +X with the cable that makes it a cable exercise.
@@ -267,19 +295,12 @@ def make_cable_handle(cable_to=(0.0, 130.0, 0.0), radius: float = 1.6,
     """
     root = SceneNode("equip_cable_handle")
     root.add(_part("handle", make_cylinder(radius, 14.0, 8), RUBBER, quat=_TO_X))
-    far = vec3(*cable_to)
-    span = float((far[0] ** 2 + far[1] ** 2 + far[2] ** 2) ** 0.5)
-    if span < 1e-6:
+    cable = _cable(cable_to, segments)
+    if cable is None:
         return root
-    step = far / segments
-    seg_len = span / segments
-    for i in range(segments):
-        centre = step * (i + 0.5)
-        root.add(_part(f"cable_{i}", make_cylinder(0.9, seg_len * 1.1, 6), STEEL,
-                       x=float(centre[0]), y=float(centre[1]), z=float(centre[2]),
-                       quat=_axis_to(tuple(far))))
+    root.add(cable)
     root.add(_part("anchor", make_box(16.0, 8.0, 8.0), FRAME,
-                   x=float(far[0]), y=float(far[1]), z=float(far[2])))
+                   x=float(cable_to[0]), y=float(cable_to[1]), z=float(cable_to[2])))
     return root
 
 

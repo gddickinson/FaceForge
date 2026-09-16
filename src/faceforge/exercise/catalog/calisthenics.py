@@ -420,7 +420,13 @@ bench_dip = ExerciseDefinition(
              mu("rhomboids", S, 0.4), mu("serratus_anterior", S, 0.4),
              mu("rectus_abdominis", ST, 0.45), mu("rotator_cuff", ST, 0.5),
              mu("forearm_extensors", ST, 0.5)),
-    equipment=(eq("bench", attach="static", height=BENCH_TOP, length=60.0),),
+    # Measured at the bottom: the hands are at z -6.5 and the trunk hangs at
+    # z -25, so the athlete is on the MINUS z side of his own hands.  With the
+    # bench at the origin its legs ran z -14..14 -- straight through him.  It
+    # sits behind him now, front edge just under the hands at z -10, which is
+    # where a bench you dip off belongs.
+    equipment=(eq("bench", attach="static", position=(0.0, 0.0, 7.0),
+                  height=BENCH_TOP, length=60.0),),
     errors=("Going deep enough that the shoulders roll forward under the body.",
             "Letting the hips drift away from the bench, which loads the shoulder further.",
             "Choosing it over a parallel-bar dip when the shoulder is irritable."),

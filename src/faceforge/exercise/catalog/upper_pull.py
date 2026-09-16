@@ -114,7 +114,12 @@ lat_pulldown = ExerciseDefinition(
              mu("deltoid_posterior", S, 0.5), mu("pectoralis_major", S, 0.3),
              mu("infraspinatus_teres_minor", S, 0.4), mu("forearm_flexors", ST, 0.6),
              mu("erector_spinae", ST, 0.3)),
-    equipment=(eq("barbell", length=110.0, plates=0, bar_radius=1.6),
+    # The bar is modelled as a plateless barbell, which is what a pulldown bar
+    # is -- but that meant it missed the round of work that gave the pushdown,
+    # the seated row, the face pull and the Pallof press their cables, and it
+    # rendered as a man holding a bar over his head for no reason.
+    equipment=(eq("barbell", length=110.0, plates=0, bar_radius=1.6,
+                  cable_to=(0.0, 150.0, 0.0)),
                eq("bench", attach="static", height=58.0, length=60.0)),
     errors=("Pulling behind the neck (impingement risk, no advantage).",
             "Leaning far back and rowing with body weight.", "Grip much wider than 1.5x "

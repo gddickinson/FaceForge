@@ -285,7 +285,7 @@ hanging_knee_raise = ExerciseDefinition(
     errors=("Swinging.", "Lifting the legs without curling the pelvis (all hip flexor)."),
     physio_notes=("Very high rectus abdominis activation in Escamilla 2006; grip and "
                   "shoulder tolerance are the limits.",),
-    sources=(ESCAMILLA_ABS, EXRX), camera="side", camera_target=(0.0, 190.0, 0.0),
+    sources=(ESCAMILLA_ABS, EXRX), camera="three_quarter", camera_target=(0.0, 190.0, 0.0),
     tags=("bodyweight", "bar"),
 )
 
