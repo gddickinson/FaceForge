@@ -2309,3 +2309,52 @@ value of 1.34 against a next-lowest of 2.60. Newton there spends its whole
 authority without converging. Below `_MIN_SENSITIVITY` the lock leaves the
 frame alone: **11.4 degrees → 1.0**, and the grip returns to the authored 90.5
 from a squeezed 82.4. Nothing else in the table moved.
+
+### The bar has to go round the body, not through it
+
+Three audits now ask three different questions of the same scene, and they
+disagree often enough to be worth keeping separate:
+
+* `audit_exercise_placement` — is anything through the floor or floating?
+* `audit_equipment_contact` — is the body *touching* the thing it is using?
+* `audit_equipment_clash` — is that thing *inside* the body?
+
+The last one is new and it had to learn two things before it was any use.
+First, body parts are capsules and the head is a sphere, because a bar through
+the neck touches no joint pivot at all — that is why the muscle-up's bar could
+pass through the model unreported. Second, it has to sample *through* each
+phase rather than at its keyframes: a muscle-up's bar is above the chest at
+one keyframe and below it at the next, and the whole fault is the sweep in
+between. A `SUPPORT_PARTS` set keeps a pad, a seat and a box — things a body
+is *meant* to be held by — counted separately, so a bar through an arm is not
+lost among them.
+
+What it found, in order of size:
+
+**The stationary bike, 24 units of foot through the floor.** The leg fit is
+right (knee ~30 deg at the bottom of the stroke); the bug is that `_pedal_ik`
+solves the *ankle* onto the crank circle, and a foot hangs about 12 below the
+ball that is actually on the pedal. The saddle was also 16 too low for its own
+crank, which is this exercise's own first listed error. Bottom bracket to 36,
+saddle and rider up 22.3, and the pedalling ankle's mean from −5 to +5.
+
+**The muscle-up.** Sampling every eighth of a phase: the pull crossed bar
+height from *behind* the bar with 3 units of clearance, the transition then
+dropped the shoulder from 267 to 259, the support left the hips 5.8 above the
+bar and 7.5 in front of it (0.6 of clearance), and the descent went from 25 in
+front to 27 behind in one interpolated step. The pull now leans first, the
+support carries 15 deg of shoulder flexion — with the arms straight down the
+shoulder sits directly over the wrist and the trunk hangs in the bar's own
+plane, which no arm angle fixes — and the descent goes back through the
+transition, a phase the cues always described and the clip never had. Worst
+approach in the whole clip: **17.4**, at the top of the pull, where the
+sternum belongs on the bar.
+
+**The pull-up frame** stood its uprights at x ±60 against a flared elbow that
+reaches 51 with a capsule radius of 9. 170 now.
+
+**The skull crusher** drew its bar 7.2 units inside the skull sphere at elbow
+110; at 90 it clears by 4.6, above and just past the forehead.
+
+**The step-up's box** sat at the origin — through both thighs every time the
+athlete was on the floor.
