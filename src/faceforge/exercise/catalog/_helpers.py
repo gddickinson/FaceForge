@@ -22,6 +22,13 @@ LOWER_CHEST = (0.0, 0.0, -45.0)
 #: Seat height placements: hip joint sits ~10 units above a bench top.
 BENCH_TOP = 58.0
 SEATED_ON_BENCH = (0.0, BENCH_TOP + 10.0 + 81.0, 0.0)
+#: Hip flexion for a body sitting on that bench.  Not 90: the model's knee
+#: stands 57 above the floor, so a horizontal thigh from a hip 10 above a
+#: 58-high seat puts the knee at 68 and the foot 8.8 in the air (measured on
+#: the seated press).  The thigh slopes down to the knee instead, as a seated
+#: person's does -- 1.42 units of foot height a degree, so 90 leaves it 8.8
+#: up, 81 drives it 4.0 through the floor, and 84.5 lands it.
+SEATED_HIP = 84.5
 
 #: Feet on the floor either side of a flat bench, shared by the whole bench
 #: family.  Re-measured 2026-09-16: knee 70 left the lowest foot pivot **7.3

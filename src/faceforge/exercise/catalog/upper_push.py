@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from faceforge.exercise.catalog._helpers import (
     ACE, BENCH_INCLINE, BENCH_TOP, CALATAYUD, CON, ECC, ECC_CON, EXRX, HIPS, ISO, KOLBER,
-    NEUMANN, NSCA, P, S, SAETERBAKKEN, SEATED_ON_BENCH, ST, arms, eq, flat_palm, grip, merge,
+    NEUMANN, NSCA, P, S, SAETERBAKKEN, SEATED_HIP, SEATED_ON_BENCH, ST, arms, eq, flat_palm, grip, merge,
     bench_legs, incline_legs, mu, only, ph, pose, toes_tucked
 )
 from faceforge.exercise.model import Category, ExerciseDefinition
@@ -244,12 +244,12 @@ seated_dumbbell_shoulder_press = ExerciseDefinition(
     orientation="seated", anchor="none", base_position=SEATED_ON_BENCH,
     phases=(
         ph("Press", CON, 1.4,
-           merge(pose(hip_flex=90, knee_flex=90), arms(flex=25, abduct=165, elbow=8, forearm=-30), grip()),
+           merge(pose(hip_flex=SEATED_HIP, knee_flex=90), arms(flex=25, abduct=165, elbow=8, forearm=-30), grip()),
            cues=("Press up and slightly in until the arms are straight",)),
         ph("Top", ISO, 0.4,
-           merge(pose(hip_flex=90, knee_flex=90), arms(flex=25, abduct=165, elbow=8, forearm=-30), grip())),
+           merge(pose(hip_flex=SEATED_HIP, knee_flex=90), arms(flex=25, abduct=165, elbow=8, forearm=-30), grip())),
         ph("Lower", ECC, 2.0,
-           merge(pose(hip_flex=90, knee_flex=90), arms(flex=25, abduct=85, elbow=95, forearm=-30), grip()),
+           merge(pose(hip_flex=SEATED_HIP, knee_flex=90), arms(flex=25, abduct=85, elbow=95, forearm=-30), grip()),
            cues=("Lower until the upper arms are parallel to the floor",)),
     ),
     muscles=(mu("deltoid_anterior", P, 0.9), mu("deltoid_lateral", P, 0.85),

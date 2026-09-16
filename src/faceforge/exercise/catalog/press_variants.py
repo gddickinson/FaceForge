@@ -21,7 +21,7 @@ from __future__ import annotations
 
 from faceforge.exercise.catalog._helpers import (
     ACE, BENCH_TOP, CALATAYUD, CON, ECC, ECC_CON, EXRX, ISO, KOLBER, NSCA, P, S,
-    SEATED_ON_BENCH, ST, arms, eq, flat_palm, grip, merge, mu, ph, pose, squat, stand,
+    SEATED_HIP, SEATED_ON_BENCH, ST, arms, eq, flat_palm, grip, merge, mu, ph, pose, squat, stand,
     toes_tucked
 )
 from faceforge.exercise.model import Category, ExerciseDefinition
@@ -89,19 +89,19 @@ arnold_press = ExerciseDefinition(
     # orientation.
     orientation="seated", anchor="none", base_position=SEATED_ON_BENCH,
     phases=(
-        ph("Start", ISO, 0.4, merge(pose(hip_flex=90, knee_flex=90),
+        ph("Start", ISO, 0.4, merge(pose(hip_flex=SEATED_HIP, knee_flex=90),
                                     arms(flex=35, abduct=5, rotate=-70, elbow=130,
                                          forearm=60, wrist=-10), grip()),
            cues=("Elbows in, palms facing you, weights at the collarbones",)),
-        ph("Rotate and press", CON, 1.6, merge(pose(hip_flex=90, knee_flex=90),
+        ph("Rotate and press", CON, 1.6, merge(pose(hip_flex=SEATED_HIP, knee_flex=90),
                                                arms(flex=165, abduct=18, rotate=20, elbow=10,
                                                     forearm=-40, wrist=-10), grip()),
            cues=("Turn the palms out as the weights pass the face",
                  "Finish with the arms straight and the palms forward")),
-        ph("Lockout", ISO, 0.5, merge(pose(hip_flex=90, knee_flex=90),
+        ph("Lockout", ISO, 0.5, merge(pose(hip_flex=SEATED_HIP, knee_flex=90),
                                       arms(flex=165, abduct=18, rotate=20, elbow=10,
                                            forearm=-40, wrist=-10), grip())),
-        ph("Reverse", ECC, 2.0, merge(pose(hip_flex=90, knee_flex=90),
+        ph("Reverse", ECC, 2.0, merge(pose(hip_flex=SEATED_HIP, knee_flex=90),
                                       arms(flex=35, abduct=5, rotate=-70, elbow=130,
                                            forearm=60, wrist=-10), grip()),
            cues=("Rotate back in on the way down",)),
@@ -173,19 +173,19 @@ overhead_triceps_extension = ExerciseDefinition(
            "Lower behind the head until the stretch, then extend"),
     orientation="seated", anchor="none", base_position=SEATED_ON_BENCH,
     phases=(
-        ph("Lower", ECC, 2.0, merge(pose(hip_flex=90, knee_flex=90),
+        ph("Lower", ECC, 2.0, merge(pose(hip_flex=SEATED_HIP, knee_flex=90),
                                     arms(flex=160, abduct=12, rotate=10, elbow=135,
                                          forearm=-30, wrist=-10), grip()),
            cues=("Bend only at the elbow; the upper arms do not travel",)),
-        ph("Stretch", ISO, 0.4, merge(pose(hip_flex=90, knee_flex=90),
+        ph("Stretch", ISO, 0.4, merge(pose(hip_flex=SEATED_HIP, knee_flex=90),
                                       arms(flex=160, abduct=12, rotate=10, elbow=135,
                                            forearm=-30, wrist=-10), grip()),
            cues=("Feel it along the back of the arm, not in the shoulder",)),
-        ph("Extend", CON, 1.4, merge(pose(hip_flex=90, knee_flex=90),
+        ph("Extend", CON, 1.4, merge(pose(hip_flex=SEATED_HIP, knee_flex=90),
                                      arms(flex=168, abduct=10, rotate=10, elbow=8,
                                           forearm=-30, wrist=-10), grip()),
            cues=("Straighten the elbows without letting the ribs flare",)),
-        ph("Lockout", ISO, 0.4, merge(pose(hip_flex=90, knee_flex=90),
+        ph("Lockout", ISO, 0.4, merge(pose(hip_flex=SEATED_HIP, knee_flex=90),
                                       arms(flex=168, abduct=10, rotate=10, elbow=8,
                                            forearm=-30, wrist=-10), grip())),
     ),
