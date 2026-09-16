@@ -2358,3 +2358,49 @@ reaches 51 with a capsule radius of 9. 170 now.
 
 **The step-up's box** sat at the origin — through both thighs every time the
 athlete was on the floor.
+
+### What the clash audit found once it sampled *through* the phases
+
+The dense pass over all 126 flagged 34 (part, body segment) pairs. About a
+dozen were real; the rest are a one-capsule-per-limb model unable to tell a
+body resting on a load from a body with a load inside it (a kettlebell
+deadlift's bell *is* between the thighs at lockout, a front-racked bell *does*
+lie on the forearm, a rider *does* straddle the seat post).
+
+Of the real ones, none was what its depth number suggested:
+
+**The jerks put the bar through the head.** The rack is clear by 9.2 and the
+overhead by 28.7 -- the fault is entirely the path between them, in both
+directions. Then the constraint: swept over arm poses, *every* one that holds
+the bar at head height is inside the skull (the best is -5.1). The bar is a
+rigid rod through the midline; it can only escape by being clearly above,
+clearly below, or 11+ in front, and the arm cannot hold it that far forward
+until it is already well below the head. Underneath that is a rig limitation
+worth recording beside `spine_flex` and cobra: **a real lifter moves their
+head and this model cannot** -- `head_yaw/pitch/roll` are on `BodyState` but
+are not pose DOFs, so the catalogue cannot author them, and the audit derives
+its skull from the trunk axis anyway, so it would not see the head move if it
+did. The fix bows the bar forward instead, which reads as a press-out. My
+first attempt at it made things worse (4 through-frames at -9.0 became 14 at
+-11.0) and was reverted.
+
+**The inverted row's frame was a quarter turn out.** A supine body's long axis
+is world X and so is an untouched frame's bar, so the far upright sat exactly
+on the hip. Rotated 90 degrees the uprights stand beside him, where a rack's
+are.
+
+**The bench dip's bench was wrong twice.** At the origin its legs ran through
+a trunk hanging at z -25; moved behind him, its legs at x +-16 were still
+inside hips spanning +-20, and the press-out pivots the trunk about the fixed
+hands from z -27 to +2, straight through them. 120 long puts them at +-46.
+
+**The halo cannot be shown by this rig.** The bell intersects whichever way up
+it is held -- hanging, its box contains the shoulder midpoint; base up by the
+horns, which is what its own description says, it goes into the skull instead.
+Both hands stay together on one handle at the midline while a halo needs the
+bell out at x +-25, against a measured shoulder excursion of +-8.
+
+Not everything the audit says is true, either: it reported the Pendlay row's
+bar 11.0 inside the skull, which is the *skull proxy* being wrong -- placed up
+the trunk axis, a bent-over rower's head lands out in front where the bar is.
+A denser re-check measured it clear.

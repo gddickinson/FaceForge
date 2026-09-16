@@ -226,6 +226,16 @@ inverted_row = ExerciseDefinition(
                 "the pull-up.",
     setup=("Bar at about hip height, heels on the floor, body straight from ear to heel",
            "Shoulders down and back before the pull", "Chest to the bar, elbows about 45 deg"),
+    # KNOWN DEFECT, measured 2026-09-16: the hands do not reach the bar.  With
+    # the feet anchored the hands go wherever the arm angles put them, and the
+    # wrist sits at y 85 at the hang and y 30 at the pull against a bar at 70
+    # -- he rows beside it.  Anchoring by the hands instead puts the grip ring
+    # on the bar but sinks the hang 9.5 units THROUGH the floor, and the pull
+    # then lifts the whole body (heels to y 54) because the row is a closed
+    # chain at both ends and the ground lock can only hold one of them.  The
+    # real fix is to author the hip and knee angles so the heels stay down as
+    # the body rises to a fixed bar; until then the feet stay on the floor,
+    # which is the half that does not put anything through anything.
     orientation="supine", anchor="feet", base_position=(0.0, 0.0, 0.0),
     phases=(
         ph("Pull", CON, 1.4, merge(pose(hip_flex=-5, knee_flex=5),
