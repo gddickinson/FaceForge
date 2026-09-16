@@ -39,7 +39,10 @@ from tools.audit_equipment_contact import part_bounds
 SEGMENTS: tuple[tuple[str, str, float], ...] = tuple(
     [(f"shoulder_{s}", f"elbow_{s}", 9.0) for s in "RL"]
     + [(f"elbow_{s}", f"wrist_{s}", 7.0) for s in "RL"]
-    + [(f"hip_{s}", f"knee_{s}", 12.0) for s in "RL"]
+    # A thigh measures about 20 across at its widest, so 10 is its flesh and
+    # 12 was a capsule two units wider than the leg: at 12 every deadlift
+    # lockout, where the bar RESTS on the thigh, read as 7.4 units inside it.
+    + [(f"hip_{s}", f"knee_{s}", 10.0) for s in "RL"]
     + [(f"knee_{s}", f"ankle_{s}", 8.5) for s in "RL"]
     + [("shoulder_R", "shoulder_L", 13.0), ("hip_R", "hip_L", 13.0),
        ("shoulder_R", "hip_R", 13.0), ("shoulder_L", "hip_L", 13.0)]

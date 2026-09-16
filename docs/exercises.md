@@ -3894,7 +3894,7 @@ Hinge to overhead in one movement: the bell travels from between the thighs to a
 
 ### Muscle-up (bar)
 
-`muscle_up` · Calisthenics and bodyweight skill · orientation: hanging · anchor: hands · rep: 4.6 s · equipment: pullup bar
+`muscle_up` · Calisthenics and bodyweight skill · orientation: hanging · anchor: hands · rep: 5.0 s · equipment: pullup bar
 
 A pull-up that continues into a dip: the chest clears the bar, the wrists roll over it and the arms press the body up to a straight-arm support. The transition is the whole exercise.
 
@@ -3907,11 +3907,12 @@ A pull-up that continues into a dip: the chest clears the bar, the wrists roll o
 
 | phase | kind | s | moving joints | cues |
 |---|---|---|---|---|
-| Pull | concentric | 0.90 | Elbows: flexion 5° → 145°; Shoulders: adduction 165° → 40°; Shoulders: extension 10° → 0° | Pull explosively; sternum to the bar, not the chin Elbows down and back, shoulder blades depressed |
-| Transition | transition | 0.60 | Forearms: supination 90° → 45°; Shoulders: internal rotation 90° → 45°; Shoulders: extension 0° → 25°; Shoulders: abduction 40° → 55° | Lean the chest forward over the bar and whip the elbows through This is where the rep is won or lost |
-| Press | concentric | 0.80 | Elbows: extension 140° → 85°; Knees: flexion 25° → 60°; Shoulders: adduction 55° → 25°; Shoulders: internal rotation 45° → 15° | Press out of the bottom of the dip |
-| Support | isometric | 0.50 | Elbows: extension 85° → 0°; Forearms: supination 25° → 0°; Shoulders: flexion 20° → 0°; Shoulders: adduction 25° → 10° | Locked out above the bar, shoulders down away from the ears |
-| Lower | eccentric | 1.80 | Shoulders: abduction 10° → 165°; Forearms: pronation 0° → 90°; Shoulders: external rotation 10° → 90°; Knees: extension 70° → 30° | Reverse it under control: back through the transition to the hang |
+| Pull | concentric | 0.90 | Elbows: flexion 5° → 145°; Shoulders: adduction 165° → 45°; Shoulders: internal rotation 90° → 30°; Shoulders: extension 10° → 45° | Pull explosively; sternum to the bar, not the chin Elbows down and back, shoulder blades depressed |
+| Transition | transition | 0.60 | Elbows: extension 145° → 120°; Hips: flexion 10° → 25°; Shoulders: extension 45° → 60°; Knees: extension 30° → 25° | Lean the chest forward over the bar and whip the elbows through This is where the rep is won or lost |
+| Press | concentric | 0.80 | Shoulders: flexion 60° → 20°; Elbows: extension 120° → 85°; Knees: flexion 25° → 60°; Forearms: supination 45° → 25° | Press out of the bottom of the dip |
+| Support | isometric | 0.50 | Elbows: extension 85° → 0°; Shoulders: flexion 20° → 15°; Forearms: supination 25° → 0°; Shoulders: adduction 25° → 10° | Locked out above the bar, shoulders down away from the ears |
+| Reverse the transition | eccentric | 0.80 | Elbows: flexion 0° → 120°; Shoulders: extension 15° → 60°; Forearms: pronation 0° → 45°; Knees: extension 70° → 25° | Lean back over the bar and let the elbows come back up |
+| Lower | eccentric | 1.40 | Shoulders: abduction 45° → 165°; Elbows: extension 120° → 5°; Shoulders: flexion 60° → 10°; Shoulders: external rotation 30° → 90° | Reverse it under control: back through the transition to the hang |
 
 **Muscles**
 - *Primary movers:* Latissimus dorsi / teres major 100 %; Pectoralis major 85 %; Triceps brachii 85 % — the dip half; Biceps brachii 80 %; Rectus abdominis 70 % — holds the body against the swing; Forearm flexors (grip) 85 % — the false grip

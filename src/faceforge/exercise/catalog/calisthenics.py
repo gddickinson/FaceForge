@@ -33,16 +33,35 @@ KNEE = (0.0, 0.0, -141.0)
 
 # ── The bar: a pull-up that carries on into a dip ──────────────────────
 
+# The bar is static along X at y 275, z 0, and the body has to go AROUND it.
+# Measured by sampling the built clip every eighth of a phase and taking the
+# closest approach of the trunk and thigh lines to the bar line (the trunk
+# capsule is radius 13, so anything under that is the bar inside the body):
+#
+#   as authored          fixed        what was wrong
+#   Pull          3.0     17.4        the chest crossed bar height from BEHIND
+#   Transition    ~3      17.9        and the shoulder went DOWN, 267 -> 259
+#   Press        20.5     20.5
+#   Support       0.6     clear       hips 5.8 above the bar and 7.5 in front
+#   Lower         3.1     clear       one step from z -25 to z +27, through it
+#
+# The three fixes, in order of how much they were worth: the pull now finishes
+# with the chest already IN FRONT of the bar (a muscle-up leans before the
+# shoulders arrive, which is also what "lean the chest forward" in the cues
+# says); the support carries 15 degrees of shoulder flexion, because with the
+# arms straight down the shoulder sits directly over the wrist and the trunk
+# hangs in the bar's own plane; and the descent goes back through the
+# transition instead of straight to the hang.
 _MU_HANG = merge(pose(), _HANG_LEGS,
                  arms(flex=10, abduct=165, rotate=90, elbow=5, forearm=-90), grip())
 _MU_PULL = merge(pose(), _HANG_LEGS,
-                 arms(flex=0, abduct=40, rotate=90, elbow=145, forearm=-90), grip())
+                 arms(flex=-45, abduct=45, rotate=30, elbow=145, forearm=-45), grip())
 _MU_OVER = merge(pose(hip_flex=25, knee_flex=25),
-                 arms(flex=-25, abduct=55, rotate=45, elbow=140, forearm=-45), grip())
+                 arms(flex=-60, abduct=45, rotate=30, elbow=120, forearm=-45), grip())
 _MU_PRESS = merge(pose(hip_flex=20, knee_flex=60),
                   arms(flex=-20, abduct=25, rotate=15, elbow=85, forearm=-25), grip())
 _MU_TOP = merge(pose(hip_flex=20, knee_flex=70),
-                arms(flex=0, abduct=10, rotate=10, elbow=0), grip())
+                arms(flex=15, abduct=10, rotate=10, elbow=0), grip())
 
 muscle_up = ExerciseDefinition(
     id="muscle_up", name="Muscle-up (bar)", category=Category.CALISTHENICS,
@@ -63,7 +82,15 @@ muscle_up = ExerciseDefinition(
         ph("Press", CON, 0.8, _MU_PRESS, cues=("Press out of the bottom of the dip",)),
         ph("Support", ISO, 0.5, _MU_TOP,
            cues=("Locked out above the bar, shoulders down away from the ears",)),
-        ph("Lower", ECC, 1.8, _MU_HANG,
+        # The descent has to go back through the transition, not straight to the
+        # hang: the trunk swings from z -25 (in front of the bar) to z +27
+        # (behind it), and interpolated in one step it crossed z = 0 while it
+        # was still at bar height -- 2.1 units of clearance, the bar through
+        # the pelvis.  The cue always said to reverse it through the
+        # transition; now the clip does.
+        ph("Reverse the transition", ECC, 0.8, _MU_OVER,
+           cues=("Lean back over the bar and let the elbows come back up",)),
+        ph("Lower", ECC, 1.4, _MU_HANG,
            cues=("Reverse it under control: back through the transition to the hang",)),
     ),
     muscles=(mu("latissimus_dorsi", P, 1.0), mu("pectoralis_major", P, 0.85),
