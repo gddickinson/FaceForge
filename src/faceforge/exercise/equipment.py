@@ -119,10 +119,11 @@ def make_bench(length: float = 150.0, width: float = 34.0, height: float = 58.0,
 def make_pullup_bar(width: float = 170.0, height: float = 275.0) -> SceneNode:
     """A free-standing bar along X at ``height``.
 
-    ``width`` is the span between the uprights, not the usable grip: at 120 a
-    pull-up's flared elbow reached x = 51 and the upright at 60 passed through
-    the upper arm (radius 9).  The uprights are now outside every grip the
-    catalogue authors, which is what a real rack looks like anyway.
+    ``width`` is the span between the uprights, not the usable grip.  At 120
+    the uprights stood at x = +-60 and a pull-up's flared elbow measures 60.4
+    at the top of the pull (60.3 chinning, 59.6 wide-grip), so the post ran
+    straight down the middle of the upper arm.  The span is now outside every
+    grip the catalogue authors, which is what a real rack looks like anyway.
     """
     root = SceneNode("equip_pullup_bar")
     root.add(_part("bar", make_cylinder(1.8, width, 12), STEEL, y=height, quat=_TO_X,
