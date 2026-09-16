@@ -5,9 +5,10 @@ the floor, because nothing moves the root down; pitch the whole body forward
 about its origin near the head and the feet swing metres away.  Real
 animation systems solve this with root motion or foot IK.  This module does
 the minimal honest version: after the pose is applied and world matrices are
-fresh, it measures where the anchor (the lowest foot pivot, or the wrists)
-ended up, compares that with where it should be, and translates the wrapper
-node by the difference.  One translation, no accumulation, converges in one
+fresh, it measures where the anchor ended up -- the lowest pivot of the whole
+extremity, every toe or finger segment included, not the ankle or the wrist
+at the top of it -- compares that with where it should be, and translates the
+wrapper node by the difference.  One translation, no accumulation, converges in one
 frame because the wrapper moves every body point rigidly.
 
 Targets come from the pivots' REST positions -- the sum of local translations
@@ -26,14 +27,32 @@ from faceforge.body.hand_points import finger_ring_centre
 
 from faceforge.core.math_utils import mat4_compose, vec3
 
+#: Every segment of a digit, proximal to distal.  A hand or foot is anchored
+#: by whichever of these is lowest, not by the joint at the top of it: the
+#: wrist alone held a push-up 17 units too low, because the hand hangs below
+#: the wrist and the lock could not see it.  The thumb and big toe have no
+#: middle phalanx; a rig without digits has none of them, and the loops that
+#: read these names skip whatever is absent.
+_FINGER_SEGMENTS = ("mc", "prox", "mid", "dist")
+_TOE_SEGMENTS = ("mt", "prox", "mid", "dist")
+
+
+def _digit_pivots(kind: str, segments: tuple[str, ...]) -> tuple[str, ...]:
+    return tuple(f"{kind}_{side}_{digit}_{seg}"
+                 for side in "RL" for digit in range(1, 6) for seg in segments)
+
+
 #: Pivot names whose LOWEST world point defines the floor contact, per anchor.
 _HEIGHT_PIVOTS = {
-    "feet": tuple(f"ankle_{s}" for s in "RL") + tuple(
-        f"toe_{s}_{d}_mt" for s in "RL" for d in range(1, 6)),
-    "hands": ("wrist_R", "wrist_L"),
+    "feet": tuple(f"ankle_{s}" for s in "RL") + _digit_pivots("toe", _TOE_SEGMENTS),
+    "hands": tuple(f"wrist_{s}" for s in "RL") + _digit_pivots("finger", _FINGER_SEGMENTS),
 }
-#: Pivots whose MEAN defines the horizontal position, per anchor.
+#: Pivots whose MEAN defines the horizontal position, per anchor.  The digits
+#: are deliberately absent: where the body *is* horizontally is the joint at
+#: the top of the limb, not wherever a finger happens to be pointing.
 _PLANE_PIVOTS = {"feet": ("ankle_R", "ankle_L"), "hands": ("wrist_R", "wrist_L")}
+#: What a gripping hand is measured at (see ``GroundLock.set_target``).
+_GRIP_PIVOTS = ("wrist_R", "wrist_L")
 
 
 def height_pivot_names(anchor: str = "feet", side: str | None = None) -> tuple[str, ...]:
@@ -117,6 +136,12 @@ class GroundLock:
         self.last_delta = np.zeros(3)
 
     def _height_pivots(self) -> tuple[str, ...]:
+        # A gripping hand is measured at the ring of closed fingers, which is
+        # one point per hand: taking the lowest digit pivot instead would hang
+        # the body off whichever fingertip curled furthest under the bar.
+        if getattr(self, "_grip", False):
+            return _GRIP_PIVOTS if self.side is None else tuple(
+                n for n in _GRIP_PIVOTS if n.endswith(self.side))
         return height_pivot_names(self.anchor, self.side)
 
     def _plane_pivots(self) -> tuple[str, ...]:
@@ -129,15 +154,20 @@ class GroundLock:
     def calibrated(self) -> bool:
         return self.anchor == "none" or self._target_y is not None
 
-    #: Height of the wrist pivot above the floor when the palm is on it.
-    HAND_CONTACT_HEIGHT = 3.0
+    #: Height above the floor of the LOWEST hand pivot when the hand is on it
+    #: -- half a finger's thickness, because the pivot is inside the bone.
+    #: This used to be the wrist's height, which is a different and much
+    #: larger number, and everything below the wrist went through the mat.
+    HAND_CONTACT_HEIGHT = 2.0
 
     def calibrate(self, pivots: dict, base_position, base_quaternion,
                   floor_y: float | None = None) -> None:
         """Targets from the pivots' rest positions under the base placement.
 
-        Hands rest at the body's sides, so their height target is the floor
-        plus the palm's thickness unless ``floor_y`` is None.
+        Hands rest at the body's sides, so there is nothing in the rest pose
+        that says how high a hand on the floor should be; the target is the
+        floor plus ``HAND_CONTACT_HEIGHT`` unless ``floor_y`` is None.  What
+        is compared against it is the lowest pivot of the whole hand.
 
         For feet the pivots' own rest height was taken as the answer, on the
         grounds that standing places the soles on the floor.  It does not: an

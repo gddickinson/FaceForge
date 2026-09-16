@@ -29,9 +29,9 @@ front_plank = ExerciseDefinition(
     phases=(
         # Forearms on the floor: the shoulders sit one upper-arm length up, so
         # the straight body is inclined ~11 deg (negative pitch = head end up).
-        ph("Lift into plank", CON, 1.5, _PLANK, pitch=-12,
+        ph("Lift into plank", CON, 1.5, _PLANK, pitch=-4,
            cues=("Push the floor away; straight line from ears to ankles",)),
-        ph("Hold", ISO, 8.0, _PLANK, pitch=-12,
+        ph("Hold", ISO, 8.0, _PLANK, pitch=-4,
            cues=("Breathe; ribs down, glutes tight, no sag",)),
         ph("Lower", ECC, 1.5, _PRONE_REST, cues=("Knees then hips to the floor",)),
         ph("Rest", TRN, 1.0, _PRONE_REST),

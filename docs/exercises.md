@@ -1107,8 +1107,8 @@ A closed-chain press: hands under the shoulders, the body lowers as a rigid plan
 
 | phase | kind | s | moving joints | cues |
 |---|---|---|---|---|
-| Lower | eccentric | 1.80 | Elbows: flexion 0° → 95°; Shoulders: abduction 10° → 45°; Shoulders: extension 70° → 38°; trunk pitch -8° | Chest to a fist's height from the floor Keep the plank; do not sag or pike |
-| Bottom | isometric | 0.30 | trunk pitch -8° |  |
+| Lower | eccentric | 1.80 | Elbows: flexion 0° → 95°; Shoulders: abduction 10° → 45°; Shoulders: extension 70° → 38°; trunk pitch -4° | Chest to a fist's height from the floor Keep the plank; do not sag or pike |
+| Bottom | isometric | 0.30 | trunk pitch -4° |  |
 | Press | concentric | 1.20 | Elbows: extension 95° → 0°; Shoulders: adduction 45° → 10°; Shoulders: flexion 38° → 70°; trunk pitch -20° | Push the floor away; protract the shoulder blades at the top |
 | Top | isometric | 0.40 | trunk pitch -20° | Elbows straight, hips level |
 
@@ -1689,8 +1689,8 @@ A push-up with the hands about shoulder width and the elbows tucked, which is th
 
 | phase | kind | s | moving joints | cues |
 |---|---|---|---|---|
-| Lower | eccentric | 1.80 | Elbows: flexion 0° → 95°; Shoulders: extension 70° → 38°; Shoulders: abduction 10° → 20°; trunk pitch -8° | Chest to the floor with the elbows close to the ribs |
-| Bottom | isometric | 0.30 | trunk pitch -8° | Stay a plank: no sagging, no piking |
+| Lower | eccentric | 1.80 | Elbows: flexion 0° → 95°; Shoulders: extension 70° → 38°; Shoulders: abduction 10° → 20°; trunk pitch -4° | Chest to the floor with the elbows close to the ribs |
+| Bottom | isometric | 0.30 | trunk pitch -4° | Stay a plank: no sagging, no piking |
 | Press | concentric | 1.30 | Elbows: extension 95° → 0°; Shoulders: flexion 38° → 70°; Shoulders: adduction 20° → 10°; trunk pitch -18° | Push the floor away and finish by straightening the elbows |
 | Top | isometric | 0.40 | trunk pitch -18° |  |
 
@@ -2403,8 +2403,8 @@ An isometric hold on the forearms and toes with the body in a straight line; the
 
 | phase | kind | s | moving joints | cues |
 |---|---|---|---|---|
-| Lift into plank | concentric | 1.50 | Shoulders: flexion 40° → 78°; Shoulders: adduction 15° → 0°; Elbows: extension 100° → 90°; Knees: extension 10° → 0°; trunk pitch -12° | Push the floor away; straight line from ears to ankles |
-| Hold | isometric | 8.00 | trunk pitch -12° | Breathe; ribs down, glutes tight, no sag |
+| Lift into plank | concentric | 1.50 | Shoulders: flexion 40° → 78°; Shoulders: adduction 15° → 0°; Elbows: extension 100° → 90°; Knees: extension 10° → 0°; trunk pitch -4° | Push the floor away; straight line from ears to ankles |
+| Hold | isometric | 8.00 | trunk pitch -4° | Breathe; ribs down, glutes tight, no sag |
 | Lower | eccentric | 1.50 | Shoulders: extension 78° → 40°; Shoulders: abduction 0° → 15°; Elbows: flexion 90° → 100°; Knees: flexion 0° → 10° | Knees then hips to the floor |
 | Rest | transition | 1.00 | hold |  |
 
@@ -3111,8 +3111,8 @@ From a push-up position the knees drive alternately toward the chest while the s
 
 | phase | kind | s | moving joints | cues |
 |---|---|---|---|---|
-| Right knee in | concentric | 0.30 | Hip (L): extension 110° → 0°; Hip (R): flexion 0° → 110°; Knee (L): extension 105° → 0°; Knee (R): flexion 0° → 105° | Drive the knee to the chest; hips stay down |
-| Switch | concentric | 0.30 | Hip (L): flexion 0° → 110°; Hip (R): extension 110° → 0°; Knee (L): flexion 0° → 105°; Knee (R): extension 105° → 0° | Switch legs; shoulders over the wrists |
+| Right knee in | concentric | 0.30 | Hip (L): extension 110° → 0°; Hip (R): flexion 0° → 110°; Knee (L): extension 105° → 0°; Knee (R): flexion 0° → 105°; trunk pitch +8° | Drive the knee to the chest; hips stay down |
+| Switch | concentric | 0.30 | Hip (L): flexion 0° → 110°; Hip (R): extension 110° → 0°; Knee (L): flexion 0° → 105°; Knee (R): extension 105° → 0°; trunk pitch +5° | Switch legs; shoulders over the wrists |
 
 **Muscles**
 - *Primary movers:* Hip flexors (iliopsoas) 85 %; Rectus abdominis 70 %

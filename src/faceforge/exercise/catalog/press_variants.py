@@ -133,9 +133,9 @@ close_grip_push_up = ExerciseDefinition(
            "Body straight from ear to heel throughout"),
     orientation="prone", anchor="hands", base_position=(-85.0, 30.0, 0.0),
     phases=(
-        ph("Lower", ECC, 1.8, _CGPU_BOTTOM, pitch=-8,
+        ph("Lower", ECC, 1.8, _CGPU_BOTTOM, pitch=-3.5,
            cues=("Chest to the floor with the elbows close to the ribs",)),
-        ph("Bottom", ISO, 0.3, _CGPU_BOTTOM, pitch=-8,
+        ph("Bottom", ISO, 0.3, _CGPU_BOTTOM, pitch=-3.5,
            cues=("Stay a plank: no sagging, no piking",)),
         ph("Press", CON, 1.3, _CGPU_TOP, pitch=-18,
            cues=("Push the floor away and finish by straightening the elbows",)),

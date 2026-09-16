@@ -2158,3 +2158,43 @@ degrees the rig's wrist does not have; the honest fix is for the ground lock
 to anchor the lowest hand point rather than the wrist at a fixed 3, the same
 correction the feet already got (`sole_clearance`). That is a rig change with
 a wide blast radius and it is written down here rather than made in a hurry.
+
+## 2026-09-15 (last) — The ground lock now anchors the lowest extremity
+
+The ankle and the wrist are the joints at the *top* of a foot and a hand. The
+lock held those, so everything past them went where it liked: a push-up's
+hands sat 17 units inside the mat while the lock reported them exactly on it.
+
+`_HEIGHT_PIVOTS` now covers every segment of every digit —
+`toe_{R,L}_{1..5}_{mt,prox,mid,dist}` and
+`finger_{R,L}_{1..5}_{mc,prox,mid,dist}` — and `HAND_CONTACT_HEIGHT` changed
+meaning with it, from "how high the wrist sits when the palm is down" (3.0) to
+"how high the lowest hand pivot sits" (2.0, half a finger, because the pivot
+is inside the bone). A hand *gripping* a bar keeps the closed-finger ring:
+taking the lowest digit pivot there would hang the body off whichever
+fingertip curled furthest under it. The horizontal plane pivots stay at the
+ankles and wrists, because where the body *is* is the top of the limb, not
+wherever a finger points. The feet's formula is unchanged and rest-neutral:
+the target and the measurement shift together when a toe pivot turns out to
+be the lowest at rest, so nothing moves until a pose tucks a toe under.
+
+**87 flagged phases → 30.** Everything anchored came right at once: the finger
+burial across all the hands-down exercises, both treadmills, the jump rope,
+both jumps, the power clean, the calf raise.
+
+Then the prone pitches, which had been derived when the lock held the wrist 3
+up with the hand hanging below it, had to be re-derived. Measuring the toes
+*separately from the hands* mattered, because the lock now saturates the
+minimum at 2.0 and a push-up with its feet in the air reads the same as one
+with them on the mat. The push-up's top was right all along at −20 (toes at
+1.0) and only its bottom was wrong (−8 put them 17.2 under; −3.5 puts them at
+1). The plank went −12 → −4, and the mountain climber needed *positive* pitch
+(+8 and +5): with the hands anchored and the body turning about its origin
+near the head, the trailing foot is held up by pitch, not by the pose.
+
+**30 → 23.** What is left is 21 phases on exercises that set `anchor="none"`
+— clamshell, side plank, sit-up, crunch, the bike, the burpee, the get-up's
+half-kneel, upward dog — where no lock runs at all and the body is placed by
+`base_position` alone, plus the high lunge, which anchors only its front foot
+by design so the lifted back foot is nobody's business. Those are pose and
+placement questions, not lock questions.

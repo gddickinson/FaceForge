@@ -318,10 +318,14 @@ mountain_climber = ExerciseDefinition(
     setup=("Hands under the shoulders, body straight", "Hips level with the shoulders"),
     orientation="prone", anchor="hands", base_position=(-85.0, 30.0, 0.0),
     phases=(
+        # The hands are the anchor and the body turns about its origin near the
+        # head, so the trailing foot is held up by pitch, not by the pose:
+        # measured, 0 left the back toes 10.4 under the mat with the knee in
+        # and 2.9 under on the switch.
         ph("Right knee in", CON, 0.3, merge(pose(hip_r_flex=110, knee_r_flex=105, ankle_flex=45), _CLIMB_ARMS),
-           cues=("Drive the knee to the chest; hips stay down",)),
+           pitch=8, cues=("Drive the knee to the chest; hips stay down",)),
         ph("Switch", CON, 0.3, merge(pose(hip_l_flex=110, knee_l_flex=105, ankle_flex=45), _CLIMB_ARMS),
-           cues=("Switch legs; shoulders over the wrists",)),
+           pitch=5, cues=("Switch legs; shoulders over the wrists",)),
     ),
     muscles=(mu("hip_flexors", P, 0.85), mu("rectus_abdominis", P, 0.7), mu("obliques", S, 0.5),
              mu("quadriceps", S, 0.5), mu("deltoid_anterior", S, 0.5), mu("pectoralis_major", S, 0.4),

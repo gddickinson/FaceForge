@@ -472,7 +472,7 @@ turkish_get_up = ExerciseDefinition(
         ph("To the hand", CON, 1.2, _TGU_HAND, pitch=45, pivot=HIPS,
            cues=("Straighten the left arm; chest open, shoulder packed",)),
         ph("Sweep to half-kneel", TRN, 1.6, _TGU_KNEEL, pitch=6, orientation="standing",
-           position=(0.0, 148.0, 0.0),
+           position=(0.0, 152.0, 0.0),
            cues=("Bridge the hips and sweep the left leg through to a half-kneel",)),
         ph("Stand", CON, 1.6, _TGU_STAND, orientation="standing",
            cues=("Windshield-wiper the back foot round, then stand",)),

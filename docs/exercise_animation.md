@@ -129,6 +129,18 @@ so a wrapper roll about the hips lifts the far foot: 25 degrees on a
 42-degree stance put the back toes 72 units up. Adducting that hip puts them
 back down, at the cost of stance width — a trade, not a fix.
 
+**The anchor is the lowest pivot of the extremity, not the joint at the top
+of it.** The ankle and the wrist are where a foot and a hand *begin*; the lock
+used to hold those and let everything past them go where it liked, which put
+a push-up's hands 17 units inside the mat while reporting them exactly on it.
+Every toe and finger segment is now in the height set, the hand target is the
+floor plus half a finger's thickness rather than the wrist's height, and a
+hand *gripping* a bar is still measured at the closed-finger ring (the lowest
+digit pivot would hang the body off whichever fingertip curled furthest
+under). Measured over the catalogue, phases with something through the floor
+went 87 → 30; the pitches the prone exercises were authored with then had to
+be re-derived against the new anchor height, which took it to 23.
+
 **Two hands cannot get to one side of the head.** A two-handed item sits at
 the midpoint of the grip points, so a kettlebell halo needs both hands past
 the midline. The shoulders are 21 units out on each side and adduction stops

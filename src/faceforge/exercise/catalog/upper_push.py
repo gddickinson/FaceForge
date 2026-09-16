@@ -170,10 +170,10 @@ push_up = ExerciseDefinition(
         # Hands on the floor, toes on the floor: the straight body is inclined
         # by asin(shoulder height / body length): ~20 deg on straight arms,
         # ~10 deg at the bottom.  Negative pitch raises the head end when prone.
-        ph("Lower", ECC, 1.8, _PU_BOTTOM, pitch=-8,
+        ph("Lower", ECC, 1.8, _PU_BOTTOM, pitch=-3.5,
            cues=("Chest to a fist's height from the floor",
                  "Keep the plank; do not sag or pike")),
-        ph("Bottom", ISO, 0.3, _PU_BOTTOM, pitch=-8),
+        ph("Bottom", ISO, 0.3, _PU_BOTTOM, pitch=-3.5),
         ph("Press", CON, 1.2, _PU_TOP, pitch=-20,
            cues=("Push the floor away; protract the shoulder blades at the top",)),
         ph("Top", ISO, 0.4, _PU_TOP, pitch=-20, cues=("Elbows straight, hips level",)),
