@@ -2250,3 +2250,62 @@ of 27, and its handle was welded to the frame at x 76 while the wrists
 travelled 80 to 163. The rail and seat come up to meet him, the footplate
 stays where it measured right, and the handle is a held item with the chain
 running forward.
+
+## 2026-09-15 — The Olympic lifts, and a foot with toes in it
+
+**Nine Olympic lifts** (`catalog/olympic.py`): squat snatch, power snatch,
+clean and jerk, hang power clean, push jerk, split jerk, overhead squat, clean
+pull, snatch pull. 126 exercises now. My own new camera test caught five of
+them authored `camera="side"`, where a bar along X is a single plate seen
+end-on.
+
+**The toes had never moved.** `toe_curl` was 0.0 in every phase of all 126
+exercises. That makes the whole foot one rigid wedge: when the heel leaves the
+floor the model stands on the *point* of its longest toe, and in the push-up
+that point measured **2.6 units below the floor**.
+
+Measured before authoring anything: `toe_curl` +75 lifts the toe tip 10.6
+units superiorly and −37.5 drives it 3.5 below the metatarsal, so positive is
+toe **extension** — and `dof_ranges` had the two terms the wrong way round,
+which `motion_description` would have read out loud. The joint limits agreed
+with the measurement (−37.5…75 is an MTP joint, which extends far further than
+it flexes), so the label was the odd one out.
+
+Two rules, both in `pose_library`:
+
+* `toes_on_floor(pitch, hip, knee, ankle)` — the shortfall from
+  `flat_foot_ankle` is exactly how far the forefoot has tipped down, so it is
+  exactly how far the toes must bend back for their *pads* to be what touches.
+  Zero when the heel is down.
+* `toes_tucked(ankle)` — the prone version, measured at ankle 45 (the plank
+  and push-up angle) where the toe segment ran 4.0 units headward and 4.4 units
+  *through the floor*, and 38 degrees of extension levelled it.
+
+Applied to the plank/push-up family, the lunges' back foot (inside `lunge()`,
+so every split stance gets it), calf raises, jump take-offs, the Olympic second
+pull, and the gait cycle through push-off — 65 degrees walking, 72 running,
+nothing in swing. Two catalogue tests hold the line in both directions: a
+symmetric stance with the heel up must bend its toes, and a flat sole must not.
+
+**Three things drawn through the body**, found by a new audit that models the
+body as capsules and the skull as a sphere and samples *through* each phase
+rather than at its keyframes:
+
+* the skull crusher's bar was 7.2 units inside the skull sphere at elbow 110.
+  At 90 it clears by 4.6, above and just past the forehead — where the cue
+  already said to put it.
+* the pull-up frame's uprights stood at x ±60; a pull-up's flared elbow reaches
+  51 with a capsule radius of 9. The span is 170 now.
+* the step-up's box sat at the origin — through both thighs every time the
+  athlete stood on the floor. It is in front of him now, and `travel` carries
+  him onto it, which is what the box jump already did.
+
+**The skull crusher's bar hung 11.4 degrees off level** and neither of the
+previous two bounds on the grip lock fixed it. The cause was not authority but
+*conditioning*: with the upper arms near vertical, abduction is almost a spin
+about the arm's own axis and barely moves the hand along the bar. Measured
+across every two-handed exercise, that frame is alone at a Jacobian singular
+value of 1.34 against a next-lowest of 2.60. Newton there spends its whole
+authority without converging. Below `_MIN_SENSITIVITY` the lock leaves the
+frame alone: **11.4 degrees → 1.0**, and the grip returns to the authored 90.5
+from a squeezed 82.4. Nothing else in the table moved.

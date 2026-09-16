@@ -47,6 +47,10 @@ BURIED = 1.0
 #: it.  A dip's feet hang in the air and a leg curl's point at the ceiling;
 #: neither is a foot that should be flat, so neither is a fault.
 CONTACT = 6.0
+#: A foot plantarflexed past this is lying on its DORSUM -- kneeling, prone,
+#: the top of the foot on the mat -- and its toe tips belong below the ball.
+#: Only a foot on its pads is meant to be flat.
+POINTED = -30.0
 
 
 def surface_under(point: np.ndarray, items) -> float:
@@ -94,10 +98,12 @@ def audit(ids, verbose: bool) -> int:
                 tip = by_name.get(f"toe_{side}_3_dist")
                 toe = dof_to_degrees(f"toe_curl_{side.lower()}",
                                      float(phase.pose.get(f"toe_curl_{side.lower()}", 0.0)))
+                ankle = dof_to_degrees(f"ankle_{side.lower()}_flex",
+                                       float(phase.pose.get(f"ankle_{side.lower()}_flex", 0.0)))
                 ground = surface_under(low, demo.runtime.rig.items)
                 standing = low[1] - ground <= CONTACT
                 note = []
-                if (standing and ball is not None and tip is not None
+                if (standing and ankle > POINTED and ball is not None and tip is not None
                         and heel - ball[1] > HEEL_UP and ball[1] - tip[1] > TIP_DROP):
                     note.append(f"tip {ball[1] - tip[1]:.1f} below the ball")
                 if low[1] < ground - BURIED:

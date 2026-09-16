@@ -18,6 +18,7 @@ from faceforge.exercise.catalog._helpers import (
     ACE, CON, ECC, HIPS, HUG, ISO, KLESHNEV, NEUMANN, NSCA, P, PERRY, S, ST, TRN, arms,
     combine, eq, flat_palm, grip, merge, mu, ph, pose, toes_tucked, toes_on_floor
 )
+from faceforge.exercise.equipment import SADDLE_RISE
 from faceforge.exercise.model import Category, ExerciseDefinition, Phase
 
 #: Toes bent back onto their pads under a tucked foot (`toes_tucked`),
@@ -78,7 +79,11 @@ def _pedal_ik(theta_deg: float) -> tuple[float, float, float]:
     hip = to_pedal + at_hip
     # The ankle plantarflexes slightly to finish the downstroke and dorsiflexes
     # to clear the top, which is a quarter-turn behind the crank's vertical.
-    ankle = -5.0 + 10.0 * math.sin(a - math.radians(45.0))
+    # Mean +5, not -5: at -5 the foot was 12 degrees plantarflexed at the
+    # bottom of the stroke and the toes hung below the pedal circle and into
+    # the floor.  A rider's heel is near level there, and drops through the
+    # downstroke, which is what the phase term does.
+    ankle = 5.0 + 10.0 * math.sin(a - math.radians(45.0))
     return hip, knee, ankle
 
 
@@ -107,7 +112,9 @@ stationary_bike = ExerciseDefinition(
                 "the plantarflexors finish it and the flexors recover the pedal.",
     setup=("Saddle height: knee ~25-35 deg flexed at the bottom of the stroke",
            "Ball of the foot over the pedal axle", "Light grip, elbows soft, trunk ~25 deg"),
-    orientation="seated", anchor="none", base_position=(0.0, 183.0, -12.0),
+    # The rider rises with his saddle (`equipment.SADDLE_RISE`): the leg fit
+    # here is correct, it was the seat that was too low for the crank.
+    orientation="seated", anchor="none", base_position=(0.0, 183.0 + SADDLE_RISE, -12.0),
     phases=tuple(_pedal_phase(i + 1, 8, 0.125) for i in range(8)),
     muscles=(mu("quadriceps", P, 0.9), mu("gluteus_maximus", P, 0.8), mu("hamstrings", S, 0.6),
              mu("gastrocnemius", S, 0.6), mu("soleus", S, 0.6), mu("tibialis_anterior", S, 0.4),

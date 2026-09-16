@@ -35,6 +35,17 @@ _Z = vec3(0.0, 0.0, 1.0)
 _TO_X = quat_from_axis_angle(_Z, -math.pi / 2)   # cylinder axis Y -> +X
 _TO_Z = quat_from_axis_angle(_X, math.pi / 2)    # cylinder axis Y -> +Z
 
+#: The bottom bracket, raised from 30.  At 30 the rider's toes still reached
+#: 7.1 below the FLOOR at the bottom of the stroke, because a foot hangs about
+#: 12 below the ball that sits on the pedal.
+CRANK_Y = 36.0
+#: How far the bike's saddle, bars and the rider on them all move up, so that
+#: the BALL of the foot rides the crank circle rather than the ankle: the ankle
+#: sits 9.3 above the ball (measured on a flat foot), so it must orbit
+#: ``CRANK_Y + 9.3`` = 45.3 and it orbited 23.  Both `make_bike` and the
+#: exercise's `base_position` use it.
+SADDLE_RISE = 22.3
+
 
 def _part(name: str, geometry: BufferGeometry, color: int, x: float = 0.0, y: float = 0.0,
           z: float = 0.0, quat=None, shininess: float | None = None) -> SceneNode:
@@ -139,19 +150,30 @@ def make_bike() -> SceneNode:
     root = SceneNode("equip_bike")
     root.add(_part("frame_down", make_box(6.0, 70.0, 6.0), FRAME, y=40.0, z=10.0,
                    quat=quat_from_axis_angle(_X, math.radians(20.0))))
-    root.add(_part("seat_post", make_cylinder(2.5, 55.0, 8), FRAME, y=70.0, z=-12.0))
-    root.add(_part("saddle", make_box(14.0, 4.0, 26.0), RUBBER, y=98.0, z=-12.0))
-    root.add(_part("head_tube", make_cylinder(2.5, 60.0, 8), FRAME, y=90.0, z=42.0))
+    # The saddle was 16.3 too low for the crank it is bolted to.  The leg fit
+    # in `conditioning._pedal_ik` is right (knee ~30 deg at the bottom), so the
+    # bottom bracket has to sit 79.1 below the hip; with the saddle at 98 it sat
+    # at 23 while the crank axle mesh is at 30, and the rider's toes went 24
+    # units through the FLOOR at the bottom of the stroke.  Raising the saddle
+    # -- which is this exercise's own first listed error -- puts the ball of
+    # the foot on the pedal circle instead.
+    root.add(_part("seat_post", make_cylinder(2.5, 55.0 + SADDLE_RISE, 8), FRAME,
+                   y=70.0 + SADDLE_RISE / 2, z=-12.0))
+    root.add(_part("saddle", make_box(14.0, 4.0, 26.0), RUBBER, y=98.0 + SADDLE_RISE, z=-12.0))
+    root.add(_part("head_tube", make_cylinder(2.5, 60.0 + SADDLE_RISE, 8), FRAME,
+                   y=90.0 + SADDLE_RISE / 2, z=42.0))
     # Measured against the rider: the wrists sit at x +-50, y 129, z 62, so a
     # 46-wide bar at z 42 was 27 units narrower than the hands and 20 behind
     # them.  The rider held nothing.
-    root.add(_part("handlebar", make_cylinder(1.8, 112.0, 10), STEEL, y=128.0, z=60.0,
-                   quat=_TO_X))
-    root.add(_part("bar_stem", make_cylinder(2.0, 24.0, 8), FRAME, y=116.0, z=52.0,
+    root.add(_part("handlebar", make_cylinder(1.8, 112.0, 10), STEEL,
+                   y=128.0 + SADDLE_RISE, z=60.0, quat=_TO_X))
+    root.add(_part("bar_stem", make_cylinder(2.0, 24.0, 8), FRAME,
+                   y=116.0 + SADDLE_RISE, z=52.0,
                    quat=quat_from_axis_angle(_X, math.radians(-55.0))))
-    root.add(_part("wheel", make_torus(24.0, 3.0, 32, 10), IRON, y=30.0, z=22.0,
+    root.add(_part("wheel", make_torus(24.0, 3.0, 32, 10), IRON, y=CRANK_Y, z=22.0,
                    quat=quat_from_axis_angle(_Z, math.pi / 2)))
-    root.add(_part("crank_axle", make_cylinder(2.0, 24.0, 8), STEEL, y=30.0, z=0.0, quat=_TO_X))
+    root.add(_part("crank_axle", make_cylinder(2.0, 24.0, 8), STEEL, y=CRANK_Y, z=0.0,
+                   quat=_TO_X))
     # The pedals are NOT here: a pedal drawn on the frame stays at one point of
     # the crank circle while the foot rides round it.  They are separate items
     # attached to the feet (`make_pedal`, attach="foot_r"/"foot_l").

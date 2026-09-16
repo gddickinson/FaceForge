@@ -2886,11 +2886,11 @@ Seated pedalling at ~60 rpm: the hip and knee extensors drive the downstroke, th
 | phase | kind | s | moving joints | cues |
 |---|---|---|---|---|
 | Crank 45 deg | concentric | 0.12 | Knee (L): extension 85° → 57°; Knee (R): flexion 64° → 91°; Hip (R): flexion 57° → 70°; Hip (L): extension 39° → 31°; trunk pitch +25° |  |
-| Crank 90 deg | concentric | 0.12 | Knee (L): extension 57° → 33°; Knee (R): flexion 91° → 108°; Ankle (L): plantarflexion 5° → 12°; Ankle (R): dorsiflexion 5° → 2°; trunk pitch +25° |  |
+| Crank 90 deg | concentric | 0.12 | Knee (L): extension 57° → 33°; Knee (R): flexion 91° → 108°; Ankle (L): plantarflexion 5° → 2°; Ankle (R): dorsiflexion 5° → 12°; trunk pitch +25° |  |
 | Crank 135 deg | concentric | 0.12 | Hip (R): extension 67° → 53°; Hip (L): flexion 29° → 39°; trunk pitch +25° |  |
 | Crank 180 deg | concentric | 0.12 | Knee (L): flexion 37° → 64°; Knee (R): extension 106° → 85°; Hip (L): flexion 39° → 57°; Hip (R): extension 53° → 39°; trunk pitch +25° | Smooth circles: push over the top, scrape the mud off at the bottom |
 | Crank 225 deg | concentric | 0.12 | Knee (R): extension 85° → 57°; Knee (L): flexion 64° → 91°; Hip (L): flexion 57° → 70°; Hip (R): extension 39° → 31°; trunk pitch +25° |  |
-| Crank 270 deg | concentric | 0.12 | Knee (R): extension 57° → 33°; Knee (L): flexion 91° → 108°; Ankle (L): dorsiflexion 5° → 2°; Ankle (R): plantarflexion 5° → 12°; trunk pitch +25° |  |
+| Crank 270 deg | concentric | 0.12 | Knee (R): extension 57° → 33°; Knee (L): flexion 91° → 108°; Ankle (L): dorsiflexion 5° → 12°; Ankle (R): plantarflexion 5° → 2°; trunk pitch +25° |  |
 | Crank 315 deg | concentric | 0.12 | Hip (L): extension 67° → 53°; Hip (R): flexion 29° → 39°; trunk pitch +25° |  |
 | Crank 360 deg | concentric | 0.12 | Knee (R): flexion 37° → 64°; Knee (L): extension 106° → 85°; Hip (R): flexion 39° → 57°; Hip (L): extension 53° → 39°; trunk pitch +25° | Smooth circles: push over the top, scrape the mud off at the bottom |
 
@@ -4372,9 +4372,9 @@ A long split stance with the back heel lifted and the arms overhead: the front l
 
 | phase | kind | s | moving joints | cues |
 |---|---|---|---|---|
-| Sink in | eccentric | 2.00 | Shoulders: flexion 45° → 172°; Knee (R): flexion 15° → 90°; Ankle (R): dorsiflexion 0° → 45°; Hip (R): flexion 20° → 50°; trunk pitch +5° | Sink the back hip toward the floor; keep the front shin vertical |
+| Sink in | eccentric | 2.00 | Shoulders: flexion 45° → 172°; Knee (R): flexion 15° → 90°; Foot (L): toe extension 0° → 50°; Ankle (R): dorsiflexion 0° → 45°; trunk pitch +5° | Sink the back hip toward the floor; keep the front shin vertical |
 | Hold | isometric | 8.00 | trunk pitch +5° | Tail tucked -- the stretch belongs in the front of the back hip Ribs down; reach up through the fingers |
-| Come up | concentric | 1.60 | Shoulders: extension 172° → 45°; Knee (R): extension 90° → 15°; Ankle (R): plantarflexion 45° → 0°; Hip (R): extension 50° → 20° | Press the front heel down and shorten the stance |
+| Come up | concentric | 1.60 | Shoulders: extension 172° → 45°; Knee (R): extension 90° → 15°; Foot (L): toe flexion 50° → 0°; Ankle (R): plantarflexion 45° → 0° | Press the front heel down and shorten the stance |
 | Rest | transition | 1.00 | hold |  |
 
 **Muscles**
@@ -4410,9 +4410,9 @@ Hands and feet on the floor with the hips lifted high, so the body makes an inve
 
 | phase | kind | s | moving joints | cues |
 |---|---|---|---|---|
-| Lift the hips | concentric | 2.00 | Hips: flexion 0° → 100°; Shoulders: flexion 70° → 128°; Ankles: plantarflexion 45° → 25°; Feet: toe extension 40° → 60°; trunk pitch +38° | Push the floor away and send the hips up and back |
+| Lift the hips | concentric | 2.00 | Hips: flexion 0° → 100°; Shoulders: flexion 70° → 128°; Ankles: plantarflexion 45° → 25°; Feet: toe flexion 40° → 22°; trunk pitch +38° | Push the floor away and send the hips up and back |
 | Hold | isometric | 9.00 | trunk pitch +38° | Ears between the arms; shoulder blades wide Press the heels down without locking the knees back |
-| Plank | transition | 1.50 | Hips: extension 100° → 0°; Shoulders: extension 128° → 70°; Ankles: dorsiflexion 25° → 45°; Feet: toe flexion 60° → 40°; trunk pitch -18° | Shift forward to a plank; shoulders over the wrists |
+| Plank | transition | 1.50 | Hips: extension 100° → 0°; Shoulders: extension 128° → 70°; Ankles: dorsiflexion 25° → 45°; Feet: toe extension 22° → 40°; trunk pitch -18° | Shift forward to a plank; shoulders over the wrists |
 | Hold the plank | isometric | 1.50 | trunk pitch -18° |  |
 
 **Muscles**

@@ -15,14 +15,13 @@ from __future__ import annotations
 from faceforge.exercise.catalog._helpers import (
     ACE, CON, ECC, HIPS, ISO, NEUMANN, NSCA, P, S, ST, STRETCH_ACSM, STRETCH_PAGE, TRN,
     YOGA_EMG, YOGA_KIN, arms, eq, flat_foot_ankle, flat_palm, merge, mu, only, ph, pose,
-    toes_tucked
+    toes_on_floor, toes_tucked
 )
 from faceforge.exercise.model import Category, ExerciseDefinition
 
 #: Toes bent back onto their pads under a tucked foot (`toes_tucked`),
 #: so the foot is not one rigid wedge balanced on its longest toe.
 _TUCKED = toes_tucked(45.0)
-_TUCKED_25 = toes_tucked(25.0)
 
 _MAT = (eq("mat", attach="static"),)
 _STAND = merge(pose(knee_flex=5), arms(flex=5, abduct=8, elbow=5))
@@ -210,9 +209,15 @@ tree_pose = ExerciseDefinition(
 )
 
 _HL_PITCH = 5.0
+#: The back foot: the heel is lifted by definition ("crescent"), and the ground
+#: lock anchors the FRONT foot only, so nothing was holding the back one out of
+#: the floor -- its longest toe sat 9.4 below it.  A little dorsiflexion brings
+#: the foot up toward the shin and the toes do the rest.
+_HL_BACK_ANKLE = 15.0
 _HIGH_LUNGE = merge(pose(hip_r_flex=50, knee_r_flex=90,
                          ankle_r_flex=flat_foot_ankle(_HL_PITCH, 50, 90),
-                         hip_l_flex=-25, knee_l_flex=35, ankle_l_flex=0),
+                         hip_l_flex=-25, knee_l_flex=35, ankle_l_flex=_HL_BACK_ANKLE,
+                         toe_curl_l=toes_on_floor(_HL_PITCH, -25, 35, _HL_BACK_ANKLE)),
                     arms(flex=172, abduct=8, elbow=5))
 _HL_UP = merge(pose(hip_r_flex=20, knee_r_flex=15, hip_l_flex=-10, knee_l_flex=8,
                     ankle_l_flex=15),
@@ -258,7 +263,12 @@ high_lunge = ExerciseDefinition(
 # Prone: the body lies face down, +pitch drops the head end (see upper_push).
 
 _DD_PITCH = 38.0
-_DOWN_DOG = merge(pose(hip_flex=100, knee_flex=5, ankle_flex=25, toe_curl=_TUCKED_25),
+# `toes_tucked` is calibrated for a horizontal shank (a plank).  Down dog's is
+# steep, and 60 degrees put the toe TIP 3.7 units above the ball -- the foot
+# rolled onto its nails.  22 leaves the pads down and the heel up, which is
+# what the pose is.
+_DOG_TOES = 22.0
+_DOWN_DOG = merge(pose(hip_flex=100, knee_flex=5, ankle_flex=25, toe_curl=_DOG_TOES),
                   arms(flex=90 + _DD_PITCH, abduct=10, elbow=0), flat_palm())
 _DD_PLANK = merge(pose(ankle_flex=45, toe_curl=_TUCKED), arms(flex=70, abduct=10, elbow=0), flat_palm())
 
@@ -314,7 +324,12 @@ KNEES = (0.0, 0.0, -141.0)
 
 
 def _updog(extension: float, arm_flex: float, elbow: float) -> dict[str, float]:
-    return merge(pose(spine_flex=-extension, hip_flex=0, knee_flex=5, ankle_flex=-45),
+    # The tops of the feet are the contact.  A foot this plantarflexed is
+    # upside down, so it is toe FLEXION that lifts the tips here (measured:
+    # at ankle -45, -37 raises the tip 3.4 and +75 drops it); with the toes
+    # straight they hung 4.7 below the ball and 5.9 through the mat.
+    return merge(pose(spine_flex=-extension, hip_flex=0, knee_flex=5, ankle_flex=-45,
+                      toe_curl=-37),
                  arms(flex=arm_flex, abduct=12, elbow=elbow), flat_palm())
 
 
@@ -330,7 +345,7 @@ upward_dog = ExerciseDefinition(
     setup=("Hands under the shoulders, tops of the feet on the mat",
            "Press the floor away until the arms are straight and the thighs lift",
            "Shoulders down away from the ears; lead with the chest, not the chin"),
-    orientation="prone", anchor="none", base_position=(-85.0, 19.0, 0.0),
+    orientation="prone", anchor="none", base_position=(-85.0, 22.0, 0.0),
     phases=(
         ph("Lift the chest", CON, 2.0, _UPDOG, pitch=_DOG_PITCH, pivot=KNEES,
            cues=("Press the hands down and draw the chest forward and up",
