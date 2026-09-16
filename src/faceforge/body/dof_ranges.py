@@ -58,7 +58,11 @@ DOF_RANGES: tuple[DofRange, ...] = (
     DofRange("finger_curl_{s}", 90.0, "finger flexion", "finger extension", "hand"),
     DofRange("finger_spread_{s}", 12.0, "finger abduction", "finger adduction", "hand"),
     DofRange("thumb_op_{s}", 50.0, "thumb opposition", "thumb reposition", "hand"),
-    DofRange("toe_curl_{s}", 75.0, "toe flexion", "toe extension", "foot"),
+    # Measured, not assumed: +75 lifts the toe tip 10.6 units superiorly and
+    # -37.5 drives it 3.5 below the metatarsal, so positive is EXTENSION here
+    # (the opposite of finger_curl).  The limits agree: the MTP joints extend
+    # far further than they flex.
+    DofRange("toe_curl_{s}", 75.0, "toe extension", "toe flexion", "foot"),
     DofRange("toe_spread_{s}", 8.0, "toe abduction", "toe adduction", "foot"),
 )
 

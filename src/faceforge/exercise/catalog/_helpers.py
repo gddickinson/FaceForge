@@ -7,7 +7,7 @@ from faceforge.exercise.model import (
 )
 from faceforge.exercise.pose_library import (  # noqa: F401  (re-exported for the catalogue)
     arms, combine, flat_foot_ankle, grip, hinge, lunge, merge, neutral, only, pose, squat,
-    stand,
+    stand, toes_on_floor, toes_tucked,
 )
 
 P, S, ST = Role.PRIMARY, Role.SECONDARY, Role.STABILISER

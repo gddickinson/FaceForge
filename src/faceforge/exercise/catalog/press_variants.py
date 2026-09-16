@@ -20,10 +20,15 @@ press is driven.
 from __future__ import annotations
 
 from faceforge.exercise.catalog._helpers import (
-    ACE, CALATAYUD, CON, ECC, ECC_CON, EXRX, ISO, KOLBER, NSCA, P, S, ST, BENCH_TOP, SEATED_ON_BENCH,
-    arms, eq, flat_palm, grip, merge, mu, ph, pose, squat, stand,
+    ACE, BENCH_TOP, CALATAYUD, CON, ECC, ECC_CON, EXRX, ISO, KOLBER, NSCA, P, S,
+    SEATED_ON_BENCH, ST, arms, eq, flat_palm, grip, merge, mu, ph, pose, squat, stand,
+    toes_tucked
 )
 from faceforge.exercise.model import Category, ExerciseDefinition
+
+#: Toes bent back onto their pads under a tucked foot (`toes_tucked`),
+#: so the foot is not one rigid wedge balanced on its longest toe.
+_TUCKED = toes_tucked(45.0)
 
 _RACK = arms(flex=15, abduct=35, rotate=20, elbow=130, forearm=-60, wrist=-15)
 _OVERHEAD = arms(flex=170, abduct=12, rotate=10, elbow=8, forearm=-30, wrist=-10)
@@ -122,8 +127,8 @@ arnold_press = ExerciseDefinition(
 # The push-up's measured pitches (upper_push): the straight body is inclined
 # head-up ~20 deg on locked arms and ~8 at the bottom.  Close grip only narrows
 # the elbows -- 20 deg of abduction at the bottom instead of 45.
-_CGPU_TOP = merge(pose(ankle_flex=45), arms(flex=70, abduct=10, elbow=0), flat_palm())
-_CGPU_BOTTOM = merge(pose(ankle_flex=45), arms(flex=38, abduct=20, elbow=95), flat_palm())
+_CGPU_TOP = merge(pose(ankle_flex=45, toe_curl=_TUCKED), arms(flex=70, abduct=10, elbow=0), flat_palm())
+_CGPU_BOTTOM = merge(pose(ankle_flex=45, toe_curl=_TUCKED), arms(flex=38, abduct=20, elbow=95), flat_palm())
 
 close_grip_push_up = ExerciseDefinition(
     id="close_grip_push_up", name="Close-grip push-up", category=Category.UPPER_PUSH,

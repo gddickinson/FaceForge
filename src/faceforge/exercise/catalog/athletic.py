@@ -3,10 +3,14 @@
 from __future__ import annotations
 
 from faceforge.exercise.catalog._helpers import (
-    ACE, CON, ECC, EXRX, ISO, LAKE, NEUMANN, NSCA, P, S, ST, TRN, ZEBIS, arms, combine, eq, flat_palm, grip,
-    hinge, merge, mu, ph, pose, squat,
+    ACE, CON, ECC, EXRX, ISO, LAKE, NEUMANN, NSCA, P, S, ST, TRN, ZEBIS, arms, combine, eq,
+    flat_palm, grip, hinge, merge, mu, ph, pose, squat, toes_tucked, toes_on_floor
 )
 from faceforge.exercise.model import Category, ExerciseDefinition
+
+#: Toes bent back onto their pads under a tucked foot (`toes_tucked`),
+#: so the foot is not one rigid wedge balanced on its longest toe.
+_TUCKED = toes_tucked(45.0)
 
 _SWING_BOTTOM = merge(hinge(70, 20)[0], arms(flex=45, abduct=5, elbow=5), grip())
 _SWING_TOP = merge(pose(knee_flex=3), arms(flex=90, abduct=5, elbow=5), grip())
@@ -52,7 +56,7 @@ countermovement_jump = ExerciseDefinition(
     phases=(
         ph("Countermovement", ECC, 0.4, merge(squat(70, 70, 30)[0], _CMJ_ARMS_BACK), pitch=30,
            easing="ease_in", cues=("Dip fast: hips back, arms swing back",)),
-        ph("Take-off", CON, 0.25, merge(pose(knee_flex=2, ankle_flex=-35), _CMJ_ARMS_UP),
+        ph("Take-off", CON, 0.25, merge(pose(knee_flex=2, ankle_flex=-35, toe_curl=toes_on_floor(0, 0, 2, -35)), _CMJ_ARMS_UP),
            easing="ease_out", cues=("Triple extension: hips, knees, ankles; arms drive up",)),
         ph("Flight", TRN, 0.35, merge(pose(hip_flex=15, knee_flex=20, ankle_flex=-20), _CMJ_ARMS_UP),
            lift=35.0, cues=("Tall in the air, feet under the hips",)),
@@ -79,7 +83,7 @@ box_jump = ExerciseDefinition(
     phases=(
         ph("Countermovement", ECC, 0.4, merge(squat(75, 75, 30)[0], _CMJ_ARMS_BACK), pitch=30,
            easing="ease_in", cues=("Dip and swing the arms back",)),
-        ph("Take-off", CON, 0.25, merge(pose(knee_flex=2, ankle_flex=-35), _CMJ_ARMS_UP),
+        ph("Take-off", CON, 0.25, merge(pose(knee_flex=2, ankle_flex=-35, toe_curl=toes_on_floor(0, 0, 2, -35)), _CMJ_ARMS_UP),
            easing="ease_out", cues=("Explode up and forward",)),
         ph("Flight", TRN, 0.35, merge(pose(hip_flex=70, knee_flex=75, ankle_flex=10), arms(flex=60, elbow=30)),
            lift=80.0, travel=(0.0, 30.0), cues=("Tuck the knees, feet toward the box",)),
@@ -104,7 +108,7 @@ box_jump = ExerciseDefinition(
 
 _CLEAN_START = merge(squat(110, 70, 50)[0], arms(flex=50, abduct=10), grip())
 _CLEAN_KNEE = merge(squat(65, 30, 40)[0], arms(flex=40, abduct=10), grip())
-_CLEAN_EXT = merge(pose(knee_flex=5, ankle_flex=-30), arms(flex=25, abduct=30, elbow=80), grip())
+_CLEAN_EXT = merge(pose(knee_flex=5, ankle_flex=-30, toe_curl=toes_on_floor(0, 0, 5, -30)), arms(flex=25, abduct=30, elbow=80), grip())
 _CLEAN_CATCH = merge(squat(65, 65, 10)[0], arms(flex=90, abduct=15, elbow=145), grip())
 _CLEAN_STAND = merge(pose(knee_flex=3), arms(flex=90, abduct=15, elbow=145), grip())
 
@@ -179,16 +183,16 @@ burpee = ExerciseDefinition(
     phases=(
         ph("Squat down", ECC, 0.4, merge(squat(125, 120, 45)[0], _BURPEE_ARMS_DOWN), pitch=45,
            position=(0.0, 140.0, 0.0), cues=("Hands to the floor just in front of the feet",)),
-        ph("Kick back", CON, 0.35, merge(pose(ankle_flex=45), arms(flex=90, abduct=15, elbow=0)),
+        ph("Kick back", CON, 0.35, merge(pose(ankle_flex=45, toe_curl=_TUCKED), arms(flex=90, abduct=15, elbow=0)),
            orientation="prone", position=(-85.0, 62.0, 0.0), easing="ease_out",
            cues=("Jump the feet back into a plank; hips level",)),
-        ph("Push-up", ECC, 0.4, merge(pose(ankle_flex=45), arms(flex=55, abduct=45, elbow=95)),
+        ph("Push-up", ECC, 0.4, merge(pose(ankle_flex=45, toe_curl=_TUCKED), arms(flex=55, abduct=45, elbow=95)),
            orientation="prone", position=(-85.0, 40.0, 0.0), cues=("Chest to the floor",)),
-        ph("Press", CON, 0.35, merge(pose(ankle_flex=45), arms(flex=90, abduct=15, elbow=0)),
+        ph("Press", CON, 0.35, merge(pose(ankle_flex=45, toe_curl=_TUCKED), arms(flex=90, abduct=15, elbow=0)),
            orientation="prone", position=(-85.0, 62.0, 0.0)),
         ph("Feet in", CON, 0.35, merge(squat(125, 120, 45)[0], _BURPEE_ARMS_DOWN), pitch=45,
            position=(0.0, 140.0, 0.0), cues=("Jump the feet back under the hips",)),
-        ph("Jump", CON, 0.3, merge(pose(knee_flex=5, ankle_flex=-30), arms(flex=170, elbow=5)),
+        ph("Jump", CON, 0.3, merge(pose(knee_flex=5, ankle_flex=-30, toe_curl=toes_on_floor(0, 0, 5, -30)), arms(flex=170, elbow=5)),
            position=(0.0, 225.0, 0.0), easing="ease_out", cues=("Stand and jump, arms overhead",)),
         ph("Land", ECC, 0.35, merge(squat(40, 40, 15)[0], arms(flex=10, elbow=15)), pitch=15,
            position=(0.0, 196.0, 0.0), cues=("Land soft, straight into the next rep",)),

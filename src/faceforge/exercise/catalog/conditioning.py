@@ -16,9 +16,13 @@ import math
 
 from faceforge.exercise.catalog._helpers import (
     ACE, CON, ECC, HIPS, HUG, ISO, KLESHNEV, NEUMANN, NSCA, P, PERRY, S, ST, TRN, arms,
-    combine, eq, flat_palm, grip, merge, mu, ph, pose,
+    combine, eq, flat_palm, grip, merge, mu, ph, pose, toes_tucked, toes_on_floor
 )
 from faceforge.exercise.model import Category, ExerciseDefinition, Phase
+
+#: Toes bent back onto their pads under a tucked foot (`toes_tucked`),
+#: so the foot is not one rigid wedge balanced on its longest toe.
+_TUCKED = toes_tucked(45.0)
 
 
 def _in_arc(angle: float, start: float, end: float) -> bool:
@@ -192,6 +196,18 @@ _GAIT_TIMING = {
 }
 
 
+#: Stance is the first 62 % of the cycle (PERRY).  The bound here is 65
+#: because toe-off is stance's last instant and carries the largest toe
+#: extension of the whole cycle (65 deg walking, 72 running), and the eight
+#: samples straddle it at 50 % and 62.5 %: cutting at 62 threw that away and
+#: the model walked through push-off with straight toes.
+_STANCE_END = 65.0
+
+
+def _in_stance(pct: float) -> bool:
+    return (pct % 100.0) <= _STANCE_END
+
+
 def _interp_cycle(table, pct: float) -> tuple[float, float, float]:
     pct = pct % 100
     for (p0, h0, k0, a0), (p1, h1, k1, a1) in zip(table, table[1:]):
@@ -207,8 +223,15 @@ def _gait_phase(i: int, n: int, seconds: float, table, run: bool) -> Phase:
     hl, kl, al = _interp_cycle(table, pct + 50)
     swing = 20 if run else 12
     arm_r = -swing * math.cos(math.radians(3.6 * pct))   # right arm opposes right leg
+    pitch = 8.0 if run else 3.0
     kw = dict(hip_r_flex=hr, knee_r_flex=kr, ankle_r_flex=ar,
               hip_l_flex=hl, knee_l_flex=kl, ankle_l_flex=al)
+    # The metatarsophalangeal joints extend through terminal stance and
+    # push-off -- it is the last joint to leave the ground -- and go slack in
+    # swing.  Without this the foot is rigid and the model toes off on a point.
+    for side, at, (h, k, a) in (("r", pct, (hr, kr, ar)), ("l", pct + 50.0, (hl, kl, al))):
+        kw[f"toe_curl_{side}"] = (toes_on_floor(pitch, h, k, a)
+                                  if _in_stance(at) else 0.0)
     act = {}
     for group, (start, end, level) in _GAIT_TIMING.items():
         for side, offset in (("R", 0.0), ("L", 50.0)):
@@ -221,7 +244,7 @@ def _gait_phase(i: int, n: int, seconds: float, table, run: bool) -> Phase:
     return ph(f"{int(pct)} % of stride", CON, seconds,
               merge(pose(**kw), arms(flex=arm_r, elbow=90 if run else 20, side="r"),
                     arms(flex=-arm_r, elbow=90 if run else 20, side="l")),
-              pitch=8 if run else 3, act=act, lift=lift, easing="linear",
+              pitch=pitch, act=act, lift=lift, easing="linear",
               cues=(("Land under the hips, drive the knee forward",) if run and pct == 0
                     else ("Heel strike, roll through the foot, push off the big toe",)
                     if pct == 0 else ()))
@@ -275,7 +298,7 @@ jump_rope = ExerciseDefinition(
     phases=(
         ph("Load", ECC, 0.12, merge(pose(knee_flex=20, ankle_flex=10), _ROPE_ARMS),
            cues=("Soft knees, absorb through the ankles",)),
-        ph("Take-off", CON, 0.1, merge(pose(knee_flex=5, ankle_flex=-28), _ROPE_ARMS),
+        ph("Take-off", CON, 0.1, merge(pose(knee_flex=5, ankle_flex=-28, toe_curl=toes_on_floor(0, 0, 5, -28)), _ROPE_ARMS),
            cues=("Push off the balls of the feet",)),
         ph("Flight", TRN, 0.15, merge(pose(knee_flex=8, ankle_flex=-20), _ROPE_ARMS), lift=8.0,
            cues=("Rope passes under the feet",)),
@@ -298,10 +321,12 @@ jumping_jack = ExerciseDefinition(
     description="A hop that spreads the feet as the arms swing overhead, and a hop back.",
     setup=("Stand tall, feet together, arms at the sides",),
     phases=(
-        ph("Out", CON, 0.3, merge(pose(hip_abduct=25, knee_flex=15, ankle_flex=-15),
+        ph("Out", CON, 0.3, merge(pose(hip_abduct=25, knee_flex=15, ankle_flex=-15,
+                 toe_curl=toes_on_floor(0, 0, 15, -15)),
                                   arms(abduct=170, elbow=10)), lift=3.0,
            cues=("Hop the feet wide as the hands clap overhead",)),
-        ph("In", CON, 0.3, merge(pose(hip_abduct=0, knee_flex=15, ankle_flex=-15),
+        ph("In", CON, 0.3, merge(pose(hip_abduct=0, knee_flex=15, ankle_flex=-15,
+                 toe_curl=toes_on_floor(0, 0, 15, -15)),
                                  arms(abduct=10, elbow=10)), lift=3.0,
            cues=("Hop the feet together as the arms come down",)),
     ),
@@ -326,9 +351,9 @@ mountain_climber = ExerciseDefinition(
         # head, so the trailing foot is held up by pitch, not by the pose:
         # measured, 0 left the back toes 10.4 under the mat with the knee in
         # and 2.9 under on the switch.
-        ph("Right knee in", CON, 0.3, merge(pose(hip_r_flex=110, knee_r_flex=105, ankle_flex=45), _CLIMB_ARMS),
+        ph("Right knee in", CON, 0.3, merge(pose(hip_r_flex=110, knee_r_flex=105, ankle_flex=45, toe_curl=_TUCKED), _CLIMB_ARMS),
            pitch=8, cues=("Drive the knee to the chest; hips stay down",)),
-        ph("Switch", CON, 0.3, merge(pose(hip_l_flex=110, knee_l_flex=105, ankle_flex=45), _CLIMB_ARMS),
+        ph("Switch", CON, 0.3, merge(pose(hip_l_flex=110, knee_l_flex=105, ankle_flex=45, toe_curl=_TUCKED), _CLIMB_ARMS),
            pitch=5, cues=("Switch legs; shoulders over the wrists",)),
     ),
     muscles=(mu("hip_flexors", P, 0.85), mu("rectus_abdominis", P, 0.7), mu("obliques", S, 0.5),

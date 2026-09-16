@@ -11,10 +11,14 @@ from __future__ import annotations
 
 from faceforge.exercise.catalog._helpers import (
     ACE, BENCH_INCLINE, BENCH_TOP, CALATAYUD, CON, ECC, ECC_CON, EXRX, HIPS, ISO, KOLBER,
-    NEUMANN, NSCA, P, S, SAETERBAKKEN, SEATED_ON_BENCH, ST, arms, eq, flat_palm, grip, merge, mu, only,
-    ph, pose,
+    NEUMANN, NSCA, P, S, SAETERBAKKEN, SEATED_ON_BENCH, ST, arms, eq, flat_palm, grip, merge,
+    mu, only, ph, pose, toes_tucked
 )
 from faceforge.exercise.model import Category, ExerciseDefinition
+
+#: Toes bent back onto their pads under a tucked foot (`toes_tucked`),
+#: so the foot is not one rigid wedge balanced on its longest toe.
+_TUCKED = toes_tucked(45.0)
 
 # Feet on the floor either side of the bench (measured 2026-09-11: with the
 # pelvis on a 58-high pad the thighs must slope 10 deg below the trunk and
@@ -162,8 +166,8 @@ incline_dumbbell_press = ExerciseDefinition(
 # length): ~20 deg on straight arms, ~12 at the bottom.  Tilting a prone body
 # head-up turns its anterior direction toward the head, so the arms stay
 # vertical over the hands at 90 deg MINUS the incline (measured on the rig).
-_PU_TOP = merge(pose(ankle_flex=45), arms(flex=70, abduct=10, elbow=0), flat_palm())
-_PU_BOTTOM = merge(pose(ankle_flex=45), arms(flex=38, abduct=45, elbow=95), flat_palm())
+_PU_TOP = merge(pose(ankle_flex=45, toe_curl=_TUCKED), arms(flex=70, abduct=10, elbow=0), flat_palm())
+_PU_BOTTOM = merge(pose(ankle_flex=45, toe_curl=_TUCKED), arms(flex=38, abduct=45, elbow=95), flat_palm())
 
 push_up = ExerciseDefinition(
     id="push_up", name="Push-up", category=Category.UPPER_PUSH,
@@ -363,7 +367,11 @@ lying_triceps_extension = ExerciseDefinition(
            "Narrow overhand grip", "Feet flat, shoulder blades back"),
     orientation="supine", anchor="none", base_position=(-85.0, BENCH_TOP + 15.0, 0.0),
     phases=(
-        ph("Lower", ECC, 2.0, merge(pose(), _BENCH_LEGS, arms(flex=100, abduct=5, elbow=110, forearm=-20), grip()),
+        # Measured: at elbow 110 the bar's box reaches 7.2 units inside the
+        # skull sphere -- it is drawn through the head.  At 90 it clears by 4.6
+        # and sits at (x -111, y 84), above and just past the forehead, which
+        # is where the cue says to put it.
+        ph("Lower", ECC, 2.0, merge(pose(), _BENCH_LEGS, arms(flex=100, abduct=5, elbow=90, forearm=-20), grip()),
            cues=("Bend only the elbows; bar toward the forehead or just behind",)),
         ph("Extend", CON, 1.2, merge(pose(), _BENCH_LEGS, arms(flex=100, abduct=5, elbow=8, forearm=-20), grip()),
            cues=("Extend to lockout with the upper arms still",)),

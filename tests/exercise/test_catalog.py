@@ -168,3 +168,59 @@ def test_no_equipment_means_no_equipment(catalog):
     carrying = [(d.id, sorted(set(d.equipment_names) & LOADED_KINDS)) for d in catalog.values()
                 if "no equipment" in d.tags and set(d.equipment_names) & LOADED_KINDS]
     assert carrying == []
+
+
+#: How far the heel may lift before the toes have to take over.  Below this it
+#: is a rounding difference in the authored angles, not a raised heel.
+HEEL_UP_DEGREES = 25.0
+
+
+def _leg(pose_dict, side):
+    from faceforge.body.dof_ranges import dof_to_degrees
+    return tuple(dof_to_degrees(f, float(pose_dict.get(f, 0.0))) for f in
+                 (f"hip_{side}_flex", f"knee_{side}_flex", f"ankle_{side}_flex",
+                  f"toe_curl_{side}"))
+
+
+def test_a_heel_that_leaves_the_floor_takes_the_toes_with_it(catalog):
+    """A rigid foot stands on the point of its longest toe, and goes through it.
+
+    Only symmetric stances on the ground are checked: with the two legs
+    authored alike there is no swing leg and no split stance, so any heel that
+    is up is a heel the body is standing on -- a calf raise, a jump take-off,
+    the second pull of a clean.  A phase with ``lift`` is in the air or on a
+    box, where there is no floor under the toes to put down.  The rule itself
+    is ``pose_library.toes_on_floor``.
+    """
+    from faceforge.exercise.pose_library import flat_foot_ankle
+
+    rigid = []
+    for defn in catalog.values():
+        if defn.orientation != "standing":
+            continue
+        for phase in defn.phases:
+            if phase.lift:
+                continue                       # airborne, or standing on a box
+            right, left = _leg(phase.pose, "r"), _leg(phase.pose, "l")
+            if right != left:
+                continue                       # a split stance or a swing leg
+            hip, knee, ankle, toe = right
+            if flat_foot_ankle(phase.pitch, hip, knee) - ankle > HEEL_UP_DEGREES and toe == 0.0:
+                rigid.append((defn.id, phase.name))
+    assert rigid == []
+
+
+def test_a_flat_foot_keeps_its_toes_flat(catalog):
+    """The other direction: toes bent under a sole that is on the floor."""
+    from faceforge.exercise.pose_library import flat_foot_ankle
+
+    bent = []
+    for defn in catalog.values():
+        if defn.orientation != "standing":
+            continue
+        for phase in defn.phases:
+            for side in ("r", "l"):
+                hip, knee, ankle, toe = _leg(phase.pose, side)
+                if abs(flat_foot_ankle(phase.pitch, hip, knee) - ankle) < 5.0 and toe > 5.0:
+                    bent.append((defn.id, phase.name, side))
+    assert bent == []

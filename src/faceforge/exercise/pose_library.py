@@ -16,6 +16,11 @@ With the body pitched forward by ``pitch`` and the thigh swung anteriorly by
 the floor when the ankle is dorsiflexed by ``pitch - hip + knee``.  Every
 standing pose here uses :func:`flat_foot_ankle` so the ground lock has a flat
 sole to stand on.
+
+When the ankle is *less* dorsiflexed than that the heel is off the floor, and
+:func:`toes_on_floor` returns the toe extension that puts the pads down in its
+place.  A foot with no toe angle at all is a rigid wedge, and the model ends
+up balanced on the points of its toes.
 """
 
 from __future__ import annotations
@@ -91,6 +96,39 @@ def flat_foot_ankle(pitch: float, hip: float, knee: float) -> float:
     return pitch - hip + knee
 
 
+def toes_on_floor(pitch: float, hip: float, knee: float, ankle: float) -> float:
+    """Toe extension (degrees) that keeps the toe *pads* on the floor.
+
+    The sole is flat when ``ankle == flat_foot_ankle(pitch, hip, knee)``.  Any
+    shortfall is the angle the forefoot has tipped down by -- a raised heel --
+    and the toes have to bend back through the same angle for their pads,
+    rather than their tips, to be what touches.  Without this the foot is one
+    rigid wedge and the model balances on the ends of its toes.
+
+    Returns 0 when the heel is down, and never more than the joint allows.
+    """
+    return max(0.0, min(75.0, flat_foot_ankle(pitch, hip, knee) - ankle))
+
+
+#: Measured on the rig, prone with a straight leg: at ``ankle_flex`` 45 the
+#: toe segment (the base of the proximal phalanx out to the tip) runs 4.0
+#: units toward the head and 4.4 units DOWN, through the floor, and about 38
+#: degrees of toe extension levels it.  The sum is what matters, because the
+#: ankle and the toes turn about the same mediolateral axis.
+TUCKED_SUM = 85.0
+
+
+def toes_tucked(ankle: float) -> float:
+    """Toe extension (degrees) that lays a tucked foot's pads on the floor.
+
+    For the prone family -- plank, push-up, mountain climber, downward dog --
+    where the shank is roughly horizontal and the foot hangs off it onto the
+    toes.  With no toe angle the foot is one rigid wedge balanced on the point
+    of its longest toe, which is also the pivot that goes through the floor.
+    """
+    return max(0.0, min(75.0, TUCKED_SUM - ankle))
+
+
 def squat(depth_hip: float, knee: float, pitch: float, **extra: float) -> tuple[dict, float]:
     """A bilateral squat position.
 
@@ -125,6 +163,8 @@ def lunge(front: str, hip_front: float, knee_front: float, hip_back: float,
         f"ankle_{front}_flex": flat_foot_ankle(pitch, hip_front, knee_front),
         f"hip_{back}_flex": hip_back, f"knee_{back}_flex": knee_back,
         f"ankle_{back}_flex": ankle_back,
+        # The back heel is up in every split stance: the toes take the weight.
+        f"toe_curl_{back}": toes_on_floor(pitch, hip_back, knee_back, ankle_back),
     }
     kw.update(extra)
     return pose(**kw), pitch

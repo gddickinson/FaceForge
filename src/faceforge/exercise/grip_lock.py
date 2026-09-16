@@ -41,6 +41,29 @@ _ABDUCT_LIMIT = 2.0
 #: Largest normalised step per iteration, so a poor local slope cannot fling
 #: the arm across the body.
 _MAX_STEP = 0.5
+#: How far the lock may move abduction from the angle the animation authored
+#: for this frame (0.45 = 40 deg, comfortably above the 0.36 a
+#: pull-up's elbow flexion legitimately needs).  Its job is to remove a slide of a dozen
+#: units, not to re-pose the arm: on the skull crusher, where flexing the
+#: elbows moves both hands toward the face, an unbounded lock abducted one
+#: shoulder 41 units away from the other and hung the bar at 18.7 degrees.
+_MAX_AUTHORITY = 0.45
+#: Offset error above which the lock leaves the frame alone.  A hand SLIDING
+#: along a bar is a dozen units out (the bench press measured 13.8); tens of
+#: units mean the pose has deliberately taken the hands somewhere else -- a
+#: skull crusher brings both to the forehead -- and a lock that treats that as
+#: slide abducts a shoulder to chase it.
+_MAX_ERROR = 25.0
+#: Smallest singular value the 2x2 Jacobian may have before the lock gives up,
+#: in units of hand travel per unit of normalised abduction (1.0 = 90 deg).
+#: Abduction stops moving the hand along the bar when the arm approaches the
+#: axis it turns about, and there the Newton step is a division by nearly
+#: nothing: it spends its whole authority and still does not converge.
+#: Measured over every two-handed exercise in the catalogue, the skull
+#: crusher's arms-overhead "Lower" is alone at 1.34 -- and alone in hanging
+#: its bar off level, by 11.4 degrees.  The next lowest is a front squat at
+#: 2.60, which the lock handles without tipping anything.
+_MIN_SENSITIVITY = 2.0
 _SIDES = ("R", "L")
 
 
@@ -55,6 +78,9 @@ class GripWidthLock:
         self.iterations = max(1, int(iterations))
         self.targets: dict[str, float] | None = None
         self.axis: np.ndarray | None = None
+        #: Smallest singular value of the last Jacobian, for diagnosis: it is
+        #: how much hand travel a unit of abduction actually buys.
+        self.sensitivity: float | None = None
         self._state = BodyState()
 
     # -- forward kinematics -------------------------------------------------------
@@ -115,6 +141,7 @@ class GripWidthLock:
             if not self.calibrate(state_dict):
                 return {}
         keys = {s: f"shoulder_{s.lower()}_abduct" for s in _SIDES}
+        authored = {s: float(state_dict.get(keys[s], 0.0)) for s in _SIDES}
         errors: dict[str, float] = {}
         for _ in range(self.iterations):
             self._pose(state_dict)
@@ -125,6 +152,8 @@ class GripWidthLock:
             errors = {s: float(e) for s, e in zip(_SIDES, err)}
             if float(np.abs(err).max()) < 1e-3:
                 break
+            if float(np.abs(err).max()) > _MAX_ERROR:
+                break
             jac = np.zeros((2, 2))
             for j, side in enumerate(_SIDES):
                 probe = dict(state_dict)
@@ -134,10 +163,13 @@ class GripWidthLock:
                 if probed is None:
                     return errors
                 jac[:, j] = [(probed[s] - offsets[s]) / _PROBE_STEP for s in _SIDES]
-            if abs(float(np.linalg.det(jac))) < 1e-9:
+            self.sensitivity = float(np.linalg.svd(jac, compute_uv=False)[-1])
+            if self.sensitivity < _MIN_SENSITIVITY:
                 break
             delta = np.clip(np.linalg.solve(jac, err), -_MAX_STEP, _MAX_STEP)
             for j, side in enumerate(_SIDES):
                 base = float(state_dict.get(keys[side], 0.0))
-                state_dict[keys[side]] = float(np.clip(base + delta[j], -_ABDUCT_LIMIT, _ABDUCT_LIMIT))
+                stepped = np.clip(base + delta[j], authored[side] - _MAX_AUTHORITY,
+                                  authored[side] + _MAX_AUTHORITY)
+                state_dict[keys[side]] = float(np.clip(stepped, -_ABDUCT_LIMIT, _ABDUCT_LIMIT))
         return errors

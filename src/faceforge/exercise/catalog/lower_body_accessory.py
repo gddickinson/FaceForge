@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from faceforge.exercise.catalog._helpers import (
     ACE, BOREN, CON, CONTRERAS, DISTEFANO, ECC, EKSTROM, EXRX, ISO, NEUMANN, NSCA, P, S,
-    SEATED_ON_BENCH, SHOULDERS, ST, TRN, arms, combine, eq, grip, merge, mu, ph, pose,
+    SEATED_ON_BENCH, SHOULDERS, ST, TRN, arms, combine, eq, grip, merge, mu, ph, pose, toes_on_floor
 )
 from faceforge.exercise.model import Category, ExerciseDefinition
 
@@ -84,18 +84,27 @@ step_up = ExerciseDefinition(
                 "and lowers it under control.",
     setup=("Box height so the leading thigh is about parallel", "Whole foot on the box",
            "Hands on hips or dumbbells at the sides"),
+    # The box stands in FRONT of the athlete (z 30..80), not under him: with it
+    # at the origin the box was drawn through both thighs every time he stood
+    # on the floor.  ``travel`` carries him onto it and back, the way the box
+    # jump already did.
     phases=(
         ph("Place foot", TRN, 0.7,
-           merge(pose(hip_r_flex=95, knee_r_flex=95, ankle_r_flex=10, knee_l_flex=5), arms(elbow=5)),
+           merge(pose(hip_r_flex=95, knee_r_flex=95, ankle_r_flex=10, knee_l_flex=5,
+                      toe_curl_l=toes_on_floor(10, 0, 5, 0)), arms(elbow=5)),
            pitch=10, cues=("Right foot flat on the box, knee over the toes",)),
         ph("Step up", CON, 1.2,
            merge(pose(hip_r_flex=5, knee_r_flex=5, hip_l_flex=35, knee_l_flex=60,
-                      ankle_l_flex=-10), arms(elbow=5)),
-           lift=60.0, cues=("Push through the right heel; do not push off the back foot",)),
+                      ankle_l_flex=-10, toe_curl_l=toes_on_floor(0, 35, 60, -10)),
+                 arms(elbow=5)),
+           lift=60.0, travel=(0.0, 55.0),
+           cues=("Push through the right heel; do not push off the back foot",)),
         ph("Stand on box", ISO, 0.5,
-           merge(pose(knee_flex=3), arms(elbow=5)), lift=60.0, cues=("Stand tall, hips level",)),
+           merge(pose(knee_flex=3), arms(elbow=5)), lift=60.0, travel=(0.0, 55.0),
+           cues=("Stand tall, hips level",)),
         ph("Step down", ECC, 1.4,
-           merge(pose(hip_r_flex=95, knee_r_flex=95, ankle_r_flex=10, knee_l_flex=5), arms(elbow=5)),
+           merge(pose(hip_r_flex=95, knee_r_flex=95, ankle_r_flex=10, knee_l_flex=5,
+                      toe_curl_l=toes_on_floor(10, 0, 5, 0)), arms(elbow=5)),
            pitch=10, lift=0.0, cues=("Lower the left foot to the floor under control",)),
         ph("Return", TRN, 0.6, merge(pose(), arms(elbow=5))),
     ),
@@ -103,7 +112,7 @@ step_up = ExerciseDefinition(
              mu("gluteus_medius", S, 0.6, side="R"), mu("hamstrings", S, 0.4, side="R"),
              mu("gastrocnemius", S, 0.4), mu("soleus", S, 0.4), mu("hip_flexors", S, 0.4, side="L"),
              mu("erector_spinae", ST, 0.35), mu("obliques", ST, 0.3)),
-    equipment=(eq("plyo_box", attach="static", position=(0.0, 0.0, 0.0), height=60.0),),
+    equipment=(eq("plyo_box", attach="static", position=(0.0, 0.0, 55.0), height=60.0),),
     errors=("Pushing off the trailing foot.", "Leaning forward to use momentum.",
             "Knee collapsing inward on the step."),
     physio_notes=("High gluteus medius and maximus activation (Boren 2011); progress height "
@@ -119,9 +128,9 @@ standing_calf_raise = ExerciseDefinition(
     setup=("Feet hip-width, weight over the balls of the feet", "Knees straight but not locked",
            "Fingertips on a wall for balance"),
     phases=(
-        ph("Rise", CON, 1.0, merge(pose(ankle_flex=-40, knee_flex=3), arms(flex=15, elbow=10)),
+        ph("Rise", CON, 1.0, merge(pose(ankle_flex=-40, knee_flex=3, toe_curl=toes_on_floor(0, 0, 3, -40)), arms(flex=15, elbow=10)),
            cues=("Push through the big toe; heels as high as possible",)),
-        ph("Top", ISO, 0.6, merge(pose(ankle_flex=-40, knee_flex=3), arms(flex=15, elbow=10)),
+        ph("Top", ISO, 0.6, merge(pose(ankle_flex=-40, knee_flex=3, toe_curl=toes_on_floor(0, 0, 3, -40)), arms(flex=15, elbow=10)),
            cues=("Squeeze the calves",)),
         ph("Lower", ECC, 2.0, merge(pose(ankle_flex=0, knee_flex=3), arms(flex=15, elbow=10)),
            cues=("Lower slowly, heels to the floor",)),

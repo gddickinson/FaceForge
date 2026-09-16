@@ -15,6 +15,7 @@ Contents
 ``core_stability``         planks, sit-up, crunch, dead bug, bird dog, twist, knee raise, Pallof
 ``conditioning``           bike, rower, walking, running, jump rope, jumping jack, climbers, ropes
 ``athletic``               kettlebell swing, jumps, power clean, medicine ball slam, burpee
+``olympic``                the snatch, the clean and jerk, and the pieces they are built from
 ``kettlebell``             cleans, snatches, presses, carries, the windmill and the get-up
 ``calisthenics``           muscle-up, L-sit, pistol, archer and pike push-ups, Nordic curl
 ``yoga``                   eight held asanas: chair, warrior II, triangle, tree, both dogs, cat-cow
@@ -32,13 +33,14 @@ def get_exercise_catalog() -> dict[str, ExerciseDefinition]:
     """Every built-in exercise, keyed by id, in display order."""
     from faceforge.exercise.catalog import (
         athletic, bench_variants, calisthenics, conditioning, core_stability, hinges,
-        kettlebell, lower_body, lower_body_accessory, lunges, press_variants, rows,
-        stretches, upper_pull, upper_push, yoga,
+        kettlebell, lower_body, lower_body_accessory, lunges, olympic, press_variants,
+        rows, stretches, upper_pull, upper_push, yoga,
     )
     catalog: dict[str, ExerciseDefinition] = {}
     for module in (lower_body, hinges, lunges, lower_body_accessory, upper_push,
                    bench_variants, press_variants, upper_pull, rows, core_stability,
-                   conditioning, athletic, kettlebell, calisthenics, yoga, stretches):
+                   conditioning, athletic, olympic, kettlebell, calisthenics, yoga,
+                   stretches):
         for defn in module.EXERCISES:
             if defn.id in catalog:
                 raise ValueError(f"duplicate exercise id {defn.id!r}")

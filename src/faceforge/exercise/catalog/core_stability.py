@@ -9,15 +9,19 @@ vertebral flexion on top.
 from __future__ import annotations
 
 from faceforge.exercise.catalog._helpers import (
-    ACE, CON, ECC, EKSTROM, ESCAMILLA_ABS, EXRX, HIPS, ISO, MCGILL, P, S, SNARR, ST, TRN,
-    arms, eq, flat_palm, grip, merge, mu, only, ph, pose,
+    ACE, CON, ECC, EKSTROM, ESCAMILLA_ABS, EXRX, HIPS, ISO, MCGILL, P, S, SNARR, ST, TRN, arms,
+    eq, flat_palm, grip, merge, mu, only, ph, pose, toes_tucked
 )
 from faceforge.exercise.model import Category, ExerciseDefinition
 
+#: Toes bent back onto their pads under a tucked foot (`toes_tucked`),
+#: so the foot is not one rigid wedge balanced on its longest toe.
+_TUCKED = toes_tucked(45.0)
+
 _MAT = (eq("mat", attach="static"),)
 _PLANK_ARMS = arms(flex=78, abduct=0, elbow=90)   # upper arm vertical under a 12 deg head-up incline
-_PLANK = merge(pose(ankle_flex=45), _PLANK_ARMS)
-_PRONE_REST = merge(pose(ankle_flex=45, hip_flex=8, knee_flex=10), arms(flex=40, abduct=15, elbow=100))
+_PLANK = merge(pose(ankle_flex=45, toe_curl=_TUCKED), _PLANK_ARMS)
+_PRONE_REST = merge(pose(ankle_flex=45, toe_curl=_TUCKED, hip_flex=8, knee_flex=10), arms(flex=40, abduct=15, elbow=100))
 
 front_plank = ExerciseDefinition(
     id="front_plank", name="Front plank", category=Category.CORE,

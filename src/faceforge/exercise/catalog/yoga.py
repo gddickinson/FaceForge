@@ -14,10 +14,15 @@ from __future__ import annotations
 
 from faceforge.exercise.catalog._helpers import (
     ACE, CON, ECC, HIPS, ISO, NEUMANN, NSCA, P, S, ST, STRETCH_ACSM, STRETCH_PAGE, TRN,
-    YOGA_EMG, YOGA_KIN,
-    arms, eq, flat_palm, flat_foot_ankle, merge, mu, only, ph, pose,
+    YOGA_EMG, YOGA_KIN, arms, eq, flat_foot_ankle, flat_palm, merge, mu, only, ph, pose,
+    toes_tucked
 )
 from faceforge.exercise.model import Category, ExerciseDefinition
+
+#: Toes bent back onto their pads under a tucked foot (`toes_tucked`),
+#: so the foot is not one rigid wedge balanced on its longest toe.
+_TUCKED = toes_tucked(45.0)
+_TUCKED_25 = toes_tucked(25.0)
 
 _MAT = (eq("mat", attach="static"),)
 _STAND = merge(pose(knee_flex=5), arms(flex=5, abduct=8, elbow=5))
@@ -253,9 +258,9 @@ high_lunge = ExerciseDefinition(
 # Prone: the body lies face down, +pitch drops the head end (see upper_push).
 
 _DD_PITCH = 38.0
-_DOWN_DOG = merge(pose(hip_flex=100, knee_flex=5, ankle_flex=25),
+_DOWN_DOG = merge(pose(hip_flex=100, knee_flex=5, ankle_flex=25, toe_curl=_TUCKED_25),
                   arms(flex=90 + _DD_PITCH, abduct=10, elbow=0), flat_palm())
-_DD_PLANK = merge(pose(ankle_flex=45), arms(flex=70, abduct=10, elbow=0), flat_palm())
+_DD_PLANK = merge(pose(ankle_flex=45, toe_curl=_TUCKED), arms(flex=70, abduct=10, elbow=0), flat_palm())
 
 downward_dog = ExerciseDefinition(
     id="downward_dog", name="Downward-facing dog (adho mukha svanasana)",

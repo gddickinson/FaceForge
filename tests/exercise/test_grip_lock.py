@@ -93,3 +93,49 @@ def test_an_abduction_beyond_the_old_bound_is_left_alone_when_the_hands_are_on_t
     lock.apply(same)
     assert same["shoulder_r_abduct"] == pytest.approx(1.83, abs=1e-6)
     assert same["shoulder_l_abduct"] == pytest.approx(1.83, abs=1e-6)
+
+
+class _NearlyDeafRig(_Rig):
+    """An arm whose abduction hardly moves the hand along the bar.
+
+    This is the skull crusher: with the upper arms near vertical, abduction is
+    almost a spin about the arm's own axis, and the hand travels 1.3 units per
+    unit of abduction instead of 30.  Newton then spends its whole authority on
+    one side and hangs the bar off level.
+    """
+
+    def apply(self, state, dt):
+        for side, sign in (("R", 1.0), ("L", -1.0)):
+            ab = getattr(state, f"shoulder_{side.lower()}_abduct")
+            el = getattr(state, f"elbow_{side.lower()}_flex")
+            x = sign * (20.0 + 1.3 * ab + 12.0 * el)
+            for digit in (2, 3, 4, 5):
+                for seg, dz in (("prox", 0.0), ("mid", -3.0), ("dist", -5.0)):
+                    self.pivots[f"finger_{side}_{digit}_{seg}"].set_position(
+                        x + digit * 0.5, 0.0, dz)
+
+
+def test_the_lock_gives_up_when_abduction_barely_moves_the_hand():
+    rig = _NearlyDeafRig()
+    lock = GripWidthLock(rig, rig, rig.pivots)
+    start = {"shoulder_r_abduct": 0.05, "shoulder_l_abduct": 0.05,
+             "elbow_r_flex": 0.0, "elbow_l_flex": 0.0}
+    assert lock.calibrate(start)
+    bent = dict(start, elbow_r_flex=0.9, elbow_l_flex=0.9)
+    lock.apply(bent)
+    assert lock.sensitivity is not None and lock.sensitivity < 2.0
+    assert bent["shoulder_r_abduct"] == pytest.approx(0.05, abs=1e-9)
+    assert bent["shoulder_l_abduct"] == pytest.approx(0.05, abs=1e-9)
+
+
+def test_a_responsive_arm_is_still_corrected():
+    """The guard must not switch the lock off for the pull-up it exists for."""
+    rig = _Rig()
+    lock = GripWidthLock(rig, rig, rig.pivots)
+    hang = {"shoulder_r_abduct": 1.0, "shoulder_l_abduct": 1.0,
+            "elbow_r_flex": 0.0, "elbow_l_flex": 0.0}
+    assert lock.calibrate(hang)
+    top = dict(hang, elbow_r_flex=0.9, elbow_l_flex=0.9)
+    lock.apply(top)
+    assert lock.sensitivity > 2.0
+    assert top["shoulder_r_abduct"] < 0.99
