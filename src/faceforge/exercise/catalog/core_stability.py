@@ -304,7 +304,7 @@ pallof_press = ExerciseDefinition(
              mu("erector_spinae", S, 0.4), mu("multifidus", S, 0.4),
              mu("deltoid_anterior", S, 0.4), mu("triceps_brachii", S, 0.4),
              mu("serratus_anterior", S, 0.4), mu("quadratus_lumborum", ST, 0.35)),
-    equipment=(eq("cable_handle",),),
+    equipment=(eq("cable_handle", cable_to=(130.0, 0.0, 0.0)),),
     errors=("Trunk rotating toward the cable.", "Shrugging."),
     physio_notes=("An anti-rotation core exercise with negligible spinal motion; suits "
                   "rotation-intolerant backs.",),

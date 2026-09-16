@@ -68,7 +68,8 @@ barbell_hip_thrust = ExerciseDefinition(
     muscles=(mu("gluteus_maximus", P, 1.0), mu("hamstrings", S, 0.6),
              mu("quadriceps", S, 0.5), mu("adductors", S, 0.4), mu("erector_spinae", S, 0.4),
              mu("rectus_abdominis", ST, 0.35), mu("gluteus_medius", S, 0.4)),
-    equipment=(eq("barbell", plates=2), eq("bench", attach="static", position=(-95.0, 0.0, 0.0),
+    equipment=(eq("barbell", plates=2), # The shoulders sit at x = -69.6; the pad ended at -75 and missed them.
+               eq("bench", attach="static", position=(-85.0, 0.0, 0.0),
                                            height=45.0, length=40.0)),
     errors=("Arching the lumbar spine instead of extending the hips.",
             "Feet too close or too far from the bench."),

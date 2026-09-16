@@ -108,7 +108,8 @@ stationary_bike = ExerciseDefinition(
     muscles=(mu("quadriceps", P, 0.9), mu("gluteus_maximus", P, 0.8), mu("hamstrings", S, 0.6),
              mu("gastrocnemius", S, 0.6), mu("soleus", S, 0.6), mu("tibialis_anterior", S, 0.4),
              mu("hip_flexors", S, 0.4), mu("erector_spinae", ST, 0.3), mu("triceps_brachii", ST, 0.25)),
-    equipment=(eq("bike", attach="static"),),
+    equipment=(eq("bike", attach="static"),
+               eq("pedal", attach="foot_r"), eq("pedal", attach="foot_l")),
     errors=("Saddle too low (knee over-flexed, high patellofemoral load).",
             "Knees flaring out.", "Mashing the pedals instead of spinning circles."),
     physio_notes=("Non-weight-bearing knee range of motion; saddle height controls peak knee "
@@ -164,7 +165,10 @@ rowing_machine = ExerciseDefinition(
                # turned about: footplate to the measured ankle at x = 56, seat
                # under the hips at the finish.
                eq("rower", attach="static", position=(116.0, 0.0, 0.0),
-                  rotation_deg=(0, 180, 0)),),
+                  rotation_deg=(0, 180, 0)),
+               # The handle is held, so it is a hand item with the chain
+               # running forward to the flywheel, not part of the frame.
+               eq("cable_handle", attach="hands", cable_to=(0.0, -4.0, 120.0))),
     errors=("Opening the back before the legs have finished (shooting the slide).",
             "Pulling with the arms early.", "Rounding the lumbar spine at the catch.",
             "Rushing the recovery."),

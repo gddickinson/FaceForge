@@ -97,8 +97,9 @@ class EquipmentSpec:
 
     ``attach``: ``"hands"`` (centred between the wrists, e.g. a barbell),
     ``"hand_r"`` / ``"hand_l"`` (one per hand), ``"knees"`` (centred between
-    the knee joints, for a loop round the legs), or ``"static"`` (fixed in the
-    room at ``position``).
+    the knee joints, for a loop round the legs), ``"foot_r"`` / ``"foot_l"``
+    (one per foot, for a pedal), or ``"static"`` (fixed in the room at
+    ``position``).
     """
 
     kind: str
@@ -222,7 +223,7 @@ class ExerciseDefinition:
 
 VALID_ORIENTATIONS = ("standing", "supine", "prone", "seated", "hanging", "side")
 VALID_ANCHORS = ("feet", "hands", "none")
-VALID_ATTACH = ("hands", "hand_r", "hand_l", "knees", "static")
+VALID_ATTACH = ("hands", "hand_r", "hand_l", "knees", "foot_r", "foot_l", "static")
 
 
 def validate_definition(

@@ -109,7 +109,8 @@ seated_cable_row = ExerciseDefinition(
              mu("erector_spinae", S, 0.5, note="holds the trunk upright"),
              mu("infraspinatus_teres_minor", S, 0.4), mu("forearm_flexors", ST, 0.55),
              mu("hamstrings", ST, 0.25)),
-    equipment=(eq("cable_handle",), eq("bench", attach="static", height=58.0, length=60.0)),
+    equipment=(eq("cable_handle", cable_to=(0.0, 6.0, 150.0)),
+               eq("bench", attach="static", height=58.0, length=60.0)),
     errors=("Leaning back and forward with each rep.", "Shrugging the shoulders.",
             "Rounding the back on the return."),
     physio_notes=("Lower lumbar shear than the bent-over row; a good early rowing choice "
@@ -138,7 +139,8 @@ face_pull = ExerciseDefinition(
              mu("trapezius_lower", S, 0.6), mu("deltoid_lateral", S, 0.35),
              mu("rotator_cuff", S, 0.5), mu("biceps_brachii", ST, 0.3),
              mu("forearm_flexors", ST, 0.45)),
-    equipment=(eq("cable_handle", attach="hand_r"), eq("cable_handle", attach="hand_l")),
+    equipment=(eq("cable_handle", attach="hand_r", cable_to=(0.0, 40.0, 120.0)),
+               eq("cable_handle", attach="hand_l", cable_to=(0.0, 40.0, 120.0))),
     errors=("Pulling to the chest (becomes a row).", "Shrugging.", "No external rotation."),
     physio_notes=("Trains the posterior cuff and scapular retractors that counter the "
                   "forward-shoulder posture; a staple in shoulder impingement programmes.",),

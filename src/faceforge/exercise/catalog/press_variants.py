@@ -20,7 +20,7 @@ press is driven.
 from __future__ import annotations
 
 from faceforge.exercise.catalog._helpers import (
-    ACE, CALATAYUD, CON, ECC, ECC_CON, EXRX, ISO, KOLBER, NSCA, P, S, ST, SEATED_ON_BENCH,
+    ACE, CALATAYUD, CON, ECC, ECC_CON, EXRX, ISO, KOLBER, NSCA, P, S, ST, BENCH_TOP, SEATED_ON_BENCH,
     arms, eq, flat_palm, grip, merge, mu, ph, pose, squat, stand,
 )
 from faceforge.exercise.model import Category, ExerciseDefinition
@@ -109,7 +109,7 @@ arnold_press = ExerciseDefinition(
              mu("erector_spinae", ST, 0.4), mu("rectus_abdominis", ST, 0.4),
              mu("forearm_flexors", ST, 0.45)),
     equipment=(eq("dumbbell", attach="hand_r"), eq("dumbbell", attach="hand_l"),
-               eq("bench", attach="static")),
+               eq("bench", attach="static", height=BENCH_TOP, length=60.0)),
     errors=("Rotating after the press rather than through it.",
             "Loading it like a straight press: the rotation is the limit.",
             "Flaring the ribs and arching the low back at lockout."),
@@ -190,7 +190,8 @@ overhead_triceps_extension = ExerciseDefinition(
              mu("rotator_cuff", ST, 0.4),
              mu("rectus_abdominis", ST, 0.5, note="stops the ribs flaring"),
              mu("erector_spinae", ST, 0.45), mu("forearm_flexors", ST, 0.45)),
-    equipment=(eq("dumbbell", attach="hands"), eq("bench", attach="static")),
+    equipment=(eq("dumbbell", attach="hands"),
+               eq("bench", attach="static", height=BENCH_TOP, length=60.0)),
     errors=("Letting the elbows drift forward and wide, which shortens the long head again.",
             "Arching the low back to get the arms overhead.",
             "Going heavy enough that the shoulder, not the triceps, sets the range."),

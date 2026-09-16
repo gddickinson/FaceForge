@@ -2198,3 +2198,55 @@ half-kneel, upward dog — where no lock runs at all and the body is placed by
 `base_position` alone, plus the high lunge, which anchors only its front foot
 by design so the lifted back foot is nobody's business. Those are pose and
 placement questions, not lock questions.
+
+## 2026-09-15 (last) — The equipment review: benches missed, cables absent, machines unridden
+
+Asked to check that every piece of equipment is actually held, sat on or
+pedalled, I built `tools/audit_equipment_contact.py` and rendered all 76
+exercises that carry equipment with the equipment *in frame* — the grid had
+been fitting the camera to the body's joint pivots alone, so a bench press was
+framed as a man lying in mid-air with the bar out of shot, which is why none
+of this had been visible.
+
+**Two of my own measuring tools were wrong first, and had to be fixed before
+anything they said could be believed.** The audit began by taking one bounding
+box round each whole item; a pull-up bar, a dip station, a bike and a treadmill
+are *frames*, so the box is mostly air and a body hanging correctly inside one
+read as "30 units inside the equipment". It flagged 66 pairs, almost all noise.
+Per part, it flags **one**. Then `part_bounds` was adding local offsets to the
+item's world *position*, ignoring its rotation, and reported the rower's
+footplate 120 units from where it is. It goes through each node's world matrix
+now.
+
+What the looking found:
+
+**Every supine bench sat the wrong way along the lifter.** Pad x −75..75
+against a shoulder at −69.9 and a hip at −4: head and neck off the end, 75
+units of empty pad past the hips. Shifted −45 across the whole bench press
+family, the incline, the decline and the hip thrust (whose pad ended at −75
+and missed shoulders at −69.6).
+
+**The seated presses straddled their benches.** A seated body sits across the
+bench's long axis, so a default 150-long pad sticks out 75 either side; the
+seated shoulder press already used 60.
+
+**The cable exercises had no cable.** `make_cable_handle` drew a 14-unit dark
+cylinder inside the hands and nothing else, so the pushdown, seated row, face
+pull and Pallof press all rendered as a figure miming. The handle now draws
+its cable to a far point given per exercise: a high pulley for the pushdown
+and face pull, forward for the row, and *out to the side* for the Pallof
+press, which is the entire point of that exercise.
+
+**The bike's rider held nothing and pedalled nothing.** The saddle was right
+(hip 102 over a saddle at 98) but the handlebar was 46 wide at z 42 against
+wrists at x ±50, z 62 — 27 units too narrow and 20 too far back. And the
+pedals were drawn on the frame, so they stayed at one point of the crank
+circle while the feet rode round it. `EquipmentSpec.attach` learns
+`"foot_r"`/`"foot_l"`, the bar is 112 wide at the measured hand position, and
+the pedals are separate items that go round because the feet do.
+
+**The rower sat in the air above his own seat**, hips at 52–74 over a seat top
+of 27, and its handle was welded to the frame at x 76 while the wrists
+travelled 80 to 163. The rail and seat come up to meet him, the footplate
+stays where it measured right, and the handle is a held item with the chain
+running forward.

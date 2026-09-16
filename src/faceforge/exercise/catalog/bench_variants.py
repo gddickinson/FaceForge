@@ -32,7 +32,13 @@ from faceforge.exercise.model import Category, ExerciseDefinition
 
 _LEGS = bench_legs()
 _INCLINE_LEGS = incline_legs()
-_BENCH = eq("bench", attach="static", height=BENCH_TOP)
+# A supine lifter lies along X with the head toward -X, so a bench at the
+# origin runs from the shoulders out past the feet: measured, the pad spanned
+# x -75..75 against a shoulder at -69.9 and a hip at -4, leaving the head and
+# neck off the end and 75 units of empty pad beyond the hips.  Shifted -45 it
+# spans -120..30, which is head to just past the buttocks.
+_BENCH = eq("bench", attach="static", position=(-45.0, 0.0, 0.0),
+            height=BENCH_TOP)
 
 #: Shoulder abduction at the bottom decides the grip width: the standard press
 #: uses 75 and measures 110 units between the hands.
@@ -161,7 +167,8 @@ incline_barbell_bench_press = ExerciseDefinition(
              mu("pectoralis_major", S, 0.5), mu("serratus_anterior", S, 0.4),
              *_BACK, *_SUPPORT),
     equipment=(eq("barbell", plates=2),
-               eq("bench", attach="static", height=BENCH_TOP, incline_deg=-30.0)),
+               eq("bench", attach="static", position=(-45.0, 0.0, 0.0),
+                  height=BENCH_TOP, incline_deg=-30.0)),
     errors=("A bench steeper than 45 deg, which hands the lift to the anterior deltoid.",
             "Sliding down the bench as the set goes on.",
             *_COMMON_ERRORS),
@@ -192,7 +199,8 @@ decline_barbell_bench_press = ExerciseDefinition(
              mu("serratus_anterior", S, 0.35), mu("pectoralis_upper", S, 0.25),
              *_BACK, *_SUPPORT),
     equipment=(eq("barbell", plates=2),
-               eq("bench", attach="static", height=BENCH_TOP, incline_deg=20.0)),
+               eq("bench", attach="static", position=(-45.0, 0.0, 0.0),
+                  height=BENCH_TOP, incline_deg=20.0)),
     errors=("Steep declines with a heavy bar and no spotter: the bar finishes over the throat.",
             "Pushing the head into the pad.",
             *_COMMON_ERRORS),

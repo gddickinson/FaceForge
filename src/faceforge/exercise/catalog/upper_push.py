@@ -70,7 +70,13 @@ _REVERSE_BOTTOM = merge(pose(), _BENCH_LEGS,
 _REVERSE_TOP = merge(pose(), _BENCH_LEGS,
                      arms(flex=75, abduct=10, rotate=-10, elbow=10, forearm=60, wrist=-70),
                      grip())
-_BENCH_EQUIP = eq("bench", attach="static", height=BENCH_TOP)
+# A supine lifter lies along X with the head toward -X, so a bench at the
+# origin runs from the shoulders out past the feet: measured, the pad spanned
+# x -75..75 against a shoulder at -69.9 and a hip at -4, leaving the head and
+# neck off the end and 75 units of empty pad beyond the hips.  Shifted -45 it
+# spans -120..30, which is head to just past the buttocks.
+_BENCH_EQUIP = eq("bench", attach="static", position=(-45.0, 0.0, 0.0),
+                   height=BENCH_TOP)
 
 barbell_bench_press = ExerciseDefinition(
     id="barbell_bench_press", name="Barbell bench press", category=Category.UPPER_PUSH,
@@ -143,7 +149,8 @@ incline_dumbbell_press = ExerciseDefinition(
              mu("serratus_anterior", S, 0.4), mu("rotator_cuff", ST, 0.35),
              mu("biceps_brachii", ST, 0.25), mu("forearm_flexors", ST, 0.4)),
     equipment=(eq("dumbbell", attach="hand_r"), eq("dumbbell", attach="hand_l"),
-               eq("bench", attach="static", height=BENCH_TOP, incline_deg=-30.0)),
+               eq("bench", attach="static", position=(-45.0, 0.0, 0.0),
+                  height=BENCH_TOP, incline_deg=-30.0)),
     errors=("Bench too steep (>45 deg) turns it into a shoulder press.",
             "Lowering the elbows far below the bench (anterior capsule strain)."),
     physio_notes=("Upper pectoralis EMG peaks at 30 deg; above 45 deg anterior deltoid "
@@ -339,7 +346,7 @@ triceps_pushdown = ExerciseDefinition(
     muscles=(mu("triceps_brachii", P, 0.95), mu("forearm_extensors", ST, 0.3),
              mu("deltoid_posterior", ST, 0.3, note="holds the arm back"),
              mu("latissimus_dorsi", ST, 0.3), mu("rectus_abdominis", ST, 0.25)),
-    equipment=(eq("cable_handle",),),
+    equipment=(eq("cable_handle", cable_to=(0.0, 150.0, 10.0)),),
     errors=("Elbows drifting forward and back (shoulder joins in).",
             "Leaning over the cable to use body weight."),
     physio_notes=("Isolates elbow extension; the long head is under-loaded with the arm at "

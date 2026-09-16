@@ -51,21 +51,24 @@ def phase_times(built, defn) -> list[float]:
     return [first.t1 - 1e-3, far.t1 - 1e-3]
 
 
-def frame_body(camera, pivots, size, margin: float = 1.32) -> None:
+def frame_body(camera, pivots, size, margin: float = 1.32, extra=()) -> None:
     """Aim the preset camera at the body and widen its field of view to fit it.
 
     The scene presets are framed for a standing figure; a muscle-up is three
     metres up a bar and a supine twist is flat on the floor, so every sheet
     would otherwise be a crop of a thigh.  The body's own joint pivots give the
     box to fit -- with a margin, because the pivots stop at the skull base and
-    the head is 20 units taller.  The camera is NOT moved back to fit it: the
+    the head is 20 units taller.  ``extra`` adds points that must also be in
+    shot: the equipment, without which a bench press is a man lying in the
+    air and you cannot see whether the bar is where his hands are.  The camera is NOT moved back to fit it: the
     gym has walls, and a camera pushed through one renders flat grey.
     """
     import math
 
     import numpy as np
 
-    pts = np.array([p.get_world_position() for p in pivots.values()], dtype=np.float64)
+    pts = np.array([p.get_world_position() for p in pivots.values()]
+                   + [np.asarray(e, dtype=np.float64) for e in extra], dtype=np.float64)
     if len(pts) < 2:
         return
     lo, hi = pts.min(axis=0), pts.max(axis=0)
@@ -80,6 +83,20 @@ def frame_body(camera, pivots, size, margin: float = 1.32) -> None:
     # bare `camera.fov = ...` renders at the old field of view.  (It did: every
     # figure in the first sweep was framed by the target alone.)
     camera.set_aspect(*size)
+
+
+def equipment_points(demo) -> list:
+    """Corners of every equipment item's own bounds, in world space."""
+    import numpy as np
+
+    pts = []
+    for item in getattr(demo.runtime, "rig", None).items if demo.runtime else ():
+        base = np.asarray(item.node.get_world_position(), dtype=np.float64)
+        local = [np.asarray(child.position, dtype=np.float64)
+                 for child in getattr(item.node, "children", ())]
+        pts.append(base)
+        pts.extend(base + p for p in local)
+    return pts
 
 
 def render_sheets(ids, out: Path, per_sheet: int, size, all_muscles: bool) -> list[Path]:
@@ -110,7 +127,7 @@ def render_sheets(ids, out: Path, per_sheet: int, size, all_muscles: bool) -> li
                     demo.evaluate(t)
                     demo.smc.set_camera_preset(session.camera, defn.camera,
                                                target=defn.camera_target)
-                    frame_body(session.camera, pivots, size)
+                    frame_body(session.camera, pivots, size, extra=equipment_points(demo))
                     image = session.render()
                     tiles.append((f"{exercise_id} [{i + 1}]",
                                   Image.fromarray(image[:, :, :3]).resize(TILE)))

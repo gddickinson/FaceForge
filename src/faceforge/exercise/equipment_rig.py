@@ -144,6 +144,15 @@ class EquipmentRig:
                 centre = (pr + pl) / 2.0
                 axis = pr - pl
                 q = align_x_to(axis) if np.linalg.norm(axis) > 1e-6 else None
+            elif attach in ("foot_r", "foot_l"):
+                # A pedal belongs to its own foot and goes round the crank
+                # because the foot does; drawn on the bike instead it stayed
+                # at one point of the circle while the foot rode away from it.
+                node = pivots.get(f"ankle_{'R' if attach == 'foot_r' else 'L'}")
+                if node is None:
+                    continue
+                centre = _world(node)
+                q = None
             else:
                 side = "R" if attach == "hand_r" else "L"
                 centre = self.grip_point(pivots, side, item.grip_offset)

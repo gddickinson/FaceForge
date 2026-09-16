@@ -136,12 +136,19 @@ def make_bike() -> SceneNode:
     root.add(_part("seat_post", make_cylinder(2.5, 55.0, 8), FRAME, y=70.0, z=-12.0))
     root.add(_part("saddle", make_box(14.0, 4.0, 26.0), RUBBER, y=98.0, z=-12.0))
     root.add(_part("head_tube", make_cylinder(2.5, 60.0, 8), FRAME, y=90.0, z=42.0))
-    root.add(_part("handlebar", make_cylinder(1.8, 46.0, 10), STEEL, y=120.0, z=42.0, quat=_TO_X))
+    # Measured against the rider: the wrists sit at x +-50, y 129, z 62, so a
+    # 46-wide bar at z 42 was 27 units narrower than the hands and 20 behind
+    # them.  The rider held nothing.
+    root.add(_part("handlebar", make_cylinder(1.8, 112.0, 10), STEEL, y=128.0, z=60.0,
+                   quat=_TO_X))
+    root.add(_part("bar_stem", make_cylinder(2.0, 24.0, 8), FRAME, y=116.0, z=52.0,
+                   quat=quat_from_axis_angle(_X, math.radians(-55.0))))
     root.add(_part("wheel", make_torus(24.0, 3.0, 32, 10), IRON, y=30.0, z=22.0,
                    quat=quat_from_axis_angle(_Z, math.pi / 2)))
     root.add(_part("crank_axle", make_cylinder(2.0, 24.0, 8), STEEL, y=30.0, z=0.0, quat=_TO_X))
-    for x, name in ((13.0, "pedal_r"), (-13.0, "pedal_l")):
-        root.add(_part(name, make_box(8.0, 2.0, 10.0), RUBBER, x=x, y=30.0, z=0.0))
+    # The pedals are NOT here: a pedal drawn on the frame stays at one point of
+    # the crank circle while the foot rides round it.  They are separate items
+    # attached to the feet (`make_pedal`, attach="foot_r"/"foot_l").
     root.add(_part("base", make_box(50.0, 3.0, 110.0), FRAME, y=1.5))
     return root
 
@@ -149,14 +156,30 @@ def make_bike() -> SceneNode:
 def make_rower() -> SceneNode:
     """A rowing ergometer along X: rail, sliding seat, footplate and handle."""
     root = SceneNode("equip_rower")
-    root.add(_part("rail", make_box(200.0, 6.0, 14.0), FRAME, x=-20.0, y=20.0))
-    root.add(_part("seat", make_box(30.0, 4.0, 30.0), RUBBER, x=-40.0, y=25.0))
+    # Measured against the athlete: the hips ride at y 52 (finish) to 74
+    # (catch) while the seat top was 27, so the rower sat in the air above his
+    # own seat.  The rail and seat come up to meet him; the footplate does not
+    # move, because the feet measured 36 and it was already right.
+    root.add(_part("rail", make_box(200.0, 6.0, 14.0), FRAME, x=-20.0, y=38.0))
+    root.add(_part("seat", make_box(30.0, 4.0, 30.0), RUBBER, x=-40.0, y=43.0))
+    for x in (-110.0, 100.0):
+        root.add(_part("leg", make_box(8.0, 32.0, 14.0), FRAME, x=x, y=20.0))
     root.add(_part("footplate", make_box(10.0, 34.0, 44.0), IRON, x=60.0, y=28.0,
                    quat=quat_from_axis_angle(_Z, math.radians(-25.0))))
     root.add(_part("flywheel", make_cylinder(22.0, 12.0, 24), IRON, x=95.0, y=42.0, quat=_TO_X))
-    root.add(_part("handle", make_cylinder(1.8, 40.0, 10), WOOD, x=40.0, y=60.0, quat=_TO_Z))
+    # No handle here: it is held, so it travels with the hands (a cable_handle
+    # attached to them).  Drawn on the frame it stayed at x = 76 while the
+    # wrists went from 80 to 163.
     for x in (-110.0, 100.0):
         root.add(_part("foot", make_box(8.0, 17.0, 50.0), FRAME, x=x, y=8.5))
+    return root
+
+
+def make_pedal(width: float = 9.0, length: float = 12.0) -> SceneNode:
+    """One pedal, drawn under the foot it belongs to."""
+    root = SceneNode("equip_pedal")
+    root.add(_part("plate", make_box(width, 2.0, length), RUBBER, y=-6.0))
+    root.add(_part("spindle", make_cylinder(1.4, 10.0, 8), STEEL, y=-6.0, quat=_TO_X))
     return root
 
 
@@ -202,9 +225,32 @@ def make_medicine_ball(radius: float = 12.0) -> SceneNode:
     return root
 
 
-def make_cable_handle() -> SceneNode:
+def make_cable_handle(cable_to=(0.0, 130.0, 0.0), radius: float = 1.6,
+                      segments: int = 8) -> SceneNode:
+    """A handle along +X with the cable that makes it a cable exercise.
+
+    Without the cable a pushdown, a row, a face pull and a Pallof press all
+    render as a figure miming: the handle alone is a 14-unit dark cylinder
+    inside the hands and invisible at body scale.  ``cable_to`` is the far end
+    in the item's own frame, which after ``align_x_to`` has +X along the line
+    between the hands, +Y up and +Z forward for the usual case of two hands
+    side by side -- so the default runs the cable to a high pulley.
+    """
     root = SceneNode("equip_cable_handle")
-    root.add(_part("handle", make_cylinder(1.6, 14.0, 8), RUBBER, quat=_TO_X))
+    root.add(_part("handle", make_cylinder(radius, 14.0, 8), RUBBER, quat=_TO_X))
+    far = vec3(*cable_to)
+    span = float((far[0] ** 2 + far[1] ** 2 + far[2] ** 2) ** 0.5)
+    if span < 1e-6:
+        return root
+    step = far / segments
+    seg_len = span / segments
+    for i in range(segments):
+        centre = step * (i + 0.5)
+        root.add(_part(f"cable_{i}", make_cylinder(0.9, seg_len * 1.1, 6), STEEL,
+                       x=float(centre[0]), y=float(centre[1]), z=float(centre[2]),
+                       quat=_axis_to(tuple(far))))
+    root.add(_part("anchor", make_box(16.0, 8.0, 8.0), FRAME,
+                   x=float(far[0]), y=float(far[1]), z=float(far[2])))
     return root
 
 
@@ -290,6 +336,7 @@ EQUIPMENT_BUILDERS: dict[str, Callable[..., SceneNode]] = {
     "mat": make_mat, "bike": make_bike, "rower": make_rower, "jump_rope": make_jump_rope,
     "cable_handle": make_cable_handle, "band": make_band, "dip_station": make_dip_station,
     "medicine_ball": make_medicine_ball, "treadmill": make_treadmill,
+    "pedal": make_pedal,
     "battle_rope": make_battle_rope,
 }
 

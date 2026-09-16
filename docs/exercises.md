@@ -2872,7 +2872,7 @@ Standing up from flat on the floor with a bell locked out overhead, and lying ba
 
 ### Stationary bike (upright)
 
-`stationary_bike` · Cardio and conditioning · orientation: seated · anchor: none · rep: 1.0 s · equipment: bike
+`stationary_bike` · Cardio and conditioning · orientation: seated · anchor: none · rep: 1.0 s · equipment: bike, pedal, pedal
 
 Seated pedalling at ~60 rpm: the hip and knee extensors drive the downstroke, the plantarflexors finish it and the flexors recover the pedal.
 
@@ -2913,7 +2913,7 @@ Seated pedalling at ~60 rpm: the hip and knee extensors drive the downstroke, th
 
 ### Rowing machine
 
-`rowing_machine` · Cardio and conditioning · orientation: seated · anchor: feet · rep: 2.4 s · equipment: rower
+`rowing_machine` · Cardio and conditioning · orientation: seated · anchor: feet · rep: 2.4 s · equipment: rower, cable handle
 
 The stroke: catch with shins vertical and arms long, drive with the legs, swing the trunk, then pull the arms; recover in the reverse order.
 
