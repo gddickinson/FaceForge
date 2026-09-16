@@ -44,6 +44,18 @@ _EXT_S = merge(pose(knee_flex=5, ankle_flex=-30, toe_curl=toes_on_floor(0, 0, 5,
 _OVERHEAD_S = arms(flex=172, abduct=20, rotate=25, elbow=5, forearm=-40)
 
 _RACK = arms(flex=90, abduct=15, elbow=145)
+#: The bar cannot go straight past the face, because the model's head cannot
+#: move out of its way: `head_yaw/pitch/roll` exist on `BodyState` but are not
+#: pose DOFs, so the catalogue cannot tip the head back the way a lifter does.
+#: Traced frame by frame, the authored path took the bar from the rack (z -17)
+#: to overhead (z -4) straight through the skull sphere -- 9.0 units inside it
+#: at the worst frame, in both directions.  Every arm pose that holds the bar
+#: AT head height is inside the skull (the best is -5.1); the bar has to be
+#: past it before it comes back to the midline.  This is that waypoint: 21
+#: below the head and 20 in front of it, clear by 13.5.  It reads as pushing
+#: the bar out and up rather than straight up, which is a technical fault in a
+#: real jerk -- and the lesser of the two.
+_JERK_PAST_THE_FACE = arms(flex=150, abduct=20, elbow=120)
 
 _SOURCES = (NSCA, EXRX, ACE)
 _PULL_MUSCLES = (
@@ -181,14 +193,17 @@ push_jerk = ExerciseDefinition(
         ph("Dip", ECC, 0.35, merge(squat(20, 25, 4)[0], _RACK, grip()), pitch=4,
            easing="ease_in", cues=("Short, vertical, heels down",)),
         ph("Drive", CON, 0.2, merge(pose(knee_flex=4, ankle_flex=-20),
-                                    arms(flex=110, abduct=20, elbow=70), grip()),
+                                    _JERK_PAST_THE_FACE, grip()),
            easing="ease_out", cues=("Extend hard; the bar leaves the shoulders on the legs",)),
         ph("Drop under", ECC, 0.22, merge(squat(55, 55, 8)[0], _JERK_OVERHEAD, grip()),
            pitch=8, easing="ease_in",
            cues=("Punch under it: arms lock as the hips drop",)),
         ph("Stand", CON, 0.6, merge(pose(knee_flex=4), _JERK_OVERHEAD, grip()),
            cues=("Stand up with the bar over the mid-foot, ribs down",)),
-        ph("Return to the rack", ECC, 0.7, merge(squat(18, 22, 4)[0], _RACK, grip()), pitch=4,
+        ph("Lower it past the face", TRN, 0.3,
+           merge(pose(knee_flex=4), _JERK_PAST_THE_FACE, grip()),
+           cues=("Bend the arms and bring it down in front of the face",)),
+        ph("Return to the rack", ECC, 0.4, merge(squat(18, 22, 4)[0], _RACK, grip()), pitch=4,
            cues=("Absorb it back onto the shoulders with the legs",)),
     ),
     muscles=(mu("deltoid_anterior", P, 0.9), mu("triceps_brachii", P, 0.85),
@@ -220,7 +235,7 @@ split_jerk = ExerciseDefinition(
         ph("Dip", ECC, 0.35, merge(squat(20, 25, 4)[0], _RACK, grip()), pitch=4,
            easing="ease_in", cues=("Vertical dip, heels down, elbows up",)),
         ph("Drive", CON, 0.2, merge(pose(knee_flex=4, ankle_flex=-20),
-                                    arms(flex=110, abduct=20, elbow=70), grip()),
+                                    _JERK_PAST_THE_FACE, grip()),
            easing="ease_out", cues=("Drive through the whole foot; bar straight up",)),
         ph("Split under", ECC, 0.25,
            merge(pose(hip_r_flex=55, knee_r_flex=60, ankle_r_flex=15,
@@ -230,7 +245,10 @@ split_jerk = ExerciseDefinition(
                  "Front shin vertical, back knee bent and soft")),
         ph("Recover", CON, 0.8, merge(pose(knee_flex=4), _JERK_OVERHEAD, grip()),
            cues=("Front foot back first, then the back foot, bar still locked",)),
-        ph("Return to the rack", ECC, 0.7, merge(squat(18, 22, 4)[0], _RACK, grip()), pitch=4,
+        ph("Lower it past the face", TRN, 0.3,
+           merge(pose(knee_flex=4), _JERK_PAST_THE_FACE, grip()),
+           cues=("Bend the arms and bring it down in front of the face",)),
+        ph("Return to the rack", ECC, 0.4, merge(squat(18, 22, 4)[0], _RACK, grip()), pitch=4,
            cues=("Lower it to the shoulders and absorb with the legs",)),
     ),
     muscles=(mu("deltoid_anterior", P, 0.9), mu("triceps_brachii", P, 0.85),
@@ -269,7 +287,7 @@ clean_and_jerk = ExerciseDefinition(
         ph("Stand", CON, 0.9, merge(pose(knee_flex=3), _RACK, grip()),
            cues=("Stand tall; elbows stay up",)),
         ph("Dip and drive", CON, 0.3, merge(pose(knee_flex=4, ankle_flex=-20),
-                                            arms(flex=110, abduct=20, elbow=70), grip()),
+                                            _JERK_PAST_THE_FACE, grip()),
            easing="ease_out", cues=("Short vertical dip, then drive it off the shoulders",)),
         ph("Jerk under", ECC, 0.25,
            merge(pose(hip_r_flex=55, knee_r_flex=60, ankle_r_flex=15,
@@ -278,7 +296,16 @@ clean_and_jerk = ExerciseDefinition(
            cues=("Split and lock in one movement",)),
         ph("Recover", CON, 0.9, merge(pose(knee_flex=4), _JERK_OVERHEAD, grip()),
            cues=("Feet back under, bar overhead, wait for the signal",)),
-        ph("Lower to the floor", TRN, 1.4, _START_C, pitch=50,
+        ph("Lower it past the face", TRN, 0.4,
+           merge(pose(knee_flex=4), _JERK_PAST_THE_FACE, grip()),
+           cues=("Bend the arms and bring it down in front of the face",)),
+        # Via the shoulders, which is what the cue below already said: going
+        # straight from overhead to the floor position swung the bar and the
+        # pitching head into each other, 7.4 units inside the skull.
+        ph("Back to the shoulders", TRN, 0.35,
+           merge(pose(knee_flex=4), _RACK, grip()),
+           cues=("Catch it on the shoulders before it goes anywhere else",)),
+        ph("Lower to the floor", TRN, 0.9, _START_C, pitch=50,
            cues=("Down to the shoulders, to the thighs, then set it down",)),
     ),
     muscles=(*_PULL_MUSCLES, mu("triceps_brachii", P, 0.8, note="the jerk lockout"),

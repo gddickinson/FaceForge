@@ -3520,10 +3520,11 @@ From the front rack, a dip and drive sends the bar off the shoulders and the lif
 | phase | kind | s | moving joints | cues |
 |---|---|---|---|---|
 | Dip | eccentric | 0.35 | trunk pitch +4° | Short, vertical, heels down |
-| Drive | concentric | 0.20 | Elbows: extension 145° → 70°; Ankles: plantarflexion 9° → 20°; Knees: extension 25° → 4°; Shoulders: flexion 90° → 110° | Extend hard; the bar leaves the shoulders on the legs |
-| Drop under | eccentric | 0.22 | Elbows: extension 70° → 5°; Shoulders: flexion 110° → 172°; Hips: flexion 0° → 55°; Knees: flexion 4° → 55°; trunk pitch +8° | Punch under it: arms lock as the hips drop |
+| Drive | concentric | 0.20 | Shoulders: flexion 90° → 150°; Ankles: plantarflexion 9° → 20°; Elbows: extension 145° → 120°; Knees: extension 25° → 4° | Extend hard; the bar leaves the shoulders on the legs |
+| Drop under | eccentric | 0.22 | Elbows: extension 120° → 5°; Hips: flexion 0° → 55°; Knees: flexion 4° → 55°; Forearms: pronation 0° → 30°; trunk pitch +8° | Punch under it: arms lock as the hips drop |
 | Stand | concentric | 0.60 | Hips: extension 55° → 0°; Knees: extension 55° → 4°; Ankles: plantarflexion 8° → 0° | Stand up with the bar over the mid-foot, ribs down |
-| Return to the rack | eccentric | 0.70 | Elbows: flexion 5° → 145°; Shoulders: extension 172° → 90°; Forearms: supination 30° → 0°; Hips: flexion 0° → 18°; trunk pitch +4° | Absorb it back onto the shoulders with the legs |
+| Lower it past the face | transition | 0.30 | Elbows: flexion 5° → 120°; Forearms: supination 30° → 0°; Shoulders: extension 172° → 150°; Shoulders: internal rotation 12° → 0° | Bend the arms and bring it down in front of the face |
+| Return to the rack | eccentric | 0.40 | Shoulders: extension 150° → 90°; Elbows: flexion 120° → 145°; Hips: flexion 0° → 18°; Knees: flexion 4° → 22°; trunk pitch +4° | Absorb it back onto the shoulders with the legs |
 
 **Muscles**
 - *Primary movers:* Anterior deltoid 90 %; Triceps brachii 85 %; Quadriceps 85 % — the dip and drive; Gluteus maximus 75 %; Erector spinae 70 % — holds the trunk vertical
@@ -3559,10 +3560,11 @@ The competition jerk: the same dip and drive, received with one foot forward and
 | phase | kind | s | moving joints | cues |
 |---|---|---|---|---|
 | Dip | eccentric | 0.35 | trunk pitch +4° | Vertical dip, heels down, elbows up |
-| Drive | concentric | 0.20 | Elbows: extension 145° → 70°; Ankles: plantarflexion 9° → 20°; Knees: extension 25° → 4°; Shoulders: flexion 90° → 110° | Drive through the whole foot; bar straight up |
-| Split under | eccentric | 0.25 | Elbows: extension 70° → 5°; Shoulders: flexion 110° → 172°; Knee (R): flexion 4° → 60°; Hip (R): flexion 0° → 55°; trunk pitch +4° | Feet move as the arms lock; land both at once Front shin vertical, back knee bent and soft |
+| Drive | concentric | 0.20 | Shoulders: flexion 90° → 150°; Ankles: plantarflexion 9° → 20°; Elbows: extension 145° → 120°; Knees: extension 25° → 4° | Drive through the whole foot; bar straight up |
+| Split under | eccentric | 0.25 | Elbows: extension 120° → 5°; Knee (R): flexion 4° → 60°; Hip (R): flexion 0° → 55°; Knee (L): flexion 4° → 45°; trunk pitch +4° | Feet move as the arms lock; land both at once Front shin vertical, back knee bent and soft |
 | Recover | concentric | 0.80 | Knee (R): extension 60° → 4°; Hip (R): extension 55° → 0°; Knee (L): extension 45° → 4°; Hip (L): flexion 22° → 0° | Front foot back first, then the back foot, bar still locked |
-| Return to the rack | eccentric | 0.70 | Elbows: flexion 5° → 145°; Shoulders: extension 172° → 90°; Forearms: supination 30° → 0°; Hips: flexion 0° → 18°; trunk pitch +4° | Lower it to the shoulders and absorb with the legs |
+| Lower it past the face | transition | 0.30 | Elbows: flexion 5° → 120°; Forearms: supination 30° → 0°; Shoulders: extension 172° → 150°; Shoulders: internal rotation 12° → 0° | Bend the arms and bring it down in front of the face |
+| Return to the rack | eccentric | 0.40 | Shoulders: extension 150° → 90°; Elbows: flexion 120° → 145°; Hips: flexion 0° → 18°; Knees: flexion 4° → 22°; trunk pitch +4° | Lower it to the shoulders and absorb with the legs |
 
 **Muscles**
 - *Primary movers:* Anterior deltoid 90 %; Triceps brachii 85 %; Quadriceps 85 %; Gluteus maximus 80 %; Gluteus medius / minimus 70 % — the split is a single-leg landing twice over; Erector spinae 70 %
@@ -3584,7 +3586,7 @@ The competition jerk: the same dip and drive, received with one foot forward and
 
 ### Clean and jerk
 
-`clean_and_jerk` · Athletic and power · orientation: standing · anchor: feet · rep: 4.9 s · equipment: barbell
+`clean_and_jerk` · Athletic and power · orientation: standing · anchor: feet · rep: 5.1 s · equipment: barbell
 
 The two-part contested lift: the bar is cleaned to the shoulders, the lifter stands, and then jerks it overhead. More weight is lifted this way than by any other movement.
 
@@ -3601,10 +3603,12 @@ The two-part contested lift: the bar is cleaned to the shoulders, the lifter sta
 | Second pull | concentric | 0.22 | Elbows: flexion 0° → 80°; Hips: extension 65° → 0°; Ankles: plantarflexion 5° → 30°; Feet: toe extension 0° → 35° | Hips through, shrug, onto the toes |
 | Catch the clean | eccentric | 0.30 | Knees: flexion 5° → 120°; Hips: flexion 0° → 110°; Elbows: flexion 80° → 145°; Shoulders: flexion 25° → 90°; trunk pitch +20° | Elbows around fast; receive it deep |
 | Stand | concentric | 0.90 | Knees: extension 120° → 3°; Hips: extension 110° → 0°; Ankles: plantarflexion 30° → 0° | Stand tall; elbows stay up |
-| Dip and drive | concentric | 0.30 | Elbows: extension 145° → 70°; Shoulders: flexion 90° → 110°; Ankles: plantarflexion 0° → 20°; Shoulders: abduction 15° → 20° | Short vertical dip, then drive it off the shoulders |
-| Jerk under | eccentric | 0.25 | Elbows: extension 70° → 5°; Shoulders: flexion 110° → 172°; Knee (R): flexion 4° → 60°; Hip (R): flexion 0° → 55°; trunk pitch +4° | Split and lock in one movement |
+| Dip and drive | concentric | 0.30 | Shoulders: flexion 90° → 150°; Elbows: extension 145° → 120°; Ankles: plantarflexion 0° → 20°; Shoulders: abduction 15° → 20° | Short vertical dip, then drive it off the shoulders |
+| Jerk under | eccentric | 0.25 | Elbows: extension 120° → 5°; Knee (R): flexion 4° → 60°; Hip (R): flexion 0° → 55°; Knee (L): flexion 4° → 45°; trunk pitch +4° | Split and lock in one movement |
 | Recover | concentric | 0.90 | Knee (R): extension 60° → 4°; Hip (R): extension 55° → 0°; Knee (L): extension 45° → 4°; Hip (L): flexion 22° → 0° | Feet back under, bar overhead, wait for the signal |
-| Lower to the floor | transition | 1.40 | Shoulders: extension 172° → 50°; Hips: flexion 0° → 110°; Knees: flexion 4° → 70°; Forearms: supination 30° → 0°; trunk pitch +50° | Down to the shoulders, to the thighs, then set it down |
+| Lower it past the face | transition | 0.40 | Elbows: flexion 5° → 120°; Forearms: supination 30° → 0°; Shoulders: extension 172° → 150°; Shoulders: internal rotation 12° → 0° | Bend the arms and bring it down in front of the face |
+| Back to the shoulders | transition | 0.35 | Shoulders: extension 150° → 90°; Elbows: flexion 120° → 145°; Shoulders: adduction 20° → 15° | Catch it on the shoulders before it goes anywhere else |
+| Lower to the floor | transition | 0.90 | Elbows: extension 145° → 0°; Hips: flexion 0° → 110°; Knees: flexion 4° → 70°; Shoulders: extension 90° → 50°; trunk pitch +50° | Down to the shoulders, to the thighs, then set it down |
 
 **Muscles**
 - *Primary movers:* Gluteus maximus 100 %; Quadriceps 95 %; Hamstrings 85 %; Erector spinae 85 %; Triceps brachii 80 % — the jerk lockout; Anterior deltoid 85 %

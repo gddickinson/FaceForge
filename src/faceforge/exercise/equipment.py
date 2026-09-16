@@ -102,14 +102,21 @@ def make_dumbbell(handle_length: float = 16.0, head_radius: float = 7.0,
     return root
 
 
-def make_kettlebell(radius: float = 11.0) -> SceneNode:
-    """A kettlebell: the handle (+X) is the grip; the bell hangs below it."""
+def make_kettlebell(radius: float = 11.0, flip: bool = False) -> SceneNode:
+    """A kettlebell: the handle (+X) is the grip; the bell hangs below it.
+
+    ``flip`` puts the bell ABOVE the handle -- the bell held base-up by the
+    horns, which is how a halo is held and what that exercise's own
+    description already said.  Hanging, the bell sat on the shoulders as the
+    hands passed the head: measured, its box contained the shoulder midpoint.
+    """
     root = SceneNode("equip_kettlebell")
+    sign = 1.0 if flip else -1.0
     handle = _part("handle", make_torus(9.0, 1.8, 24, 8), IRON,
                    quat=quat_from_axis_angle(_X, math.pi / 2))
-    handle.set_position(0.0, -4.0, 0.0)
+    handle.set_position(0.0, sign * 4.0, 0.0)
     root.add(handle)
-    root.add(_part("bell", make_sphere(radius, 20, 14), IRON, y=-radius - 8.0))
+    root.add(_part("bell", make_sphere(radius, 20, 14), IRON, y=sign * (radius + 8.0)))
     return root
 
 

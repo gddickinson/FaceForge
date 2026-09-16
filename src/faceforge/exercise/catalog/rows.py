@@ -247,7 +247,12 @@ inverted_row = ExerciseDefinition(
              mu("rectus_abdominis", P, 0.6, note="the body is a plank throughout"),
              mu("gluteus_maximus", S, 0.5), mu("erector_spinae", S, 0.5),
              mu("forearm_flexors", ST, 0.6)),
-    equipment=(eq("pullup_bar", attach="static", height=70.0),),
+    # Turned a quarter turn: a supine body's long axis is world X and so is an
+    # untouched frame's bar, which put the far upright (x 82.5..87.5) exactly
+    # on the athlete's hip at x 83.7 -- the full capsule radius inside him.
+    # Rotated, the uprights stand at z +-85, beside him, where a rack's are.
+    equipment=(eq("pullup_bar", attach="static", height=70.0,
+                  rotation_deg=(0.0, 90.0, 0.0)),),
     errors=("Letting the hips sag so the chest reaches the bar first.",
             "Shrugging rather than retracting.",
             "Setting the bar so high the body is nearly upright, which removes the load."),

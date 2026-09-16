@@ -336,6 +336,14 @@ kettlebell_halo = ExerciseDefinition(
              mu("biceps_brachii", ST, 0.4), mu("forearm_flexors", ST, 0.5),
              mu("rectus_abdominis", ST, 0.45, note="stops the ribs flaring"),
              mu("obliques", ST, 0.4)),
+    # The bell intersects the model either way, and this is the lesser one.
+    # Hanging, its box contains the shoulder midpoint as the hands pass the
+    # head (13 inside the shoulder line); held base up by the horns, which is
+    # what the description says and what `make_kettlebell(flip=True)` now
+    # draws, it goes 11 into the SKULL instead.  Neither is a halo, because
+    # the shoulders cannot take the bell round: the excursion above is the
+    # measurement, and the bell would need to reach x +-25 at the sides while
+    # both hands stay together on one handle at the midline.
     equipment=(eq("kettlebell", radius=10.0, hang=-4.0),),
     errors=("Letting the ribs flare and the low back extend as the bell passes behind.",
             "Circling it far from the head, which turns a mobility drill into a lever.",
