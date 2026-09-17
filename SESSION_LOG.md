@@ -2846,3 +2846,78 @@ that reads zero when you point it at everything at once is worse than none.
 The bench-press finding does not rest on it alone: tracing `GripWidthLock`
 itself shows the same two frames, with the sensitivity that caused them
 (100.7 → 0.57) and the abduction it declined to move (±0.000).
+
+### The rest of the foot flags, and where the grip lock runs out of lever
+
+**Feet: 27 became 6.** Beyond the mat, the jerks, gait, the pedal, the
+step-up and the half-kneel already recorded above:
+
+* `high_lunge`'s back ankle went 15 -> 21.  15 left the big toe 1.8 through
+  the floor and 18 left 1.2; 21 clears it, and the toes then take 44 degrees
+  rather than 50, so the foot is flatter on its pads as well as out of the
+  floor (ball at y 1.5, tip at 0.3 -- pads down, tip not below).
+* The **lunges are a joint limit, not a setting**.  With the back knee at 90
+  the foot-flat rule wants an ankle of 105 degrees, so `toes_on_floor` asks
+  for 125 of toe extension against a joint that has 75 (real MTP extension is
+  about 70-90, so the rig is right).  No ankle inside its own +-45 closes
+  that.  Straightening the back knee instead is far worse, because the knee
+  stays where the hip put it and the shank swings the foot down through the
+  floor:
+
+      knee 90 -> ankle 26.5, toe tip  +2.1   (on its tips, above the floor)
+      knee 75 -> ankle 14.7, toe tip -12.7   (through the floor)
+      knee 60 -> ankle  2.4, toe tip -26.1
+      knee 50 -> ankle -5.6, toe tip -33.7
+
+  90 is the value that keeps the foot above the floor at all.  What is left is
+  a back foot a little more pointed than a real one.
+
+The last four are `glute_bridge` (1.0) and `bird_dog` (1.2), both the donor's
+right foot, against a `BURIED` tolerance of 1.0 -- they trip it by 0.0 and 0.2.
+
+**The kettlebell deadlift's bell** was 4.8 into the calf at the bottom
+(limit 4).  Shoulder flexion is measured from the TRUNK, and at the bottom the
+trunk is pitched 58 degrees forward while a loaded arm still hangs vertically
+in the world -- so the shoulder is slightly EXTENDED there.  Carrying the
+standing +5 down into the hinge tipped the arms into the shins; flexing
+further made it worse (15 and 25 both gave 5.2) and -5 gives **0.3**.
+
+**Where the grip lock runs out of lever.** Sampled 20 times a phase across all
+45 two-handed exercises, most hold their bar exactly (spread 0.0).  What does
+not, and why:
+
+| | spread | frames off |
+|---|---|---|
+| `lat_pulldown` | 59.4 | 12/60 |
+| `rowing_machine` | 15.5 | 27/100 |
+| `pendlay_row` | 13.3 | 27/80 |
+| `seated_cable_row` | 11.3 | 29/60 |
+| `kettlebell_halo` | 11.8 | 40/60 |
+| bench presses | 12.5-16.6 | 4-7/80 |
+
+These are one finding, not six.  At the finish of a pull -- elbows flexed and
+driven back -- shoulder abduction, the lock's only lever, is weak or points
+the wrong way.  Measured at the bottom of the pulldown, abduction moves the
+hand from +38.1 at 0.2 **down** to +19.3 at 1.4 against a target of +47.1: it
+narrows the grip rather than widening it.  On the rows the sign is right but
+the sensitivity is 6 to 14 units of hand travel per unit of normalised
+abduction, so closing a 6-unit error needs most of a radian, far beyond the
+0.45 the lock is allowed.  Letting it touch elbow or shoulder flexion is what
+would fix them, and that is exactly what `grip_lock`'s docstring rules out to
+keep the movement's character.
+
+The pulldown was worth changing anyway: its bottom elbow went 120 -> 90.  At
+120 the pull ENDED 18 units narrower than it started (74.7 against 92.6) and
+2 of 60 frames held the bar width; at 90 the span matches the bar exactly at
+every keyframe, 48 of 60 frames hold it, and the bar finishes 8 units lower
+(hands +12.9 above the shoulders rather than +20.6) -- the deeper rep as well
+as the honest grip.  What is left there is a transient bow mid-phase, where
+the interpolation from arms-overhead to elbows-down passes through poses whose
+error exceeds `_MAX_ERROR` and the lock stands off.
+
+`_MAX_ERROR` is in fact the guard that fires at every one of the bench press's
+and the pulldown's worst frames -- errors of 25.8 and 28.6 with a perfectly
+healthy Jacobian (sensitivity 60-102), not the singular case the carry was
+first written for.  Carrying on that guard too took the bench press's span
+range from 52.0 to 16.6 and left `lying_triceps_extension` (0.1) and
+`front_squat` (0.0) exactly as they were.
