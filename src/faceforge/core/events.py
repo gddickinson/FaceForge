@@ -107,6 +107,8 @@ class EventType(Enum):
     EXERCISE_STOPPED = auto()         # no data: leave the demonstration
     EXERCISE_OPTION_CHANGED = auto()  # data: option (str), value (any)
     EXERCISE_STATUS = auto()          # data: exercise_id, phase, kind, cue, motions (list), levels (dict), time, rep
+    EXERCISE_EXPORT_OBJ = auto()      # no data: save the frame on screen as OBJ and open a viewer on it
+    EXERCISE_EXPORTED = auto()        # data: path (str), message (str), ok (bool)
 
 
 class EventBus:

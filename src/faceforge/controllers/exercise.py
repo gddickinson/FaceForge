@@ -12,6 +12,7 @@ other scene.
 from __future__ import annotations
 
 import logging
+from contextlib import contextmanager
 from typing import Any
 
 from faceforge.core.events import EventType
@@ -21,6 +22,25 @@ from faceforge.exercise.runtime import ExerciseRuntime
 from faceforge.exercise.stabilisers import with_implied_stabilisers
 
 logger = logging.getLogger(__name__)
+
+#: The node the scene environment hangs off, hidden while exporting.
+ENVIRONMENT_NODE = "scene_env_root"
+
+
+def _find_node(scene, name: str):
+    """The first node called *name* anywhere under *scene*, or ``None``."""
+    stack = [getattr(scene, "root", scene)]
+    seen: set[int] = set()
+    while stack:
+        node = stack.pop()
+        if id(node) in seen:
+            continue
+        seen.add(id(node))
+        if getattr(node, "name", None) == name:
+            return node
+        stack.extend(getattr(node, "children", ()))
+    return None
+
 
 #: How many frames between EXERCISE_STATUS events while nothing changes phase.
 STATUS_EVERY_N_FRAMES = 6
@@ -48,6 +68,7 @@ class ExerciseController:
         bus.subscribe(EventType.EXERCISE_SELECTED, self.on_exercise_selected)
         bus.subscribe(EventType.EXERCISE_STOPPED, self.on_exercise_stopped)
         bus.subscribe(EventType.EXERCISE_OPTION_CHANGED, self.on_option_changed)
+        bus.subscribe(EventType.EXERCISE_EXPORT_OBJ, self.on_export_obj)
 
     # -- handlers ---------------------------------------------------------------
 
@@ -199,6 +220,113 @@ class ExerciseController:
             if fn in hooks:
                 hooks.remove(fn)
         self._hooked = False
+
+    # -- OBJ export --------------------------------------------------------------------
+
+    def on_export_obj(self, on_progress=None, **kw) -> None:
+        """Write the frame on screen to an OBJ and open a viewer on it.
+
+        Synchronous, and deliberately so: the exporter walks the live scene
+        graph, and the frame loop rewrites every world matrix in place sixty
+        times a second.  Handing that to a worker thread would export a body
+        that moved halfway through being written.  Playback is paused first
+        for the same reason -- a paused clip is a still scene -- and the
+        button is disabled by the tab while this runs.
+        """
+        from faceforge.export.mesh_export import MeshExportError, export_mesh
+        from faceforge.ui.obj_viewer import launch
+
+        bus = self.ctx.event_bus
+        scene = getattr(self.ctx, "scene", None)
+        if scene is None:
+            bus.publish(EventType.EXERCISE_EXPORTED, path="", ok=False,
+                        message="No scene to export.")
+            return
+        self._pause_playback()
+        path = self._obj_path()
+        try:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            with self._room_hidden(scene), self._viewport_frozen():
+                result = export_mesh(scene, path, progress=on_progress)
+        except (MeshExportError, OSError) as exc:
+            logger.warning("OBJ export failed: %s", exc)
+            bus.publish(EventType.EXERCISE_EXPORTED, path=str(path), ok=False,
+                        message=f"Export failed: {exc}")
+            return
+        size = result.bytes_written / 1e6
+        message = (f"{path.name} — {result.meshes} meshes, {result.vertices:,} vertices, "
+                   f"{result.triangles:,} triangles, {size:,.1f} MB")
+        try:
+            launch(path)
+        except OSError as exc:                 # the file is written either way
+            logger.warning("could not start the OBJ viewer: %s", exc)
+            message += f"  (saved, but the viewer would not start: {exc})"
+        bus.publish(EventType.EXERCISE_EXPORTED, path=str(path), ok=True, message=message)
+
+    @contextmanager
+    def _room_hidden(self, scene):
+        """Hide the gym itself for the duration of an export.
+
+        `export_mesh` writes every VISIBLE mesh, and in scene mode that is the
+        building: measured, a back squat exported the floor, the four walls,
+        the ceiling and the lamp along with the athlete, and the file's bounds
+        came out as the room (x +-251, z 0..400) rather than the body.  A
+        viewer framing that shows a room with a speck in it.
+        """
+        env = _find_node(scene, ENVIRONMENT_NODE)
+        if env is None:                        # clinical view, or no scene mode
+            yield
+            return
+        was = env.visible
+        env.visible = False
+        try:
+            yield
+        finally:
+            env.visible = was
+
+    @contextmanager
+    def _viewport_frozen(self):
+        """Stop the 3D viewport repainting for the duration of the export.
+
+        The tab pumps `processEvents` so its progress bar moves; without this
+        that would let the ~60 Hz refresh timer run the frame loop, which
+        rewrites every world matrix in place -- and the exporter is reading
+        those matrices.  Stopping the timer makes the pumped events safe: the
+        scene cannot move while nothing is drawing it.
+        """
+        widget = getattr(self.ctx, "gl_widget", None)
+        timer = getattr(widget, "_timer", None)
+        running = bool(timer is not None and timer.isActive())
+        if running:
+            timer.stop()
+        try:
+            yield
+        finally:
+            if running:
+                timer.start()
+
+    def _pause_playback(self) -> None:
+        player = getattr(self.ctx, "animation_player", None)
+        for target in (player, getattr(self.runtime, "player", None)):
+            if target is not None and hasattr(target, "pause"):
+                try:
+                    target.pause()
+                except Exception:              # pausing is a courtesy, not a contract
+                    logger.debug("could not pause playback before the export")
+
+    def _obj_path(self):
+        """``results/exercise_obj/<exercise>_<phase>.obj``, or a dated name if idle."""
+        from datetime import datetime
+
+        from faceforge.constants import PROJECT_ROOT
+
+        status = self.runtime.status() if self.runtime is not None else None
+        if status is None:
+            stem = f"scene_{datetime.now():%Y%m%d_%H%M%S}"
+        else:
+            phase = "".join(c if c.isalnum() else "_" for c in status.phase).strip("_")
+            stem = f"{status.exercise_id}_{phase or 'frame'}"
+        return PROJECT_ROOT / "results" / "exercise_obj" / f"{stem}.obj"
 
     # -- per frame ---------------------------------------------------------------------
 

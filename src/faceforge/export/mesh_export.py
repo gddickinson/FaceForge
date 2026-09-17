@@ -33,6 +33,7 @@ from __future__ import annotations
 import json
 import logging
 import struct
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Sequence
@@ -140,16 +141,26 @@ def export_mesh(
     fmt: str | None = None,
     *,
     sidecar: bool = True,
+    progress: Callable[[int, int, str], None] | None = None,
 ) -> MeshExportResult:
     """Export every visible mesh in *scene* to *path*.
 
     *fmt* defaults to the format implied by the suffix.  World transforms are
     baked in, so the file is in scene coordinates with the hierarchy flattened.
 
+    *progress*, if given, is called as ``progress(done, total, stage)`` while
+    the work happens.  A posed scene with the skeleton showing is 8.9 M
+    vertices and well over a gigabyte, which is long enough that a caller
+    driving a progress bar needs to hear about it -- and long enough that a
+    caller with no way to hear is indistinguishable from one that has hung.
+
     Raises :class:`MeshExportError` rather than writing an empty file: a
     zero-mesh export that exits successfully is how a broken figure pipeline
     stays broken for a week.
     """
+    def report(done: int, total: int, stage: str) -> None:
+        if progress is not None:
+            progress(done, total, stage)
     path = Path(path)
     fmt = (fmt or format_for_path(path)).lower()
     if fmt not in MESH_FORMATS:
@@ -180,11 +191,17 @@ def export_mesh(
         )
         written = count
     else:
-        baked = [bake_world_geometry(m, w) for m, w in mesh_pairs]
+        total = len(mesh_pairs)
+        baked = []
+        for i, (m, w) in enumerate(mesh_pairs, 1):
+            baked.append(bake_world_geometry(m, w))
+            report(i, total + 2, "baking")
         records = collect_provenance(mesh_pairs, baked)
+        report(total + 1, total + 2, "writing")
         writer = {"obj": _write_obj, "ply": _write_ply, "stl": _write_stl}[fmt]
         result_notes = writer(path, baked, records)
         written = len(baked)
+        report(total + 2, total + 2, "written")
 
     channel = PROVENANCE_CHANNELS[fmt]
     sidecar_path: Path | None = None

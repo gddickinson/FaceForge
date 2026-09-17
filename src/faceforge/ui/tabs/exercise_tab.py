@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 from PySide6.QtWidgets import (
-    QScrollArea, QWidget, QVBoxLayout, QHBoxLayout, QComboBox, QLabel, QListWidget,
-    QListWidgetItem, QPushButton, QSpinBox, QSizePolicy,
+    QApplication, QScrollArea, QWidget, QVBoxLayout, QHBoxLayout, QComboBox, QLabel,
+    QListWidget, QListWidgetItem, QProgressBar, QPushButton, QSpinBox, QSizePolicy,
 )
 from PySide6.QtCore import Qt
 
@@ -142,6 +142,32 @@ class ExerciseTab(QScrollArea):
         self._motion_label = _wrap_label()
         self._layout.addWidget(self._motion_label)
 
+        # ── Export ──
+        # Below Playback, because it exports the frame the transport has
+        # stopped on.  What the file contains is decided by the layer toggles:
+        # with the skeleton showing a squat is 8.9 M vertices and 1.4 GB, so
+        # the count and the size are reported back and the bar is not
+        # decoration -- the export takes long enough to look like a hang.
+        self._layout.addWidget(SectionLabel("Export"))
+        self._obj_btn = QPushButton("Save OBJ && view")
+        self._obj_btn.setObjectName("poseButton")
+        self._obj_btn.setToolTip(
+            "Write the pose currently on screen to an OBJ file and open it in a "
+            "separate viewer window.  Everything visible is exported, so hide "
+            "the layers you do not want first.")
+        self._obj_btn.clicked.connect(self._on_export_obj)
+        self._layout.addWidget(self._obj_btn)
+        self._obj_progress = QProgressBar()
+        self._obj_progress.setRange(0, 100)
+        self._obj_progress.setValue(0)
+        self._obj_progress.setTextVisible(True)
+        self._obj_progress.setFormat("")
+        self._obj_progress.setFixedHeight(14)
+        self._layout.addWidget(self._obj_progress)
+        self._obj_label = _wrap_label()
+        self._obj_label.setStyleSheet("font-size: 10px; color: #999;")
+        self._layout.addWidget(self._obj_label)
+
         # ── Muscles ──
         self._layout.addWidget(SectionLabel("Working muscles"))
         self._muscles = MuscleActivationList()
@@ -166,7 +192,43 @@ class ExerciseTab(QScrollArea):
         self._layout.addStretch()
 
         event_bus.subscribe(EventType.EXERCISE_STATUS, self.on_status)
+        event_bus.subscribe(EventType.EXERCISE_EXPORTED, self.on_exported)
         self._refill()
+
+    # ── OBJ export ──
+
+    def _on_export_obj(self) -> None:
+        self._obj_btn.setEnabled(False)
+        self._obj_progress.setValue(0)
+        self._obj_progress.setFormat("starting…")
+        self._obj_label.setText("")
+        QApplication.processEvents()          # paint the bar before the work
+        try:
+            self._bus.publish(EventType.EXERCISE_EXPORT_OBJ, on_progress=self.on_progress)
+        finally:
+            self._obj_btn.setEnabled(True)
+
+    def on_progress(self, done: int, total: int, stage: str) -> None:
+        """Called from inside the export, which holds this thread throughout.
+
+        `processEvents` is what actually redraws the bar; without it the whole
+        thing is a frozen window for the minute or so a full-skeleton export
+        takes.  The controller stops the viewport's refresh timer first, so
+        nothing repaints the 3D scene -- and therefore nothing moves the
+        geometry -- while these events are pumped.
+        """
+        pct = int(100 * done / total) if total else 0
+        self._obj_progress.setValue(pct)
+        self._obj_progress.setFormat(f"{stage} {done}/{total}")
+        QApplication.processEvents()
+
+    def on_exported(self, path: str = "", message: str = "", ok: bool = True, **kw) -> None:
+        self._obj_label.setText(message)
+        self._obj_label.setStyleSheet(
+            "font-size: 10px; color: %s;" % ("#999" if ok else "#e06c6c"))
+        self._obj_progress.setValue(100 if ok else 0)
+        self._obj_progress.setFormat("done" if ok else "failed")
+        self._obj_btn.setEnabled(True)
 
     # ── list ──
 
