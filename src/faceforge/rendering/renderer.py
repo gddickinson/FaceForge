@@ -32,6 +32,7 @@ from OpenGL.GL import (
     glDepthMask,
     glDisable,
     glEnable,
+    glGetError,
     glPolygonMode,
     glViewport,
 )
@@ -168,11 +169,57 @@ class GLRenderer:
     # Lifecycle
     # ------------------------------------------------------------------
 
+    #: How many times to poll ``glGetError`` before giving up on emptying it.
+    #: The queue holds a handful of entries at most; the bound stops a driver
+    #: that returns an error unconditionally from hanging initialisation.
+    ERROR_DRAIN_LIMIT = 16
+
+    def drain_errors(self, limit: int | None = None) -> list:
+        """Empty the GL error queue, and return what was in it.
+
+        A context arrives with errors already queued that are nobody's doing
+        but the toolkit's: on macOS (OpenGL 4.1 core over Metal) Qt leaves a
+        ``GL_INVALID_ENUM`` behind while it sets the surface up, and it is
+        there in every window shape measured -- bare widget, widget in a main
+        window, widget created after a modal dialog.
+
+        PyOpenGL checks ``glGetError`` *after* each call and reports whatever
+        it finds, so that flag was charged to the first call made through it::
+
+            OpenGL.error.GLError(err = 1280, description = b'invalid enumerant',
+                baseOperation = glClearColor, cArguments = (0.12, 0.12, 0.15, 1.0))
+
+        -- ``glClearColor``, which cannot raise ``GL_INVALID_ENUM`` at all.
+        The misattribution is the whole bug: :meth:`init_gl` died on its first
+        line, the shaders were never compiled, :meth:`render` returned early
+        forever on ``_initialised``, and the viewport stayed one flat colour
+        without logging another word.  Measured on the standalone OBJ viewer:
+        0 lit pixels before this, 402,021 of 3.6 M after.
+        """
+        drained = []
+        for _ in range(self.ERROR_DRAIN_LIMIT if limit is None else limit):
+            err = glGetError()
+            if not err:
+                break
+            drained.append(int(err))
+        return drained
+
     def init_gl(self) -> None:
         """Set up GL state and compile all shader programs.
 
         Must be called with a current OpenGL context.
         """
+        # Start from a clean slate, or the platform's own leftovers are
+        # reported as this method's failure.  Here rather than in the callers
+        # because every one of them needs it: the widget, the headless
+        # session, and the capture tools.
+        stale = self.drain_errors()
+        if stale:
+            # Debug, not a warning: it is the platform's, it is expected, and
+            # it is harmless once out of the way.  Logged at all because the
+            # alternative was a blank window with no explanation.
+            logger.debug("cleared %d GL error(s) left by context creation: %s",
+                         len(stale), stale)
         glClearColor(*self.CLEAR_COLOR)
         glEnable(GL_DEPTH_TEST)
         glDepthFunc(GL_LESS)

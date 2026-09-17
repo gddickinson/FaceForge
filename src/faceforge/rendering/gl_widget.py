@@ -115,7 +115,9 @@ class GLViewport(QOpenGLWidget):
     def initializeGL(self) -> None:
         """Called once when the GL context is ready."""
         try:
-            logger.info("GLViewport: initialising OpenGL.")
+            logger.info("GLViewport: initialising OpenGL. %s", self._context_summary())
+            # init_gl() clears the errors Qt leaves queued behind a new context
+            # before it makes a call of its own; see GLRenderer.drain_errors.
             self.renderer.init_gl()
 
             # Release GL resources when this context goes away.  cleanup() was
@@ -129,6 +131,24 @@ class GLViewport(QOpenGLWidget):
             self._timer.start()
         except Exception:
             logger.error("initializeGL failed:\n%s", traceback.format_exc())
+
+    def _context_summary(self) -> str:
+        """What context Qt actually handed us -- the evidence a failure needs.
+
+        Diagnostics run inside ``initializeGL``'s ``try``, so this must not be
+        able to fail: raising here would abort the very initialisation it is
+        only meant to describe.
+        """
+        try:
+            ctx = self.context()
+            if ctx is None:
+                return "no context"
+            fmt = ctx.format()
+            return (f"valid={ctx.isValid()} "
+                    f"version={fmt.majorVersion()}.{fmt.minorVersion()} "
+                    f"profile={fmt.profile().name} samples={fmt.samples()}")
+        except Exception as exc:                       # pragma: no cover - platform
+            return f"context unreadable ({exc.__class__.__name__})"
 
     def resizeGL(self, w: int, h: int) -> None:
         """Called on every resize.
