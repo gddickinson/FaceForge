@@ -165,6 +165,7 @@ class GripWidthLock:
                 self._remember(state_dict, keys)
                 break
             if float(np.abs(err).max()) > _MAX_ERROR:
+                self._carry(state_dict, keys, authored)
                 break
             jac = np.zeros((2, 2))
             for j, side in enumerate(_SIDES):
@@ -197,12 +198,23 @@ class GripWidthLock:
                authored: dict[str, float]) -> None:
         """Write the last solved abduction, still inside the authored bounds.
 
+        Reached from both guards, because both mean the same thing -- this
+        frame cannot be solved -- and leaving the authored pose is what makes
+        the grip visibly let go.  Measured over the whole movement at 20
+        samples a phase, the bench press's hand span ranged 52.0 units with
+        the frame left alone and 16.6 with it carried.
+
         Bounded the same way a solved step is: the lock never moves abduction
         more than ``_MAX_AUTHORITY`` from what the animation authored, so a
-        long degenerate stretch cannot let a stale value fight the movement.
+        long unsolvable stretch cannot let a stale value fight the movement.
+        Unbounding it was measured and is worse -- the pulldown's span ranged
+        71.8 rather than 59.4 -- because the further a frame is from one the
+        lock could solve, the less the held value has to do with it.
         """
         if self._held is None:
             return
         for side in _SIDES:
-            state_dict[keys[side]] = float(np.clip(self._held[side],
-                                                   -_ABDUCT_LIMIT, _ABDUCT_LIMIT))
+            state_dict[keys[side]] = float(np.clip(
+                np.clip(self._held[side], authored[side] - _MAX_AUTHORITY,
+                        authored[side] + _MAX_AUTHORITY),
+                -_ABDUCT_LIMIT, _ABDUCT_LIMIT))
