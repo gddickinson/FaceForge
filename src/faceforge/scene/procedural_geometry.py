@@ -115,7 +115,11 @@ def make_cylinder(
         indices.extend([b, b + 2, b + 1, b + 1, b + 2, b + 3])
 
     # --- Top cap ---
-    top_center = len(positions) // 3
+    # `positions` holds 3-tuples, so len() is already the vertex count: the
+    # `// 3` this once carried belonged to a flat-float layout and made every
+    # cap triangle index back into the side wall, drawing a black pinwheel
+    # (the barbell plates) instead of a lit disc.
+    top_center = len(positions)
     positions.append((0, half_h, 0))
     normals.append((0, 1, 0))
     for i in range(segments):
@@ -128,7 +132,7 @@ def make_cylinder(
         indices.extend([top_center, n, nn])
 
     # --- Bottom cap ---
-    bot_center = len(positions) // 3
+    bot_center = len(positions)
     positions.append((0, -half_h, 0))
     normals.append((0, -1, 0))
     for i in range(segments):
