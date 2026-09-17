@@ -153,7 +153,7 @@ close_grip_push_up = ExerciseDefinition(
              mu("obliques", S, 0.5), mu("gluteus_maximus", S, 0.45),
              mu("erector_spinae", ST, 0.4), mu("rotator_cuff", ST, 0.4),
              mu("forearm_extensors", ST, 0.45)),
-    equipment=(eq("mat", attach="static"),),
+    equipment=(eq("mat", attach="floor"),),
     errors=("Hands so close the wrists take it instead of the triceps.",
             "Elbows flaring out, which makes it an ordinary push-up.",
             "Hips sagging or piking."),
@@ -163,6 +163,13 @@ close_grip_push_up = ExerciseDefinition(
     sources=(CALATAYUD, NSCA, ACE, EXRX), camera="front", tags=("bodyweight",),
 )
 
+# Both hands cup ONE dumbbell behind the head, so the grip has to be about as
+# wide as the bell (16 handle + two 7-radius heads, ~30 across).  Abduction is
+# the wrong lever overhead -- it barely moves the hands and the joint limit
+# clamps it -- but axial rotation is: measured 2026-09-16, at rotate=-60 the
+# grip is 29.4 wide in BOTH the stretched and the locked-out pose, against
+# 83.1 and 113.6 at the authored rotate=10, which left the bell 37 units clear
+# of the nearer hand.
 overhead_triceps_extension = ExerciseDefinition(
     id="overhead_triceps_extension", name="Overhead triceps extension",
     category=Category.UPPER_PUSH,
@@ -174,19 +181,19 @@ overhead_triceps_extension = ExerciseDefinition(
     orientation="seated", anchor="none", base_position=SEATED_ON_BENCH,
     phases=(
         ph("Lower", ECC, 2.0, merge(pose(hip_flex=SEATED_HIP, knee_flex=90),
-                                    arms(flex=160, abduct=12, rotate=10, elbow=135,
+                                    arms(flex=160, abduct=0, rotate=-60, elbow=135,
                                          forearm=-30, wrist=-10), grip()),
            cues=("Bend only at the elbow; the upper arms do not travel",)),
         ph("Stretch", ISO, 0.4, merge(pose(hip_flex=SEATED_HIP, knee_flex=90),
-                                      arms(flex=160, abduct=12, rotate=10, elbow=135,
+                                      arms(flex=160, abduct=0, rotate=-60, elbow=135,
                                            forearm=-30, wrist=-10), grip()),
            cues=("Feel it along the back of the arm, not in the shoulder",)),
         ph("Extend", CON, 1.4, merge(pose(hip_flex=SEATED_HIP, knee_flex=90),
-                                     arms(flex=168, abduct=10, rotate=10, elbow=8,
+                                     arms(flex=168, abduct=0, rotate=-60, elbow=8,
                                           forearm=-30, wrist=-10), grip()),
            cues=("Straighten the elbows without letting the ribs flare",)),
         ph("Lockout", ISO, 0.4, merge(pose(hip_flex=SEATED_HIP, knee_flex=90),
-                                      arms(flex=168, abduct=10, rotate=10, elbow=8,
+                                      arms(flex=168, abduct=0, rotate=-60, elbow=8,
                                            forearm=-30, wrist=-10), grip())),
     ),
     muscles=(mu("triceps_brachii", P, 0.95, note="the long head at length"),

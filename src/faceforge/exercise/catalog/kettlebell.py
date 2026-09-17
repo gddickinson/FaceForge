@@ -33,6 +33,15 @@ _OVERHEAD_R = only(shoulder_r_flex=175, shoulder_r_abduct=10, elbow_r_flex=5,
 _FREE_L = only(shoulder_l_flex=5, shoulder_l_abduct=8, elbow_l_flex=10)
 _HANG_BOTH = only(shoulder_flex=5, shoulder_abduct=8, elbow_flex=8)
 
+# Two hands on ONE handle at the midline: the equipment rig centres an
+# `attach="hands"` item between the grip points, so a pose that leaves the
+# arms hanging at the sides puts the bell on the midline and the hands 80 cm
+# apart on either side of it.  Measured 2026-09-16, grip width by shoulder
+# abduction:  +8 -> 101,  0 -> 81,  -10 -> 54,  -20 -> 28,  -25 -> 14.8.
+# -25 is a two-handed grip (12 cm) and brings the worst hand-to-bell gap
+# from 40 to 3.  A bell in EACH hand (the carries) keeps the wide pose.
+_HANG_TWO_HANDED = only(shoulder_flex=5, shoulder_abduct=-25, elbow_flex=8)
+
 _CARRY_TRUNK = (mu("obliques", P, 0.75, note="stops the trunk folding toward the load"),
                 mu("erector_spinae", P, 0.7),
                 mu("quadratus_lumborum", P, 0.65, note="holds the pelvis against the load"),
@@ -49,13 +58,20 @@ kettlebell_deadlift = ExerciseDefinition(
     setup=("Bell between the mid-feet, feet hip width", "Hinge to it: hips back, shins near "
            "vertical, flat back", "Grip the handle with both hands, lats tight"),
     phases=(
-        ph("Stand", CON, 1.4, merge(stand()[0], _HANG_BOTH, grip()),
+        ph("Stand", CON, 1.4, merge(stand()[0], _HANG_TWO_HANDED, grip()),
            cues=("Push the floor away and drive the hips through",)),
-        ph("Lockout", ISO, 0.5, merge(stand()[0], _HANG_BOTH, grip()),
+        ph("Lockout", ISO, 0.5, merge(stand()[0], _HANG_TWO_HANDED, grip()),
            cues=("Stand tall; ribs down, glutes squeezed",)),
-        ph("Lower", ECC, 1.8, merge(hinge(75, 25)[0], _HANG_BOTH, grip()), pitch=75,
+        # `hinge(75, 25)` left the bell 51.3 above the floor -- the lift is
+        # named for picking it up off the floor.  Measured 2026-09-16, bell
+        # low against the bottom position: hinge(75,25) 51.3, squat(125,120)
+        # at pitch 75 16.5, squat(125,125) at pitch 58 **6.3** with the hips
+        # (68.4) still above the knees (41.6).  A bell standing between the
+        # feet needs more knee than an RDL, which is the same reason the
+        # barbell deadlift's start had to deepen.
+        ph("Lower", ECC, 1.8, merge(squat(125, 110, 58)[0], _HANG_TWO_HANDED, grip()), pitch=58,
            cues=("Hips back first; the bell tracks close to the shins",)),
-        ph("Floor", ISO, 0.3, merge(hinge(75, 25)[0], _HANG_BOTH, grip()), pitch=75),
+        ph("Floor", ISO, 0.3, merge(squat(125, 110, 58)[0], _HANG_TWO_HANDED, grip()), pitch=58),
     ),
     muscles=(mu("gluteus_maximus", P, 0.85), mu("hamstrings", P, 0.8),
              mu("erector_spinae", P, 0.75), mu("quadriceps", S, 0.45),
@@ -317,16 +333,25 @@ kettlebell_halo = ExerciseDefinition(
     setup=("Hold the bell by the horns, base up, at chest height",
            "Circle it round the head keeping it close", "Ribs down: the trunk does not move"),
     phases=(
+        # Axial rotation is what closes the two hands onto one pair of horns:
+        # measured 2026-09-16, grip width by `shoulder_rotate` --
+        #            rotate   +40   0   -30   -60   -80
+        #   Round the head    69.4  63.3  52.5  39.6  31.5
+        #   Behind            43.5  43.2  41.9  40.1  38.9
+        #   Return            95.6  80.1  57.0  30.5  14.6
+        # -60 holds all three near 30-40, which is a two-horn grip, and takes
+        # the worst hand-to-bell gap from 29.3 to a few units.
         ph("Round the head", TRN, 1.6,
            merge(stand()[0], only(shoulder_flex=40, shoulder_abduct=60, elbow_flex=135,
-                                  shoulder_rotate=40), grip()),
+                                  shoulder_rotate=-60), grip()),
            cues=("Elbows lead; keep the bell close to the head",)),
         ph("Behind", ISO, 0.4,
            merge(stand()[0], only(shoulder_flex=10, shoulder_abduct=85, elbow_flex=145,
-                                  shoulder_rotate=55), grip()),
+                                  shoulder_rotate=-60), grip()),
            cues=("Bell behind the head, elbows high, ribs still down",)),
         ph("Return", TRN, 1.6, merge(stand()[0], only(shoulder_flex=45, shoulder_abduct=20,
-                                                     elbow_flex=130), grip()),
+                                                     elbow_flex=130, shoulder_rotate=-60),
+                                     grip()),
            cues=("Bring it back round to the chest",)),
     ),
     muscles=(mu("deltoid_lateral", P, 0.6), mu("deltoid_posterior", P, 0.55),
@@ -376,8 +401,16 @@ kettlebell_front_rack_carry = ExerciseDefinition(
              mu("gluteus_medius", P, 0.65, note="keeps the pelvis level in single stance"),
              mu("forearm_flexors", S, 0.6), mu("quadriceps", S, 0.4),
              mu("gluteus_maximus", S, 0.4), mu("gastrocnemius", S, 0.35)),
-    equipment=(eq("kettlebell", attach="hand_r", radius=11.0),
-               eq("kettlebell", attach="hand_l", radius=11.0)),
+    # A racked bell sits ON the outside of the forearm at shoulder height, not
+    # below the fist: at the default hang of +10 its centre came to rest 0.6
+    # units from the BICEPS -- half the bell inside the upper arm, measured
+    # against the drawn meshes.  Penetration by hang, over the whole pose
+    # sweep: +10 -> 8.5-11.0, 0 -> 5.8-8.4, **-12 -> 0.0-1.2**.  This is the
+    # exercise the override exists for; a bell that only passes THROUGH the
+    # rack (the clean, the press) cannot use it, because the hang applies to
+    # every phase including the swing.
+    equipment=(eq("kettlebell", attach="hand_r", radius=11.0, hang=-12.0),
+               eq("kettlebell", attach="hand_l", radius=11.0, hang=-12.0)),
     errors=("Leaning back under the load and letting the ribs flare.",
             "Dropping an elbow, which puts the bell on the wrist.",
             "Holding the breath rather than breathing behind the brace."),
@@ -427,8 +460,16 @@ farmers_carry = ExerciseDefinition(
 #: Supine, the loaded arm is vertical at 90 degrees of shoulder flexion, not
 #: the 175 that means vertical when standing, and as the trunk comes up under
 #: it the flexion has to come off by the same angle the trunk gains.
+# The bell-side arm is bent, not spread: the rig hangs a held bell BELOW the
+# grip, so a straight arm lying on the mat put the bell 15.8 units through it.
+# Measured 2026-09-16, bell's lowest point by the right arm's angles --
+#     flex/abduct/elbow   -8/45/8 -> -15.8   45/30/80 -> 11.6   60/45/80 -> -2.1
+#     45/45/80 -> **5.0**
+# 45/45/80 is the get-up's real start anyway: rolled toward the bell with the
+# elbow bent and the bell resting on the floor beside the shoulder, which is
+# what this phase's own second cue describes.  The free arm stays out at 45.
 _TGU_SPREAD = merge(pose(hip_abduct=28, knee_flex=5),
-                    only(shoulder_r_flex=-8, shoulder_r_abduct=45, elbow_r_flex=8,
+                    only(shoulder_r_flex=45, shoulder_r_abduct=45, elbow_r_flex=80,
                          shoulder_l_flex=-8, shoulder_l_abduct=45, elbow_l_flex=8),
                     grip())
 _TGU_SET = merge(pose(hip_r_flex=45, knee_r_flex=112, ankle_r_flex=45,
@@ -498,7 +539,7 @@ turkish_get_up = ExerciseDefinition(
              mu("trapezius_upper", S, 0.5), mu("latissimus_dorsi", S, 0.5),
              mu("forearm_flexors", ST, 0.5), mu("adductors", ST, 0.4)),
     equipment=(eq("kettlebell", attach="hand_r", radius=11.0),
-               eq("mat", attach="static")),
+               eq("mat", attach="floor")),
     errors=("Rushing between positions instead of owning each one.",
             "Letting the bell arm drift out of the vertical.",
             "Looking away from the bell before standing."),

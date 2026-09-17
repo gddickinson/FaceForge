@@ -25,7 +25,7 @@ What each change does, from the literature the project already cites:
 from __future__ import annotations
 
 from faceforge.exercise.catalog._helpers import (
-    ANDERSEN, BENCH_INCLINE, BENCH_TOP, CALATAYUD, CON, ECC, ECC_CON, EXRX, HIPS, ISO, KOLBER,
+    ANDERSEN, BENCH_HINGE_X, BENCH_INCLINE, BENCH_TOP, CALATAYUD, CON, ECC, ECC_CON, EXRX, HIPS, ISO, KOLBER,
     NSCA, P, S, ST, arms, bench_legs, eq, grip, incline_legs, merge, mu, ph, pose,
 )
 from faceforge.exercise.model import Category, ExerciseDefinition
@@ -168,7 +168,8 @@ incline_barbell_bench_press = ExerciseDefinition(
              *_BACK, *_SUPPORT),
     equipment=(eq("barbell", plates=2),
                eq("bench", attach="static", position=(-45.0, 0.0, 0.0),
-                  height=BENCH_TOP, incline_deg=-30.0)),
+                  height=BENCH_TOP, incline_deg=-30.0,
+                  incline_pivot_x=BENCH_HINGE_X)),
     errors=("A bench steeper than 45 deg, which hands the lift to the anterior deltoid.",
             "Sliding down the bench as the set goes on.",
             *_COMMON_ERRORS),
@@ -200,7 +201,8 @@ decline_barbell_bench_press = ExerciseDefinition(
              *_BACK, *_SUPPORT),
     equipment=(eq("barbell", plates=2),
                eq("bench", attach="static", position=(-45.0, 0.0, 0.0),
-                  height=BENCH_TOP, incline_deg=20.0)),
+                  height=BENCH_TOP, incline_deg=20.0,
+                  incline_pivot_x=BENCH_HINGE_X)),
     errors=("Steep declines with a heavy bar and no spotter: the bar finishes over the throat.",
             "Pushing the head into the pad.",
             *_COMMON_ERRORS),
@@ -212,6 +214,14 @@ decline_barbell_bench_press = ExerciseDefinition(
     camera="three_quarter", tags=("barbell",),
 )
 
+# The bar is rigid, so the bottom has to grip where the lockout does.  At
+# abduct 60 the bottom measured 164.6 against a 110.6 lockout -- each hand
+# sliding 27 units along the bar every rep, the worst in the catalogue.
+# Measured 2026-09-16 (flex -5, rotate 30, elbow 55, forearm 60):
+#     abduct    60     12      8      4
+#     width  164.6  120.2  113.4  106.3
+# 8 gives 113.4 against the lockout's 110.6: a 2.8-unit slide, and tucked
+# elbows are the floor press's own style anyway.
 floor_press = ExerciseDefinition(
     id="floor_press", name="Floor press", category=Category.UPPER_PUSH,
     description="A barbell press lying on the floor. The upper arm lands before the chest "
@@ -222,11 +232,11 @@ floor_press = ExerciseDefinition(
     orientation="supine", anchor="none", base_position=(-85.0, 14.0, 0.0),
     phases=(
         ph("Lower", ECC, 2.0,
-           merge(pose(), arms(flex=-5, abduct=60, rotate=30, elbow=55, forearm=60, wrist=-70),
+           merge(pose(), arms(flex=-5, abduct=8, rotate=30, elbow=55, forearm=60, wrist=-70),
                  grip()),
            cues=("Lower until the triceps touch the floor",)),
         ph("Pause", ISO, 0.6,
-           merge(pose(), arms(flex=-5, abduct=60, rotate=30, elbow=55, forearm=60, wrist=-70),
+           merge(pose(), arms(flex=-5, abduct=8, rotate=30, elbow=55, forearm=60, wrist=-70),
                  grip()),
            cues=("Rest the upper arms without relaxing the grip or the back",)),
         ph("Press", CON, 1.4,
@@ -243,7 +253,7 @@ floor_press = ExerciseDefinition(
              mu("latissimus_dorsi", ST, 0.4), mu("rhomboids", ST, 0.35),
              mu("trapezius_middle", ST, 0.3), mu("rotator_cuff", ST, 0.35),
              mu("forearm_flexors", ST, 0.45), mu("biceps_brachii", ST, 0.2)),
-    equipment=(eq("barbell", plates=2), eq("mat", attach="static")),
+    equipment=(eq("barbell", plates=2), eq("mat", attach="floor")),
     errors=("Bouncing the elbows off the floor.",
             "Treating it as a bench press with a shorter range and the same load progression."),
     physio_notes=("Removing the bottom third removes the stretch-shortening contribution, "

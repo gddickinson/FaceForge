@@ -87,6 +87,15 @@ def _pedal_ik(theta_deg: float) -> tuple[float, float, float]:
     return hip, knee, ankle
 
 
+#: The forefoot lies ALONG the pedal platform, so the toes carry a little
+#: extension rather than continuing the line of a plantarflexed foot.  Without
+#: it they droop past the pedal: measured 2026-09-17 the toe tip sat 3.3 to 3.7
+#: below the ball of the same foot and 1.1 to 1.4 *through* the pedal at 270
+#: and 315 degrees of crank.  10 clears both; 20 and 30 also clear them, and
+#: this is the smallest that does.
+_PEDAL_TOES = 10.0
+
+
 def _pedal_phase(i: int, n: int, seconds: float) -> Phase:
     theta = 360.0 * i / n                       # right crank angle at the END of the phase
     kw = {}
@@ -95,6 +104,7 @@ def _pedal_phase(i: int, n: int, seconds: float) -> Phase:
         kw[f"hip_{side}_flex"] = hip
         kw[f"knee_{side}_flex"] = knee
         kw[f"ankle_{side}_flex"] = ankle
+        kw[f"toe_curl_{side}"] = _PEDAL_TOES
     act = {}
     for group, (start, end, level) in _PEDAL_TIMING.items():
         for side, offset in (("R", 0.0), ("L", 180.0)):
@@ -179,7 +189,7 @@ rowing_machine = ExerciseDefinition(
                   rotation_deg=(0, 180, 0)),
                # The handle is held, so it is a hand item with the chain
                # running forward to the flywheel, not part of the frame.
-               eq("cable_handle", attach="hands", cable_to=(0.0, -4.0, 120.0))),
+               eq("cable_handle", attach="hands", cable_to=(0.0, -4.0, 120.0), length=94.0)),
     errors=("Opening the back before the legs have finished (shooting the slide).",
             "Pulling with the arms early.", "Rounding the lumbar spine at the catch.",
             "Rushing the recovery."),
@@ -215,6 +225,25 @@ def _in_stance(pct: float) -> bool:
     return (pct % 100.0) <= _STANCE_END
 
 
+#: The metatarsophalangeal joints do not snap straight at toe-off; they unwind
+#: through early swing.  Dropping the curl to zero the instant stance ended
+#: left the foot rigid while it was still near the belt -- the ground lock is a
+#: whole-body translation and cannot lift one foot clear, so a swing foot sits
+#: about 3 units up rather than 10 -- and the toe tip measured 4.2 below the
+#: ball of the same foot at 25 % and 75 % of the stride.
+_TOE_RELEASE_END = 90.0
+
+
+def _toe_release(pct: float) -> float:
+    """1.0 through stance, falling to 0.0 across early swing."""
+    pct %= 100.0
+    if pct <= _STANCE_END:
+        return 1.0
+    if pct >= _TOE_RELEASE_END:
+        return 0.0
+    return (_TOE_RELEASE_END - pct) / (_TOE_RELEASE_END - _STANCE_END)
+
+
 def _interp_cycle(table, pct: float) -> tuple[float, float, float]:
     pct = pct % 100
     for (p0, h0, k0, a0), (p1, h1, k1, a1) in zip(table, table[1:]):
@@ -237,8 +266,7 @@ def _gait_phase(i: int, n: int, seconds: float, table, run: bool) -> Phase:
     # push-off -- it is the last joint to leave the ground -- and go slack in
     # swing.  Without this the foot is rigid and the model toes off on a point.
     for side, at, (h, k, a) in (("r", pct, (hr, kr, ar)), ("l", pct + 50.0, (hl, kl, al))):
-        kw[f"toe_curl_{side}"] = (toes_on_floor(pitch, h, k, a)
-                                  if _in_stance(at) else 0.0)
+        kw[f"toe_curl_{side}"] = toes_on_floor(pitch, h, k, a) * _toe_release(at)
     act = {}
     for group, (start, end, level) in _GAIT_TIMING.items():
         for side, offset in (("R", 0.0), ("L", 50.0)):
@@ -327,15 +355,28 @@ jumping_jack = ExerciseDefinition(
     id="jumping_jack", name="Jumping jack", category=Category.CONDITIONING,
     description="A hop that spreads the feet as the arms swing overhead, and a hop back.",
     setup=("Stand tall, feet together, arms at the sides",),
+    # A jack is a HOP, and with both phases at the same `lift` it was not one:
+    # measured 2026-09-16, the ankle varied 3.2 units over the rep against a
+    # countermovement jump's 46, so the feet never left the floor and it was a
+    # side-straddle step with phase names.  The two landings now sit at
+    # lift=0 with a short airborne phase between them in each direction.
     phases=(
-        ph("Out", CON, 0.3, merge(pose(hip_abduct=25, knee_flex=15, ankle_flex=-15,
+        ph("Out", CON, 0.18, merge(pose(hip_abduct=25, knee_flex=15, ankle_flex=-15,
                  toe_curl=toes_on_floor(0, 0, 15, -15)),
-                                  arms(abduct=170, elbow=10)), lift=3.0,
+                                   arms(abduct=170, elbow=10)),
            cues=("Hop the feet wide as the hands clap overhead",)),
-        ph("In", CON, 0.3, merge(pose(hip_abduct=0, knee_flex=15, ankle_flex=-15,
+        ph("Hop in", TRN, 0.12, merge(pose(hip_abduct=12, knee_flex=5, ankle_flex=-35,
+                 toe_curl=toes_on_floor(0, 0, 5, -35)),
+                                      arms(abduct=90, elbow=10)), lift=16.0,
+           easing="ease_out", cues=("Both feet off the floor between the two landings",)),
+        ph("In", CON, 0.18, merge(pose(hip_abduct=0, knee_flex=15, ankle_flex=-15,
                  toe_curl=toes_on_floor(0, 0, 15, -15)),
-                                 arms(abduct=10, elbow=10)), lift=3.0,
+                                  arms(abduct=10, elbow=10)),
            cues=("Hop the feet together as the arms come down",)),
+        ph("Hop out", TRN, 0.12, merge(pose(hip_abduct=12, knee_flex=5, ankle_flex=-35,
+                 toe_curl=toes_on_floor(0, 0, 5, -35)),
+                                       arms(abduct=90, elbow=10)), lift=16.0,
+           easing="ease_out", cues=("Push off the balls of the feet, not the heels",)),
     ),
     muscles=(mu("deltoid_lateral", P, 0.6), mu("gluteus_medius", P, 0.6), mu("gastrocnemius", P, 0.6),
              mu("soleus", S, 0.5), mu("adductors", S, 0.5), mu("quadriceps", S, 0.4),
@@ -355,9 +396,20 @@ mountain_climber = ExerciseDefinition(
     orientation="prone", anchor="hands", base_position=(-85.0, 30.0, 0.0),
     phases=(
         # The hands are the anchor and the body turns about its origin near the
-        # head, so the trailing foot is held up by pitch, not by the pose:
-        # measured, 0 left the back toes 10.4 under the mat with the knee in
-        # and 2.9 under on the switch.
+        # head, so the trailing foot is held up by pitch, not by the pose.
+        # KNOWN LIMITATION, re-measured on the real clip 2026-09-16.  At +8
+        # nothing touches the floor but the hands (lowest pivot 2.0, a finger)
+        # and the hips sit 5 ABOVE the shoulders -- a crouch rather than a
+        # plank, with the trailing foot in the air.  Every pitch that brings
+        # that foot down drives the TOES through the mat, because the shin and
+        # foot are a fixed length below a body the anchored straight arms hold
+        # at shoulder 79:
+        #     pitch      +8     0     -5    -10    -15
+        #     lowest    +2.0  -5.6  -13.1  -20.4  -27.6   (the trailing toes)
+        #     knee      25.6  17.2   12.1    7.0    1.8
+        # +8 is kept because a floating foot is a better picture than a foot
+        # through the floor.  The fix is a shin that can lie flat, which needs
+        # more ankle range than the +-45 the DOF has.
         ph("Right knee in", CON, 0.3, merge(pose(hip_r_flex=110, knee_r_flex=105, ankle_flex=45, toe_curl=_TUCKED), _CLIMB_ARMS),
            pitch=8, cues=("Drive the knee to the chest; hips stay down",)),
         ph("Switch", CON, 0.3, merge(pose(hip_l_flex=110, knee_l_flex=105, ankle_flex=45, toe_curl=_TUCKED), _CLIMB_ARMS),
@@ -367,7 +419,7 @@ mountain_climber = ExerciseDefinition(
              mu("quadriceps", S, 0.5), mu("deltoid_anterior", S, 0.5), mu("pectoralis_major", S, 0.4),
              mu("serratus_anterior", S, 0.5), mu("triceps_brachii", S, 0.4),
              mu("gluteus_maximus", ST, 0.3)),
-    equipment=(eq("mat", attach="static"),),
+    equipment=(eq("mat", attach="floor"),),
     errors=("Hips rising into a pike.", "Bouncing the feet without full knee drive."),
     physio_notes=("Combines plank stability with hip flexion; a high-heart-rate core "
                   "exercise.",),

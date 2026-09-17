@@ -269,12 +269,12 @@ A hip-dominant lift from the floor: the trunk starts ~55 deg from vertical with 
 
 | phase | kind | s | moving joints | cues |
 |---|---|---|---|---|
-| Pull to the knee | concentric | 1.00 | Hips: extension 125° → 62°; Knees: extension 88° → 30°; Shoulders: extension 62° → 40°; Ankles: plantarflexion 25° → 8°; trunk pitch +40° | Push the floor away; hips and shoulders rise at the same rate Bar stays in contact with the shins |
+| Pull to the knee | concentric | 1.00 | Knees: extension 110° → 30°; Hips: extension 125° → 62°; Ankles: plantarflexion 43° → 8°; Shoulders: extension 58° → 40°; trunk pitch +40° | Push the floor away; hips and shoulders rise at the same rate Bar stays in contact with the shins |
 | Lockout | concentric | 0.80 | Hips: extension 62° → 0°; Shoulders: extension 40° → 3°; Knees: extension 30° → 3°; Ankles: plantarflexion 8° → 0° | Drive the hips through; stand tall without leaning back |
 | Top | isometric | 0.50 | hold | Squeeze the glutes; do not hyperextend |
 | Lower to the knee | eccentric | 1.00 | Hips: flexion 0° → 62°; Shoulders: flexion 3° → 40°; Knees: flexion 3° → 30°; Ankles: dorsiflexion 0° → 8°; trunk pitch +40° | Hinge the hips back first; bar slides down the thighs |
-| Lower to the floor | eccentric | 1.00 | Hips: flexion 62° → 125°; Knees: flexion 30° → 88°; Shoulders: flexion 40° → 62°; Ankles: dorsiflexion 8° → 25°; trunk pitch +62° | Bend the knees once the bar passes them |
-| Reset | isometric | 0.50 | trunk pitch +62° | Neutral spine, lats tight, take the slack out of the bar |
+| Lower to the floor | eccentric | 1.00 | Knees: flexion 30° → 110°; Hips: flexion 62° → 125°; Ankles: dorsiflexion 8° → 43°; Shoulders: flexion 40° → 58°; trunk pitch +58° | Bend the knees once the bar passes them |
+| Reset | isometric | 0.50 | trunk pitch +58° | Neutral spine, lats tight, take the slack out of the bar |
 
 **Muscles**
 - *Primary movers:* Gluteus maximus 95 %; Hamstrings 80 %; Erector spinae 90 % — isometric hold against flexion
@@ -313,11 +313,11 @@ A wide stance with the feet turned out puts the trunk more upright and shares th
 
 | phase | kind | s | moving joints | cues |
 |---|---|---|---|---|
-| Pull to the knee | concentric | 1.00 | Hips: extension 115° → 57°; Knees: extension 85° → 35°; Shoulders: extension 45° → 30°; Ankles: plantarflexion 15° → 8°; trunk pitch +30° | Push the floor away; hips and shoulders rise at the same rate Bar stays in contact with the shins |
+| Pull to the knee | concentric | 1.00 | Knees: extension 122° → 35°; Hips: extension 125° → 57°; Ankles: plantarflexion 42° → 8°; Shoulders: extension 45° → 30°; trunk pitch +30° | Push the floor away; hips and shoulders rise at the same rate Bar stays in contact with the shins |
 | Lockout | concentric | 0.80 | Hips: extension 57° → 0°; Shoulders: extension 30° → 3°; Knees: extension 35° → 3°; Ankles: plantarflexion 8° → 0° | Drive the hips through; stand tall without leaning back |
 | Top | isometric | 0.50 | hold | Squeeze the glutes; do not hyperextend |
 | Lower to the knee | eccentric | 1.00 | Hips: flexion 0° → 57°; Shoulders: flexion 3° → 30°; Knees: flexion 3° → 35°; Ankles: dorsiflexion 0° → 8°; trunk pitch +30° | Hinge the hips back first; bar slides down the thighs |
-| Lower to the floor | eccentric | 1.00 | Hips: flexion 57° → 115°; Knees: flexion 35° → 85°; Shoulders: flexion 30° → 45°; Ankles: dorsiflexion 8° → 15°; trunk pitch +45° | Bend the knees once the bar passes them |
+| Lower to the floor | eccentric | 1.00 | Knees: flexion 35° → 122°; Hips: flexion 57° → 125°; Ankles: dorsiflexion 8° → 42°; Shoulders: flexion 30° → 45°; trunk pitch +45° | Bend the knees once the bar passes them |
 | Reset | isometric | 0.50 | trunk pitch +45° | Neutral spine, lats tight, take the slack out of the bar |
 
 **Muscles**
@@ -693,11 +693,11 @@ One foot on a knee-high box; that leg extends to lift the body onto the box and 
 
 | phase | kind | s | moving joints | cues |
 |---|---|---|---|---|
-| Place foot | transition | 0.70 | Hip (R): flexion 0° → 95°; Knee (R): flexion 0° → 95°; Foot (L): toe extension 0° → 15°; Ankle (R): dorsiflexion 0° → 10°; trunk pitch +10° | Right foot flat on the box, knee over the toes |
-| Step up | concentric | 1.20 | Hip (R): extension 95° → 5°; Knee (R): extension 95° → 5°; Knee (L): flexion 5° → 60°; Hip (L): flexion 0° → 35°; lift 60 | Push through the right heel; do not push off the back foot |
+| Place foot | transition | 0.70 | Knee (R): flexion 0° → 98°; Hip (R): flexion 0° → 98°; Foot (L): toe extension 0° → 15°; Ankle (R): dorsiflexion 0° → 10°; trunk pitch +10° | Right foot flat on the box, knee over the toes |
+| Step up | concentric | 1.20 | Knee (R): extension 98° → 5°; Hip (R): extension 98° → 5°; Knee (L): flexion 5° → 60°; Hip (L): flexion 0° → 35°; lift 60 | Push through the right heel; do not push off the back foot |
 | Stand on box | isometric | 0.50 | Knee (L): extension 60° → 3°; Hip (L): extension 35° → 0°; Foot (L): toe flexion 35° → 0°; Ankle (L): dorsiflexion 10° → 0°; lift 60 | Stand tall, hips level |
-| Step down | eccentric | 1.40 | Hip (R): flexion 0° → 95°; Knee (R): flexion 3° → 95°; Foot (L): toe extension 0° → 15°; Ankle (R): dorsiflexion 0° → 10°; trunk pitch +10° | Lower the left foot to the floor under control |
-| Return | transition | 0.60 | Hip (R): extension 95° → 0°; Knee (R): extension 95° → 0°; Foot (L): toe flexion 15° → 0°; Ankle (R): plantarflexion 10° → 0° |  |
+| Step down | eccentric | 1.40 | Hip (R): flexion 0° → 98°; Knee (R): flexion 3° → 98°; Foot (L): toe extension 0° → 15°; Ankle (R): dorsiflexion 0° → 10°; trunk pitch +10° | Lower the left foot to the floor under control |
+| Return | transition | 0.60 | Knee (R): extension 98° → 0°; Hip (R): extension 98° → 0°; Foot (L): toe flexion 15° → 0°; Ankle (R): plantarflexion 10° → 0° |  |
 
 **Muscles**
 - *Primary movers:* Quadriceps (R) 85 %; Gluteus maximus (R) 85 %
@@ -757,7 +757,7 @@ Plantarflexion from standing: the heels rise as high as possible, pause, and low
 
 ### Wall sit
 
-`wall_sit` · Lower body · orientation: standing · anchor: feet · rep: 10.0 s · equipment: none
+`wall_sit` · Lower body · orientation: standing · anchor: feet · rep: 10.0 s · equipment: wall
 
 An isometric squat hold with the back against a wall, thighs parallel and knees at 90 deg.
 
@@ -947,10 +947,10 @@ A hip hinge to a bell standing between the feet. The short range and the centred
 
 | phase | kind | s | moving joints | cues |
 |---|---|---|---|---|
-| Stand | concentric | 1.40 | Hips: extension 75° → 0°; Ankles: plantarflexion 25° → 0°; Knees: extension 25° → 0° | Push the floor away and drive the hips through |
+| Stand | concentric | 1.40 | Hips: extension 125° → 0°; Knees: extension 110° → 0°; Ankles: plantarflexion 43° → 0° | Push the floor away and drive the hips through |
 | Lockout | isometric | 0.50 | hold | Stand tall; ribs down, glutes squeezed |
-| Lower | eccentric | 1.80 | Hips: flexion 0° → 75°; Ankles: dorsiflexion 0° → 25°; Knees: flexion 0° → 25°; trunk pitch +75° | Hips back first; the bell tracks close to the shins |
-| Floor | isometric | 0.30 | trunk pitch +75° |  |
+| Lower | eccentric | 1.80 | Hips: flexion 0° → 125°; Knees: flexion 0° → 110°; Ankles: dorsiflexion 0° → 43°; trunk pitch +58° | Hips back first; the bell tracks close to the shins |
+| Floor | isometric | 0.30 | trunk pitch +58° |  |
 
 **Muscles**
 - *Primary movers:* Gluteus maximus 85 %; Hamstrings 80 %; Erector spinae 75 %
@@ -1221,9 +1221,9 @@ Supported on straight arms between two bars, the body lowers until the upper arm
 
 | phase | kind | s | moving joints | cues |
 |---|---|---|---|---|
-| Lower | eccentric | 1.80 | Elbows: flexion 0° → 95°; Shoulders: extension 0° → 30°; Shoulders: abduction 10° → 20°; trunk pitch +15° | Elbows back, lower to ~90 deg |
+| Lower | eccentric | 1.80 | Elbows: flexion 0° → 95°; Shoulders: extension 0° → 30°; trunk pitch +15° | Elbows back, lower to ~90 deg |
 | Bottom | isometric | 0.30 | trunk pitch +15° | No lower than the shoulder tolerates |
-| Press | concentric | 1.30 | Elbows: extension 95° → 0°; Shoulders: flexion 30° → 0°; Shoulders: adduction 20° → 10°; trunk pitch +10° | Press to lockout; depress the shoulder blades |
+| Press | concentric | 1.30 | Elbows: extension 95° → 0°; Shoulders: flexion 30° → 0°; trunk pitch +10° | Press to lockout; depress the shoulder blades |
 | Top | isometric | 0.40 | trunk pitch +10° |  |
 
 **Muscles**
@@ -1570,9 +1570,9 @@ A barbell press lying on the floor. The upper arm lands before the chest does, w
 
 | phase | kind | s | moving joints | cues |
 |---|---|---|---|---|
-| Lower | eccentric | 2.00 | Shoulders: extension 75° → 5°; Forearms: supination 0° → 60°; Shoulders: abduction 12° → 60°; Elbows: flexion 10° → 55° | Lower until the triceps touch the floor |
+| Lower | eccentric | 2.00 | Shoulders: extension 75° → 5°; Forearms: supination 0° → 60°; Elbows: flexion 10° → 55°; Shoulders: external rotation 0° → 30° | Lower until the triceps touch the floor |
 | Pause | isometric | 0.60 | hold | Rest the upper arms without relaxing the grip or the back |
-| Press | concentric | 1.40 | Shoulders: flexion 5° → 75°; Forearms: pronation 60° → 0°; Shoulders: adduction 60° → 12°; Elbows: extension 55° → 10° | Drive from a dead stop: there is no stretch to use |
+| Press | concentric | 1.40 | Shoulders: flexion 5° → 75°; Forearms: pronation 60° → 0°; Elbows: extension 55° → 10°; Shoulders: internal rotation 30° → 0° | Drive from a dead stop: there is no stretch to use |
 | Lockout | isometric | 0.50 | hold |  |
 
 **Muscles**
@@ -1806,9 +1806,9 @@ The bell circles the head close to it, held upside down by the horns. A shoulder
 
 | phase | kind | s | moving joints | cues |
 |---|---|---|---|---|
-| Round the head | transition | 1.60 | Shoulders: abduction 20° → 60°; Shoulders: external rotation 0° → 40°; Elbows: flexion 130° → 135°; Shoulders: extension 45° → 40° | Elbows lead; keep the bell close to the head |
-| Behind | isometric | 0.40 | Shoulders: extension 40° → 10°; Shoulders: abduction 60° → 85°; Shoulders: external rotation 40° → 55°; Elbows: flexion 135° → 145° | Bell behind the head, elbows high, ribs still down |
-| Return | transition | 1.60 | Shoulders: adduction 85° → 20°; Shoulders: internal rotation 55° → 0°; Shoulders: flexion 10° → 45°; Elbows: extension 145° → 130° | Bring it back round to the chest |
+| Round the head | transition | 1.60 | Shoulders: abduction 20° → 60°; Elbows: flexion 130° → 135°; Shoulders: extension 45° → 40° | Elbows lead; keep the bell close to the head |
+| Behind | isometric | 0.40 | Shoulders: extension 40° → 10°; Shoulders: abduction 60° → 85°; Elbows: flexion 135° → 145° | Bell behind the head, elbows high, ribs still down |
+| Return | transition | 1.60 | Shoulders: adduction 85° → 20°; Shoulders: flexion 10° → 45°; Elbows: extension 145° → 130° | Bring it back round to the chest |
 
 **Muscles**
 - *Primary movers:* Lateral deltoid 60 %; Posterior deltoid 55 %; Rotator cuff 65 % — the point of the drill
@@ -2288,9 +2288,9 @@ A horizontal pull under a fixed bar with the heels on the floor. The load is set
 
 | phase | kind | s | moving joints | cues |
 |---|---|---|---|---|
-| Pull | concentric | 1.40 | Elbows: flexion 10° → 115°; Shoulders: abduction 10° → 30°; Shoulders: extension 100° → 95° | Pull the chest to the bar; keep the hips up |
-| Top | isometric | 0.50 | hold | Blades together, body still a plank |
-| Lower | eccentric | 1.80 | Elbows: extension 115° → 10°; Shoulders: adduction 30° → 10°; Shoulders: flexion 95° → 100° | Lower to straight arms without letting the hips sag |
+| Pull | concentric | 1.40 | Elbows: flexion 10° → 90°; Shoulders: abduction 10° → 30°; Shoulders: extension 100° → 95°; trunk pitch +15° | Pull the chest to the bar; keep the hips up |
+| Top | isometric | 0.50 | trunk pitch +15° | Blades together, body still a plank |
+| Lower | eccentric | 1.80 | Elbows: extension 90° → 10°; Shoulders: adduction 30° → 10°; Shoulders: flexion 95° → 100° | Lower to straight arms without letting the hips sag |
 | Hang | isometric | 0.40 | hold |  |
 
 **Muscles**
@@ -2442,9 +2442,9 @@ Supported on one forearm and the side of the feet, the hips lift so the body for
 
 | phase | kind | s | moving joints | cues |
 |---|---|---|---|---|
-| Lift | concentric | 1.50 | Shoulder (L): abduction 25° → 90°; Elbow (L): extension 140° → 90°; Shoulder (L): extension 20° → 0° | Lift the hips until the body is straight from head to feet |
+| Lift | concentric | 1.50 | Shoulder (L): abduction 31° → 90°; Shoulder (L): extension 20° → 0° | Lift the hips until the body is straight from head to feet |
 | Hold | isometric | 6.00 | hold | Hips forward, ribs stacked over the pelvis |
-| Lower | eccentric | 1.50 | Shoulder (L): adduction 90° → 25°; Elbow (L): flexion 90° → 140°; Shoulder (L): flexion 0° → 20° | Lower the hips to the floor |
+| Lower | eccentric | 1.50 | Shoulder (L): adduction 90° → 31°; Shoulder (L): flexion 0° → 20° | Lower the hips to the floor |
 | Rest | transition | 1.00 | hold |  |
 
 **Muscles**
@@ -2586,12 +2586,12 @@ On hands and knees, one arm and the opposite leg extend to horizontal while the 
 
 | phase | kind | s | moving joints | cues |
 |---|---|---|---|---|
-| Extend right arm, left leg | concentric | 1.50 | Hip (L): extension 90° → 5°; Forearms: supination 90° → 0°; Knee (L): extension 90° → 5°; Shoulder (R): flexion 90° → 170° | Reach the heel back and the hand forward; hips level |
-| Hold | isometric | 1.50 | hold | Do not let the pelvis rotate |
-| Return | eccentric | 1.50 | Hip (L): flexion 5° → 90°; Forearms: pronation 0° → 90°; Knee (L): flexion 5° → 90°; Shoulder (R): extension 170° → 90° | Back to all fours without shifting the weight |
-| Extend left arm, right leg | concentric | 1.50 | Hip (R): extension 90° → 5°; Forearms: supination 90° → 0°; Knee (R): extension 90° → 5°; Shoulder (L): flexion 90° → 170° |  |
-| Hold | isometric | 1.50 | hold |  |
-| Return | eccentric | 1.50 | Hip (R): flexion 5° → 90°; Forearms: pronation 0° → 90°; Knee (R): flexion 5° → 90°; Shoulder (L): extension 170° → 90° |  |
+| Extend right arm, left leg | concentric | 1.50 | Hip (L): extension 90° → 5°; Forearms: supination 90° → 0°; Knee (L): extension 90° → 5°; Shoulder (R): flexion 90° → 170°; trunk pitch -2° | Reach the heel back and the hand forward; hips level |
+| Hold | isometric | 1.50 | trunk pitch -2° | Do not let the pelvis rotate |
+| Return | eccentric | 1.50 | Hip (L): flexion 5° → 90°; Forearms: pronation 0° → 90°; Knee (L): flexion 5° → 90°; Shoulder (R): extension 170° → 90°; trunk pitch -2° | Back to all fours without shifting the weight |
+| Extend left arm, right leg | concentric | 1.50 | Hip (R): extension 90° → 5°; Forearms: supination 90° → 0°; Knee (R): extension 90° → 5°; Shoulder (L): flexion 90° → 170°; trunk pitch -2° |  |
+| Hold | isometric | 1.50 | trunk pitch -2° |  |
+| Return | eccentric | 1.50 | Hip (R): flexion 5° → 90°; Forearms: pronation 0° → 90°; Knee (R): flexion 5° → 90°; Shoulder (L): extension 170° → 90°; trunk pitch -2° |  |
 
 **Muscles**
 - *Primary movers:* Erector spinae 60 %; Multifidus / rotatores 60 %; Gluteus maximus 60 %
@@ -2839,12 +2839,12 @@ Standing up from flat on the floor with a bell locked out overhead, and lying ba
 
 | phase | kind | s | moving joints | cues |
 |---|---|---|---|---|
-| On the floor | isometric | 1.00 | Knee (R): extension 112° → 5°; Shoulder (R): extension 90° → 8°; Ankle (R): plantarflexion 45° → 0°; Hip (R): extension 45° → 0° | Flat on the back, arms and legs at 45 deg, bell on the floor in the hand Roll onto the side to take hold of it, never reach across for it |
-| Press the bell | concentric | 1.20 | Knee (R): flexion 5° → 112°; Shoulder (R): flexion 8° → 90°; Ankle (R): dorsiflexion 0° → 45°; Hip (R): flexion 0° → 45° | Press it to a straight arm over the shoulder Bend the right knee, that foot flat; the left limbs stay out at 45 |
+| On the floor | isometric | 1.00 | Knee (R): extension 112° → 5°; Elbow (R): flexion 5° → 80°; Ankle (R): plantarflexion 45° → 0°; Hip (R): extension 45° → 0° | Flat on the back, arms and legs at 45 deg, bell on the floor in the hand Roll onto the side to take hold of it, never reach across for it |
+| Press the bell | concentric | 1.20 | Knee (R): flexion 5° → 112°; Elbow (R): extension 80° → 5°; Ankle (R): dorsiflexion 0° → 45°; Hip (R): flexion 0° → 45° | Press it to a straight arm over the shoulder Bend the right knee, that foot flat; the left limbs stay out at 45 |
 | Roll to the elbow | concentric | 1.60 | Elbow (L): flexion 8° → 95°; Hip (L): flexion 0° → 30°; Hip (R): flexion 45° → 75°; Shoulder (R): extension 90° → 60°; trunk pitch +30° | Punch the bell up and roll onto the left elbow |
 | To the hand | concentric | 1.20 | Elbow (L): extension 95° → 10°; Hip (L): flexion 30° → 52°; Hip (R): flexion 75° → 90°; Shoulder (R): extension 60° → 45°; trunk pitch +45° | Straighten the left arm; chest open, shoulder packed |
-| Sweep to half-kneel | transition | 1.60 | Shoulder (R): flexion 45° → 175°; Foot (L): toe extension 0° → 75°; Hip (L): extension 52° → 20°; Knee (L): flexion 5° → 60°; trunk pitch +6° | Bridge the hips and sweep the left leg through to a half-kneel |
-| Stand | concentric | 1.60 | Knee (R): extension 95° → 0°; Hip (R): extension 90° → 0°; Foot (L): toe flexion 75° → 0°; Knee (L): extension 60° → 0° | Windshield-wiper the back foot round, then stand |
+| Sweep to half-kneel | transition | 1.60 | Shoulder (R): flexion 45° → 175°; Hip (L): extension 52° → 20°; Knee (L): flexion 5° → 60°; Ankle (L): plantarflexion 0° → 40°; trunk pitch +6° | Bridge the hips and sweep the left leg through to a half-kneel |
+| Stand | concentric | 1.60 | Knee (R): extension 95° → 0°; Hip (R): extension 90° → 0°; Knee (L): extension 60° → 0°; Ankle (L): dorsiflexion 40° → 0° | Windshield-wiper the back foot round, then stand |
 | Lockout | isometric | 0.60 | hold | Tall, bell stacked over the shoulder |
 | Reverse to the floor | eccentric | 3.00 | Knee (R): flexion 0° → 112°; Shoulder (R): extension 175° → 90°; Ankle (R): dorsiflexion 0° → 45°; Hip (R): flexion 0° → 45° | Retrace every step back down to the floor |
 
@@ -2964,12 +2964,12 @@ The gait cycle at ~1.1 s per stride: heel strike, loading, mid and terminal stan
 | phase | kind | s | moving joints | cues |
 |---|---|---|---|---|
 | 12 % of stride | concentric | 0.14 | Foot (L): toe extension 18° → 65°; Ankle (L): plantarflexion 12° → 17°; Knee (L): flexion 15° → 41°; Knee (R): flexion 5° → 18°; trunk pitch +3° |  |
-| 25 % of stride | concentric | 0.14 | Foot (L): toe flexion 65° → 0°; Hip (L): flexion 4° → 20°; Knee (L): flexion 41° → 60°; Ankle (L): dorsiflexion 17° → 2°; trunk pitch +3° |  |
-| 37 % of stride | concentric | 0.14 | Knee (L): extension 60° → 29°; Hip (R): extension 8° → 4°; Hip (L): flexion 20° → 30°; Shoulder (L): extension 0° → 8°; trunk pitch +3° |  |
+| 25 % of stride | concentric | 0.14 | Foot (L): toe flexion 65° → 25°; Hip (L): flexion 4° → 20°; Knee (L): flexion 41° → 60°; Ankle (L): dorsiflexion 17° → 2°; trunk pitch +3° |  |
+| 37 % of stride | concentric | 0.14 | Knee (L): extension 60° → 29°; Foot (L): toe flexion 25° → 0°; Hip (R): extension 8° → 4°; Hip (L): flexion 20° → 30°; trunk pitch +3° |  |
 | 50 % of stride | concentric | 0.14 | Knee (L): extension 29° → 5°; Foot (R): toe extension 6° → 18°; Hip (R): extension 4° → 12°; Knee (R): flexion 8° → 15°; trunk pitch +3° |  |
 | 62 % of stride | concentric | 0.14 | Foot (R): toe extension 18° → 65°; Ankle (R): plantarflexion 12° → 17°; Knee (R): flexion 15° → 41°; Knee (L): flexion 5° → 18°; trunk pitch +3° |  |
-| 75 % of stride | concentric | 0.14 | Foot (R): toe flexion 65° → 0°; Hip (R): flexion 4° → 20°; Knee (R): flexion 41° → 60°; Ankle (R): dorsiflexion 17° → 2°; trunk pitch +3° |  |
-| 87 % of stride | concentric | 0.14 | Knee (R): extension 60° → 29°; Hip (L): extension 8° → 4°; Hip (R): flexion 20° → 30°; Shoulder (L): flexion 0° → 8°; trunk pitch +3° |  |
+| 75 % of stride | concentric | 0.14 | Foot (R): toe flexion 65° → 25°; Hip (R): flexion 4° → 20°; Knee (R): flexion 41° → 60°; Ankle (R): dorsiflexion 17° → 2°; trunk pitch +3° |  |
+| 87 % of stride | concentric | 0.14 | Knee (R): extension 60° → 29°; Foot (R): toe flexion 25° → 0°; Hip (L): extension 8° → 4°; Hip (R): flexion 20° → 30°; trunk pitch +3° |  |
 | 100 % of stride | concentric | 0.14 | Knee (R): extension 29° → 5°; Foot (L): toe extension 6° → 18°; Hip (L): extension 4° → 12°; Knee (L): flexion 8° → 15°; trunk pitch +3° |  |
 
 **Muscles**
@@ -3004,12 +3004,12 @@ Running gait with a flight phase, greater knee flexion in swing and a mid-foot l
 | phase | kind | s | moving joints | cues |
 |---|---|---|---|---|
 | 12 % of stride | concentric | 0.09 | Knee (L): flexion 45° → 78°; Knee (R): flexion 20° → 40°; Hip (L): flexion 8° → 10°; Foot (R): toe extension 0° → 13°; trunk pitch +8° |  |
-| 25 % of stride | concentric | 0.09 | Foot (L): toe flexion 75° → 0°; Hip (L): flexion 10° → 32°; Hip (R): extension 24° → 5°; Shoulder (L): extension 14° → 0°; trunk pitch +8°; lift 8 |  |
-| 37 % of stride | concentric | 0.09 | Foot (R): toe extension 15° → 53°; Knee (L): extension 80° → 45°; Ankle (R): plantarflexion 18° → 15°; Hip (R): extension 5° → 12°; trunk pitch +8° |  |
+| 25 % of stride | concentric | 0.09 | Foot (L): toe flexion 75° → 32°; Hip (L): flexion 10° → 32°; Hip (R): extension 24° → 5°; Shoulder (L): extension 14° → 0°; trunk pitch +8°; lift 8 |  |
+| 37 % of stride | concentric | 0.09 | Foot (R): toe extension 15° → 53°; Knee (L): extension 80° → 45°; Ankle (R): plantarflexion 18° → 15°; Foot (L): toe flexion 32° → 1°; trunk pitch +8° |  |
 | 50 % of stride | concentric | 0.09 | Knee (R): flexion 18° → 45°; Knee (L): extension 45° → 20°; Foot (R): toe extension 53° → 72°; Hip (L): extension 43° → 35°; trunk pitch +8° |  |
 | 62 % of stride | concentric | 0.09 | Knee (R): flexion 45° → 78°; Knee (L): flexion 20° → 40°; Hip (R): flexion 8° → 10°; Foot (L): toe extension 0° → 13°; trunk pitch +8° |  |
-| 75 % of stride | concentric | 0.09 | Foot (R): toe flexion 75° → 0°; Hip (R): flexion 10° → 32°; Hip (L): extension 24° → 5°; Shoulder (L): flexion 14° → 0°; trunk pitch +8°; lift 8 |  |
-| 87 % of stride | concentric | 0.09 | Foot (L): toe extension 15° → 53°; Knee (R): extension 80° → 45°; Ankle (L): plantarflexion 18° → 15°; Hip (L): extension 5° → 12°; trunk pitch +8° |  |
+| 75 % of stride | concentric | 0.09 | Foot (R): toe flexion 75° → 32°; Hip (R): flexion 10° → 32°; Hip (L): extension 24° → 5°; Shoulder (L): flexion 14° → 0°; trunk pitch +8°; lift 8 |  |
+| 87 % of stride | concentric | 0.09 | Foot (L): toe extension 15° → 53°; Knee (R): extension 80° → 45°; Ankle (L): plantarflexion 18° → 15°; Foot (R): toe flexion 32° → 1°; trunk pitch +8° |  |
 | 100 % of stride | concentric | 0.09 | Knee (L): flexion 18° → 45°; Knee (R): extension 45° → 20°; Foot (L): toe extension 53° → 72°; Hip (R): extension 43° → 35°; trunk pitch +8° |  |
 
 **Muscles**
@@ -3079,8 +3079,10 @@ A hop that spreads the feet as the arms swing overhead, and a hop back.
 
 | phase | kind | s | moving joints | cues |
 |---|---|---|---|---|
-| Out | concentric | 0.30 | Shoulders: abduction 10° → 170°; Hips: abduction 0° → 25°; lift 3 | Hop the feet wide as the hands clap overhead |
-| In | concentric | 0.30 | Shoulders: adduction 170° → 10°; Hips: adduction 25° → 0°; lift 3 | Hop the feet together as the arms come down |
+| Out | concentric | 0.18 | Shoulders: abduction 90° → 170°; Ankles: dorsiflexion 35° → 15°; Hips: abduction 12° → 25°; Knees: flexion 5° → 15° | Hop the feet wide as the hands clap overhead |
+| Hop in | transition | 0.12 | Shoulders: adduction 170° → 90°; Ankles: plantarflexion 15° → 35°; Hips: adduction 25° → 12°; Knees: extension 15° → 5°; lift 16 | Both feet off the floor between the two landings |
+| In | concentric | 0.18 | Shoulders: adduction 90° → 10°; Ankles: dorsiflexion 35° → 15°; Hips: adduction 12° → 0°; Knees: flexion 5° → 15° | Hop the feet together as the arms come down |
+| Hop out | transition | 0.12 | Shoulders: abduction 10° → 90°; Ankles: plantarflexion 15° → 35°; Hips: abduction 0° → 12°; Knees: extension 15° → 5°; lift 16 | Push off the balls of the feet, not the heels |
 
 **Muscles**
 - *Primary movers:* Lateral deltoid 60 %; Gluteus medius / minimus 60 %; Gastrocnemius 60 %
@@ -3292,11 +3294,11 @@ The bar is pulled from the floor past the knees, then the hips, knees and ankles
 
 | phase | kind | s | moving joints | cues |
 |---|---|---|---|---|
-| First pull | concentric | 0.60 | Hips: extension 110° → 65°; Knees: extension 70° → 30°; Shoulders: extension 50° → 40°; Ankles: plantarflexion 10° → 5°; trunk pitch +40° | Push the floor away; keep the back angle; bar close |
+| First pull | concentric | 0.60 | Knees: extension 118° → 30°; Hips: extension 125° → 65°; Ankles: plantarflexion 43° → 5°; Shoulders: extension 50° → 40°; trunk pitch +40° | Push the floor away; keep the back angle; bar close |
 | Second pull | concentric | 0.25 | Elbows: flexion 0° → 80°; Hips: extension 65° → 0°; Ankles: plantarflexion 5° → 30°; Feet: toe extension 0° → 35° | Explode: hips through, shrug, onto the toes; elbows high and outside |
 | Catch | eccentric | 0.30 | Elbows: flexion 80° → 145°; Hips: flexion 0° → 65°; Shoulders: flexion 25° → 90°; Knees: flexion 5° → 65°; trunk pitch +10° | Pull under; elbows whip through to the front rack; absorb in a quarter squat |
 | Recover | concentric | 0.60 | Hips: extension 65° → 0°; Knees: extension 65° → 3°; Ankles: plantarflexion 10° → 0° | Stand tall with the bar racked |
-| Lower to the floor | transition | 1.20 | Elbows: extension 145° → 0°; Hips: flexion 0° → 110°; Knees: flexion 3° → 70°; Shoulders: extension 90° → 50°; trunk pitch +50° | Return the bar to the thighs, then hinge and squat it down |
+| Lower to the floor | transition | 1.20 | Elbows: extension 145° → 0°; Hips: flexion 0° → 125°; Knees: flexion 3° → 118°; Ankles: dorsiflexion 0° → 43°; trunk pitch +50° | Return the bar to the thighs, then hinge and squat it down |
 
 **Muscles**
 - *Primary movers:* Gluteus maximus 100 %; Quadriceps 95 %; Hamstrings 80 %; Erector spinae 85 %
@@ -3332,7 +3334,7 @@ The ball is lifted overhead onto the toes and thrown down into the floor with th
 |---|---|---|---|---|
 | Reach overhead | concentric | 0.60 | Shoulders: flexion 40° → 175°; Hips: extension 70° → 0°; Elbows: extension 60° → 5°; Knees: extension 60° → 5° | Rise onto the toes, ball high |
 | Slam | concentric | 0.35 | Shoulders: extension 175° → 25°; Hips: flexion 0° → 100°; Knees: flexion 5° → 70°; Ankles: dorsiflexion 15° → 15°; trunk pitch +45° | Throw the ball down hard: hips back, trunk folds, arms follow |
-| Pick up | transition | 0.80 | Elbows: flexion 10° → 60°; Hips: extension 100° → 70°; Shoulders: flexion 25° → 40°; Knees: extension 70° → 60°; trunk pitch +30° | Squat to the ball with a flat back |
+| Pick up | transition | 0.80 | Elbows: flexion 10° → 60°; Hips: extension 100° → 70°; Shoulders: flexion 25° → 40°; Shoulders: adduction 20° → 31°; trunk pitch +30° | Squat to the ball with a flat back |
 
 **Muscles**
 - *Primary movers:* Latissimus dorsi / teres major 90 %; Rectus abdominis 85 %
@@ -3401,11 +3403,11 @@ The bar goes from the floor to arms' length overhead in one movement, caught in 
 
 | phase | kind | s | moving joints | cues |
 |---|---|---|---|---|
-| First pull | concentric | 0.60 | Hips: extension 110° → 62°; Knees: extension 72° → 28°; Shoulders: extension 45° → 38°; Ankles: plantarflexion 10° → 4°; trunk pitch +38° | Push the floor away; the back angle does not change Bar brushes up the thighs |
+| First pull | concentric | 0.60 | Knees: extension 118° → 28°; Hips: extension 125° → 62°; Ankles: plantarflexion 41° → 4°; Shoulders: extension 45° → 38°; trunk pitch +38° | Push the floor away; the back angle does not change Bar brushes up the thighs |
 | Second pull | concentric | 0.22 | Elbows: flexion 0° → 70°; Hips: extension 62° → 0°; Feet: toe extension 0° → 35°; Ankles: plantarflexion 4° → 30° | Hips through the bar, shrug, onto the toes This is a jump, not a lift |
 | Catch overhead | eccentric | 0.30 | Shoulders: flexion 20° → 172°; Hips: flexion 0° → 120°; Knees: flexion 5° → 125°; Elbows: extension 70° → 5°; trunk pitch +22° | Punch under it: the bar goes up, you go down Catch with locked elbows, bar over the mid-foot |
 | Stand up | concentric | 1.00 | Hips: extension 120° → 0°; Knees: extension 125° → 5°; Ankles: plantarflexion 27° → 0° | Stand out of the squat with the bar still locked overhead |
-| Lower to the floor | transition | 1.40 | Shoulders: extension 172° → 45°; Hips: flexion 0° → 110°; Knees: flexion 5° → 72°; Forearms: supination 40° → 0°; trunk pitch +48° | Bring it to the hips, then hinge and set it down |
+| Lower to the floor | transition | 1.40 | Shoulders: extension 172° → 45°; Hips: flexion 0° → 125°; Knees: flexion 5° → 118°; Ankles: dorsiflexion 0° → 41°; trunk pitch +48° | Bring it to the hips, then hinge and set it down |
 
 **Muscles**
 - *Primary movers:* Gluteus maximus 100 %; Quadriceps 95 %; Hamstrings 85 %; Erector spinae 85 %; Rotator cuff 70 % — holds a loaded overhead position
@@ -3441,11 +3443,11 @@ The same pull as a snatch, caught overhead above parallel instead of in a full s
 
 | phase | kind | s | moving joints | cues |
 |---|---|---|---|---|
-| First pull | concentric | 0.60 | Hips: extension 110° → 62°; Knees: extension 72° → 28°; Shoulders: extension 45° → 38°; Ankles: plantarflexion 10° → 4°; trunk pitch +38° | Back angle constant; bar close |
+| First pull | concentric | 0.60 | Knees: extension 118° → 28°; Hips: extension 125° → 62°; Ankles: plantarflexion 41° → 4°; Shoulders: extension 45° → 38°; trunk pitch +38° | Back angle constant; bar close |
 | Second pull | concentric | 0.22 | Elbows: flexion 0° → 70°; Hips: extension 62° → 0°; Feet: toe extension 0° → 35°; Ankles: plantarflexion 4° → 30° | Triple extension: hips, knees, ankles |
 | Catch high | eccentric | 0.26 | Shoulders: flexion 20° → 172°; Elbows: extension 70° → 5°; Hips: flexion 0° → 62°; Knees: flexion 5° → 60°; trunk pitch +12° | Punch under and catch it locked, thighs above parallel |
 | Recover | concentric | 0.60 | Hips: extension 62° → 0°; Knees: extension 60° → 5°; Ankles: plantarflexion 10° → 0° | Stand tall, bar stacked over the mid-foot |
-| Lower to the floor | transition | 1.30 | Shoulders: extension 172° → 45°; Hips: flexion 0° → 110°; Knees: flexion 5° → 72°; Forearms: supination 40° → 0°; trunk pitch +48° | Down the front of the body to the hips, then hinge |
+| Lower to the floor | transition | 1.30 | Shoulders: extension 172° → 45°; Hips: flexion 0° → 125°; Knees: flexion 5° → 118°; Ankles: dorsiflexion 0° → 41°; trunk pitch +48° | Down the front of the body to the hips, then hinge |
 
 **Muscles**
 - *Primary movers:* Gluteus maximus 100 %; Quadriceps 95 %; Hamstrings 85 %; Erector spinae 85 %; Rotator cuff 65 %
@@ -3481,7 +3483,7 @@ A clean started from the hang at mid-thigh rather than the floor. Removing the f
 | phase | kind | s | moving joints | cues |
 |---|---|---|---|---|
 | Hang | isometric | 0.40 | Elbows: extension 145° → 0°; Shoulders: extension 90° → 30°; Hips: flexion 0° → 40°; Knees: flexion 3° → 20°; trunk pitch +28° | Bar at mid-thigh, lats tight, weight over the mid-foot |
-| Dip to the knee | eccentric | 0.50 | Hips: flexion 40° → 65°; Knees: flexion 20° → 30°; Shoulders: flexion 30° → 40°; trunk pitch +40° | Hinge back to just above the knee; shins stay vertical |
+| Dip to the knee | eccentric | 0.50 | Hips: flexion 40° → 65°; Knees: flexion 20° → 30°; Shoulders: adduction 10° → 0°; Shoulders: flexion 30° → 40°; trunk pitch +40° | Hinge back to just above the knee; shins stay vertical |
 | Second pull | concentric | 0.22 | Elbows: flexion 0° → 80°; Hips: extension 65° → 0°; Ankles: plantarflexion 5° → 30°; Feet: toe extension 0° → 35° | Violent hip extension; shrug; stay over the bar as long as you can |
 | Catch | eccentric | 0.28 | Elbows: flexion 80° → 145°; Shoulders: flexion 25° → 90°; Hips: flexion 0° → 62°; Knees: flexion 5° → 60°; trunk pitch +10° | Elbows around and up; catch in the front rack |
 | Stand | concentric | 0.60 | Hips: extension 62° → 0°; Knees: extension 60° → 3°; Ankles: plantarflexion 8° → 0° | Stand tall with the bar racked on the shoulders |
@@ -3561,8 +3563,8 @@ The competition jerk: the same dip and drive, received with one foot forward and
 |---|---|---|---|---|
 | Dip | eccentric | 0.35 | trunk pitch +4° | Vertical dip, heels down, elbows up |
 | Drive | concentric | 0.20 | Shoulders: flexion 90° → 150°; Ankles: plantarflexion 9° → 20°; Elbows: extension 145° → 120°; Knees: extension 25° → 4° | Drive through the whole foot; bar straight up |
-| Split under | eccentric | 0.25 | Elbows: extension 120° → 5°; Knee (R): flexion 4° → 60°; Hip (R): flexion 0° → 55°; Knee (L): flexion 4° → 45°; trunk pitch +4° | Feet move as the arms lock; land both at once Front shin vertical, back knee bent and soft |
-| Recover | concentric | 0.80 | Knee (R): extension 60° → 4°; Hip (R): extension 55° → 0°; Knee (L): extension 45° → 4°; Hip (L): flexion 22° → 0° | Front foot back first, then the back foot, bar still locked |
+| Split under | eccentric | 0.25 | Elbows: extension 120° → 5°; Foot (L): toe extension 0° → 75°; Knee (R): flexion 4° → 60°; Hip (R): flexion 0° → 55°; trunk pitch +4° | Feet move as the arms lock; land both at once Front shin vertical, back knee bent and soft |
+| Recover | concentric | 0.80 | Foot (L): toe flexion 75° → 0°; Knee (R): extension 60° → 4°; Hip (R): extension 55° → 0°; Knee (L): extension 45° → 4° | Front foot back first, then the back foot, bar still locked |
 | Lower it past the face | transition | 0.30 | Elbows: flexion 5° → 120°; Forearms: supination 30° → 0°; Shoulders: extension 172° → 150°; Shoulders: internal rotation 12° → 0° | Bend the arms and bring it down in front of the face |
 | Return to the rack | eccentric | 0.40 | Shoulders: extension 150° → 90°; Elbows: flexion 120° → 145°; Hips: flexion 0° → 18°; Knees: flexion 4° → 22°; trunk pitch +4° | Lower it to the shoulders and absorb with the legs |
 
@@ -3599,16 +3601,16 @@ The two-part contested lift: the bar is cleaned to the shoulders, the lifter sta
 
 | phase | kind | s | moving joints | cues |
 |---|---|---|---|---|
-| Pull to the knee | concentric | 0.60 | Hips: extension 110° → 65°; Knees: extension 70° → 30°; Shoulders: extension 50° → 40°; Ankles: plantarflexion 10° → 5°; trunk pitch +40° | Push the floor away; back angle constant |
+| Pull to the knee | concentric | 0.60 | Knees: extension 118° → 30°; Hips: extension 125° → 65°; Ankles: plantarflexion 43° → 5°; Shoulders: extension 50° → 40°; trunk pitch +40° | Push the floor away; back angle constant |
 | Second pull | concentric | 0.22 | Elbows: flexion 0° → 80°; Hips: extension 65° → 0°; Ankles: plantarflexion 5° → 30°; Feet: toe extension 0° → 35° | Hips through, shrug, onto the toes |
 | Catch the clean | eccentric | 0.30 | Knees: flexion 5° → 120°; Hips: flexion 0° → 110°; Elbows: flexion 80° → 145°; Shoulders: flexion 25° → 90°; trunk pitch +20° | Elbows around fast; receive it deep |
 | Stand | concentric | 0.90 | Knees: extension 120° → 3°; Hips: extension 110° → 0°; Ankles: plantarflexion 30° → 0° | Stand tall; elbows stay up |
 | Dip and drive | concentric | 0.30 | Shoulders: flexion 90° → 150°; Elbows: extension 145° → 120°; Ankles: plantarflexion 0° → 20°; Shoulders: abduction 15° → 20° | Short vertical dip, then drive it off the shoulders |
-| Jerk under | eccentric | 0.25 | Elbows: extension 120° → 5°; Knee (R): flexion 4° → 60°; Hip (R): flexion 0° → 55°; Knee (L): flexion 4° → 45°; trunk pitch +4° | Split and lock in one movement |
-| Recover | concentric | 0.90 | Knee (R): extension 60° → 4°; Hip (R): extension 55° → 0°; Knee (L): extension 45° → 4°; Hip (L): flexion 22° → 0° | Feet back under, bar overhead, wait for the signal |
+| Jerk under | eccentric | 0.25 | Elbows: extension 120° → 5°; Foot (L): toe extension 0° → 75°; Knee (R): flexion 4° → 60°; Hip (R): flexion 0° → 55°; trunk pitch +4° | Split and lock in one movement |
+| Recover | concentric | 0.90 | Foot (L): toe flexion 75° → 0°; Knee (R): extension 60° → 4°; Hip (R): extension 55° → 0°; Knee (L): extension 45° → 4° | Feet back under, bar overhead, wait for the signal |
 | Lower it past the face | transition | 0.40 | Elbows: flexion 5° → 120°; Forearms: supination 30° → 0°; Shoulders: extension 172° → 150°; Shoulders: internal rotation 12° → 0° | Bend the arms and bring it down in front of the face |
 | Back to the shoulders | transition | 0.35 | Shoulders: extension 150° → 90°; Elbows: flexion 120° → 145°; Shoulders: adduction 20° → 15° | Catch it on the shoulders before it goes anywhere else |
-| Lower to the floor | transition | 0.90 | Elbows: extension 145° → 0°; Hips: flexion 0° → 110°; Knees: flexion 4° → 70°; Shoulders: extension 90° → 50°; trunk pitch +50° | Down to the shoulders, to the thighs, then set it down |
+| Lower to the floor | transition | 0.90 | Elbows: extension 145° → 0°; Hips: flexion 0° → 125°; Knees: flexion 4° → 118°; Ankles: dorsiflexion 0° → 43°; trunk pitch +50° | Down to the shoulders, to the thighs, then set it down |
 
 **Muscles**
 - *Primary movers:* Gluteus maximus 100 %; Quadriceps 95 %; Hamstrings 85 %; Erector spinae 85 %; Triceps brachii 80 % — the jerk lockout; Anterior deltoid 85 %
@@ -3681,9 +3683,9 @@ The clean without the catch: the bar is pulled from the floor to full extension 
 
 | phase | kind | s | moving joints | cues |
 |---|---|---|---|---|
-| First pull | concentric | 0.70 | Hips: extension 110° → 65°; Knees: extension 70° → 30°; Shoulders: extension 50° → 40°; Ankles: plantarflexion 10° → 5°; trunk pitch +40° | Same back angle off the floor; bar close to the shins |
+| First pull | concentric | 0.70 | Knees: extension 118° → 30°; Hips: extension 125° → 65°; Ankles: plantarflexion 43° → 5°; Shoulders: extension 50° → 40°; trunk pitch +40° | Same back angle off the floor; bar close to the shins |
 | Second pull | concentric | 0.30 | Elbows: flexion 0° → 80°; Hips: extension 65° → 0°; Ankles: plantarflexion 5° → 30°; Feet: toe extension 0° → 35° | Finish the hips and shrug; stay over the bar Arms are straps, not levers |
-| Lower | eccentric | 1.20 | Hips: flexion 0° → 110°; Elbows: extension 80° → 0°; Knees: flexion 5° → 70°; Ankles: dorsiflexion 30° → 10°; trunk pitch +50° | Control it back to the floor along the same line |
+| Lower | eccentric | 1.20 | Hips: flexion 0° → 125°; Knees: flexion 5° → 118°; Elbows: extension 80° → 0°; Ankles: dorsiflexion 30° → 43°; trunk pitch +50° | Control it back to the floor along the same line |
 | Reset | isometric | 0.40 | trunk pitch +50° | Re-set the back and the grip between reps |
 
 **Muscles**
@@ -3719,9 +3721,9 @@ The snatch without the catch: the wide grip makes the pull longer and the start 
 
 | phase | kind | s | moving joints | cues |
 |---|---|---|---|---|
-| First pull | concentric | 0.70 | Hips: extension 110° → 62°; Knees: extension 72° → 28°; Shoulders: extension 45° → 38°; Ankles: plantarflexion 10° → 4°; trunk pitch +38° | Back angle constant; the bar brushes the thighs |
+| First pull | concentric | 0.70 | Knees: extension 118° → 28°; Hips: extension 125° → 62°; Ankles: plantarflexion 41° → 4°; Shoulders: extension 45° → 38°; trunk pitch +38° | Back angle constant; the bar brushes the thighs |
 | Second pull | concentric | 0.30 | Elbows: flexion 0° → 70°; Hips: extension 62° → 0°; Feet: toe extension 0° → 35°; Ankles: plantarflexion 4° → 30° | Hips through to the bar; shrug at the top |
-| Lower | eccentric | 1.20 | Hips: flexion 0° → 110°; Elbows: extension 70° → 0°; Knees: flexion 5° → 72°; Ankles: dorsiflexion 30° → 10°; trunk pitch +48° | Same line back to the floor |
+| Lower | eccentric | 1.20 | Hips: flexion 0° → 125°; Knees: flexion 5° → 118°; Ankles: dorsiflexion 30° → 41°; Elbows: extension 70° → 0°; trunk pitch +48° | Same line back to the floor |
 | Reset | isometric | 0.40 | trunk pitch +48° | Re-set before the next rep |
 
 **Muscles**
@@ -4595,7 +4597,7 @@ Standing on one leg, the other heel is drawn toward the buttock with the hip hel
 
 ### Standing calf stretch (wall)
 
-`calf_stretch` · Yoga, stretches and mobility · orientation: standing · anchor: feet · rep: 34.5 s · equipment: none
+`calf_stretch` · Yoga, stretches and mobility · orientation: standing · anchor: feet · rep: 34.5 s · equipment: wall
 
 A split stance with the hands on a wall and the back heel pressed down. Straight back knee lengthens gastrocnemius; bending it shifts the stretch to soleus.
 

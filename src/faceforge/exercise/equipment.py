@@ -121,13 +121,36 @@ def make_kettlebell(radius: float = 11.0, flip: bool = False) -> SceneNode:
 
 
 def make_bench(length: float = 150.0, width: float = 34.0, height: float = 58.0,
-               incline_deg: float = 0.0) -> SceneNode:
-    """A flat (or inclined) bench along X, top surface at ``height``."""
+               incline_deg: float = 0.0, incline_pivot_x: float = 0.0) -> SceneNode:
+    """A flat (or inclined) bench along X, top surface at ``height``.
+
+    ``incline_pivot_x`` is where along the pad the tilt hinges, in bench-local
+    x.  It matters because the *lifter* is tilted too, by a wrapper pitch about
+    the hips, and two rigid bodies turned by the same angle about different
+    centres come apart by a pure translation.  Hinging the pad at its own
+    centre while the body hinged 41 units away did exactly that: measured
+    2026-09-17 against the flat bench (shoulders +10.6, hips +13.7 above the
+    pad face, which is what lying on it reads as), the 30 deg incline floated
+    the lifter 18.1 clear of the pad and the 20 deg decline sank him 15.1
+    through it -- 41 x sin(theta) in both cases.  Hinging under the hip is what
+    keeps the contact the flat bench has.
+    """
     root = SceneNode("equip_bench")
-    pad = _part("pad", make_box(length, 6.0, width), PAD, y=height - 3.0)
     if incline_deg:
-        pad.set_quaternion(quat_from_axis_angle(_Z, math.radians(incline_deg)))
-    root.add(pad)
+        # A node turns about its own origin, so the hinge is a node placed at
+        # the pivot with the pad hung off it at the opposite offset.
+        # At the pad's top FACE, not at its mid-plane: the face is the contact
+        # surface, and hinging 3 below it leaves a lever that tilts the face
+        # away by 3 x sin(theta) -- the 2.4 that was left on the 30 deg incline
+        # once the hinge moved under the hip.
+        hinge = SceneNode("pad_hinge")
+        hinge.set_position(incline_pivot_x, height, 0.0)
+        hinge.set_quaternion(quat_from_axis_angle(_Z, math.radians(incline_deg)))
+        hinge.add(_part("pad", make_box(length, 6.0, width), PAD,
+                        x=-incline_pivot_x, y=-3.0))
+        root.add(hinge)
+    else:
+        root.add(_part("pad", make_box(length, 6.0, width), PAD, y=height - 3.0))
     for x in (-length / 2 + 14.0, length / 2 - 14.0):
         root.add(_part("leg", make_box(6.0, height - 6.0, width - 6.0), FRAME,
                        x=x, y=(height - 6.0) / 2))
@@ -158,10 +181,46 @@ def make_plyo_box(height: float = 60.0, width: float = 60.0, depth: float = 50.0
     return root
 
 
-def make_mat(length: float = 230.0, width: float = 80.0) -> SceneNode:
-    root = SceneNode("equip_mat")
-    root.add(_part("mat", make_box(length, 1.5, width), 0x35566B, y=0.75))
+def make_wall(width: float = 160.0, height: float = 220.0, thickness: float = 8.0) -> SceneNode:
+    """A short wall panel in the XY plane, its face at z = 0, standing on the floor.
+
+    The gym has walls, but they are 200 units away and the body is placed at
+    the origin, so `wall_sit` -- whose every cue is about the wall -- and the
+    standing calf stretch were performed against nothing at all.  This is the
+    piece of wall the exercise actually touches, placed behind or in front of
+    the athlete by the spec's ``position``.
+    """
+    root = SceneNode("equip_wall")
+    root.add(_part("wall", make_box(width, height, thickness), FRAME,
+                   y=height / 2.0, z=-thickness / 2.0))
     return root
+
+
+def make_mat(length: float = 230.0, width: float = 120.0) -> SceneNode:
+    """A floor mat along X.
+
+    80 is a yoga mat (63 cm) and too narrow for the floor work in this
+    catalogue: measured 2026-09-16, the main joints of a push-up reach z +-57,
+    a downward dog and a mountain climber +-51, a cat-cow +-49 -- so half the
+    body hung over the edge even once the mat was laid down under it.  120
+    (95 cm) is a large exercise mat and covers them.
+
+    Its top face is the floor plane, not 1.5 above it.  The ground lock
+    anchors the body to y = 0 and every static height in the gym is measured
+    from there, so a slab laid ON the floor puts the athlete inside their own
+    mat: measured 2026-09-17, a glute bridge's little toe sat 2.5 below the
+    mat surface and an upward dog's 1.7, while both were at or above the
+    actual floor.  Raising the body onto the mat instead would desynchronise
+    every bench, bar and box height in the catalogue for 1.5 units that no
+    camera can see -- less than a real mat compresses under a heel.
+    """
+    root = SceneNode("equip_mat")
+    root.add(_part("mat", make_box(length, 1.5, width), 0x35566B, y=-0.75))
+    return root
+
+
+#: Where the seat post meets the frame.
+_POST_FOOT = 42.5
 
 
 def make_bike() -> SceneNode:
@@ -176,9 +235,19 @@ def make_bike() -> SceneNode:
     # units through the FLOOR at the bottom of the stroke.  Raising the saddle
     # -- which is this exercise's own first listed error -- puts the ball of
     # the foot on the pedal circle instead.
-    root.add(_part("seat_post", make_cylinder(2.5, 55.0 + SADDLE_RISE, 8), FRAME,
-                   y=70.0 + SADDLE_RISE / 2, z=-12.0))
-    root.add(_part("saddle", make_box(14.0, 4.0, 26.0), RUBBER, y=98.0 + SADDLE_RISE, z=-12.0))
+    #
+    # The saddle sits so the rider's hip is 10 above its top, the seated
+    # convention the bench family uses (`_helpers.SEATED_ON_BENCH`).  At 98 it
+    # was level with him: measured 2026-09-17 the hip pivots sat at y 124.2
+    # against a saddle top of 122.3, so the saddle was buried in his pelvis and
+    # the post below it reached to 4.4 of the line between his hip joints --
+    # 8.6 inside the trunk capsule, the catalogue's only hard equipment clash.
+    # The post now stops at the saddle's underside rather than 1.5 inside it.
+    saddle_y = 90.0 + SADDLE_RISE
+    post_top = saddle_y - 2.0
+    root.add(_part("seat_post", make_cylinder(2.5, post_top - _POST_FOOT, 8), FRAME,
+                   y=(_POST_FOOT + post_top) / 2, z=-12.0))
+    root.add(_part("saddle", make_box(14.0, 4.0, 26.0), RUBBER, y=saddle_y, z=-12.0))
     root.add(_part("head_tube", make_cylinder(2.5, 60.0 + SADDLE_RISE, 8), FRAME,
                    y=90.0 + SADDLE_RISE / 2, z=42.0))
     # Measured against the rider: the wrists sit at x +-50, y 129, z 62, so a
@@ -230,8 +299,16 @@ def make_pedal(width: float = 9.0, length: float = 12.0) -> SceneNode:
     return root
 
 
-def make_jump_rope(span: float = 120.0, drop: float = 100.0) -> SceneNode:
-    """Two handles (+X apart) with a rope arc hanging ``drop`` below them."""
+def make_jump_rope(span: float = 120.0, drop: float = 170.0) -> SceneNode:
+    """Two handles (+X apart) with a rope arc hanging ``drop`` below them.
+
+    ``drop`` is the arc's radius and a skipping rope's arc has to reach the
+    floor -- that is the whole exercise.  At 100 it bottomed out at y 70 with
+    the handles at 178, so the rope swept past the shins and the skipper
+    jumped over nothing.  The handles measure 178-196 through the rep, and at
+    a 170 radius the bottom of the arc arrives at y 1 on the landing -- 178
+    put it 8 units under.
+    """
     root = SceneNode("equip_jump_rope")
     for x in (-span / 2, span / 2):
         root.add(_part("handle", make_cylinder(1.6, 16.0, 8), RUBBER, x=x))
@@ -252,9 +329,14 @@ def make_jump_rope(span: float = 120.0, drop: float = 100.0) -> SceneNode:
     return root
 
 
-def make_dip_station(width: float = 54.0, height: float = 125.0,
+def make_dip_station(width: float = 81.0, height: float = 125.0,
                      length: float = 70.0) -> SceneNode:
-    """Two parallel bars along Z, ``width`` apart, at ``height``."""
+    """Two parallel bars along Z, ``width`` apart, at ``height``.
+
+    81 is measured, not chosen: the dip and L-sit poses put the closed-finger
+    grip at x +-40.4, and at 54 the athlete was supported on air 16 to 26
+    units outside each bar.
+    """
     root = SceneNode("equip_dip_station")
     for x in (-width / 2, width / 2):
         root.add(_part("bar", make_cylinder(1.8, length, 12), STEEL, x=x, y=height,
@@ -290,7 +372,7 @@ def _cable(cable_to, segments: int = 8) -> SceneNode | None:
 
 
 def make_cable_handle(cable_to=(0.0, 130.0, 0.0), radius: float = 1.6,
-                      segments: int = 8) -> SceneNode:
+                      segments: int = 8, length: float = 14.0) -> SceneNode:
     """A handle along +X with the cable that makes it a cable exercise.
 
     Without the cable a pushdown, a row, a face pull and a Pallof press all
@@ -299,9 +381,14 @@ def make_cable_handle(cable_to=(0.0, 130.0, 0.0), radius: float = 1.6,
     in the item's own frame, which after ``align_x_to`` has +X along the line
     between the hands, +Y up and +Z forward for the usual case of two hands
     side by side -- so the default runs the cable to a high pulley.
+
+    ``length`` is the handle itself.  14 is a D-handle, one per hand; a
+    two-handed straight bar has to span the grip or the hands hold nothing:
+    measured 2026-09-16, a pushdown's grip is 75 units wide and a seated row's
+    83-94, against a 14-unit handle whose ends were 30 and 40 units short.
     """
     root = SceneNode("equip_cable_handle")
-    root.add(_part("handle", make_cylinder(radius, 14.0, 8), RUBBER, quat=_TO_X))
+    root.add(_part("handle", make_cylinder(radius, length, 8), RUBBER, quat=_TO_X))
     cable = _cable(cable_to, segments)
     if cable is None:
         return root
@@ -358,7 +445,7 @@ def _axis_to(direction) -> object:
 
 
 def make_battle_rope(length: float = 200.0, radius: float = 3.4, waves: float = 1.4,
-                     amplitude: float = 16.0, drop: float = 55.0,
+                     amplitude: float = 16.0, drop: float = 120.0,
                      segments: int = 18) -> SceneNode:
     """One heavy rope trailing from a hand, waving, and sloping to the floor.
 
@@ -367,6 +454,12 @@ def make_battle_rope(length: float = 200.0, radius: float = 3.4, waves: float = 
     so the rope runs out in front of the athlete.  Each segment is turned onto
     the curve's own tangent, because cylinders merely offset from one another
     read as a staircase, which is what the first attempt rendered.
+
+    ``drop`` is how far the far end falls over ``length``.  At 55 both ropes
+    simply stopped in mid-air 57 to 118 units up, with nothing at the end of
+    them; a battle rope is anchored at the floor.  120 lands the low hand's
+    rope on the floor (measured hand 126) and leaves the high hand's 66 up,
+    which is the wave still travelling down it.
     """
     root = SceneNode("equip_battle_rope")
 
@@ -392,6 +485,7 @@ EQUIPMENT_BUILDERS: dict[str, Callable[..., SceneNode]] = {
     "bench": make_bench, "pullup_bar": make_pullup_bar, "plyo_box": make_plyo_box,
     "mat": make_mat, "bike": make_bike, "rower": make_rower, "jump_rope": make_jump_rope,
     "cable_handle": make_cable_handle, "band": make_band, "dip_station": make_dip_station,
+    "wall": make_wall,
     "medicine_ball": make_medicine_ball, "treadmill": make_treadmill,
     "pedal": make_pedal,
     "battle_rope": make_battle_rope,

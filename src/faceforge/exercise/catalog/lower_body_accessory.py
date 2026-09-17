@@ -42,7 +42,7 @@ glute_bridge = ExerciseDefinition(
              mu("erector_spinae", S, 0.35), mu("adductors", S, 0.35, note="adductor magnus"),
              mu("quadriceps", S, 0.3), mu("rectus_abdominis", ST, 0.3), mu("obliques", ST, 0.25),
              mu("gluteus_medius", S, 0.4)),
-    equipment=(eq("mat", attach="static"),),
+    equipment=(eq("mat", attach="floor"),),
     errors=("Hyperextending the lumbar spine at the top.", "Pushing through the toes.",
             "Feet too far away so the hamstrings cramp."),
     physio_notes=("Gluteus maximus ~27-40 %MVIC in the bodyweight bridge; a standard early "
@@ -88,9 +88,16 @@ step_up = ExerciseDefinition(
     # at the origin the box was drawn through both thighs every time he stood
     # on the floor.  ``travel`` carries him onto it and back, the way the box
     # jump already did.
+    #
+    # The leading leg is 98/98, not 95/95.  The ground lock anchors the body by
+    # its LOWEST extremity -- here the trailing foot on the floor -- so nothing
+    # puts the leading foot on the box, and at 95/95 its sole sat at 56.5
+    # against a box top of 60: the foot was 3.5 inside the thing it is standing
+    # on.  Hip and knee move together so the flat-foot rule still holds
+    # (10 - 98 + 98 = 10 = ankle), and 3 degrees is 3.5 units of foot height.
     phases=(
         ph("Place foot", TRN, 0.7,
-           merge(pose(hip_r_flex=95, knee_r_flex=95, ankle_r_flex=10, knee_l_flex=5,
+           merge(pose(hip_r_flex=98, knee_r_flex=98, ankle_r_flex=10, knee_l_flex=5,
                       toe_curl_l=toes_on_floor(10, 0, 5, 0)), arms(elbow=5)),
            pitch=10, cues=("Right foot flat on the box, knee over the toes",)),
         ph("Step up", CON, 1.2,
@@ -103,7 +110,7 @@ step_up = ExerciseDefinition(
            merge(pose(knee_flex=3), arms(elbow=5)), lift=60.0, travel=(0.0, 55.0),
            cues=("Stand tall, hips level",)),
         ph("Step down", ECC, 1.4,
-           merge(pose(hip_r_flex=95, knee_r_flex=95, ankle_r_flex=10, knee_l_flex=5,
+           merge(pose(hip_r_flex=98, knee_r_flex=98, ankle_r_flex=10, knee_l_flex=5,
                       toe_curl_l=toes_on_floor(10, 0, 5, 0)), arms(elbow=5)),
            pitch=10, lift=0.0, cues=("Lower the left foot to the floor under control",)),
         ph("Return", TRN, 0.6, merge(pose(), arms(elbow=5))),
@@ -152,14 +159,19 @@ wall_sit = ExerciseDefinition(
     description="An isometric squat hold with the back against a wall, thighs parallel and "
                 "knees at 90 deg.",
     setup=("Back flat on the wall, feet ~50 cm out", "Slide down until the knees are at 90 deg"),
+    # Measured 2026-09-16: seated, the back (scapula) sits at z -70.1 and the
+    # body reaches z -70.3, so the wall face goes at -72.  Standing, the same
+    # scapula is at z -8.8 -- the pose swings the trunk forward as it rises --
+    # so the two upright phases walk the feet back to the wall with `travel`,
+    # which is what a real wall sit does in reverse on the way down.
     phases=(
         ph("Slide down", ECC, 1.5, merge(pose(hip_flex=90, knee_flex=90), arms(abduct=10, elbow=5)),
            cues=("Knees over the ankles, thighs parallel",)),
         ph("Hold", ISO, 6.0, merge(pose(hip_flex=90, knee_flex=90), arms(abduct=10, elbow=5)),
            cues=("Breathe; keep the whole back on the wall",)),
-        ph("Rise", CON, 1.5, merge(pose(), arms(abduct=10, elbow=5)),
+        ph("Rise", CON, 1.5, merge(pose(), arms(abduct=10, elbow=5)), travel=(0.0, -61.0),
            cues=("Push through the heels to stand",)),
-        ph("Rest", TRN, 1.0, merge(pose(), arms(abduct=10, elbow=5))),
+        ph("Rest", TRN, 1.0, merge(pose(), arms(abduct=10, elbow=5)), travel=(0.0, -61.0)),
     ),
     muscles=(mu("quadriceps", P, 0.7), mu("gluteus_maximus", S, 0.4), mu("adductors", S, 0.3),
              mu("hamstrings", S, 0.25), mu("soleus", S, 0.3), mu("rectus_abdominis", ST, 0.3),
@@ -167,6 +179,12 @@ wall_sit = ExerciseDefinition(
     errors=("Knees drifting past the toes.", "Holding the breath."),
     physio_notes=("Isometric quadriceps loading for patellofemoral pain and early ACL "
                   "rehabilitation; adjust the knee angle to tolerance.",),
+    # -72 put the wall face 2 units behind the scapula PIVOT, which is 13
+    # units inside the back: `audit_equipment_clash` measured the trunk
+    # capsule 13.0 into the wall.  A pivot is not a surface -- the wall has
+    # to clear the flesh -- so the face goes at -84, one capsule radius
+    # further back.
+    equipment=(eq("wall", attach="static", position=(0.0, 0.0, -84.0)),),
     sources=(NEUMANN, ACE), camera="side", tags=("no equipment", "isometric", "rehab"),
 )
 
@@ -218,7 +236,15 @@ lying_leg_curl = ExerciseDefinition(
 
 #: Lying on the left side: the lower (left) arm lies forward on the floor, the
 #: upper (right) hand rests on the hip.
-_SIDE_LYING_ARMS = combine(arms(flex=100, abduct=0, elbow=90, side="l"),
+# The underneath arm: side-lying puts the body's frontal plane VERTICAL, so
+# abduction is the up/down lever and flexion does nothing for it.  Measured
+#     abduct    +40    +20      0     -20     -40
+#     lowest   -26.5  -24.1  -18.3   -9.3   -3.1   (the hand through the mat)
+# -31 is the floor of what it can do -- `body_joint_limits` stops shoulder
+# adduction at -0.35 normalised, which is why -40 and -60 measured the same
+# (they were being clamped) -- and the arm is then tucked under the head,
+# which is where a side-lying arm goes.
+_SIDE_LYING_ARMS = combine(arms(flex=100, abduct=-31, elbow=90, side="l"),
                            arms(flex=0, elbow=70, side="r"))
 
 clamshell = ExerciseDefinition(
@@ -243,7 +269,7 @@ clamshell = ExerciseDefinition(
              mu("hip_external_rotators", P, 0.6, side="R"),
              mu("gluteus_maximus", S, 0.45, side="R", note="upper fibres"),
              mu("obliques", ST, 0.3), mu("quadratus_lumborum", ST, 0.3)),
-    equipment=(eq("mat", attach="static"),),
+    equipment=(eq("mat", attach="floor"),),
     errors=("Rolling the pelvis backward to lift the knee higher.", "Feet separating."),
     physio_notes=("Gluteus medius ~40 %MVIC (Boren 2011); a first-line exercise for hip "
                   "abductor weakness and patellofemoral pain.",),

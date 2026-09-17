@@ -6,14 +6,22 @@ from faceforge.exercise.catalog._helpers import (
     ACE, CON, ECC, EXRX, ISO, LAKE, NEUMANN, NSCA, P, S, ST, TRN, ZEBIS, arms, combine, eq,
     flat_palm, grip, hinge, merge, mu, ph, pose, squat, toes_tucked, toes_on_floor
 )
+from faceforge.exercise.catalog.olympic import _EXT_C, _KNEE_C, _RACK, _START_C
 from faceforge.exercise.model import Category, ExerciseDefinition
 
 #: Toes bent back onto their pads under a tucked foot (`toes_tucked`),
 #: so the foot is not one rigid wedge balanced on its longest toe.
 _TUCKED = toes_tucked(45.0)
 
-_SWING_BOTTOM = merge(hinge(70, 20)[0], arms(flex=45, abduct=5, elbow=5), grip())
-_SWING_TOP = merge(pose(knee_flex=3), arms(flex=90, abduct=5, elbow=5), grip())
+# Two hands on ONE handle at the midline: the equipment rig centres an
+# `attach="hands"` item between the grip points, so a pose that leaves the
+# arms hanging at the sides puts the bell on the midline and the hands 80 cm
+# apart on either side of it.  Measured 2026-09-16, grip width by shoulder
+# abduction:  +8 -> 101,  0 -> 81,  -10 -> 54,  -20 -> 28,  -25 -> 14.8.
+# -25 is a two-handed grip (12 cm) and brings the worst hand-to-bell gap
+# from 40 to 3.  A bell in EACH hand (the carries) keeps the wide pose.
+_SWING_BOTTOM = merge(hinge(70, 20)[0], arms(flex=45, abduct=-25, elbow=5), grip())
+_SWING_TOP = merge(pose(knee_flex=3), arms(flex=90, abduct=-25, elbow=5), grip())
 
 kettlebell_swing = ExerciseDefinition(
     id="kettlebell_swing", name="Kettlebell swing (Russian)", category=Category.ATHLETIC,
@@ -106,11 +114,13 @@ box_jump = ExerciseDefinition(
     sources=(NSCA, ACE), camera="side", default_reps=3, tags=("box", "power", "plyometric"),
 )
 
-_CLEAN_START = merge(squat(110, 70, 50)[0], arms(flex=50, abduct=10), grip())
-_CLEAN_KNEE = merge(squat(65, 30, 40)[0], arms(flex=40, abduct=10), grip())
-_CLEAN_EXT = merge(pose(knee_flex=5, ankle_flex=-30, toe_curl=toes_on_floor(0, 0, 5, -30)), arms(flex=25, abduct=30, elbow=80), grip())
-_CLEAN_CATCH = merge(squat(65, 65, 10)[0], arms(flex=90, abduct=15, elbow=145), grip())
-_CLEAN_STAND = merge(pose(knee_flex=3), arms(flex=90, abduct=15, elbow=145), grip())
+# These were a second, identical copy of the clean positions in `olympic.py`,
+# so correcting the grip width and the start depth there left the power clean
+# -- the exercise they were copied for -- still sliding 15 units a hand and
+# holding its bar 35 above the floor.  One copy now, imported.
+_CLEAN_START, _CLEAN_KNEE, _CLEAN_EXT = _START_C, _KNEE_C, _EXT_C
+_CLEAN_CATCH = merge(squat(65, 65, 10)[0], _RACK, grip())
+_CLEAN_STAND = merge(pose(knee_flex=3), _RACK, grip())
 
 power_clean = ExerciseDefinition(
     id="power_clean", name="Power clean", category=Category.ATHLETIC,
@@ -145,8 +155,23 @@ power_clean = ExerciseDefinition(
     sources=(NSCA, EXRX), camera="three_quarter", default_reps=3, tags=("barbell", "power", "olympic"),
 )
 
-_SLAM_TOP = merge(pose(knee_flex=5, ankle_flex=-15), arms(flex=175, elbow=5), grip())
-_SLAM_BOTTOM = merge(squat(100, 70, 45)[0], arms(flex=25, elbow=10), grip())
+# Both hands on one ball: with the arms at the default abduction the grip is
+# 80.8 units wide against a ball 24 across, so it floated 28 units clear of
+# them.  Adducting to -25 closes the grip to 39.7; a 36-unit slam ball (a real
+# one is 28-35 cm, this figure's scale makes that 36-44) then meets the hands.
+# The ball is rigid, so the grip has to be about as wide as it is: measured
+# 2026-09-16/17, grip width by abduction --
+#     abduct          -25   -20   -15    -5
+#     reach overhead 14.3  ~28   40.9  67.7
+#     slam           15.6  ~29   41.7  67.9
+#     pick up        39.6   --   56.5  72.9   (its elbow is 60, not 5-10)
+# -20 on the two overhead-to-slam poses and the adduction limit (-31) on the
+# pick-up hold it near 28-33, which is a 14-radius ball -- 23 cm, a real slam
+# ball.  18 was a bad guess made before the adduction had closed the grip, and
+# it put 5.8 units of ball through the calves at the slam.
+_SLAM_TOP = merge(pose(knee_flex=5, ankle_flex=-15),
+                  arms(flex=175, abduct=-20, elbow=5), grip())
+_SLAM_BOTTOM = merge(squat(100, 70, 45)[0], arms(flex=25, abduct=-20, elbow=10), grip())
 
 medicine_ball_slam = ExerciseDefinition(
     id="medicine_ball_slam", name="Medicine ball slam", category=Category.ATHLETIC,
@@ -158,14 +183,15 @@ medicine_ball_slam = ExerciseDefinition(
         ph("Reach overhead", CON, 0.6, _SLAM_TOP, cues=("Rise onto the toes, ball high",)),
         ph("Slam", CON, 0.35, _SLAM_BOTTOM, pitch=45, easing="ease_in",
            cues=("Throw the ball down hard: hips back, trunk folds, arms follow",)),
-        ph("Pick up", TRN, 0.8, merge(squat(70, 60, 30)[0], arms(flex=40, elbow=60), grip()), pitch=30,
+        ph("Pick up", TRN, 0.8, merge(squat(70, 60, 30)[0],
+                                      arms(flex=40, abduct=-31, elbow=60), grip()), pitch=30,
            cues=("Squat to the ball with a flat back",)),
     ),
     muscles=(mu("latissimus_dorsi", P, 0.9), mu("rectus_abdominis", P, 0.85), mu("obliques", S, 0.6),
              mu("triceps_brachii", S, 0.5), mu("deltoid_anterior", S, 0.6),
              mu("pectoralis_major", S, 0.4), mu("quadriceps", S, 0.5), mu("gluteus_maximus", S, 0.6),
              mu("erector_spinae", S, 0.5), mu("gastrocnemius", S, 0.4), mu("hip_flexors", S, 0.4)),
-    equipment=(eq("medicine_ball",),),
+    equipment=(eq("medicine_ball", radius=14.0),),
     errors=("Rounding the back to pick the ball up.", "Slamming with the arms only."),
     physio_notes=("A trunk-flexion power exercise; keep the volume low with disc-related "
                   "back pain.",),
@@ -183,13 +209,21 @@ burpee = ExerciseDefinition(
     phases=(
         ph("Squat down", ECC, 0.4, merge(squat(125, 120, 45)[0], _BURPEE_ARMS_DOWN), pitch=45,
            position=(0.0, 140.0, 0.0), cues=("Hands to the floor just in front of the feet",)),
+        # The burpee is `anchor="none"`, so each phase's wrapper height is the
+        # only thing holding it off the floor and it has to be measured, not
+        # guessed.  At the authored heights the straight-arm plank drove the
+        # fingers 14.7 units THROUGH the floor while the bent-arm push-up
+        # floated them 16.2 above it -- the two poses reach different
+        # distances from the shoulder and were given the same allowance.
+        #     Press  (straight arm)  y 62 -> -14.7   70 -> -6.7   77 -> +0.3
+        #     Push-up (elbow 95)     y 40 -> +16.2   24 -> +0.2
         ph("Kick back", CON, 0.35, merge(pose(ankle_flex=45, toe_curl=_TUCKED), arms(flex=90, abduct=15, elbow=0)),
-           orientation="prone", position=(-85.0, 62.0, 0.0), easing="ease_out",
+           orientation="prone", position=(-85.0, 77.0, 0.0), easing="ease_out",
            cues=("Jump the feet back into a plank; hips level",)),
         ph("Push-up", ECC, 0.4, merge(pose(ankle_flex=45, toe_curl=_TUCKED), arms(flex=55, abduct=45, elbow=95)),
-           orientation="prone", position=(-85.0, 40.0, 0.0), cues=("Chest to the floor",)),
+           orientation="prone", position=(-85.0, 24.0, 0.0), cues=("Chest to the floor",)),
         ph("Press", CON, 0.35, merge(pose(ankle_flex=45, toe_curl=_TUCKED), arms(flex=90, abduct=15, elbow=0)),
-           orientation="prone", position=(-85.0, 62.0, 0.0)),
+           orientation="prone", position=(-85.0, 77.0, 0.0)),
         ph("Feet in", CON, 0.35, merge(squat(125, 120, 45)[0], _BURPEE_ARMS_DOWN), pitch=45,
            position=(0.0, 140.0, 0.0), cues=("Jump the feet back under the hips",)),
         ph("Jump", CON, 0.3, merge(pose(knee_flex=5, ankle_flex=-30, toe_curl=toes_on_floor(0, 0, 5, -30)), arms(flex=170, elbow=5)),

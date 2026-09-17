@@ -60,6 +60,12 @@ class RiggedItem:
     hang: float = 0.0
     #: Revolutions per second about the handle axis (a jump rope), 0 = none.
     spin: float = 0.0
+    #: Set once a ``"floor"`` item has been laid down under the body.
+    settled: bool = False
+
+
+#: How far above the floor a pivot still counts as resting on it.
+_FLOOR_BAND = 60.0
 
 
 class EquipmentRig:
@@ -73,7 +79,7 @@ class EquipmentRig:
         item = RiggedItem(node, spec,
                           DEFAULT_GRIP_OFFSET if grip_offset is None else grip_offset, hang,
                           spin)
-        if spec.attach == "static":
+        if spec.attach in ("static", "floor"):
             node.set_position(*spec.position)
             rx, ry, rz = (math.radians(a) for a in spec.rotation_deg)
             q = quat_multiply(quat_from_axis_angle(_Y, ry),
@@ -122,11 +128,45 @@ class EquipmentRig:
             return centre
         return cls.palm_point(pivots, side, grip_offset)
 
+    @staticmethod
+    def _settle_on_floor(item: RiggedItem, pivots: dict) -> None:
+        """Centre a floor covering in x/z under the body's low-lying pivots.
+
+        "Low-lying" is everything within `_FLOOR_BAND` of the ground, which for
+        a lying body is the whole of it and for a standing one is the feet --
+        in both cases the part the mat has to be under.  The item keeps the y
+        and the rotation its spec gave it.
+        """
+        pts = np.array([_world(n) for n in pivots.values()], dtype=np.float64)
+        if len(pts) == 0:
+            return
+        low = pts[pts[:, 1] < _FLOOR_BAND]
+        if len(low) == 0:
+            low = pts
+        centre = (low.min(axis=0) + low.max(axis=0)) / 2.0
+        item.node.set_position(float(centre[0] + item.spec.position[0]),
+                               float(item.spec.position[1]),
+                               float(centre[2] + item.spec.position[2]))
+        item.settled = True
+
     def update(self, pivots: dict, time: float = 0.0) -> None:
         """Place every held item from the current wrist/elbow world positions."""
         for item in self.items:
             attach = item.spec.attach
             if attach == "static":
+                continue
+            if attach == "floor":
+                # A mat is not furniture: it goes where the body lies.  Placed
+                # at the origin like the rest of the static kit, it left 21
+                # exercises with most of the athlete off it -- a push-up, a
+                # downward dog, a cat-cow and a get-up at 0-2% of their
+                # floor-level pivots over it, because a lying body is offset
+                # along X while a standing one is not.  Laid down ONCE, from
+                # the first frame, so it does not slide about under a body
+                # that moves during the exercise.
+                if item.settled:
+                    continue
+                self._settle_on_floor(item, pivots)
                 continue
             if attach in ("hands", "knees"):
                 if attach == "knees":

@@ -38,7 +38,13 @@ ROOM_DEPTH = 200.0   # Z
 
 # Dance studio dimensions (larger)
 STUDIO_WIDTH = 500.0   # X
-STUDIO_HEIGHT = 300.0  # Y
+# 300 (236 cm at this figure's scale) is a domestic ceiling, and the gym does
+# gym things under it: measured 2026-09-16, a muscle-up's support put the
+# skull at 384, a lat pulldown's cable ran to 349 and a countermovement jump's
+# head to 317 -- all of them through a ceiling that is drawn double-sided, so
+# they were visibly outside the building.  400 is 315 cm, the low end of a
+# commercial gym, and clears every exercise in the catalogue.
+STUDIO_HEIGHT = 400.0  # Y
 STUDIO_DEPTH = 400.0   # Z
 
 # Table

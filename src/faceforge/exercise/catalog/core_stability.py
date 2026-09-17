@@ -18,7 +18,7 @@ from faceforge.exercise.model import Category, ExerciseDefinition
 #: so the foot is not one rigid wedge balanced on its longest toe.
 _TUCKED = toes_tucked(45.0)
 
-_MAT = (eq("mat", attach="static"),)
+_MAT = (eq("mat", attach="floor"),)
 _PLANK_ARMS = arms(flex=78, abduct=0, elbow=90)   # upper arm vertical under a 12 deg head-up incline
 _PLANK = merge(pose(ankle_flex=45, toe_curl=_TUCKED), _PLANK_ARMS)
 _PRONE_REST = merge(pose(ankle_flex=45, toe_curl=_TUCKED, hip_flex=8, knee_flex=10), arms(flex=40, abduct=15, elbow=100))
@@ -71,18 +71,22 @@ side_plank = ExerciseDefinition(
         ph("Hold", ISO, 6.0,
            merge(pose(), arms(flex=0, abduct=90, elbow=90, side="l"), arms(flex=0, abduct=0, elbow=70, side="r")),
            roll=10.0, pivot=(0.0, 0.0, -190.0), cues=("Hips forward, ribs stacked over the pelvis",)),
-        # The underneath arm cannot be got above the mat once the hips are
-        # down: the left shoulder sits about 5 units up and the arm is 60
-        # long, so every pose measured put that hand below the floor (-23.5
-        # abducted, -13.5 flexed).  Tucked in -- adducted, elbow nearly shut
-        # -- is both the least of them and what an arm actually does when you
-        # lie on it.
+        # The underneath arm cannot be got fully above the mat once the hips
+        # are down: the left shoulder sits about 5 units up and the arm is 60
+        # long.  Tucked in -- adducted, elbow shut -- is the least of them and
+        # is what an arm actually does when you lie on it.  Re-measured
+        # 2026-09-16, the ELBOW is the lever, not abduction:
+        #     elbow      140    110     90
+        #     abduct -25  -23.8  -17.2  -10.6
+        #     abduct -40  -23.6  -15.4   -7.1
+        # -31/90 it is: `body_joint_limits` stops shoulder adduction at -0.35
+        # normalised (-31.5 deg), so the -40 row above was already clamped.
         ph("Lower", ECC, 1.5,
-           merge(pose(), arms(flex=20, abduct=-25, elbow=140, side="l"),
+           merge(pose(), arms(flex=20, abduct=-31, elbow=90, side="l"),
                  arms(flex=0, abduct=0, elbow=70, side="r")),
            roll=0, pivot=(0.0, 0.0, -190.0), cues=("Lower the hips to the floor",)),
         ph("Rest", TRN, 1.0,
-           merge(pose(), arms(flex=20, abduct=-25, elbow=140, side="l"),
+           merge(pose(), arms(flex=20, abduct=-31, elbow=90, side="l"),
                  arms(flex=0, abduct=0, elbow=70, side="r"))),
     ),
     muscles=(mu("obliques", P, 0.7, side="L"), mu("quadratus_lumborum", P, 0.6, side="L"),
@@ -98,7 +102,12 @@ side_plank = ExerciseDefinition(
 )
 
 _SITUP_LEGS = only(hip_flex=45, knee_flex=90, ankle_flex=-30)
-_SITUP_ARMS = arms(flex=110, abduct=10, elbow=140)
+# Supine, shoulder ABDUCTION is what moves the hand up and down -- the body's
+# frontal plane is horizontal -- and at +10 the hands behind the head went 12
+# units through the floor.  Measured 2026-09-16 on the flat "Lower" phase:
+#     abduct    +10    -10    -30
+#     lowest   -12.0   -5.2   +1.5    (flex 110, elbow 140 throughout)
+_SITUP_ARMS = arms(flex=110, abduct=-30, elbow=140)
 
 sit_up = ExerciseDefinition(
     id="sit_up", name="Sit-up", category=Category.CORE,
@@ -189,6 +198,22 @@ dead_bug = ExerciseDefinition(
 _QUAD = merge(pose(hip_flex=90, knee_flex=90, ankle_flex=-40),
               arms(flex=90, abduct=5, elbow=0), flat_palm())
 
+#: On all fours the hands are anchored and the arms are straight, which puts
+#: the shoulder 84 above the floor; the thigh is 60 long, so a vertical thigh
+#: leaves the knee at 20 -- ten units of daylight under a kneeling athlete.
+#: Measured 2026-09-16, tipping the trunk down toward the hips:
+#:     pitch     +8     0     -8
+#:     knee y   28.6  20.0   11.1   (a knee resting on the mat sits at ~10)
+#: but on the real clip the toes go under as the knee comes down, because the
+#: shin and foot are a fixed length below a body the anchored straight arms
+#: hold at shoulder 82:
+#:     pitch      0    -2    -4     -6     -8
+#:     lowest   +2.0  -1.2  -6.5  -11.7  -16.9   (the trailing toes)
+#:     knee     20.0  15.9  13.1   10.3    7.6
+#: -2 is the most that keeps everything on or within a unit of the mat.  A
+#: shin that could lie flat would need more than the +-45 the ankle DOF has.
+_QUAD_PITCH = -2.0
+
 bird_dog = ExerciseDefinition(
     id="bird_dog", name="Bird dog", category=Category.CORE,
     description="On hands and knees, one arm and the opposite leg extend to horizontal while "
@@ -201,22 +226,27 @@ bird_dog = ExerciseDefinition(
            merge(pose(hip_r_flex=90, knee_r_flex=90, ankle_r_flex=-40, hip_l_flex=-5, knee_l_flex=5,
                       ankle_l_flex=-10),
                  arms(flex=170, abduct=5, elbow=0, side="r"), arms(flex=90, abduct=5, elbow=0, side="l")),
+           pitch=_QUAD_PITCH,
            cues=("Reach the heel back and the hand forward; hips level",)),
         ph("Hold", ISO, 1.5,
            merge(pose(hip_r_flex=90, knee_r_flex=90, ankle_r_flex=-40, hip_l_flex=-5, knee_l_flex=5,
                       ankle_l_flex=-10),
                  arms(flex=170, abduct=5, elbow=0, side="r"), arms(flex=90, abduct=5, elbow=0, side="l")),
+           pitch=_QUAD_PITCH,
            cues=("Do not let the pelvis rotate",)),
-        ph("Return", ECC, 1.5, _QUAD, cues=("Back to all fours without shifting the weight",)),
+        ph("Return", ECC, 1.5, _QUAD, pitch=_QUAD_PITCH,
+           cues=("Back to all fours without shifting the weight",)),
         ph("Extend left arm, right leg", CON, 1.5,
            merge(pose(hip_l_flex=90, knee_l_flex=90, ankle_l_flex=-40, hip_r_flex=-5, knee_r_flex=5,
                       ankle_r_flex=-10),
-                 arms(flex=170, abduct=5, elbow=0, side="l"), arms(flex=90, abduct=5, elbow=0, side="r"))),
+                 arms(flex=170, abduct=5, elbow=0, side="l"), arms(flex=90, abduct=5, elbow=0, side="r")),
+           pitch=_QUAD_PITCH),
         ph("Hold", ISO, 1.5,
            merge(pose(hip_l_flex=90, knee_l_flex=90, ankle_l_flex=-40, hip_r_flex=-5, knee_r_flex=5,
                       ankle_r_flex=-10),
-                 arms(flex=170, abduct=5, elbow=0, side="l"), arms(flex=90, abduct=5, elbow=0, side="r"))),
-        ph("Return", ECC, 1.5, _QUAD),
+                 arms(flex=170, abduct=5, elbow=0, side="l"), arms(flex=90, abduct=5, elbow=0, side="r")),
+           pitch=_QUAD_PITCH),
+        ph("Return", ECC, 1.5, _QUAD, pitch=_QUAD_PITCH),
     ),
     muscles=(mu("erector_spinae", P, 0.6), mu("multifidus", P, 0.6),
              mu("gluteus_maximus", P, 0.6), mu("rectus_abdominis", S, 0.45),
@@ -308,7 +338,7 @@ pallof_press = ExerciseDefinition(
              mu("erector_spinae", S, 0.4), mu("multifidus", S, 0.4),
              mu("deltoid_anterior", S, 0.4), mu("triceps_brachii", S, 0.4),
              mu("serratus_anterior", S, 0.4), mu("quadratus_lumborum", ST, 0.35)),
-    equipment=(eq("cable_handle", cable_to=(130.0, 0.0, 0.0)),),
+    equipment=(eq("cable_handle", cable_to=(130.0, 0.0, 0.0), length=81.0),),
     errors=("Trunk rotating toward the cable.", "Shrugging."),
     physio_notes=("An anti-rotation core exercise with negligible spinal motion; suits "
                   "rotation-intolerant backs.",),

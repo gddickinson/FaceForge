@@ -109,7 +109,7 @@ seated_cable_row = ExerciseDefinition(
              mu("erector_spinae", S, 0.5, note="holds the trunk upright"),
              mu("infraspinatus_teres_minor", S, 0.4), mu("forearm_flexors", ST, 0.55),
              mu("hamstrings", ST, 0.25)),
-    equipment=(eq("cable_handle", cable_to=(0.0, 6.0, 150.0)),
+    equipment=(eq("cable_handle", cable_to=(0.0, 6.0, 150.0), length=94.0),
                eq("bench", attach="static", height=58.0, length=60.0)),
     errors=("Leaning back and forward with each rep.", "Shrugging the shoulders.",
             "Rounding the back on the return."),
@@ -219,6 +219,10 @@ pendlay_row = ExerciseDefinition(
 )
 
 
+#: The heel the inverted row's plank turns about, and how far it turns.
+_ROW_HEEL = (188.0, 0.0, 0.0)
+_ROW_PULL_PITCH = 15.0
+
 inverted_row = ExerciseDefinition(
     id="inverted_row", name="Inverted row", category=Category.UPPER_PULL,
     description="A horizontal pull under a fixed bar with the heels on the floor. The load is "
@@ -226,23 +230,35 @@ inverted_row = ExerciseDefinition(
                 "the pull-up.",
     setup=("Bar at about hip height, heels on the floor, body straight from ear to heel",
            "Shoulders down and back before the pull", "Chest to the bar, elbows about 45 deg"),
-    # KNOWN DEFECT, measured 2026-09-16: the hands do not reach the bar.  With
-    # the feet anchored the hands go wherever the arm angles put them, and the
-    # wrist sits at y 85 at the hang and y 30 at the pull against a bar at 70
-    # -- he rows beside it.  Anchoring by the hands instead puts the grip ring
-    # on the bar but sinks the hang 9.5 units THROUGH the floor, and the pull
-    # then lifts the whole body (heels to y 54) because the row is a closed
-    # chain at both ends and the ground lock can only hold one of them.  The
-    # real fix is to author the hip and knee angles so the heels stay down as
-    # the body rises to a fixed bar; until then the feet stay on the floor,
-    # which is the half that does not put anything through anything.
+    # The closed chain, solved by moving the bar to the hands rather than the
+    # hands to the bar (2026-09-16).  The row is fixed at both ends -- heels on
+    # the floor, hands on a bar -- and the ground lock can only hold one, so
+    # anchoring by the hands sank the hang through the floor.  Keeping the feet
+    # anchored and measuring where the grip actually goes:
+    #
+    #   * straight-arm hang: grip at y 92.2, x -11.6.  The bar was at y 70, so
+    #     it was 22 BELOW the hands -- hence height 93, not 70.  ("About hip
+    #     height" is 105-119 on this figure, so 93 is a low bar, which is the
+    #     easy end of the exercise and the right place to start.)
+    #   * the pull used to bend the elbow to 115 with the body flat, which
+    #     drops the hand 65 units: the arm shortens and nothing lifts the
+    #     chest.  A real row rotates the plank about the heels.  `pitch=15`
+    #     about `pivot` at the heel (x 188) does exactly that and brings the
+    #     grip back to y 92.1 -- on the bar, 0.9 out.
+    #   * the grip sits at x -11.6 (hang) to -6.6 (pull) and the bar is only 4
+    #     thick, so the frame is offset to x -9, the midpoint.
+    #
+    # Measured after: hand-to-bar 0.0 both sides, both phases; heels at 8.7
+    # throughout, toes above the ankle as they should be with the heels down.
     orientation="supine", anchor="feet", base_position=(0.0, 0.0, 0.0),
     phases=(
         ph("Pull", CON, 1.4, merge(pose(hip_flex=-5, knee_flex=5),
-                                   arms(flex=95, abduct=30, elbow=115, forearm=-90), grip()),
+                                   arms(flex=95, abduct=30, elbow=90, forearm=-90), grip()),
+           pitch=_ROW_PULL_PITCH, pivot=_ROW_HEEL,
            cues=("Pull the chest to the bar; keep the hips up",)),
         ph("Top", ISO, 0.5, merge(pose(hip_flex=-5, knee_flex=5),
-                                  arms(flex=95, abduct=30, elbow=115, forearm=-90), grip()),
+                                  arms(flex=95, abduct=30, elbow=90, forearm=-90), grip()),
+           pitch=_ROW_PULL_PITCH, pivot=_ROW_HEEL,
            cues=("Blades together, body still a plank",)),
         ph("Lower", ECC, 1.8, merge(pose(hip_flex=-5, knee_flex=5),
                                     arms(flex=100, abduct=10, elbow=10, forearm=-90), grip()),
@@ -261,8 +277,8 @@ inverted_row = ExerciseDefinition(
     # untouched frame's bar, which put the far upright (x 82.5..87.5) exactly
     # on the athlete's hip at x 83.7 -- the full capsule radius inside him.
     # Rotated, the uprights stand at z +-85, beside him, where a rack's are.
-    equipment=(eq("pullup_bar", attach="static", height=70.0,
-                  rotation_deg=(0.0, 90.0, 0.0)),),
+    equipment=(eq("pullup_bar", attach="static", height=93.0,
+                  position=(-9.0, 0.0, 0.0), rotation_deg=(0.0, 90.0, 0.0)),),
     errors=("Letting the hips sag so the chest reaches the bar first.",
             "Shrugging rather than retracting.",
             "Setting the bar so high the body is nearly upright, which removes the load."),

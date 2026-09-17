@@ -117,9 +117,11 @@ muscle_up = ExerciseDefinition(
 
 # ── Parallel bars: the L-sit ───────────────────────────────────────────
 
+# abduct=0, not 10, for the same reason as the dip: it puts the grip at
+# +-40.4, which is what `make_dip_station` is now built to.
 _LSIT_TUCK = merge(pose(hip_flex=85, knee_flex=110),
-                   arms(flex=0, abduct=10, elbow=0), grip())
-_LSIT = merge(pose(hip_flex=88, knee_flex=5), arms(flex=0, abduct=10, elbow=0), grip())
+                   arms(flex=0, abduct=0, elbow=0), grip())
+_LSIT = merge(pose(hip_flex=88, knee_flex=5), arms(flex=0, abduct=0, elbow=0), grip())
 
 l_sit = ExerciseDefinition(
     id="l_sit", name="L-sit (parallel bars)", category=Category.CALISTHENICS,
@@ -242,7 +244,7 @@ archer_push_up = ExerciseDefinition(
              mu("latissimus_dorsi", S, 0.45, note="the straight arm resists"),
              mu("rotator_cuff", ST, 0.45), mu("forearm_extensors", ST, 0.45),
              mu("quadriceps", ST, 0.3)),
-    equipment=(eq("mat", attach="static"),),
+    equipment=(eq("mat", attach="floor"),),
     errors=("Rolling the hips toward the working arm.",
             "Bending the far arm, which makes it a wide push-up.",
             "Hips sagging."),
@@ -288,7 +290,7 @@ pike_push_up = ExerciseDefinition(
              mu("trapezius_upper", S, 0.55), mu("pectoralis_upper", S, 0.45),
              mu("rectus_abdominis", S, 0.5), mu("hamstrings", ST, 0.45),
              mu("rotator_cuff", ST, 0.45), mu("forearm_extensors", ST, 0.45)),
-    equipment=(eq("mat", attach="static"),),
+    equipment=(eq("mat", attach="floor"),),
     errors=("Hips dropping, which turns it back into a push-up.",
             "The head landing in front of the hands rather than between them.",
             "Flaring the elbows to 90 deg."),
@@ -342,7 +344,7 @@ nordic_hamstring_curl = ExerciseDefinition(
              mu("adductors", S, 0.4),
              mu("triceps_brachii", ST, 0.4, note="the catch"),
              mu("pectoralis_major", ST, 0.35)),
-    equipment=(eq("mat", attach="static"),),
+    equipment=(eq("mat", attach="floor"),),
     errors=("Folding at the hips, which shortens the lever and skips the work.",
             "Dropping rather than lowering.",
             "Adding volume too fast: it is notorious for soreness."),
@@ -380,7 +382,7 @@ hollow_body_hold = ExerciseDefinition(
              mu("quadriceps", S, 0.5, note="holds the knees straight"),
              mu("serratus_anterior", S, 0.45), mu("latissimus_dorsi", ST, 0.4),
              mu("deltoid_anterior", ST, 0.4)),
-    equipment=(eq("mat", attach="static"),),
+    equipment=(eq("mat", attach="floor"),),
     errors=("Letting the low back arch, which is the one thing the hold is for.",
             "Holding the breath.",
             "Going to the full lever before the flat back can be kept."),

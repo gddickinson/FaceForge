@@ -21,7 +21,7 @@ from faceforge.exercise.catalog._helpers import (
 )
 from faceforge.exercise.model import Category, ExerciseDefinition
 
-_MAT = (eq("mat", attach="static"),)
+_MAT = (eq("mat", attach="floor"),)
 _STAND = merge(pose(knee_flex=5), arms(flex=5, abduct=8, elbow=5))
 
 # ── Standing ───────────────────────────────────────────────────────────
@@ -154,7 +154,6 @@ calf_stretch = ExerciseDefinition(
              mu("tibialis_anterior", S, 0.5, side="L", note="works to hold the dorsiflexion"),
              mu("quadriceps", S, 0.5, side="R"), mu("gluteus_maximus", ST, 0.4),
              mu("deltoid_anterior", ST, 0.35), mu("triceps_brachii", ST, 0.35)),
-    equipment=(),
     errors=("The back heel lifting, which ends the stretch.",
             "The back foot turning out, which takes the stretch out of the calf and into "
             "the arch.",
@@ -162,8 +161,11 @@ calf_stretch = ExerciseDefinition(
     physio_notes=("Gastrocnemius crosses the knee and the ankle, soleus only the ankle: the "
                   "two versions are not interchangeable, and restricted dorsiflexion is a "
                   "common finding behind squat and running complaints.",),
+    # Hands at z 85-91 pressing on nothing: the wall face goes at 92 with the
+    # slab behind it, so the node sits at 100 (the box spans z 92..100).
+    equipment=(eq("wall", attach="static", position=(0.0, 0.0, 104.0)),),
     sources=(STRETCH_ACSM, NEUMANN, ACE, NSCA), camera="side", default_reps=1,
-    tags=("stretch", "no equipment"),
+    tags=("stretch",),
 )
 
 #: Same as the triangle: the lean is a wrapper roll, negative being to the

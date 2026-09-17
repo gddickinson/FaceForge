@@ -27,7 +27,21 @@ _ARMS_FORWARD = arms(flex=70, elbow=10)
 # from the bar and the palm 21 deg from vertical -- the bar rests on the palms
 # with the fingers over it.  The earlier (abduct 45, elbow 70) pose had the
 # forearms nearly parallel to the bar, so the bar passed between the fingers.
-_BAR_ON_BACK = combine(arms(flex=0, abduct=60, rotate=91, elbow=120, forearm=90, wrist=-70),
+# The bar has to REST on the upper back.  It did not: measured 2026-09-16
+# against the loaded meshes rather than the bones, the old pose held it in the
+# air behind the neck, touching nothing across the whole trunk --
+#     |x|      0-5   5-10  10-15  15-20  20-25  25-30
+#     gap      3.5    4.1    4.8    5.6    7.8    7.6
+# -- with the only zero-gap point at |x| 35-40, which is the hands gripping
+# it.  (An earlier check compared the bar with the clavicle and scapula TOPS
+# and called it right; those are lateral landmarks, and the bar sits at the
+# midline where C7 is at 190.)  The body's back surface falls away rearward as
+# it descends, so the bar has to come down AND stay forward: candidates that
+# only came down ended up behind the body entirely (gap 74).
+# This one lands it at y 192.9, z -14.1 with contact across the full width
+# (gaps 0.0/0.0/0.0/0.0/0.2/0.7) and 4.0 units of compression into the
+# trapezius, which is what a loaded bar does to that muscle.
+_BAR_ON_BACK = combine(arms(flex=-10, abduct=40, rotate=91, elbow=140, forearm=60, wrist=-70),
                        grip())
 # Measured on the rig (2026-09-11, closed-finger ring centres): the front
 # rack puts the hands 45 apart, 6 forward of and 20 above the shoulder

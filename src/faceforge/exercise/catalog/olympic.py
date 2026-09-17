@@ -30,17 +30,44 @@ from faceforge.exercise.catalog._helpers import (
 )
 from faceforge.exercise.model import Category, ExerciseDefinition
 
+#: The rear foot of a split: heel up, on the ball, so its toes have to bend
+#: back through the same angle the forefoot has tipped by.  Without it the
+#: foot is one rigid wedge and the lifter lands on the ends of his toes --
+#: measured 2026-09-17, the toe tip sat 5.8 below the ball of the same foot.
+_SPLIT_BACK = dict(hip_l_flex=-22, knee_l_flex=45, ankle_l_flex=-10)
+_SPLIT_BACK_TOES = toes_on_floor(4, -22, 45, -10)
+
+
 #: The pull, shared by both lifts: off the floor, past the knee, full extension.
 #: Trunk angles are the measured foot-flat ones (`squat()` applies the rule).
-_START_C = merge(squat(110, 70, 50)[0], arms(flex=50, abduct=10), grip())
-_KNEE_C = merge(squat(65, 30, 40)[0], arms(flex=40, abduct=10), grip())
-_EXT_C = merge(pose(knee_flex=5, ankle_flex=-30, toe_curl=toes_on_floor(0, 0, 5, -30)), arms(flex=25, abduct=30, elbow=80), grip())
+# Depth measured 2026-09-16 against the lowest point of the loaded bar at the
+# start.  `hip` was the lever, not `knee`: at hip 110 the bar bottomed out at
+# 16.6 whatever the knee did; hip 125 with a deep knee puts it near the floor.
+# The knee stops at 118 because the flat-foot rule ties the ankle to
+# pitch - hip + knee and `ankle_flex` runs to 45 deg: past 120 here the
+# heels would have to come up and the solver would clamp the pose.
+# The clean grip has to match the RACK, because the bar is rigid and the rack
+# is the position with the least freedom: measured, a front rack cannot open
+# wider than ~83 whatever the abduction (more abduction *narrows* it), while
+# the pull at abduct 10 was 106.7 -- so each hand slid 15 units a rep.  At
+# abduct 0 the pull is 80.8, within 2 of the rack's 78.7, and the bar also
+# reaches the floor (low 1.4, against 6.2 at abduct 10).
+_START_C = merge(squat(125, 118, 50)[0], arms(flex=50, abduct=0), grip())
+_KNEE_C = merge(squat(65, 30, 40)[0], arms(flex=40, abduct=0), grip())
+_EXT_C = merge(pose(knee_flex=5, ankle_flex=-30, toe_curl=toes_on_floor(0, 0, 5, -30)), arms(flex=25, abduct=4, elbow=80), grip())
 
 #: The snatch grip is wide, so the same positions carry more abduction and the
-#: bar finishes overhead rather than on the shoulders.
-_START_S = merge(squat(110, 72, 48)[0], arms(flex=45, abduct=32), grip())
-_KNEE_S = merge(squat(62, 28, 38)[0], arms(flex=38, abduct=32), grip())
-_EXT_S = merge(pose(knee_flex=5, ankle_flex=-30, toe_curl=toes_on_floor(0, 0, 5, -30)), arms(flex=20, abduct=55, elbow=70), grip())
+#: bar finishes overhead rather than on the shoulders.  Measured 2026-09-16:
+#: abduct 32 gave a 155.8-unit grip -- 123 cm, wider than the bar is useful --
+#: and held the bar 51.6 above the floor at the start.  A real snatch grip is
+#: 81-90 cm, which on this figure is 103-114 units.  Grip width by abduction:
+#:     start/knee   ab 32 -> 155.8   24 -> 139.5   16 -> 121.3   12 -> 111.7
+#:     extension    ab 55 -> 126.1   40 -> 120.1   30 -> 113.2  (elbow 70)
+#: 12 on the pull and 30 at the extension hold it at 111.7-113.2 throughout,
+#: so the hands stop sliding 15 units a rep along a rigid bar as well.
+_START_S = merge(squat(125, 118, 48)[0], arms(flex=45, abduct=12), grip())
+_KNEE_S = merge(squat(62, 28, 38)[0], arms(flex=38, abduct=12), grip())
+_EXT_S = merge(pose(knee_flex=5, ankle_flex=-30, toe_curl=toes_on_floor(0, 0, 5, -30)), arms(flex=20, abduct=30, elbow=70), grip())
 _OVERHEAD_S = arms(flex=172, abduct=20, rotate=25, elbow=5, forearm=-40)
 
 _RACK = arms(flex=90, abduct=15, elbow=145)
@@ -239,7 +266,7 @@ split_jerk = ExerciseDefinition(
            easing="ease_out", cues=("Drive through the whole foot; bar straight up",)),
         ph("Split under", ECC, 0.25,
            merge(pose(hip_r_flex=55, knee_r_flex=60, ankle_r_flex=15,
-                      hip_l_flex=-22, knee_l_flex=45, ankle_l_flex=-10),
+                      **_SPLIT_BACK, toe_curl_l=_SPLIT_BACK_TOES),
                  _JERK_OVERHEAD, grip()), pitch=4, easing="ease_in",
            cues=("Feet move as the arms lock; land both at once",
                  "Front shin vertical, back knee bent and soft")),
@@ -291,7 +318,7 @@ clean_and_jerk = ExerciseDefinition(
            easing="ease_out", cues=("Short vertical dip, then drive it off the shoulders",)),
         ph("Jerk under", ECC, 0.25,
            merge(pose(hip_r_flex=55, knee_r_flex=60, ankle_r_flex=15,
-                      hip_l_flex=-22, knee_l_flex=45, ankle_l_flex=-10),
+                      **_SPLIT_BACK, toe_curl_l=_SPLIT_BACK_TOES),
                  _JERK_OVERHEAD, grip()), pitch=4, easing="ease_in",
            cues=("Split and lock in one movement",)),
         ph("Recover", CON, 0.9, merge(pose(knee_flex=4), _JERK_OVERHEAD, grip()),

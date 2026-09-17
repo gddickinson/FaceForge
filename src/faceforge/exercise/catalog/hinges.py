@@ -20,8 +20,25 @@ from faceforge.exercise.model import Category, ExerciseDefinition
 
 def _deadlift_phases(pitch_start, knee_start, pitch_mid, knee_mid, sumo: bool = False):
     hip_rot = only(hip_abduct=35, hip_rotate=25) if sumo else {}
-    # Shins ~15 deg forward; hip flexion is capped at the rig's 125 deg, which
-    # with its short arms leaves the bar a little above the floor at the start.
+    # Shins ~15 deg forward; hip flexion is capped at the rig's 125 deg.  That
+    # cap is NOT what used to leave the bar in the air -- knee flexion was.
+    # Measured 2026-09-16, lowest point of the loaded bar at the start against
+    # `knee_start`, holding `pitch_start` (and so the trunk angle) fixed:
+    #
+    #   conventional, pitch 62:  knee  88 -> 17.2   110 -> 7.2   130 -> 2.3
+    #   conventional, pitch 58:  knee 120 ->  6.4   125 -> 5.3
+    #   sumo,         pitch 45:  knee  85 -> 22.6   115 -> 7.5   125 -> 2.5
+    #
+    # The trunk angle does not move with the knee at all (59.0 deg at every
+    # knee value above), so the depth is free: the old 88/85 simply did not
+    # bend the knee enough for a figure whose arms are short for its legs.
+    #
+    # What DOES cap it is the flat foot.  `flat_foot_ankle` makes the sole flat
+    # at ankle = pitch - hip + knee, and `ankle_{s}_flex` runs to 45 deg, so
+    # knee <= 45 + hip - pitch.  At hip 125 / pitch 58 that is 112, which is
+    # why `knee_start` stops at 110 rather than going further: past it the
+    # heels would have to leave the floor, and the constraint solver would
+    # silently clamp the pose instead.
     start, _ = squat(min(pitch_start + knee_start - 15, 125), knee_start, pitch_start)
     start = merge(start, arms(flex=pitch_start, abduct=5 if sumo else 0), grip(), hip_rot)
     mid, _ = squat(pitch_mid + knee_mid - 8, knee_mid, pitch_mid)
@@ -49,7 +66,7 @@ conventional_deadlift = ExerciseDefinition(
                 "with the hips above the knees, and knees and hips extend together to lockout.",
     setup=("Bar over mid-foot, shins ~2-3 cm from the bar", "Hip-width stance, grip just outside "
            "the legs", "Chest up, lats engaged, neutral spine, hips higher than the knees"),
-    phases=_deadlift_phases(pitch_start=62, knee_start=88, pitch_mid=40, knee_mid=30),
+    phases=_deadlift_phases(pitch_start=58, knee_start=110, pitch_mid=40, knee_mid=30),
     muscles=(mu("gluteus_maximus", P, 0.95), mu("hamstrings", P, 0.8),
              mu("erector_spinae", P, 0.9, note="isometric hold against flexion"),
              mu("quadriceps", S, 0.6), mu("adductors", S, 0.5),
@@ -77,7 +94,7 @@ sumo_deadlift = ExerciseDefinition(
                 "shares the work between hips, adductors and quadriceps.",
     setup=("Wide stance, toes out 30-45 deg, shins vertical", "Grip inside the knees",
            "Knees pushed out over the toes, chest up"),
-    phases=_deadlift_phases(pitch_start=45, knee_start=85, pitch_mid=30, knee_mid=35,
+    phases=_deadlift_phases(pitch_start=45, knee_start=122, pitch_mid=30, knee_mid=35,
                             sumo=True),
     muscles=(mu("quadriceps", P, 0.85), mu("gluteus_maximus", P, 0.9), mu("adductors", P, 0.8),
              mu("hamstrings", S, 0.65), mu("erector_spinae", S, 0.75),

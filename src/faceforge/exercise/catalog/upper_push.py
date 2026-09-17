@@ -10,7 +10,7 @@ keeps rising to 60 deg.
 from __future__ import annotations
 
 from faceforge.exercise.catalog._helpers import (
-    ACE, BENCH_INCLINE, BENCH_TOP, CALATAYUD, CON, ECC, ECC_CON, EXRX, HIPS, ISO, KOLBER,
+    ACE, BENCH_HINGE_X, BENCH_INCLINE, BENCH_TOP, CALATAYUD, CON, ECC, ECC_CON, EXRX, HIPS, ISO, KOLBER,
     NEUMANN, NSCA, P, S, SAETERBAKKEN, SEATED_HIP, SEATED_ON_BENCH, ST, arms, eq, flat_palm, grip, merge,
     bench_legs, incline_legs, mu, only, ph, pose, toes_tucked
 )
@@ -148,7 +148,8 @@ incline_dumbbell_press = ExerciseDefinition(
              mu("biceps_brachii", ST, 0.25), mu("forearm_flexors", ST, 0.4)),
     equipment=(eq("dumbbell", attach="hand_r"), eq("dumbbell", attach="hand_l"),
                eq("bench", attach="static", position=(-45.0, 0.0, 0.0),
-                  height=BENCH_TOP, incline_deg=-30.0)),
+                  height=BENCH_TOP, incline_deg=-30.0,
+                  incline_pivot_x=BENCH_HINGE_X)),
     errors=("Bench too steep (>45 deg) turns it into a shoulder press.",
             "Lowering the elbows far below the bench (anterior capsule strain)."),
     physio_notes=("Upper pectoralis EMG peaks at 30 deg; above 45 deg anterior deltoid "
@@ -189,7 +190,7 @@ push_up = ExerciseDefinition(
              mu("rectus_abdominis", ST, 0.5), mu("obliques", ST, 0.4),
              mu("erector_spinae", ST, 0.3), mu("gluteus_maximus", ST, 0.3),
              mu("quadriceps", ST, 0.3), mu("rotator_cuff", ST, 0.3)),
-    equipment=(eq("mat", attach="static"),),
+    equipment=(eq("mat", attach="floor"),),
     errors=("Sagging hips (lumbar extension).", "Head dropping / neck flexion.",
             "Elbows flared to 90 deg.", "Half range of motion."),
     physio_notes=("Push-up and bench press produce comparable pectoralis and triceps EMG "
@@ -266,8 +267,16 @@ seated_dumbbell_shoulder_press = ExerciseDefinition(
     sources=(SAETERBAKKEN, KOLBER, NSCA), camera="three_quarter", tags=("dumbbell",),
 )
 
-_DIP_TOP = merge(pose(hip_flex=25, knee_flex=95), arms(flex=0, abduct=10, elbow=0), grip())
-_DIP_BOTTOM = merge(pose(hip_flex=25, knee_flex=95), arms(flex=-30, abduct=20, elbow=95), grip())
+# Abduction measured against the grip point (2026-09-16): a dip is a closed
+# chain and the hands cannot move, but abduct=10/20 put them at +-53.4 and
+# +-43.6 -- outside a 54-wide station, and sliding 10 units along it mid-rep.
+# At abduct=0 both poses land the grip at +-40.4 exactly, so the width is
+# constant through the rep and `make_dip_station` can be built to match it.
+#     abduct   0    5    10   15   20     (grip width, top / bottom)
+#            80.8 93.9 106.7 118.9 130.6  straight arm
+#            80.8 84.2  87.3  90.0  92.4  elbow 95
+_DIP_TOP = merge(pose(hip_flex=25, knee_flex=95), arms(flex=0, abduct=0, elbow=0), grip())
+_DIP_BOTTOM = merge(pose(hip_flex=25, knee_flex=95), arms(flex=-30, abduct=0, elbow=95), grip())
 
 parallel_bar_dip = ExerciseDefinition(
     id="parallel_bar_dip", name="Parallel-bar dip", category=Category.UPPER_PUSH,
@@ -344,7 +353,7 @@ triceps_pushdown = ExerciseDefinition(
     muscles=(mu("triceps_brachii", P, 0.95), mu("forearm_extensors", ST, 0.3),
              mu("deltoid_posterior", ST, 0.3, note="holds the arm back"),
              mu("latissimus_dorsi", ST, 0.3), mu("rectus_abdominis", ST, 0.25)),
-    equipment=(eq("cable_handle", cable_to=(0.0, 150.0, 10.0)),),
+    equipment=(eq("cable_handle", cable_to=(0.0, 150.0, 10.0), length=75.0),),
     errors=("Elbows drifting forward and back (shoulder joins in).",
             "Leaning over the cable to use body weight."),
     physio_notes=("Isolates elbow extension; the long head is under-loaded with the arm at "

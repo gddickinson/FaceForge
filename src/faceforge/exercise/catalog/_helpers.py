@@ -21,6 +21,14 @@ LOWER_CHEST = (0.0, 0.0, -45.0)
 
 #: Seat height placements: hip joint sits ~10 units above a bench top.
 BENCH_TOP = 58.0
+#: Where a tilted bench pad hinges, in bench-local x.  A supine lifter is
+#: tilted by a wrapper pitch about the HIPS, and the hip sits at world x = -4
+#: against a bench at -45 -- so a pad hinged at its own centre comes away from
+#: the body by 41 x sin(theta).  Measured 2026-09-17: 18.1 units of daylight
+#: under the 30 deg incline and 15.1 of pad through the lifter on the 20 deg
+#: decline, against a flat bench that reads +10.6 at the shoulder.  See
+#: `equipment.make_bench`.
+BENCH_HINGE_X = 41.0
 SEATED_ON_BENCH = (0.0, BENCH_TOP + 10.0 + 81.0, 0.0)
 #: Hip flexion for a body sitting on that bench.  Not 90: the model's knee
 #: stands 57 above the floor, so a horizontal thigh from a hip 10 above a

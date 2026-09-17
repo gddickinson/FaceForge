@@ -153,6 +153,15 @@ def stand(**extra: float) -> tuple[dict, float]:
     return pose(**extra), 0.0
 
 
+#: A back ankle plantarflexed past this has the foot on its DORSUM -- the
+#: instep flat on the floor, as in a half-kneel -- not up on the ball.  Its
+#: toes lie along the floor; bending them back is the opposite direction.
+#: Measured on the get-up's half-kneel (``ankle_back=-40``), the 75 degrees
+#: of extension every split stance used to get put the second toe 4.2 units
+#: THROUGH the floor.  Same threshold the foot audit uses for the same reason.
+DORSUM_DOWN = -30.0
+
+
 def lunge(front: str, hip_front: float, knee_front: float, hip_back: float,
           knee_back: float, pitch: float = 10.0, ankle_back: float = -20.0,
           **extra: float) -> tuple[dict, float]:
@@ -163,8 +172,10 @@ def lunge(front: str, hip_front: float, knee_front: float, hip_back: float,
         f"ankle_{front}_flex": flat_foot_ankle(pitch, hip_front, knee_front),
         f"hip_{back}_flex": hip_back, f"knee_{back}_flex": knee_back,
         f"ankle_{back}_flex": ankle_back,
-        # The back heel is up in every split stance: the toes take the weight.
-        f"toe_curl_{back}": toes_on_floor(pitch, hip_back, knee_back, ankle_back),
+        # The back heel is up in a standing split stance and the toes take the
+        # weight -- but not when the shin is down and the foot is on its instep.
+        f"toe_curl_{back}": (0.0 if ankle_back <= DORSUM_DOWN
+                             else toes_on_floor(pitch, hip_back, knee_back, ankle_back)),
     }
     kw.update(extra)
     return pose(**kw), pitch

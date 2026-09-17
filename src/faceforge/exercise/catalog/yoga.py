@@ -23,7 +23,7 @@ from faceforge.exercise.model import Category, ExerciseDefinition
 #: so the foot is not one rigid wedge balanced on its longest toe.
 _TUCKED = toes_tucked(45.0)
 
-_MAT = (eq("mat", attach="static"),)
+_MAT = (eq("mat", attach="floor"),)
 _STAND = merge(pose(knee_flex=5), arms(flex=5, abduct=8, elbow=5))
 
 # ── Standing poses ─────────────────────────────────────────────────────
@@ -116,6 +116,18 @@ warrior_two = ExerciseDefinition(
 #: the spine DOFs turn vertebrae, and the shoulders hang off the pelvis root,
 #: so 30 degrees of lateral flexion moved nothing the render could see
 #: (shoulder_R stayed at x=25.2; a 40-degree roll puts it at 110).
+#: 25, and not more, measured 2026-09-16.  A deeper lean is what the pose
+#: wants -- the lower hand belongs at the shin -- but rolling the body about
+#: the hips lifts the BACK foot and the hip that has to put it down runs out
+#: of adduction at about -32 degrees:
+#:     roll   25    35    45    55
+#:     back toe y   5.7  14.2  26.9  40.2   (front toe stays ~6, floor is 3.1)
+#:     lower hand y 156   139   122   103
+#: So every extra degree of lean buys ~1.7 units of hand travel and costs
+#: ~0.9 units of back foot in the air.  Going to 35 would put the hand at 139
+#: -- still nowhere near the shin -- and a foot 11 units off the mat, which is
+#: a worse picture than a shallow triangle.  Leave it until the trunk can bend
+#: at the spine rather than at the wrapper.
 _TRI_ROLL = 25.0
 #: Rolling a body whose legs are rigid with its pelvis lifts the far foot:
 #: at a 42-degree stance the back toes went to 72 with a 25-degree roll.  The
