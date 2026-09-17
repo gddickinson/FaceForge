@@ -2404,3 +2404,445 @@ Not everything the audit says is true, either: it reported the Pendlay row's
 bar 11.0 inside the skull, which is the *skull proxy* being wrong -- placed up
 the trunk axis, a bent-over rower's head lands out in front where the bar is.
 A denser re-check measured it clear.
+
+## 2026-09-16 — A full-catalogue render review: three viewpoints on a measuring grid
+
+**Goal.** Look at every exercise from more than one angle, against a grid in
+body units, and say whether the renderings are correct — geometrically and
+anatomically.
+
+**Built two tools.**
+
+- `tools/render_exercise_views.py` — one contact sheet per exercise: three
+  phases × three cameras (front / side / three-quarter), each frame overlaid
+  with a grid derived from *that camera's own view-projection*, so a distance
+  in the picture is a distance in the room: a 50-unit floor lattice at y = 0,
+  a height rule every 25 units through the body's own measuring plane, the
+  midline, and joint-pivot dots.
+- `tools/audit_exercise_motion.py` — the question the placement audit cannot
+  ask, because the ground lock pins the answer: does the exercise *move*, and
+  where does the load actually reach? Largest pivot excursion, heel lift, and
+  the lowest world point of each equipment item's own geometry.
+- `tools/audit_room_fit.py` — the ceiling and the walls, which nothing else
+  checked. Body (real cranium mesh, not a proxy) and every equipment vertex
+  against the gym's own box.
+
+**Three mistakes of my own, all caught by measuring.** The first pass
+re-framed the camera per phase, so a standing calf raise that lifts the whole
+body 12.2 units looked motionless — the camera had silently zoomed to match.
+It now frames once per exercise from every phase at once. The second sampled
+phases at evenly spaced *indices*, which on a four-phase exercise always skips
+index 1 — and index 1 is where the movement is: `forward_lunge` came out as
+three pictures of a man standing in a split stance and looked to have no
+depth, when its "Lower" drops the hip 52 units. 96 of the 126 exercises have
+four or more phases. `pick_phases` now takes the first, the one furthest from
+it, and the last. The third was in `audit_room_fit`: measuring the gym against
+`ROOM_HEIGHT` (250, the clinical room) instead of `STUDIO_HEIGHT` (300) turned
+6 real breaches into 30 imaginary ones. The constant is now named in the
+module docstring so the next reader does not repeat it.
+
+**One engine bug, fixed.** `make_cylinder` built its end caps with
+`top_center = len(positions) // 3` — but `positions` is a list of 3-tuples, so
+`len()` was already the vertex count and the `// 3` belonged to a flat-float
+layout. Measured on `make_cylinder(29, 4, 24)`: **all 48 cap triangles indexed
+into the side wall**, and the 50 cap vertices were never referenced. What was
+drawn was a fan from a rim vertex across the zig-zag of the side, carrying
+radial side-wall normals — the black pinwheel on every barbell plate, dumbbell
+head, upright, cable and the rower flywheel. Fixed; the fast test tier is
+green apart from the pre-existing `test_obj_groups_name_the_bodyparts3d_source_ids`.
+
+**What the review found.** Measured, not eyeballed — full notes and numbers
+in the review write-up. In order of how much they cost the picture:
+
+1. **The skin tears at the axilla whenever the arm reaches shoulder height.**
+   Of the four gate poses in `skin_deformation_quality`, "arms to shoulder
+   height" is 25–60× worse on every column (p99.9 431.8 vs 4.3–8.1; max edge
+   882.9 vs 12.5–20.4; 188 spikes vs 0–17). Cause and the decision to stop are
+   already in `docs/exercise_animation.md` — the asset welds 1,443
+   lateral-chest vertices to the arm, and it is a data repair. It is the
+   largest visual defect in the catalogue because most exercises pass through
+   that pose.
+2. **Every lift from the floor leaves its load in the air**: lowest point of
+   the loaded bar at the bottom — conventional deadlift 17.2, sumo 22.6, power
+   clean family 34.8, snatch family 51.6, kettlebell deadlift 52.8. (RDL 30.7
+   and hang power clean 60.4 are correct by definition.)
+3. **Two-handed implements held at the midline are not in the hands.** Eight
+   exercises put the item on the midline while the hands stay at the sides:
+   kettlebell deadlift has the bell at x ∈ [−11, 11] and the hands at **±50.5**
+   — 80 cm apart on one handle. Height and depth are right and only X is
+   wrong, so the rig is fine and the poses were never brought in.
+4. **The mat is not under the athlete on 21 exercises** (push-up, downward
+   dog, cat-cow, bird dog, get-up all at 0–2 % of floor-level pivots over it).
+   The mat is the right size; the lying bodies are displaced along X.
+5. **Hands slide along a rigid bar on 8 of 34 barbell exercises** — floor
+   press 110.6 → 164.6 (27 per hand), snatch family 31, clean family 29.
+   `GripWidthLock`'s `_MAX_ERROR = 25.0` bail-out sits below the floor press's
+   own error.
+6. **The dip station is narrower than the hands that grip it**: bars at ±27,
+   grip points at ±43.2 → ±53.3, and the gap *grows* 10 units through the
+   press (`parallel_bar_dip`, `l_sit`).
+7. **Six exercises reach through the gym ceiling** (`tools/audit_room_fit.py`,
+   new — nothing else looked up). The muscle-up's support puts the skull at
+   384.3 against a ceiling at 300; the two cable exercises run their cable to
+   an anchor 30–49 units outside the building; the pull-ups and the
+   countermovement jump only graze it. No wall is breached. **The first pass
+   at this measured against `ROOM_HEIGHT` (250), which is the *clinical* room,
+   and reported 30 breaches of up to 99 units — every overhead lockout among
+   them. The gym is the studio: `STUDIO_HEIGHT` is 300, and against it
+   `overhead_press`, the jerks, the box jump and `tree_pose` are all inside.**
+8. Smaller: `wall_sit` and `calf_stretch` are performed against no wall;
+   `bird_dog` and `mountain_climber` kneel 9–13 units above the mat;
+   `jumping_jack` never leaves the floor (3.2-unit ankle range against
+   `countermovement_jump`'s 57.9); `turkish_get_up` drives the bell 15.8
+   through the mat; `burpee` presses in mid-air with the fingers 14.7 below
+   the floor; `kettlebell_windmill` makes the *ankle* the lowest pivot;
+   `triangle_pose` leans 25 degrees where the pose needs 60–75;
+   fingers go through the floor on six lying exercises; the back-squat bar
+   rides 17–21 units above the acromion (mouth level); battle ropes end in
+   mid-air; `forward_lunge` and `reverse_lunge` are the same animation, the
+   `reverse` flag selecting only a cue string.
+
+**Checked and cleared** (each looked wrong in a picture and measured right):
+bar tilt — max 2.4° over all 152 barbell phases; the calf raise does rise
+12.2; every bar-hanging exercise grips its bar to within 1.3 units (a first
+metric measured distance to the nearest bar *vertex*, and a 12-segment
+cylinder has vertices only at its ends); no cable touches the skull, measured
+against the real cranium mesh; the "spray of needles" at the hands and feet is
+the skeleton in wireframe; and no exercise is a still photograph — all 126
+move some pivot more than 6 units.
+
+## 2026-09-16 (later) — Fixing what the review found
+
+The review above located 22 things; this is what was done about them. Every
+number is measured before and after by the audit named beside it.
+
+**The one engine bug.** `make_cylinder`'s caps (see the entry above).
+
+**Loads that never reached the floor** (`audit_exercise_motion`). The old
+comment blamed the rig's 125-degree hip cap. It was wrong: sweeping the start
+position showed the *knee* was the lever and the trunk angle does not move
+with it at all (59.0 deg at every knee value). What actually caps the depth is
+the flat foot — `flat_foot_ankle` ties the ankle to `pitch - hip + knee` and
+`ankle_flex` runs to 45 deg, so `knee <= 45 + hip - pitch`. Authored to that
+limit: conventional deadlift 17.2 → 9, sumo 22.6 → 4, power clean 34.8 → 3,
+snatch 51.6 → 10, kettlebell deadlift 52.8 → 10. (`romanian_deadlift` and
+`hang_power_clean` stay above the floor: that is what they are.)
+
+**Two-handed implements held at the midline.** The rig centres an
+`attach="hands"` item between the grip points, and eight poses left the hands
+at the sides: a kettlebell deadlift had the bell at x ±11 and the hands at
+±50.5 — 80 cm apart on one handle. Adduction to −25 closes the kettlebells to
+a 12 cm grip; the medicine ball needed −25 *and* a real slam-ball radius; the
+cable exercises needed a handle that spans the grip (`make_cable_handle`'s new
+`length`), because a 14-unit D-handle cannot be held by two hands 94 apart;
+the overhead triceps extension needed axial rotation, not abduction, which is
+the wrong lever overhead. Worst gap 39.8 → 11.1, and that one is the fingertip
+front rack.
+
+**A duplicate that hid a fix.** `athletic.py` kept its own copy of the clean
+positions, so correcting `olympic.py` left the power clean — the exercise they
+were copied for — still sliding 15 units a hand and holding its bar 35 above
+the floor. Same trap as `bench_legs`. One copy now, imported.
+
+**The mat was furniture.** Placed at the origin like the rest of the static
+kit, it left 21 exercises with most of the athlete off it (a push-up, a
+downward dog, a cat-cow and a get-up at 0–2 % of their floor-level pivots over
+it) because a lying body is offset along X and a standing one is not. New
+`attach="floor"`: laid down once, under the body's low-lying pivots. 80 units
+(a yoga mat) was also too narrow for floor work reaching z ±57, so the mat is
+120. One exercise left under 60 %.
+
+**Closed chains that were not closed.** The dip station's bars sat at x ±27
+against a grip at ±43 to ±53 — and the gap *grew* 10 units through the press.
+At `abduct=0` both dip poses land the grip at ±40.4 exactly, so the width is
+constant and the station is built to 81. The inverted row's hands had never
+reached its bar (42 units out, recorded as a known defect): the answer was to
+move the bar to the hands, not the hands to the bar — the straight-arm hang
+puts the grip at y 92, so the bar goes at 93, and the pull rotates the plank
+about the heels (`pitch=15` about the heel) instead of bending the elbow while
+the body stays flat. 0.8 units out now, heels down throughout.
+
+**Grip sliding along a rigid bar** went from 8 barbell exercises to 2. The
+floor press was the worst in the catalogue at 27 units a hand; the clean had
+to come in to meet its own *rack*, which is the position with the least
+freedom (a front rack cannot open past ~83 whatever the abduction).
+
+**The room was too short.** `STUDIO_HEIGHT` 300 is a domestic ceiling and the
+gym does gym things under it: a muscle-up's support put the skull at 384 and a
+lat pulldown's cable ran to 349, both outside a building whose ceiling is
+drawn double-sided. 400 (315 cm) clears the whole catalogue.
+
+**Smaller ones.** A wall for the wall sit and the standing calf stretch, which
+were performed against nothing (`make_wall`); the get-up's bell out of the mat
+(the bell-side arm is bent, which is the get-up's real start anyway); a flight
+phase for the jumping jack, which was a side-straddle step; a skipping rope
+whose arc reaches the floor and battle ropes anchored to it; hands out of the
+floor on the sit-up, crunch, burpee and — as far as the joint limits allow —
+the two side-lying exercises; and a forward lunge that finally differs from a
+reverse one, the `reverse` flag having chosen nothing but a cue string.
+
+**One finding withdrawn.** The back-squat bar is not at jaw height: measured
+against the figure's own bones it rests on the trapezius (underside 200.0,
+clavicle and scapula tops 194.1) and *below* the skull base at 206.4. That was
+a front view read through perspective.
+
+**Recorded as measured limits, not fixed.** The axilla skin (a data repair to
+the asset's welds — `docs/exercise_animation.md` already says so); the
+triangle's lean, where every extra degree buys 1.7 units of hand travel and
+costs 0.9 units of back foot in the air; the mountain climber's pike, where
+every pitch that lands the trailing foot drives the toes through the mat; and
+`kettlebell_halo`'s path. Underneath several of these is one measurable fact
+worth naming: **the figure's arms are short for its legs** — the wrist hangs
+at 51.7 % of stature where an adult's is about 44 % — which is why the floor
+lifts needed a deeper knee to reach and why a kneeling shin cannot lie flat.
+
+## 2026-09-16 (last) — Save the pose as OBJ and look at it
+
+A button on the exercise tab, "Save OBJ && view": it writes the frame on
+screen and opens a separate viewer window on the file.
+
+**What it exports.** Everything visible, which is what "the current exercise"
+means — so the layer toggles decide the contents. Measured on a back squat
+with the skeleton showing: 291 meshes, 3,464,633 vertices, 6,929,486
+triangles, **556 MB**. The count and the size are reported back into the tab
+precisely because that number surprises people; hide the layers you do not
+want first.
+
+**Three things it had to get right, each found by measuring.**
+
+*The room is not the athlete.* `export_mesh` writes every visible mesh, and in
+scene mode that is the building: the first export contained the floor, four
+walls, ceiling and lamp, and the file's bounds came out as the room (x ±251,
+z 0..400) rather than the body. A viewer framed on that shows a room with a
+speck in it. `scene_env_root` is hidden for the duration; the bounds are now
+the athlete and the bar, 280 × 102 × 152.
+
+*The parser could not read what the exporter writes.* `loaders.obj_parser`
+walks the file a line at a time — right for the app's own assets, hopeless
+here: 8.6 s for 285 k vertices, so ~105 s for 3.46 M, with the memory to
+match. `obj_viewer.read_obj_fast` does the same job with three regex passes
+and numpy, in 13 s, freeing each pass before the next starts (4.7 GB peak
+became 3.8). Small files still go through the real parser, and anything the
+fast path does not recognise falls back to it.
+
+*The viewer's controls are Z-up and the file is Y-up.* The gym world stands
+the body on its feet with a wrapper rotation, so an exported scene is Y-up,
+while `OrbitControls` measures its polar angle from +Z — the body frame's own
+convention. Loaded as-is the model lies on its side and orbits about its
+length. The file is turned on the way in.
+
+**Why the export is synchronous** (against this project's usual rule about
+the Qt main thread): the exporter walks the live scene graph, and the frame
+loop rewrites every world matrix in place sixty times a second. A worker
+thread would export a body that moved halfway through being written. Playback
+is paused first for the same reason, and the tab disables the button while it
+runs.
+
+The viewer is a separate *process*, not another window, so a slow load or a
+crash in it cannot take the application down. It also runs on its own:
+`python -m faceforge.ui.obj_viewer <file.obj>`.
+
+Tests: `tests/ui/test_obj_viewer.py` (the fast reader against the real parser,
+the three OBJ face spellings, the Y-up→Z-up turn, refusing an empty file) and
+`tests/controllers/test_exercise_export.py` (event to file, the room excluded,
+an empty scene reporting failure rather than writing nothing).
+
+### The viewer opened blank: an error the context arrived with
+
+Reported twice from a real display, the second time after a fix that was not
+the cause:
+
+```
+initializeGL failed:
+  File "src/faceforge/rendering/renderer.py", line 176, in init_gl
+    glClearColor(*self.CLEAR_COLOR)
+OpenGL.error.GLError(err = 1280, description = b'invalid enumerant',
+    baseOperation = glClearColor, cArguments = (0.12, 0.12, 0.15, 1.0))
+```
+
+The first guess — a legacy context from a `QSurfaceFormat` set after
+`QApplication` — was wrong, and measuring said so: the context is **valid,
+4.1 core profile, `Apple M1 Max`, `4.1 Metal - 91.7`**. It was never the
+context.
+
+`glClearColor` cannot raise `GL_INVALID_ENUM`; it takes no enum. The flag was
+already in the queue when `initializeGL` started, left there by Qt setting the
+surface up, and PyOpenGL checks `glGetError` *after* each call and reports
+whatever it finds — so it was charged to whichever call came first. Polled at
+the top of `initializeGL`: `[1280, 0]`. Measured in every window shape, so the
+application's own viewport is on the same footing as the viewer's: bare
+widget, widget in a `QMainWindow`, widget created after a modal dialog — all
+`[1280]`.
+
+The misattribution was the whole failure. `init_gl` died on its first line, so
+the shaders were never compiled, `_initialised` stayed `False`, and
+`GLRenderer.render` **returns early** on it — no exception, no log line, a
+window holding one flat colour. The refresh timer never started either, the
+`_timer.start()` at the end of `initializeGL` being unreachable.
+
+Before and after, on the same file through the real GL path, counting pixels
+that differ from the clear colour rather than trusting an exit code:
+
+| | renderer initialised | timer | lit pixels | distinct colours |
+|---|---|---|---|---|
+| queue left alone | False | stopped | 0 (0.0 %) | 1 |
+| queue drained | True | running | 402,021 (11.2 %) | 400 |
+
+`GLRenderer.drain_errors` empties the queue, bounded by `ERROR_DRAIN_LIMIT`
+so a driver that always returns an error cannot hang initialisation. It is
+called from `init_gl` rather than from the callers because all three need it —
+the widget, the headless `Session`, and the capture tools — and one that
+forgot would fail exactly this silently.
+
+Two smaller things came out of it. `GLViewport.initializeGL` now logs the
+context it was actually handed, which is the evidence this took two rounds to
+get; and `_context_summary` catches its own failures, because it runs inside
+the `try` it is only meant to describe — its first version crashed
+`initializeGL` on the stub context `tests/rendering/test_viewport_lifecycle.py`
+installs, turning a diagnostic into the fault.
+
+Tests: `tests/rendering/test_gl_error_drain.py` — the drain returns what it
+cleared, costs one poll on a clean queue, honours its limit, and `init_gl`
+runs to the end with an error queued in front of it (without the drain, that
+last one reproduces the traceback above).
+
+### The audits that had never been acted on
+
+**The mat the athlete was inside.** `make_mat` laid a 1.5-thick slab ON the
+floor, top face at y = 1.5, while the ground lock anchors the body to y = 0 and
+every static height in the gym is measured from there. So every exercise with
+a mat had its athlete 1.5 units into it. Sinking the mat — its top face *is*
+the floor plane — took the foot-contact flags from 27 to 19: `upward_dog`
+cleared outright, `glute_bridge` went from 8 flags to 2 and from 2.5 through
+the surface to 1.0, `bird_dog` 2.7 to 1.2, `high_lunge` 3.3 to 1.8. Raising
+the body onto the mat instead would have desynchronised every bench, bar and
+box height in the catalogue for 1.5 units no camera can see — less than a real
+mat compresses under a heel.
+
+**The bench that hinged in the wrong place.** `make_bench` tilted its pad
+about the pad's own centre. The *lifter* is tilted too, by a wrapper pitch
+about the hips — and two rigid bodies turned by the same angle about different
+centres come apart by a pure translation. The hip sits 41 units from the bench
+centre, so the error is 41·sin θ. Measured against the flat bench, which is
+what lying on a pad reads as:
+
+| | shoulder above the pad face | hip | |
+|---|---|---|---|
+| flat (reference) | +10.2 / +11.0 | +12.5 / +14.8 | resting |
+| 30° incline, before | +28.3 / +29.0 | +30.6 / +32.9 | **18.1 of daylight** |
+| 20° decline, before | −4.9 / −4.2 | −2.6 / −0.3 | **15.1 through the pad** |
+| 30° incline, after | +8.2 / +8.9 | +10.5 / +12.8 | 2.1 of the reference |
+| 20° decline, after | +9.3 / +10.1 | +11.6 / +13.9 | 0.9 |
+
+The pad now hinges under the hip (`BENCH_HINGE_X`), in its top *face* rather
+than its mid-plane — the face is the contact surface, and hinging 3 below it
+left a 3·sin θ lever worth the last 2.4 units. Three exercises: both barbell
+inclines and the dumbbell one.
+
+**Why that had been unactionable.** The clash audit reported "the clavicle is
+15.3 inside the bench pad" and the number was unusable, because `part_bounds`
+returns an **axis-aligned** box. A 150 × 6 pad tilted 30° has an AABB 80 units
+tall, so a lifter resting on the surface measures as buried in the *box*, and
+the reading saturates at the capsule radius and can say nothing more. Every
+rotated part in the gym had the same problem. `oriented_parts` takes each
+part's axes from its own world matrix — no PCA guess needed — and after it,
+all four bench presses read clear.
+
+**Feet.** 27 flagged (phase, foot) pairs became 8:
+
+* the mat, above — 8 of them;
+* the rear foot of a split jerk and a clean and jerk landed on its toe *tips*,
+  5.8 below the ball, with no toe bend at all (`_SPLIT_BACK_TOES`);
+* gait dropped the toe curl to zero the instant stance ended. No foot snaps
+  straight at toe-off, and the ground lock is a whole-body translation that
+  cannot lift one foot clear, so the swing foot sits ~3 units up rather than
+  10 — rigid, tip 4.2 below the ball. The MTP joints now unwind across early
+  swing (`_toe_release`);
+* a cyclist's forefoot lies along the pedal; with no toe angle the toes drooped
+  3.3–3.7 below the ball and 1.1–1.4 *through* the pedal (`_PEDAL_TOES`, 10°,
+  the smallest that clears both);
+* the step-up's leading foot sat 3.5 inside the box it stands on. Nothing puts
+  it there — the ground lock anchors the body by its lowest extremity, the
+  trailing foot on the floor — so hip and knee went 95→98 together, which
+  keeps the flat-foot rule (10 − 98 + 98 = 10) and is 3.5 units of height;
+* `lunge()` bent the back toes 75° in *every* split stance. A half-kneel has
+  the foot on its **instep**, where bending them back is the opposite
+  direction: the get-up's second toe was 4.2 through the floor. `DORSUM_DOWN`
+  now leaves those toes flat, and only the get-up uses a back ankle low enough
+  to be affected.
+
+What is left is 8: the two lunges and `high_lunge` want more MTP extension
+than the joint has (`toe_curl` is 75° in `dof_ranges`, and `toes_on_floor`
+already clamps to exactly that), plus `glute_bridge` at 1.0 and `bird_dog` at
+1.2 through the floor.
+
+**The rear thigh through the Bulgarian bench.** Its pad is 150 long and sat at
+z = −118, spanning −193..−43 — under the lifter. At the bottom the hip was
+17.1 *above* the pad and the back knee 27.8 *below* it, both inside its
+footprint. Moving it back was not enough on its own: the shin climbs from a
+knee near the floor (y 16.2) to an ankle on the pad (52.7), so wherever the
+pad's near edge falls under that climb the shin crosses its top face — it read
+8.5 inside at every height from 42 to 50. The edge has to be at the ankle. At
+z = −190 the pad ends at −115 and the ankle is 2.4 in front of it, so the foot
+lies back onto the pad from its near end and the shin is clear; 45 high then
+leaves the ankle 7.7 above the pad, a foot resting laces-down on it rather
+than an ankle pivot 2.7 clear with the shin through the surface.
+
+**The grip that let go twice a rep.** `GripWidthLock` gives up when its 2×2
+Jacobian goes singular — abduction stops moving the hand along the bar as the
+arm approaches the axis it turns about, and a Newton step there is a division
+by nearly nothing. The guard is right. What happened *instead* was not: the
+frame was left with the authored pose, and on the bench press the hands sprang
+from 110 units apart to 155 and back within one frame, twice a rep
+(sensitivity 100.7 → 0.57 one sample into "Lower", and again in "Press"). The
+lock now carries the last abduction it actually solved through a frame it
+cannot see well enough to correct. Hand travel along the bar over a rep:
+22.7 → 8.5.
+
+The carry is not bounded by `_MAX_AUTHORITY`, and that needed checking: the
+bound exists to stop the lock *chasing* an error with a bad slope, which on
+the skull crusher once abducted one shoulder 41 units away from the other and
+hung its bar 18.7 degrees off level. A carried value is not a chase — it came
+from a frame whose slope was good — but the test is the skull crusher itself.
+Measured after: `lying_triceps_extension` slides 0.0 along its bar and its
+hand line hangs **1.0 degree** off level (bench press 0.5, front squat 0.3,
+overhead press 0.8). Bounding the carry costs 11 units of the bench press's
+pop and buys nothing.
+
+### The clash audit re-run, and what its numbers are worth
+
+With oriented boxes and all of the above in, the capsule clash audit over all
+126 exercises returns **24 (part, body segment) clashes across five
+exercises**. Cross-checked against `audit_implement_contact`, which measures
+against the **drawn mesh** rather than a capsule, only one of them is real:
+
+| | capsule says | mesh says |
+|---|---|---|
+| `stationary_bike` seat post in the pelvis | 8.6 | — (**real**, fixed) |
+| `kettlebell_front_rack_carry` bell in the arms and trunk | 7.3–8.0 | **0.7–1.0** |
+| `kettlebell_deadlift` bell and handle in the thighs, "Stand" | 9.9–10.0 | **0.8** |
+| `medicine_ball_slam` ball in both thighs | 8.5–10.0 | clear |
+| snatch, power snatch, snatch pull: bar in the thigh, "First pull" | 7.8–10.0 | clear |
+
+So the capsule instrument is a *finder*, not a verdict, wherever the load is
+meant to lie against a limb: a thigh capsule is a 10-unit-radius cylinder and
+an upper arm a 9, both far fatter than the flesh they stand for, so a bell
+resting on the forearm reads 8 units "inside" an arm it is 0.7 into. Its
+saturation is the tell — a reading exactly equal to the capsule radius means
+the part's box contains the capsule *axis* and the number cannot say more.
+What it is genuinely good for is the case it was built for, something passing
+through a part of the body nothing rests on, which is how it found the bike.
+
+`kettlebell_deadlift`'s 4.8 at "Lower" against a limit of 4 is the one that
+stands, and it was already on the record as marginal: the bell against the
+calf at the bottom of the lift.
+
+**A note on how the grip slide was measured.** Per exercise, through a fresh
+`DemoScene`: each hand's grip point projected onto the held bar's own long
+axis, sampled six times a phase. Run over the whole catalogue in one shared
+runtime the same probe returns ~0.0 for everything, including exercises that
+measure 9.0 on their own, so it was not kept as a tool — a measuring device
+that reads zero when you point it at everything at once is worse than none.
+The bench-press finding does not rest on it alone: tracing `GripWidthLock`
+itself shows the same two frames, with the sensitivity that caused them
+(100.7 → 0.57) and the abduction it declined to move (±0.000).
