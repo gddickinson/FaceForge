@@ -31,7 +31,7 @@ sys.path.insert(0, ".")
 import numpy as np
 
 from faceforge.exercise.catalog import get_exercise_catalog
-from tools.audit_equipment_contact import part_bounds
+from tools.audit_equipment_contact import depth_in_oriented, oriented_parts
 
 #: Bone segments, as (proximal pivot, distal pivot, radius).  Radii are the
 #: flesh, not the bone: a thigh is thicker than a forearm and a bar grazing
@@ -96,20 +96,29 @@ def segment_points(pivots: dict) -> list[tuple[str, np.ndarray, np.ndarray, floa
     return out
 
 
-def deepest_inside(lo: np.ndarray, hi: np.ndarray, a: np.ndarray, b: np.ndarray,
-                   radius: float, samples: int = 24) -> float:
-    """How far the box reaches inside the capsule, as a depth in units."""
+def deepest_inside(centre: np.ndarray, axes: np.ndarray, half: np.ndarray,
+                   a: np.ndarray, b: np.ndarray, radius: float,
+                   samples: int = 24) -> float:
+    """How far the part reaches inside the capsule, as a depth in units.
+
+    Against the part's OWN box, not an axis-aligned one round it.  An AABB
+    round a rotated part is mostly air: a 150 x 6 bench pad tilted 30 degrees
+    has an 80-unit-tall AABB, so every inclined-bench lifter measured as
+    buried in the pad's *box* while resting correctly on its surface -- the
+    reading saturates at the capsule radius and can say nothing more.
+    """
     best = 0.0
     for t in np.linspace(0.0, 1.0, samples):
         p = a + (b - a) * t
-        nearest = np.clip(p, lo, hi)
-        gap = float(np.linalg.norm(p - nearest))
+        local = (p - centre) @ axes.T
+        nearest_local = np.clip(local, -half, half)
+        gap = float(np.linalg.norm(local - nearest_local))
         if gap < radius:
             best = max(best, radius - gap)
     return best
 
 
-def audit(ids, verbose: bool, steps: int = STEPS) -> int:
+def audit(ids, verbose: bool, steps: int = STEPS, show_support: bool = False) -> int:
     from tools.render_exercise_demo import DemoScene, _NullCamera, _NullLights
 
     catalog = get_exercise_catalog()
@@ -132,9 +141,9 @@ def audit(ids, verbose: bool, steps: int = STEPS) -> int:
                 for item in demo.runtime.rig.items:
                     if item.spec.kind == "mat":
                         continue
-                    for part_name, lo, hi in part_bounds(item.node):
+                    for part_name, centre, axes, half in oriented_parts(item.node):
                         for seg_name, a, b, radius in segs:
-                            depth = deepest_inside(lo, hi, a, b, radius)
+                            depth = deepest_inside(centre, axes, half, a, b, radius)
                             if depth > TOLERANCE:
                                 rows.append((span.name, item.spec.kind, part_name,
                                              seg_name, depth))
@@ -154,6 +163,16 @@ def audit(ids, verbose: bool, steps: int = STEPS) -> int:
                     hard.items(), key=lambda kv: -kv[1][0]):
                 print(f"  {kind}/{part:16s} is {depth:5.1f} inside {seg:22s} "
                       f"(worst at {span_name})", flush=True)
+            if show_support:
+                # A support surface is meant to be touched, so its depths are
+                # kept out of the count -- but "resting on the pad" and "the
+                # collarbone is 15 units through a 6-unit pad" are not the same
+                # reading, and only the first is what a bench should produce.
+                for (kind, part, seg), (depth, span_name) in sorted(
+                        ((k, v) for k, v in worst.items() if k[1] in SUPPORT_PARTS),
+                        key=lambda kv: -kv[1][0]):
+                    print(f"  [support] {kind}/{part:16s} is {depth:5.1f} inside "
+                          f"{seg:22s} (worst at {span_name})", flush=True)
         elif verbose:
             print(f"\n== {exercise_id} ==  clear", flush=True)
     print(f"\n{flagged} (part, body segment) clashes over {len(ids)} exercises "
@@ -166,6 +185,8 @@ def main(argv=None) -> int:
     ap.add_argument("--exercise", default=None, help="comma list; default every exercise")
     ap.add_argument("--verbose", action="store_true")
     ap.add_argument("--steps", type=int, default=STEPS, help="samples per phase")
+    ap.add_argument("--support", action="store_true",
+                    help="also print the support-surface depths kept out of the count")
     args = ap.parse_args(argv)
     logging.basicConfig(level=logging.WARNING, format="%(name)s: %(message)s")
     catalog = get_exercise_catalog()
@@ -175,7 +196,7 @@ def main(argv=None) -> int:
     if unknown:
         print(f"unknown exercise(s): {', '.join(unknown)}")
         return 2
-    audit(ids, args.verbose, args.steps)
+    audit(ids, args.verbose, args.steps, args.support)
     return 0
 
 

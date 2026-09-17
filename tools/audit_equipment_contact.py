@@ -63,6 +63,49 @@ def part_bounds(node) -> list[tuple[str, np.ndarray, np.ndarray]]:
     return parts
 
 
+def oriented_parts(node) -> list[tuple[str, np.ndarray, np.ndarray, np.ndarray]]:
+    """Each part as ``(name, centre, axes, half)`` -- its OWN box, not an AABB.
+
+    An axis-aligned box round a rotated part is mostly air.  A bench pad is
+    150 x 6 and lies along X; tilted 30 degrees its AABB is 80 units tall, so
+    a lifter resting on the surface measures as deep inside the *box* while
+    being nowhere near the pad.  That is what made "the clavicle is 15.3
+    inside the bench pad" impossible to act on: the number was the AABB's.
+
+    The axes come from the node's own world matrix, normalised, so this is the
+    part's real box wherever the rig has turned it -- no PCA guess needed.
+    """
+    parts = []
+    stack = [node]
+    while stack:
+        current = stack.pop()
+        stack.extend(getattr(current, "children", ()))
+        geometry = getattr(getattr(current, "mesh", None), "geometry", None)
+        if geometry is None:
+            continue
+        pts = np.asarray(geometry.positions, dtype=np.float64).reshape(-1, 3)
+        m = np.asarray(current.world_matrix, dtype=np.float64)
+        axes = m[:3, :3].T.copy()
+        norms = np.linalg.norm(axes, axis=1)
+        if np.any(norms < 1e-9):
+            continue
+        axes /= norms[:, None]                      # scale belongs in the extent
+        world = pts @ m[:3, :3].T + m[:3, 3]
+        local = world @ axes.T
+        lo, hi = local.min(axis=0), local.max(axis=0)
+        centre = (lo + hi) / 2.0 @ axes             # back out of the part's frame
+        parts.append((getattr(current, "name", "?"), centre, axes, (hi - lo) / 2.0))
+    return parts
+
+
+def depth_in_oriented(centre, axes, half, point: np.ndarray) -> float:
+    """How far *point* is inside the oriented box; 0.0 if it is outside."""
+    local = np.abs((point - centre) @ axes.T)
+    if np.any(local > half):
+        return 0.0
+    return float(np.min(half - local))
+
+
 def gap_to_box(point: np.ndarray, lo: np.ndarray, hi: np.ndarray) -> tuple[float, float]:
     """``(distance outside, depth inside)`` for a point against an AABB."""
     outside = float(np.linalg.norm(np.maximum(np.maximum(lo - point, point - hi), 0.0)))
