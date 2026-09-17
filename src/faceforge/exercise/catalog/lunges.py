@@ -25,6 +25,26 @@ from faceforge.exercise.model import Category, ExerciseDefinition
 _STEP_TRAVEL = 34.0
 
 
+#: The back foot at the bottom is a measured LIMIT, not a setting to tune.
+#: With the back knee at 90 the foot-flat rule wants an ankle of 105 degrees,
+#: so `toes_on_floor` asks for 125 of toe extension against a joint that has
+#: 75 (`dof_ranges`, and real MTP extension is about 70-90) -- the foot ends
+#: up on its toe TIPS, 5.3 below the ball of the same foot.  No ankle inside
+#: its own +-45 range closes that: the demand only falls to 75 at an ankle of
+#: +30, which is heavy DORSIflexion on a heel that is deliberately raised.
+#:
+#: Straightening the back knee instead makes it far worse, because the knee
+#: stays where the hip put it (y 8.9, near the floor) and the shank swings the
+#: foot down through the floor -- measured 2026-09-17 at the bottom:
+#:
+#:     knee 90 -> ankle 26.5, tip  +2.1  (on its tips, above the floor)
+#:     knee 75 -> ankle 14.7, tip -12.7  (through the floor)
+#:     knee 60 -> ankle  2.4, tip -26.1
+#:     knee 50 -> ankle -5.6, tip -33.7
+#:
+#: 90 is the value that keeps the foot above the floor at all.  What is left
+#: is a back foot a little more pointed than a real one, which is the joint's
+#: range and not the pose's fault.
 def _lunge_definition(id_, name, description, reverse: bool):
     front = "r"
     split_stand = lunge(front, 30, 20, -12, 25, pitch=8)[0]

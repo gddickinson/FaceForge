@@ -224,8 +224,11 @@ _HL_PITCH = 5.0
 #: The back foot: the heel is lifted by definition ("crescent"), and the ground
 #: lock anchors the FRONT foot only, so nothing was holding the back one out of
 #: the floor -- its longest toe sat 9.4 below it.  A little dorsiflexion brings
-#: the foot up toward the shin and the toes do the rest.
-_HL_BACK_ANKLE = 15.0
+#: the foot up toward the shin and the toes do the rest.  15 left 1.8 of the
+#: big toe still through the floor and 18 left 1.2; 21 is the smallest that
+#: clears it (measured 2026-09-17), and the toes take 44 degrees there rather
+#: than 50, so the foot is flatter on its pads as well as out of the floor.
+_HL_BACK_ANKLE = 21.0
 _HIGH_LUNGE = merge(pose(hip_r_flex=50, knee_r_flex=90,
                          ankle_r_flex=flat_foot_ankle(_HL_PITCH, 50, 90),
                          hip_l_flex=-25, knee_l_flex=35, ankle_l_flex=_HL_BACK_ANKLE,

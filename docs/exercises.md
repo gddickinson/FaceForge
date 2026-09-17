@@ -947,9 +947,9 @@ A hip hinge to a bell standing between the feet. The short range and the centred
 
 | phase | kind | s | moving joints | cues |
 |---|---|---|---|---|
-| Stand | concentric | 1.40 | Hips: extension 125° → 0°; Knees: extension 110° → 0°; Ankles: plantarflexion 43° → 0° | Push the floor away and drive the hips through |
+| Stand | concentric | 1.40 | Hips: extension 125° → 0°; Knees: extension 110° → 0°; Ankles: plantarflexion 43° → 0°; Shoulders: flexion 5° → 5° | Push the floor away and drive the hips through |
 | Lockout | isometric | 0.50 | hold | Stand tall; ribs down, glutes squeezed |
-| Lower | eccentric | 1.80 | Hips: flexion 0° → 125°; Knees: flexion 0° → 110°; Ankles: dorsiflexion 0° → 43°; trunk pitch +58° | Hips back first; the bell tracks close to the shins |
+| Lower | eccentric | 1.80 | Hips: flexion 0° → 125°; Knees: flexion 0° → 110°; Ankles: dorsiflexion 0° → 43°; Shoulders: extension 5° → 5°; trunk pitch +58° | Hips back first; the bell tracks close to the shins |
 | Floor | isometric | 0.30 | trunk pitch +58° |  |
 
 **Muscles**
@@ -1995,9 +1995,9 @@ Seated, the bar is pulled from overhead to the upper chest with a slight lean ba
 
 | phase | kind | s | moving joints | cues |
 |---|---|---|---|---|
-| Pull | concentric | 1.30 | Elbows: flexion 5° → 120°; Shoulders: adduction 150° → 40°; trunk pitch -10° | Bar to the upper chest; elbows down and slightly back |
+| Pull | concentric | 1.30 | Shoulders: adduction 150° → 40°; Elbows: flexion 5° → 90°; trunk pitch -10° | Bar to the upper chest; elbows down and slightly back |
 | Squeeze | isometric | 0.40 | trunk pitch -10° | Shoulder blades together and down |
-| Return | eccentric | 2.00 | Elbows: extension 120° → 5°; Shoulders: abduction 40° → 150°; trunk pitch -10° | Let the arms straighten fully; shoulders rise slightly |
+| Return | eccentric | 2.00 | Shoulders: abduction 40° → 150°; Elbows: extension 90° → 5°; trunk pitch -10° | Let the arms straighten fully; shoulders rise slightly |
 
 **Muscles**
 - *Primary movers:* Latissimus dorsi / teres major 95 %
@@ -4379,9 +4379,9 @@ A long split stance with the back heel lifted and the arms overhead: the front l
 
 | phase | kind | s | moving joints | cues |
 |---|---|---|---|---|
-| Sink in | eccentric | 2.00 | Shoulders: flexion 45° → 172°; Knee (R): flexion 15° → 90°; Foot (L): toe extension 0° → 50°; Ankle (R): dorsiflexion 0° → 45°; trunk pitch +5° | Sink the back hip toward the floor; keep the front shin vertical |
+| Sink in | eccentric | 2.00 | Shoulders: flexion 45° → 172°; Knee (R): flexion 15° → 90°; Ankle (R): dorsiflexion 0° → 45°; Foot (L): toe extension 0° → 44°; trunk pitch +5° | Sink the back hip toward the floor; keep the front shin vertical |
 | Hold | isometric | 8.00 | trunk pitch +5° | Tail tucked -- the stretch belongs in the front of the back hip Ribs down; reach up through the fingers |
-| Come up | concentric | 1.60 | Shoulders: extension 172° → 45°; Knee (R): extension 90° → 15°; Foot (L): toe flexion 50° → 0°; Ankle (R): plantarflexion 45° → 0° | Press the front heel down and shorten the stance |
+| Come up | concentric | 1.60 | Shoulders: extension 172° → 45°; Knee (R): extension 90° → 15°; Ankle (R): plantarflexion 45° → 0°; Foot (L): toe flexion 44° → 0° | Press the front heel down and shorten the stance |
 | Rest | transition | 1.00 | hold |  |
 
 **Muscles**

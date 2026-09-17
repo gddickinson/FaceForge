@@ -97,12 +97,25 @@ lat_pulldown = ExerciseDefinition(
     setup=("Thighs under the pads, feet flat", "Wide overhand grip", "Chest up, slight lean "
            "back (~10 deg), shoulders down"),
     orientation="seated", anchor="none", base_position=SEATED_ON_BENCH,
+    # The bottom elbow is 90, not 120.  The hands are on a rigid bar, so the
+    # span between them cannot change -- but at 120 the forearms folded the
+    # hands inboard and the pull ENDED 18 units narrower than it started (74.7
+    # against the 92.6 the overhead position sets).  The grip lock could not
+    # recover it: measured 2026-09-17 at that pose, shoulder abduction moves
+    # the hands the WRONG WAY, from +38.1 at 0.2 down to +19.3 at 1.4 against
+    # a target of +47.1, so its one lever is exhausted before it starts.
+    #
+    # Swept, hand span at the bottom: elbow 120 -> 74.7, 105 -> 85.8,
+    # 90 -> 92.6, 75 -> 92.3.  90 matches the bar exactly AND brings the bar
+    # 8 units lower than 120 did (hands +12.9 above the shoulders rather than
+    # +20.6), so it is the deeper rep as well as the honest grip.  Sampled 20
+    # times a phase, 48 of 60 frames now hold the bar width; at 120 it was 2.
     phases=(
         ph("Pull", CON, 1.3,
-           merge(pose(), _PULLDOWN_SEAT, arms(flex=30, abduct=40, elbow=120, forearm=-60), grip()),
+           merge(pose(), _PULLDOWN_SEAT, arms(flex=30, abduct=40, elbow=90, forearm=-60), grip()),
            pitch=-10, cues=("Bar to the upper chest; elbows down and slightly back",)),
         ph("Squeeze", ISO, 0.4,
-           merge(pose(), _PULLDOWN_SEAT, arms(flex=30, abduct=40, elbow=120, forearm=-60), grip()),
+           merge(pose(), _PULLDOWN_SEAT, arms(flex=30, abduct=40, elbow=90, forearm=-60), grip()),
            pitch=-10, cues=("Shoulder blades together and down",)),
         ph("Return", ECC, 2.0,
            merge(pose(), _PULLDOWN_SEAT, arms(flex=30, abduct=150, elbow=5, forearm=-60), grip()),

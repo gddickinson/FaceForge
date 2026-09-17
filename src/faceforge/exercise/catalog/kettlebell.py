@@ -41,6 +41,14 @@ _HANG_BOTH = only(shoulder_flex=5, shoulder_abduct=8, elbow_flex=8)
 # -25 is a two-handed grip (12 cm) and brings the worst hand-to-bell gap
 # from 40 to 3.  A bell in EACH hand (the carries) keeps the wide pose.
 _HANG_TWO_HANDED = only(shoulder_flex=5, shoulder_abduct=-25, elbow_flex=8)
+#: The same grip at the BOTTOM of a hinge.  Shoulder flexion is measured from
+#: the TRUNK, and at the bottom the trunk is pitched 58 degrees forward while
+#: the loaded arm still hangs vertically in the world -- so the shoulder is
+#: slightly EXTENDED there, not flexed.  Carrying the standing +5 down into
+#: the hinge tipped the arms toward the shins and drove the bell 4.8 units
+#: into the calf (limit 4); flexing further made it worse (15 and 25 both gave
+#: 5.2).  Measured 2026-09-17 at -5: 0.3.
+_HANG_BOTTOM = only(shoulder_flex=-5, shoulder_abduct=-25, elbow_flex=8)
 
 _CARRY_TRUNK = (mu("obliques", P, 0.75, note="stops the trunk folding toward the load"),
                 mu("erector_spinae", P, 0.7),
@@ -69,9 +77,9 @@ kettlebell_deadlift = ExerciseDefinition(
         # (68.4) still above the knees (41.6).  A bell standing between the
         # feet needs more knee than an RDL, which is the same reason the
         # barbell deadlift's start had to deepen.
-        ph("Lower", ECC, 1.8, merge(squat(125, 110, 58)[0], _HANG_TWO_HANDED, grip()), pitch=58,
+        ph("Lower", ECC, 1.8, merge(squat(125, 110, 58)[0], _HANG_BOTTOM, grip()), pitch=58,
            cues=("Hips back first; the bell tracks close to the shins",)),
-        ph("Floor", ISO, 0.3, merge(squat(125, 110, 58)[0], _HANG_TWO_HANDED, grip()), pitch=58),
+        ph("Floor", ISO, 0.3, merge(squat(125, 110, 58)[0], _HANG_BOTTOM, grip()), pitch=58),
     ),
     muscles=(mu("gluteus_maximus", P, 0.85), mu("hamstrings", P, 0.8),
              mu("erector_spinae", P, 0.75), mu("quadriceps", S, 0.45),
