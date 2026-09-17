@@ -81,6 +81,16 @@ class GripWidthLock:
         #: Smallest singular value of the last Jacobian, for diagnosis: it is
         #: how much hand travel a unit of abduction actually buys.
         self.sensitivity: float | None = None
+        #: The last abduction pair the lock actually solved.  A frame whose
+        #: Jacobian has collapsed is not a frame where the authored pose is
+        #: right -- it is one the lock cannot see well enough to correct -- so
+        #: carrying the last solved value through it keeps the grip width
+        #: continuous instead of letting the authored pose show for a frame.
+        #: Measured on the bench press: sensitivity falls from 100.7 to 0.57
+        #: one sample into "Lower" and again in "Press", and with the frame
+        #: simply left alone the hands sprang from 110 units apart to 155 and
+        #: back within one frame, twice a rep.
+        self._held: dict[str, float] | None = None
         self._state = BodyState()
 
     # -- forward kinematics -------------------------------------------------------
@@ -127,6 +137,7 @@ class GripWidthLock:
         if offsets is None:
             return False
         self.targets = offsets
+        self._held = None
         return True
 
     def apply(self, state_dict: dict) -> dict[str, float]:
@@ -151,6 +162,7 @@ class GripWidthLock:
             err = np.array([self.targets[s] - offsets[s] for s in _SIDES])
             errors = {s: float(e) for s, e in zip(_SIDES, err)}
             if float(np.abs(err).max()) < 1e-3:
+                self._remember(state_dict, keys)
                 break
             if float(np.abs(err).max()) > _MAX_ERROR:
                 break
@@ -165,6 +177,7 @@ class GripWidthLock:
                 jac[:, j] = [(probed[s] - offsets[s]) / _PROBE_STEP for s in _SIDES]
             self.sensitivity = float(np.linalg.svd(jac, compute_uv=False)[-1])
             if self.sensitivity < _MIN_SENSITIVITY:
+                self._carry(state_dict, keys, authored)
                 break
             delta = np.clip(np.linalg.solve(jac, err), -_MAX_STEP, _MAX_STEP)
             for j, side in enumerate(_SIDES):
@@ -172,4 +185,24 @@ class GripWidthLock:
                 stepped = np.clip(base + delta[j], authored[side] - _MAX_AUTHORITY,
                                   authored[side] + _MAX_AUTHORITY)
                 state_dict[keys[side]] = float(np.clip(stepped, -_ABDUCT_LIMIT, _ABDUCT_LIMIT))
+            self._remember(state_dict, keys)
         return errors
+
+    # -- carrying a frame the lock cannot solve -----------------------------------
+
+    def _remember(self, state_dict: dict, keys: dict[str, str]) -> None:
+        self._held = {s: float(state_dict.get(keys[s], 0.0)) for s in _SIDES}
+
+    def _carry(self, state_dict: dict, keys: dict[str, str],
+               authored: dict[str, float]) -> None:
+        """Write the last solved abduction, still inside the authored bounds.
+
+        Bounded the same way a solved step is: the lock never moves abduction
+        more than ``_MAX_AUTHORITY`` from what the animation authored, so a
+        long degenerate stretch cannot let a stale value fight the movement.
+        """
+        if self._held is None:
+            return
+        for side in _SIDES:
+            state_dict[keys[side]] = float(np.clip(self._held[side],
+                                                   -_ABDUCT_LIMIT, _ABDUCT_LIMIT))
