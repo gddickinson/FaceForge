@@ -65,8 +65,25 @@ _EXT_C = merge(pose(knee_flex=5, ankle_flex=-30, toe_curl=toes_on_floor(0, 0, 5,
 #:     extension    ab 55 -> 126.1   40 -> 120.1   30 -> 113.2  (elbow 70)
 #: 12 on the pull and 30 at the extension hold it at 111.7-113.2 throughout,
 #: so the hands stop sliding 15 units a rep along a rigid bar as well.
-_START_S = merge(squat(125, 118, 48)[0], arms(flex=45, abduct=12), grip())
-_KNEE_S = merge(squat(62, 28, 38)[0], arms(flex=38, abduct=12), grip())
+#: Shoulder flexion is 55/48, not 45/38, and that is what keeps the bar out of
+#: the legs.  The deep start this figure needs (see below) puts the knee 31
+#: units forward of the ankle -- the flat-foot rule ties the ankle to
+#: `pitch - hip + knee`, so 48 - 125 + 118 asks for 41 degrees of dorsiflexion
+#: and the shin leans forward to match.  The knee then sits at z 24 with the
+#: bar at z 21: the bar is BEHIND the knee, and the first pull drags it
+#: straight through.  Sampled twelve times a phase, 2026-09-17:
+#:
+#:     flex 45/38 -> 9.5 units into the right thigh (and 5.3 into the shin)
+#:     flex 55/48 -> 0.0
+#:     flex 65/58 -> 0.0
+#:
+#: 55 is the least that clears it.  It costs 2.8 units of floor clearance
+#: (lowest loaded point 9.5 -> 12.3) and deepening the hip does not buy that
+#: back -- hip 130 gives 13.7 and 135 gives 16.0, because a deeper hip drops
+#: the shoulders back rather than down.  The clean is unaffected: at its own
+#: flex 50/40 the bar comes 2.7 into the thigh, which is a bar brushing it.
+_START_S = merge(squat(125, 118, 48)[0], arms(flex=55, abduct=12), grip())
+_KNEE_S = merge(squat(62, 28, 38)[0], arms(flex=48, abduct=12), grip())
 _EXT_S = merge(pose(knee_flex=5, ankle_flex=-30, toe_curl=toes_on_floor(0, 0, 5, -30)), arms(flex=20, abduct=30, elbow=70), grip())
 _OVERHEAD_S = arms(flex=172, abduct=20, rotate=25, elbow=5, forearm=-40)
 

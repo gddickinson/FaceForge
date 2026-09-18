@@ -3403,11 +3403,11 @@ The bar goes from the floor to arms' length overhead in one movement, caught in 
 
 | phase | kind | s | moving joints | cues |
 |---|---|---|---|---|
-| First pull | concentric | 0.60 | Knees: extension 118° → 28°; Hips: extension 125° → 62°; Ankles: plantarflexion 41° → 4°; Shoulders: extension 45° → 38°; trunk pitch +38° | Push the floor away; the back angle does not change Bar brushes up the thighs |
+| First pull | concentric | 0.60 | Knees: extension 118° → 28°; Hips: extension 125° → 62°; Ankles: plantarflexion 41° → 4°; Shoulders: extension 55° → 48°; trunk pitch +38° | Push the floor away; the back angle does not change Bar brushes up the thighs |
 | Second pull | concentric | 0.22 | Elbows: flexion 0° → 70°; Hips: extension 62° → 0°; Feet: toe extension 0° → 35°; Ankles: plantarflexion 4° → 30° | Hips through the bar, shrug, onto the toes This is a jump, not a lift |
 | Catch overhead | eccentric | 0.30 | Shoulders: flexion 20° → 172°; Hips: flexion 0° → 120°; Knees: flexion 5° → 125°; Elbows: extension 70° → 5°; trunk pitch +22° | Punch under it: the bar goes up, you go down Catch with locked elbows, bar over the mid-foot |
 | Stand up | concentric | 1.00 | Hips: extension 120° → 0°; Knees: extension 125° → 5°; Ankles: plantarflexion 27° → 0° | Stand out of the squat with the bar still locked overhead |
-| Lower to the floor | transition | 1.40 | Shoulders: extension 172° → 45°; Hips: flexion 0° → 125°; Knees: flexion 5° → 118°; Ankles: dorsiflexion 0° → 41°; trunk pitch +48° | Bring it to the hips, then hinge and set it down |
+| Lower to the floor | transition | 1.40 | Hips: flexion 0° → 125°; Shoulders: extension 172° → 55°; Knees: flexion 5° → 118°; Ankles: dorsiflexion 0° → 41°; trunk pitch +48° | Bring it to the hips, then hinge and set it down |
 
 **Muscles**
 - *Primary movers:* Gluteus maximus 100 %; Quadriceps 95 %; Hamstrings 85 %; Erector spinae 85 %; Rotator cuff 70 % — holds a loaded overhead position
@@ -3443,11 +3443,11 @@ The same pull as a snatch, caught overhead above parallel instead of in a full s
 
 | phase | kind | s | moving joints | cues |
 |---|---|---|---|---|
-| First pull | concentric | 0.60 | Knees: extension 118° → 28°; Hips: extension 125° → 62°; Ankles: plantarflexion 41° → 4°; Shoulders: extension 45° → 38°; trunk pitch +38° | Back angle constant; bar close |
+| First pull | concentric | 0.60 | Knees: extension 118° → 28°; Hips: extension 125° → 62°; Ankles: plantarflexion 41° → 4°; Shoulders: extension 55° → 48°; trunk pitch +38° | Back angle constant; bar close |
 | Second pull | concentric | 0.22 | Elbows: flexion 0° → 70°; Hips: extension 62° → 0°; Feet: toe extension 0° → 35°; Ankles: plantarflexion 4° → 30° | Triple extension: hips, knees, ankles |
 | Catch high | eccentric | 0.26 | Shoulders: flexion 20° → 172°; Elbows: extension 70° → 5°; Hips: flexion 0° → 62°; Knees: flexion 5° → 60°; trunk pitch +12° | Punch under and catch it locked, thighs above parallel |
 | Recover | concentric | 0.60 | Hips: extension 62° → 0°; Knees: extension 60° → 5°; Ankles: plantarflexion 10° → 0° | Stand tall, bar stacked over the mid-foot |
-| Lower to the floor | transition | 1.30 | Shoulders: extension 172° → 45°; Hips: flexion 0° → 125°; Knees: flexion 5° → 118°; Ankles: dorsiflexion 0° → 41°; trunk pitch +48° | Down the front of the body to the hips, then hinge |
+| Lower to the floor | transition | 1.30 | Hips: flexion 0° → 125°; Shoulders: extension 172° → 55°; Knees: flexion 5° → 118°; Ankles: dorsiflexion 0° → 41°; trunk pitch +48° | Down the front of the body to the hips, then hinge |
 
 **Muscles**
 - *Primary movers:* Gluteus maximus 100 %; Quadriceps 95 %; Hamstrings 85 %; Erector spinae 85 %; Rotator cuff 65 %
@@ -3721,7 +3721,7 @@ The snatch without the catch: the wide grip makes the pull longer and the start 
 
 | phase | kind | s | moving joints | cues |
 |---|---|---|---|---|
-| First pull | concentric | 0.70 | Knees: extension 118° → 28°; Hips: extension 125° → 62°; Ankles: plantarflexion 41° → 4°; Shoulders: extension 45° → 38°; trunk pitch +38° | Back angle constant; the bar brushes the thighs |
+| First pull | concentric | 0.70 | Knees: extension 118° → 28°; Hips: extension 125° → 62°; Ankles: plantarflexion 41° → 4°; Shoulders: extension 55° → 48°; trunk pitch +38° | Back angle constant; the bar brushes the thighs |
 | Second pull | concentric | 0.30 | Elbows: flexion 0° → 70°; Hips: extension 62° → 0°; Feet: toe extension 0° → 35°; Ankles: plantarflexion 4° → 30° | Hips through to the bar; shrug at the top |
 | Lower | eccentric | 1.20 | Hips: flexion 0° → 125°; Knees: flexion 5° → 118°; Ankles: dorsiflexion 30° → 41°; Elbows: extension 70° → 0°; trunk pitch +48° | Same line back to the floor |
 | Reset | isometric | 0.40 | trunk pitch +48° | Re-set before the next rep |
