@@ -215,7 +215,12 @@ def make_mat(length: float = 230.0, width: float = 120.0) -> SceneNode:
     camera can see -- less than a real mat compresses under a heel.
     """
     root = SceneNode("equip_mat")
-    root.add(_part("mat", make_box(length, 1.5, width), 0x35566B, y=-0.75))
+    # Top face 0.3 ABOVE the floor plane, not exactly on it.  Flush was worse
+    # than either: the floor is a plane at y = 0 and a mat whose top face is
+    # also at y = 0 z-fights with it, which rendered as blue streaks across
+    # every mat exercise.  0.3 is clear of the fight and still inside a real
+    # mat's compression under a heel.
+    root.add(_part("mat", make_box(length, 1.5, width), 0x35566B, y=-0.45))
     return root
 
 

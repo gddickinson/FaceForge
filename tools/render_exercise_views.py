@@ -122,6 +122,43 @@ def draw_grid(image, camera, size, view: str, centre, marks=()):
 
 # ── framing ──────────────────────────────────────────────────────────
 
+#: The studio, as half-extents in x/y/z (`scene_environment.STUDIO_*`), and
+#: how far inside it the camera must stay.  The preset's offset is applied to
+#: the BODY's centre, so a body whose pivots run a long way along one axis
+#: carries the camera out with it: a prone push-up's reach to x 186 put the
+#: side camera at x 316, outside the 500-wide room, rendering the back of a
+#: wall.  Every prone exercise -- plank, push-up, mountain climber, bird dog,
+#: the dogs -- had a flat grey side view, which is the one view that shows
+#: whether the body is in a straight line.
+ROOM_MARGIN = 14.0
+#: (min, max) the camera must stay within, per axis.  The studio has three
+#: walls -- back, left and right -- and **no front wall**, which is why a
+#: camera far out on +Z sees straight in and one on +X sees the back of
+#: `wall_right`.  So +Z is unbounded and the rest are the studio's own
+#: `STUDIO_WIDTH` / `HEIGHT` / `DEPTH`, inset by the margin.
+ROOM_BOUNDS = ((-236.0, 236.0), (14.0, 386.0), (-186.0, float("inf")))
+
+
+def _inside_room(centre, offset):
+    """Shorten *offset* until ``centre + offset`` is inside the studio.
+
+    Only where there is a wall to be behind: shortening it everywhere cost the
+    prone family its one useful view, pulling the open-side camera in from
+    z 340 to 186 and widening the lens from 55 to 88 degrees to compensate.
+    """
+    t = 1.0
+    for axis, (lo, hi) in enumerate(ROOM_BOUNDS):
+        if abs(offset[axis]) < 1e-9:
+            continue
+        for bound in (lo, hi):
+            if not np.isfinite(bound):
+                continue
+            s = (bound - centre[axis]) / offset[axis]
+            if s > 0:
+                t = min(t, s)
+    return offset * max(t, 0.05)
+
+
 def frame(camera, pts, size, margin=1.35):
     import math
     pts = np.asarray(pts, dtype=np.float64)
@@ -130,6 +167,7 @@ def frame(camera, pts, size, margin=1.35):
     radius = float(np.linalg.norm(hi - lo)) / 2.0
     eye = np.asarray(camera.position, dtype=np.float64)
     offset = eye - np.asarray(camera.target, dtype=np.float64)
+    offset = _inside_room(centre, offset)
     camera.set_position(*(centre + offset))
     camera.set_target(*centre)
     distance = float(np.linalg.norm(offset))
