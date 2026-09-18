@@ -3325,16 +3325,16 @@ The bar is pulled from the floor past the knees, then the hips, knees and ankles
 The ball is lifted overhead onto the toes and thrown down into the floor with the whole trunk; the lifter squats to pick it up.
 
 **Setup**
-- Feet shoulder-width, ball at the chest
+- Feet a little wider than the shoulders, ball at the chest
 - Brace; the slam is a whole-body flexion, not just the arms
 
 **Phases** (pose reached at the end of each; joint motion from the previous)
 
 | phase | kind | s | moving joints | cues |
 |---|---|---|---|---|
-| Reach overhead | concentric | 0.60 | Shoulders: flexion 40° → 175°; Hips: extension 70° → 0°; Elbows: extension 60° → 5°; Knees: extension 60° → 5° | Rise onto the toes, ball high |
-| Slam | concentric | 0.35 | Shoulders: extension 175° → 25°; Hips: flexion 0° → 100°; Knees: flexion 5° → 70°; Ankles: dorsiflexion 15° → 15°; trunk pitch +45° | Throw the ball down hard: hips back, trunk folds, arms follow |
-| Pick up | transition | 0.80 | Elbows: flexion 10° → 60°; Hips: extension 100° → 70°; Shoulders: flexion 25° → 40°; Shoulders: adduction 20° → 31°; trunk pitch +30° | Squat to the ball with a flat back |
+| Reach overhead | concentric | 0.60 | Shoulders: flexion 45° → 175°; Hips: extension 125° → 0°; Knees: extension 110° → 5°; Ankles: plantarflexion 43° → 15° | Rise onto the toes, ball high |
+| Slam | concentric | 0.35 | Shoulders: extension 175° → 45°; Hips: flexion 0° → 100°; Knees: flexion 5° → 70°; Ankles: dorsiflexion 15° → 15°; trunk pitch +45° | Throw the ball down hard: hips back, trunk folds, arms follow |
+| Pick up | transition | 0.80 | Knees: flexion 70° → 110°; Ankles: dorsiflexion 15° → 43°; Hips: flexion 100° → 125°; Shoulders: adduction 20° → 31°; trunk pitch +58° | Squat to the ball with a flat back |
 
 **Muscles**
 - *Primary movers:* Latissimus dorsi / teres major 90 %; Rectus abdominis 85 %

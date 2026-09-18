@@ -171,20 +171,46 @@ power_clean = ExerciseDefinition(
 # it put 5.8 units of ball through the calves at the slam.
 _SLAM_TOP = merge(pose(knee_flex=5, ankle_flex=-15),
                   arms(flex=175, abduct=-20, elbow=5), grip())
-_SLAM_BOTTOM = merge(squat(100, 70, 45)[0], arms(flex=25, abduct=-20, elbow=10), grip())
+#: Shoulder flexion 45, not 25.  The ball is held in the hands and the hands
+#: hang where the arms put them, so at 25 -- with the trunk pitched 45 forward
+#: -- they came down BETWEEN the thighs and the ball went into them: measured
+#: 2026-09-18, 10.0 units inside both, which is why the ball is invisible in
+#: the render of this phase.  45 brings it down in front of them.
+#:
+#: The stance is 18 degrees of hip abduction, and that is the other half of
+#: it.  A slam ball is 28 across and the gap between two adducted thighs is
+#: less, so the ball cannot travel to the floor and back BETWEEN the legs --
+#: it has to go through one of them.  Measured 2026-09-18 over the whole
+#: movement: abduct 0 leaves four clashes with the thigh and shin capsules
+#: saturated at their own radius (the femur axis inside the ball), 18 leaves
+#: none.  Which is why a real thrower stands wider than his shoulders, and
+#: the setup cue now says so.
+_SLAM_BOTTOM = merge(squat(100, 70, 45, hip_abduct=18)[0], arms(flex=45, abduct=-20, elbow=10), grip())
 
 medicine_ball_slam = ExerciseDefinition(
     id="medicine_ball_slam", name="Medicine ball slam", category=Category.ATHLETIC,
     description="The ball is lifted overhead onto the toes and thrown down into the floor "
                 "with the whole trunk; the lifter squats to pick it up.",
-    setup=("Feet shoulder-width, ball at the chest", "Brace; the slam is a whole-body "
+    setup=("Feet a little wider than the shoulders, ball at the chest", "Brace; the slam is a whole-body "
            "flexion, not just the arms"),
     phases=(
         ph("Reach overhead", CON, 0.6, _SLAM_TOP, cues=("Rise onto the toes, ball high",)),
         ph("Slam", CON, 0.35, _SLAM_BOTTOM, pitch=45, easing="ease_in",
            cues=("Throw the ball down hard: hips back, trunk folds, arms follow",)),
-        ph("Pick up", TRN, 0.8, merge(squat(70, 60, 30)[0],
-                                      arms(flex=40, abduct=-31, elbow=60), grip()), pitch=30,
+        # Squat(125, 118, 58) is the deadlift's own start depth, and it is what
+        # it takes to get a ball near the floor on a figure whose arms are
+        # short for its legs (wrist at 51.7 % of stature against ~44 % for an
+        # adult).  Measured 2026-09-18, ball's lowest point by pick-up depth:
+        # squat(70, 60, 30) 49.5, (105, 95, 40) 43.5, (120, 110, 50) 25.1,
+        # (125, 110, 58) 19.5.  Knee 110 and not 118: the flat-foot rule ties
+        # the ankle to pitch - hip + knee, and 58 - 125 + 118 asks for 51
+        # degrees against a joint that has 45, which the validator rejects.  Reach is the other half: at flex 30 the ball
+        # came down through the shin (6.9 inside), at 70 it cleared but hung
+        # 44 up.  45 is the lowest that only GRAZES the thigh (1.5, against a
+        # 7.0 tolerance), which is what reaching past your own shin for a ball
+        # on the floor looks like.  19.3 is the floor this figure can reach.
+        ph("Pick up", TRN, 0.8, merge(squat(125, 110, 58, hip_abduct=18)[0],
+                                      arms(flex=45, abduct=-31, elbow=15), grip()), pitch=58,
            cues=("Squat to the ball with a flat back",)),
     ),
     muscles=(mu("latissimus_dorsi", P, 0.9), mu("rectus_abdominis", P, 0.85), mu("obliques", S, 0.6),
