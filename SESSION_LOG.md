@@ -2921,3 +2921,45 @@ healthy Jacobian (sensitivity 60-102), not the singular case the carry was
 first written for.  Carrying on that guard too took the bench press's span
 range from 52.0 to 16.6 and left `lying_triceps_extension` (0.1) and
 `front_squat` (0.0) exactly as they were.
+
+### A correction: the capsule audit was right and I overrode it
+
+Earlier in this session I wrote that the capsule clash audit is "a finder, not
+a verdict" wherever a load lies against a limb, and cross-checked its 24
+findings against `audit_implement_contact` -- which measures against the drawn
+mesh -- to conclude that only one was real. **That conclusion was wrong for
+the snatch, and the mesh tool was the one at fault.**
+
+The capsule audit reported `barbell/bar is 10.0 inside hip_R->knee_R` on the
+snatch's first pull. `audit_implement_contact` said clear, so I dismissed it.
+The bar really does pass through the thigh: measured through the phase rather
+than at its keyframes, up to **9.5 units into the right thigh** and 5.3 into
+the right shin, a third of the way through the first pull.
+
+Two defects in `audit_implement_contact` hid it.  One is fixed; the other is
+recorded as out of scope, because the fix for it did not survive measurement.
+
+* **It sampled keyframes only** -- now fixed.  The snatch is clear at both
+  ends of its first pull and 9.5 units inside the thigh a third of the way
+  through.  It samples through each phase now, as the clash audit already
+  did, and that is precisely why the clash audit caught this and it did not.
+* **It cannot see a thin implement at all**, and that stands.  `inside_depth`
+  asks how far body points sit inside the *implement's* oriented box.  For a
+  bell or a plate that is the right question.  For a 3.6-unit-wide barbell the
+  answer can never exceed 1.8 -- its own radius -- so **a barbell can pass
+  clean through a leg and score 4.0-clear by construction**.
+
+  An enclosure test for the opposite question (is the bar's axis surrounded by
+  flesh) was written, measured and **abandoned**: it cannot tell a bar buried
+  in a thigh from one nestled against the body with the forearms over it.  It
+  called the deadlift's lockout 5.6 inside -- bar at the hips, thighs behind,
+  forearms above -- and a hinged lifter's own start 15.7 inside, which is the
+  pocket a folded body makes with the nearest flesh 15.7 away.  Both are
+  false.  The tool now says so in its own header: for "is the implement
+  through a limb", use `audit_equipment_clash`.
+
+The lesson is not that capsules are better than meshes.  It is that the two
+answer different questions, and the one I trusted was answering neither for a
+bar: *how far is the body inside the implement* is not *how far is the
+implement inside the body*, and for a thin implement the first is bounded by
+its own thickness.

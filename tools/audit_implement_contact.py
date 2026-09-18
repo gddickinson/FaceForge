@@ -172,6 +172,32 @@ def inside_depth(part: np.ndarray, surface: np.ndarray) -> float:
     return float((half - inside).min(axis=1).max())
 
 
+#: Samples per phase.  Keyframes alone miss everything that happens between
+#: them, which is where a bar passes a knee.
+PHASE_STEPS = 6
+# WHAT THIS TOOL CANNOT SEE, and which instrument can
+# ---------------------------------------------------
+# `inside_depth` asks how far BODY points sit inside the IMPLEMENT's oriented
+# box.  For a bell, a plate, a ball or a pad that is the right question.  For
+# a thin one it is not even the right shape of question: a 3.6-unit-wide
+# barbell can never report more than 1.8, its own radius, so **a bar can pass
+# clean through a thigh and score 4.0-clear by construction**.  That is not
+# hypothetical -- the snatch's first pull took the bar 9.5 units into the
+# right thigh, `audit_equipment_clash` flagged it from its capsules, this tool
+# said clear, and the capsule audit was disbelieved on the strength of it.
+#
+# An enclosure test was written and measured and is not kept: asking whether
+# body surface lies all round the bar's axis cannot tell a bar buried in a
+# thigh from one nestled against the body with the forearms over it, and it
+# called the deadlift's lockout 5.6 inside (the bar at the hips, thighs behind,
+# forearms above) and a hinged lifter's own start position 15.7 inside -- the
+# pocket a folded body makes, with the nearest flesh 15.7 away.
+#
+# So: **for "is the implement through a limb", use `audit_equipment_clash`**,
+# whose capsules are crude about depth but right about the question.  This
+# tool answers "is it resting where it should, and is the body inside it",
+# which is the one the clash audit's saturation cannot.
+
 def measure_part(part: np.ndarray, surface: np.ndarray) -> tuple[float, float]:
     """(penetration, gap) for one part against the body surface, at the midline.
 
@@ -226,7 +252,13 @@ def main(argv=None) -> int:
             continue
         rows = []
         for span in demo.runtime.built.spans[:len(defn.phases)]:
-            demo.evaluate(span.t1 - 1e-3)
+          # Sampled THROUGH each phase, not at its keyframe.  The snatch takes
+          # the bar 9.5 units into the thigh a third of the way through its
+          # first pull and is clear at both ends of it; measuring the
+          # keyframes alone reported the whole family clear.
+          for _step in range(PHASE_STEPS):
+            demo.evaluate(min(span.t0 + (span.t1 - span.t0) * (_step + 1) / PHASE_STEPS,
+                              span.t1 - 1e-3))
             surface = body_surface(
                 demo.scene, rig_meshes(demo.runtime.rig.items))
             pivots = demo.hs.pipeline.joint_setup.pivots
