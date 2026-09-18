@@ -2403,9 +2403,9 @@ An isometric hold on the forearms and toes with the body in a straight line; the
 
 | phase | kind | s | moving joints | cues |
 |---|---|---|---|---|
-| Lift into plank | concentric | 1.50 | Shoulders: flexion 40° → 78°; Shoulders: adduction 15° → 0°; Elbows: extension 100° → 90°; Knees: extension 10° → 0°; trunk pitch -4° | Push the floor away; straight line from ears to ankles |
+| Lift into plank | concentric | 1.50 | Shoulders: flexion 40° → 70°; Shoulders: adduction 15° → 0°; Elbows: extension 100° → 90°; Knees: extension 10° → 0°; trunk pitch -4° | Push the floor away; straight line from ears to ankles |
 | Hold | isometric | 8.00 | trunk pitch -4° | Breathe; ribs down, glutes tight, no sag |
-| Lower | eccentric | 1.50 | Shoulders: extension 78° → 40°; Shoulders: abduction 0° → 15°; Elbows: flexion 90° → 100°; Knees: flexion 0° → 10° | Knees then hips to the floor |
+| Lower | eccentric | 1.50 | Shoulders: extension 70° → 40°; Shoulders: abduction 0° → 15°; Elbows: flexion 90° → 100°; Knees: flexion 0° → 10° | Knees then hips to the floor |
 | Rest | transition | 1.00 | hold |  |
 
 **Muscles**

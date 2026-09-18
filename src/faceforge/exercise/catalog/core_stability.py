@@ -19,7 +19,14 @@ from faceforge.exercise.model import Category, ExerciseDefinition
 _TUCKED = toes_tucked(45.0)
 
 _MAT = (eq("mat", attach="floor"),)
-_PLANK_ARMS = arms(flex=78, abduct=0, elbow=90)   # upper arm vertical under a 12 deg head-up incline
+#: The forearm has to LIE ON the mat: a forearm plank is supported on it, but
+#: the ground lock anchors the closed-finger ring, so the hand is what gets
+#: put on the floor and the elbow goes wherever the arm angle leaves it.  At
+#: flex 78 it left it at y -1.7, through the mat, with the hand at 4.3 --
+#: the model was balanced on its hands with its elbows buried.  Measured
+#: 2026-09-18, elbow against wrist: flex 78 -> -1.7 / 4.3 (sunk),
+#: 70 -> 3.2 / 4.9 (flat), 62 -> 8.4 / 5.6 (forearm tilted up off the mat).
+_PLANK_ARMS = arms(flex=70, abduct=0, elbow=90)
 _PLANK = merge(pose(ankle_flex=45, toe_curl=_TUCKED), _PLANK_ARMS)
 _PRONE_REST = merge(pose(ankle_flex=45, toe_curl=_TUCKED, hip_flex=8, knee_flex=10), arms(flex=40, abduct=15, elbow=100))
 
