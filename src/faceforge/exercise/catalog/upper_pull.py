@@ -106,16 +106,22 @@ lat_pulldown = ExerciseDefinition(
     # a target of +47.1, so its one lever is exhausted before it starts.
     #
     # Swept, hand span at the bottom: elbow 120 -> 74.7, 105 -> 85.8,
-    # 90 -> 92.6, 75 -> 92.3.  90 matches the bar exactly AND brings the bar
-    # 8 units lower than 120 did (hands +12.9 above the shoulders rather than
-    # +20.6), so it is the deeper rep as well as the honest grip.  Sampled 20
-    # times a phase, 48 of 60 frames now hold the bar width; at 120 it was 2.
+    # 90 -> 92.6, 75 -> 92.3.  90 matches the bar exactly.  Sampled 20 times a
+    # phase, 48 of 60 frames now hold the bar width; at 120 it was 2.
+    #
+    # Shoulder flexion then sets the DEPTH, and the render is what caught it:
+    # at 30 the bar finished 12.9 ABOVE the shoulders -- at the forehead, a
+    # partial rep, with the cue still saying "bar to the upper chest".  The
+    # grip lock holds the span at 92.6 at every value, so depth is free to
+    # choose: flex 30 -> +12.9, 10 -> -1.1, -10 -> -14.9, -25 -> -24.2
+    # (relative to the shoulder pivots).  10 puts it at the upper chest, which
+    # is what a pulldown to the front finishes at.
     phases=(
         ph("Pull", CON, 1.3,
-           merge(pose(), _PULLDOWN_SEAT, arms(flex=30, abduct=40, elbow=90, forearm=-60), grip()),
+           merge(pose(), _PULLDOWN_SEAT, arms(flex=10, abduct=40, elbow=90, forearm=-60), grip()),
            pitch=-10, cues=("Bar to the upper chest; elbows down and slightly back",)),
         ph("Squeeze", ISO, 0.4,
-           merge(pose(), _PULLDOWN_SEAT, arms(flex=30, abduct=40, elbow=90, forearm=-60), grip()),
+           merge(pose(), _PULLDOWN_SEAT, arms(flex=10, abduct=40, elbow=90, forearm=-60), grip()),
            pitch=-10, cues=("Shoulder blades together and down",)),
         ph("Return", ECC, 2.0,
            merge(pose(), _PULLDOWN_SEAT, arms(flex=30, abduct=150, elbow=5, forearm=-60), grip()),

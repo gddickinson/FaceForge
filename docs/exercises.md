@@ -1995,9 +1995,9 @@ Seated, the bar is pulled from overhead to the upper chest with a slight lean ba
 
 | phase | kind | s | moving joints | cues |
 |---|---|---|---|---|
-| Pull | concentric | 1.30 | Shoulders: adduction 150° → 40°; Elbows: flexion 5° → 90°; trunk pitch -10° | Bar to the upper chest; elbows down and slightly back |
+| Pull | concentric | 1.30 | Shoulders: adduction 150° → 40°; Elbows: flexion 5° → 90°; Shoulders: extension 30° → 10°; trunk pitch -10° | Bar to the upper chest; elbows down and slightly back |
 | Squeeze | isometric | 0.40 | trunk pitch -10° | Shoulder blades together and down |
-| Return | eccentric | 2.00 | Shoulders: abduction 40° → 150°; Elbows: extension 90° → 5°; trunk pitch -10° | Let the arms straighten fully; shoulders rise slightly |
+| Return | eccentric | 2.00 | Shoulders: abduction 40° → 150°; Elbows: extension 90° → 5°; Shoulders: flexion 10° → 30°; trunk pitch -10° | Let the arms straighten fully; shoulders rise slightly |
 
 **Muscles**
 - *Primary movers:* Latissimus dorsi / teres major 95 %
