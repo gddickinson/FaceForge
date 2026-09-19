@@ -30,6 +30,8 @@ PROMISES: dict[str, str | None] = {
     "cable": "cable_handle", "band": "band", "wall": "wall",
     "medicine ball": "medicine_ball", "treadmill": "treadmill",
     "bike": "bike", "rower": "rower", "mat": "mat",
+    # A lift that starts off pins needs something to start off.
+    "pins": "rack_pins", "rack pull": "rack_pins",
 }
 #: Anything here satisfies the word "machine".
 MACHINE_LIKE = frozenset({"bike", "rower", "treadmill", "cable_handle",

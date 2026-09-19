@@ -249,10 +249,31 @@ def make_treadmill(length: float = 170.0, width: float = 72.0, deck: float = 2.0
 
 
 
+def make_rack_pins(height: float = 64.0, width: float = 190.0,
+                   post: float = 150.0) -> SceneNode:
+    """Two uprights with a pin each, for a lift that starts off the pins.
+
+    `rack_pull`'s setup says "Pins set so the bar starts at or just below the
+    knee" and it shipped a barbell and nothing else, so the bar hung in the
+    air.  ``height`` is where the pin sits; the catalogue passes the bar's own
+    measured start so the bar rests ON them rather than near them.
+    """
+    root = SceneNode("equip_rack_pins")
+    for x in (-width / 2.0, width / 2.0):
+        root.add(_part("upright", make_box(9.0, post, 9.0), FRAME,
+                       x=x, y=post / 2.0))
+        root.add(_part("foot", make_box(14.0, 4.0, 60.0), FRAME, x=x, y=2.0))
+        # The pin reaches IN toward the bar from each upright.
+        root.add(_part("pin", make_cylinder(2.4, 26.0, 8), STEEL,
+                       x=x - 13.0 if x > 0 else x + 13.0, y=height,
+                       quat=_TO_X, shininess=80))
+    return root
+
+
 BUILDERS = {
     "leg_extension_machine": make_leg_extension_machine,
     "leg_curl_machine": make_leg_curl_machine,
     "shin_pad": make_shin_pad,
     "bike": make_bike, "rower": make_rower, "pedal": make_pedal,
-    "treadmill": make_treadmill,
+    "treadmill": make_treadmill, "rack_pins": make_rack_pins,
 }

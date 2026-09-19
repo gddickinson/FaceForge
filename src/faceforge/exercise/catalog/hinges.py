@@ -115,10 +115,10 @@ romanian_deadlift = ExerciseDefinition(
     setup=("Stand tall with the bar at the thighs, overhand grip", "Soft knees (~15 deg)",
            "Shoulders back, lats tight"),
     phases=(
-        ph("Hinge down", ECC, 2.5, merge(squat(95, 15, 75)[0], arms(flex=75), grip()), pitch=75,
+        ph("Hinge down", ECC, 2.5, merge(squat(105, 35, 64)[0], arms(flex=64), grip()), pitch=64,
            cues=("Push the hips back; the bar stays against the legs",
                  "Stop when the hamstrings are stretched, spine neutral")),
-        ph("Bottom", ISO, 0.5, merge(squat(95, 15, 75)[0], arms(flex=75), grip()), pitch=75,
+        ph("Bottom", ISO, 0.5, merge(squat(105, 35, 64)[0], arms(flex=64), grip()), pitch=64,
            cues=("Shins vertical, back flat",)),
         ph("Drive up", CON, 1.5, merge(pose(knee_flex=15), arms(flex=0), grip()),
            cues=("Squeeze the glutes and push the hips forward",)),
@@ -175,9 +175,9 @@ rack_pull = ExerciseDefinition(
            cues=("Drive the hips through to the bar",)),
         ph("Lockout", ISO, 0.6, merge(pose(knee_flex=3), arms(flex=-3), grip()),
            cues=("Stand tall; glutes locked, ribs down, no lay-back",)),
-        ph("Lower", ECC, 1.4, merge(squat(72, 22, 50)[0], arms(flex=50), grip()), pitch=50,
+        ph("Lower", ECC, 1.4, merge(squat(105, 35, 64)[0], arms(flex=64), grip()), pitch=64,
            cues=("Hips back to return the bar to the pins",)),
-        ph("Pins", ISO, 0.5, merge(squat(72, 22, 50)[0], arms(flex=50), grip()), pitch=50,
+        ph("Pins", ISO, 0.5, merge(squat(105, 35, 64)[0], arms(flex=64), grip()), pitch=64,
            cues=("Let it settle; the next rep starts from a dead stop",)),
     ),
     muscles=(mu("gluteus_maximus", P, 0.9), mu("erector_spinae", P, 0.85),
@@ -187,7 +187,13 @@ rack_pull = ExerciseDefinition(
              mu("forearm_flexors", P, 0.85, note="the load is usually grip-limited"),
              mu("quadriceps", S, 0.4), mu("rectus_abdominis", ST, 0.5),
              mu("obliques", ST, 0.4)),
-    equipment=(eq("barbell", plates=2),),
+    equipment=(eq("barbell", plates=2),
+               # Pins at the bar's own measured start height, so it rests
+               # ON them: squat(105, 35, 64) puts the bar at y 64.1 against
+               # a knee at 58.5, which is the "at or just below the knee"
+               # the setup has always claimed.  At the previous 72/22/50 it
+               # started at 86 -- mid-thigh -- with nothing holding it up.
+               eq("rack_pins", attach="static", height=64.0)),
     errors=("Leaning back at the top, which loads the lumbar spine and proves nothing.",
             "Bouncing the bar off the pins.",
             "Treating the heavier load as a deadlift number."),

@@ -352,9 +352,9 @@ A pure hip hinge from standing: the bar slides down the thighs with soft knees u
 
 | phase | kind | s | moving joints | cues |
 |---|---|---|---|---|
-| Hinge down | eccentric | 2.50 | Hips: flexion 0° → 95°; Shoulders: flexion 0° → 75°; Ankles: plantarflexion 0° → 5°; trunk pitch +75° | Push the hips back; the bar stays against the legs Stop when the hamstrings are stretched, spine neutral |
-| Bottom | isometric | 0.50 | trunk pitch +75° | Shins vertical, back flat |
-| Drive up | concentric | 1.50 | Hips: extension 95° → 0°; Shoulders: extension 75° → 0°; Ankles: dorsiflexion 5° → 0° | Squeeze the glutes and push the hips forward |
+| Hinge down | eccentric | 2.50 | Hips: flexion 0° → 105°; Shoulders: flexion 0° → 64°; Knees: flexion 15° → 35°; Ankles: plantarflexion 0° → 6°; trunk pitch +64° | Push the hips back; the bar stays against the legs Stop when the hamstrings are stretched, spine neutral |
+| Bottom | isometric | 0.50 | trunk pitch +64° | Shins vertical, back flat |
+| Drive up | concentric | 1.50 | Hips: extension 105° → 0°; Shoulders: extension 64° → 0°; Knees: extension 35° → 15°; Ankles: dorsiflexion 6° → 0° | Squeeze the glutes and push the hips forward |
 | Top | isometric | 0.50 | hold | Stand tall; no lean back |
 
 **Muscles**
@@ -419,7 +419,7 @@ A conventional deadlift standing on a low platform, so the bar starts below the 
 
 ### Rack pull
 
-`rack_pull` · Lower body · orientation: standing · anchor: feet · rep: 3.7 s · equipment: barbell
+`rack_pull` · Lower body · orientation: standing · anchor: feet · rep: 3.7 s · equipment: barbell, rack pins
 
 A deadlift started from pins at about knee height. The bottom third is gone, which leaves the lockout and lets the load go up.
 
@@ -432,10 +432,10 @@ A deadlift started from pins at about knee height. The bottom third is gone, whi
 
 | phase | kind | s | moving joints | cues |
 |---|---|---|---|---|
-| Pull | concentric | 1.20 | Hips: extension 72° → 0°; Shoulders: extension 50° → 3°; Knees: extension 22° → 3° | Drive the hips through to the bar |
+| Pull | concentric | 1.20 | Hips: extension 105° → 0°; Shoulders: extension 64° → 3°; Knees: extension 35° → 3°; Ankles: dorsiflexion 6° → 0° | Drive the hips through to the bar |
 | Lockout | isometric | 0.60 | hold | Stand tall; glutes locked, ribs down, no lay-back |
-| Lower | eccentric | 1.40 | Hips: flexion 0° → 72°; Shoulders: flexion 3° → 50°; Knees: flexion 3° → 22°; trunk pitch +50° | Hips back to return the bar to the pins |
-| Pins | isometric | 0.50 | trunk pitch +50° | Let it settle; the next rep starts from a dead stop |
+| Lower | eccentric | 1.40 | Hips: flexion 0° → 105°; Shoulders: flexion 3° → 64°; Knees: flexion 3° → 35°; Ankles: plantarflexion 0° → 6°; trunk pitch +64° | Hips back to return the bar to the pins |
+| Pins | isometric | 0.50 | trunk pitch +64° | Let it settle; the next rep starts from a dead stop |
 
 **Muscles**
 - *Primary movers:* Gluteus maximus 90 %; Erector spinae 85 %; Hamstrings 70 %; Middle trapezius 70 %; Forearm flexors (grip) 85 % — the load is usually grip-limited
