@@ -196,14 +196,32 @@ def make_wall(width: float = 160.0, height: float = 220.0, thickness: float = 8.
     return root
 
 
-def make_mat(length: float = 230.0, width: float = 120.0) -> SceneNode:
+def make_mat(length: float = 280.0, width: float = 150.0) -> SceneNode:
     """A floor mat along X.
 
-    80 is a yoga mat (63 cm) and too narrow for the floor work in this
-    catalogue: measured 2026-09-16, the main joints of a push-up reach z +-57,
-    a downward dog and a mountain climber +-51, a cat-cow +-49 -- so half the
-    body hung over the edge even once the mat was laid down under it.  120
-    (95 cm) is a large exercise mat and covers them.
+    280 x 150 (220 x 118 cm), and both numbers were measured rather than
+    chosen.  80 wide is a yoga mat (63 cm) and far too narrow; 120 was the
+    next try and still left the athlete hanging off it, because the mat is
+    settled ONCE on the low pivots of the first frame and the body then moves.
+    Measured 2026-09-18 over every phase of all 20 mat exercises, the share of
+    low-lying pivots actually over the mat:
+
+        230 x 120  mean 79.0 %, eleven exercises below 85
+        280 x 150  mean 94.5 %
+        300 x 160  mean 96.7 %
+
+    A hollow-body hold reaches x -156..113 -- 269 units from fingertips to
+    toes -- against a 230 mat, so it could not fit however it was placed; a
+    push-up and a mountain climber reach z +-70 against a half-width of 60.
+    300 x 160 is better still and is a 236 x 126 cm mat, which is bigger than
+    the thing it is meant to be.
+
+    Centring it on the TRUNK instead of on that bounding box was tried and is
+    worse -- mean 85.5 %, nine exercises below 85 against four -- because the
+    box follows the limbs that are actually on the floor and the trunk does
+    not.  What is left at 280 x 150 is an archer push-up, a supine twist and a
+    get-up, all of which put an arm or a leg 100+ units out to the side, and a
+    real mat would not catch those either.
 
     Its top face is the floor plane, not 1.5 above it.  The ground lock
     anchors the body to y = 0 and every static height in the gym is measured
