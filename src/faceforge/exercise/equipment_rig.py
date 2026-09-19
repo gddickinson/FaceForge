@@ -168,11 +168,15 @@ class EquipmentRig:
                     continue
                 self._settle_on_floor(item, pivots)
                 continue
-            if attach in ("hands", "knees"):
-                if attach == "knees":
+            if attach in ("hands", "knees", "ankles"):
+                if attach in ("knees", "ankles"):
                     # A band round the legs is the same geometry one storey
                     # down: the joints themselves, with no grip to allow for.
-                    kr, kl = pivots.get("knee_R"), pivots.get("knee_L")
+                    # "ankles" is one storey further again -- a leg machine's
+                    # pad rides the shins, so it has to follow them rather
+                    # than sit at one point of their arc.
+                    joint = "knee" if attach == "knees" else "ankle"
+                    kr, kl = pivots.get(f"{joint}_R"), pivots.get(f"{joint}_L")
                     if kr is None or kl is None:
                         continue
                     pr, pl = _world(kr), _world(kl)

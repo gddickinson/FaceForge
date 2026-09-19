@@ -35,17 +35,21 @@ _Z = vec3(0.0, 0.0, 1.0)
 _TO_X = quat_from_axis_angle(_Z, -math.pi / 2)   # cylinder axis Y -> +X
 _TO_Z = quat_from_axis_angle(_X, math.pi / 2)    # cylinder axis Y -> +Z
 
-#: The bottom bracket, raised from 30.  At 30 the rider's toes still reached
-#: 7.1 below the FLOOR at the bottom of the stroke, because a foot hangs about
-#: 12 below the ball that sits on the pedal.
-CRANK_Y = 36.0
-#: How far the bike's saddle, bars and the rider on them all move up, so that
-#: the BALL of the foot rides the crank circle rather than the ankle: the ankle
-#: sits 9.3 above the ball (measured on a flat foot), so it must orbit
-#: ``CRANK_Y + 9.3`` = 45.3 and it orbited 23.  Both `make_bike` and the
-#: exercise's `base_position` use it.
-SADDLE_RISE = 22.3
 
+def _axis_to(direction) -> object:
+    """A quaternion taking a cylinder's +Y axis onto ``direction``."""
+    d = vec3(*direction)
+    n = float((d[0] ** 2 + d[1] ** 2 + d[2] ** 2) ** 0.5)
+    if n < 1e-9:
+        return None
+    d = d / n
+    dot = float(max(-1.0, min(1.0, d[1])))
+    if dot > 1.0 - 1e-9:
+        return None
+    if dot < -1.0 + 1e-9:
+        return quat_from_axis_angle(_X, math.pi)
+    axis = vec3(d[2], 0.0, -d[0])          # cross((0,1,0), d)
+    return quat_from_axis_angle(axis, math.acos(dot))
 
 def _part(name: str, geometry: BufferGeometry, color: int, x: float = 0.0, y: float = 0.0,
           z: float = 0.0, quat=None, shininess: float | None = None) -> SceneNode:
@@ -242,84 +246,6 @@ def make_mat(length: float = 280.0, width: float = 150.0) -> SceneNode:
     return root
 
 
-#: Where the seat post meets the frame.
-_POST_FOOT = 42.5
-
-
-def make_bike() -> SceneNode:
-    """An upright stationary bike facing +Z: saddle, bars, crank and wheel."""
-    root = SceneNode("equip_bike")
-    root.add(_part("frame_down", make_box(6.0, 70.0, 6.0), FRAME, y=40.0, z=10.0,
-                   quat=quat_from_axis_angle(_X, math.radians(20.0))))
-    # The saddle was 16.3 too low for the crank it is bolted to.  The leg fit
-    # in `conditioning._pedal_ik` is right (knee ~30 deg at the bottom), so the
-    # bottom bracket has to sit 79.1 below the hip; with the saddle at 98 it sat
-    # at 23 while the crank axle mesh is at 30, and the rider's toes went 24
-    # units through the FLOOR at the bottom of the stroke.  Raising the saddle
-    # -- which is this exercise's own first listed error -- puts the ball of
-    # the foot on the pedal circle instead.
-    #
-    # The saddle sits so the rider's hip is 10 above its top, the seated
-    # convention the bench family uses (`_helpers.SEATED_ON_BENCH`).  At 98 it
-    # was level with him: measured 2026-09-17 the hip pivots sat at y 124.2
-    # against a saddle top of 122.3, so the saddle was buried in his pelvis and
-    # the post below it reached to 4.4 of the line between his hip joints --
-    # 8.6 inside the trunk capsule, the catalogue's only hard equipment clash.
-    # The post now stops at the saddle's underside rather than 1.5 inside it.
-    saddle_y = 90.0 + SADDLE_RISE
-    post_top = saddle_y - 2.0
-    root.add(_part("seat_post", make_cylinder(2.5, post_top - _POST_FOOT, 8), FRAME,
-                   y=(_POST_FOOT + post_top) / 2, z=-12.0))
-    root.add(_part("saddle", make_box(14.0, 4.0, 26.0), RUBBER, y=saddle_y, z=-12.0))
-    root.add(_part("head_tube", make_cylinder(2.5, 60.0 + SADDLE_RISE, 8), FRAME,
-                   y=90.0 + SADDLE_RISE / 2, z=42.0))
-    # Measured against the rider: the wrists sit at x +-50, y 129, z 62, so a
-    # 46-wide bar at z 42 was 27 units narrower than the hands and 20 behind
-    # them.  The rider held nothing.
-    root.add(_part("handlebar", make_cylinder(1.8, 112.0, 10), STEEL,
-                   y=128.0 + SADDLE_RISE, z=60.0, quat=_TO_X))
-    root.add(_part("bar_stem", make_cylinder(2.0, 24.0, 8), FRAME,
-                   y=116.0 + SADDLE_RISE, z=52.0,
-                   quat=quat_from_axis_angle(_X, math.radians(-55.0))))
-    root.add(_part("wheel", make_torus(24.0, 3.0, 32, 10), IRON, y=CRANK_Y, z=22.0,
-                   quat=quat_from_axis_angle(_Z, math.pi / 2)))
-    root.add(_part("crank_axle", make_cylinder(2.0, 24.0, 8), STEEL, y=CRANK_Y, z=0.0,
-                   quat=_TO_X))
-    # The pedals are NOT here: a pedal drawn on the frame stays at one point of
-    # the crank circle while the foot rides round it.  They are separate items
-    # attached to the feet (`make_pedal`, attach="foot_r"/"foot_l").
-    root.add(_part("base", make_box(50.0, 3.0, 110.0), FRAME, y=1.5))
-    return root
-
-
-def make_rower() -> SceneNode:
-    """A rowing ergometer along X: rail, sliding seat, footplate and handle."""
-    root = SceneNode("equip_rower")
-    # Measured against the athlete: the hips ride at y 52 (finish) to 74
-    # (catch) while the seat top was 27, so the rower sat in the air above his
-    # own seat.  The rail and seat come up to meet him; the footplate does not
-    # move, because the feet measured 36 and it was already right.
-    root.add(_part("rail", make_box(200.0, 6.0, 14.0), FRAME, x=-20.0, y=38.0))
-    root.add(_part("seat", make_box(30.0, 4.0, 30.0), RUBBER, x=-40.0, y=43.0))
-    for x in (-110.0, 100.0):
-        root.add(_part("leg", make_box(8.0, 32.0, 14.0), FRAME, x=x, y=20.0))
-    root.add(_part("footplate", make_box(10.0, 34.0, 44.0), IRON, x=60.0, y=28.0,
-                   quat=quat_from_axis_angle(_Z, math.radians(-25.0))))
-    root.add(_part("flywheel", make_cylinder(22.0, 12.0, 24), IRON, x=95.0, y=42.0, quat=_TO_X))
-    # No handle here: it is held, so it travels with the hands (a cable_handle
-    # attached to them).  Drawn on the frame it stayed at x = 76 while the
-    # wrists went from 80 to 163.
-    for x in (-110.0, 100.0):
-        root.add(_part("foot", make_box(8.0, 17.0, 50.0), FRAME, x=x, y=8.5))
-    return root
-
-
-def make_pedal(width: float = 9.0, length: float = 12.0) -> SceneNode:
-    """One pedal, drawn under the foot it belongs to."""
-    root = SceneNode("equip_pedal")
-    root.add(_part("plate", make_box(width, 2.0, length), RUBBER, y=-6.0))
-    root.add(_part("spindle", make_cylinder(1.4, 10.0, 8), STEEL, y=-6.0, quat=_TO_X))
-    return root
 
 
 def make_jump_rope(span: float = 120.0, drop: float = 170.0) -> SceneNode:
@@ -427,46 +353,6 @@ def make_band(length: float = 60.0) -> SceneNode:
     return root
 
 
-def make_treadmill(length: float = 170.0, width: float = 72.0, deck: float = 2.0,
-                   console: float = 108.0) -> SceneNode:
-    """A treadmill facing +Z, the direction the gym body faces.
-
-    The deck top sits at ``deck`` so the ground lock's soles (y ~ 5) land on
-    the belt rather than through it.
-    """
-    root = SceneNode("equip_treadmill")
-    root.add(_part("belt", make_box(width, deck, length), RUBBER, y=deck / 2))
-    for sx in (-1.0, 1.0):
-        root.add(_part(f"rail_{'r' if sx > 0 else 'l'}", make_box(9.0, 5.0, length), FRAME,
-                       x=sx * (width / 2 + 4.0), y=deck + 2.5))
-        root.add(_part(f"post_{'r' if sx > 0 else 'l'}",
-                       make_cylinder(2.4, console, 8), FRAME,
-                       x=sx * (width / 2 - 4.0), y=console / 2, z=length / 2 - 8.0))
-        root.add(_part(f"handrail_{'r' if sx > 0 else 'l'}",
-                       make_cylinder(2.2, length * 0.42, 8), STEEL,
-                       x=sx * (width / 2 - 2.0), y=console * 0.82,
-                       z=length / 2 - 8.0 - length * 0.21, quat=_TO_Z))
-    root.add(_part("console", make_box(width * 0.9, 22.0, 5.0), FRAME,
-                   y=console, z=length / 2 - 5.0))
-    return root
-
-
-def _axis_to(direction) -> object:
-    """A quaternion taking a cylinder's +Y axis onto ``direction``."""
-    d = vec3(*direction)
-    n = float((d[0] ** 2 + d[1] ** 2 + d[2] ** 2) ** 0.5)
-    if n < 1e-9:
-        return None
-    d = d / n
-    dot = float(max(-1.0, min(1.0, d[1])))
-    if dot > 1.0 - 1e-9:
-        return None
-    if dot < -1.0 + 1e-9:
-        return quat_from_axis_angle(_X, math.pi)
-    axis = vec3(d[2], 0.0, -d[0])          # cross((0,1,0), d)
-    return quat_from_axis_angle(axis, math.acos(dot))
-
-
 def make_battle_rope(length: float = 200.0, radius: float = 3.4, waves: float = 1.4,
                      amplitude: float = 16.0, drop: float = 120.0,
                      segments: int = 18) -> SceneNode:
@@ -506,17 +392,29 @@ def make_battle_rope(length: float = 200.0, radius: float = 3.4, waves: float = 
 EQUIPMENT_BUILDERS: dict[str, Callable[..., SceneNode]] = {
     "barbell": make_barbell, "dumbbell": make_dumbbell, "kettlebell": make_kettlebell,
     "bench": make_bench, "pullup_bar": make_pullup_bar, "plyo_box": make_plyo_box,
-    "mat": make_mat, "bike": make_bike, "rower": make_rower, "jump_rope": make_jump_rope,
+    "mat": make_mat, "jump_rope": make_jump_rope,
     "cable_handle": make_cable_handle, "band": make_band, "dip_station": make_dip_station,
     "wall": make_wall,
-    "medicine_ball": make_medicine_ball, "treadmill": make_treadmill,
-    "pedal": make_pedal,
+    "medicine_ball": make_medicine_ball,
     "battle_rope": make_battle_rope,
 }
 
 
 def known_equipment() -> set[str]:
     return set(EQUIPMENT_BUILDERS)
+
+
+# Last, and it has to be: `equipment_machines` imports the primitives above
+# from this module, so it can only be imported once they exist.  The machines
+# live there because this file had already passed the project's 500-line
+# limit; see that module's docstring for why they exist at all.
+from faceforge.exercise import equipment_machines as _machines  # noqa: E402
+
+EQUIPMENT_BUILDERS.update(_machines.BUILDERS)
+#: Re-exported: the catalogue imports these from here, and the bike's
+#: `base_position` has to use the same rise the saddle does.
+CRANK_Y = _machines.CRANK_Y
+SADDLE_RISE = _machines.SADDLE_RISE
 
 
 def build_equipment(kind: str, **params) -> SceneNode:

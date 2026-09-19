@@ -145,7 +145,10 @@ IMPLEMENT_TAGS = {
     "cable": {"cable_handle", "barbell"},
     "box": {"plyo_box"},
     "medicine ball": {"medicine_ball"},
-    "machine": {"bike", "rower", "treadmill", "bench", "cable_handle"},
+    # NOT "bench": a bench is furniture, and allowing it here is how both
+    # "(machine)" leg exercises shipped a box to sit on and passed this test.
+    "machine": {"bike", "rower", "treadmill", "cable_handle",
+                "leg_extension_machine", "leg_curl_machine"},
 }
 
 #: Equipment that is a load rather than a surface to lie or stand on.

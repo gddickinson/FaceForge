@@ -205,7 +205,12 @@ leg_extension = ExerciseDefinition(
     muscles=(mu("quadriceps", P, 0.95), mu("tibialis_anterior", ST, 0.2),
              mu("hip_flexors", ST, 0.3, note="rectus femoris also flexes the hip"),
              mu("forearm_flexors", ST, 0.3)),
-    equipment=(eq("bench", attach="static", height=58.0, length=60.0),),
+    # The machine, not a box to sit on.  The pad is its own item on
+    # `attach="ankles"` because it rides the shins through their whole arc --
+    # the ankle travels from (17.6, z 58.7) to (59.0, z 106.5) -- and drawn on
+    # the frame it would sit at one point of that arc while the leg swung away.
+    equipment=(eq("leg_extension_machine", attach="static"),
+               eq("shin_pad", attach="ankles")),
     errors=("Using momentum / kicking the pad.", "Hips lifting off the seat."),
     physio_notes=("Open-chain knee extension loads the patellofemoral joint most between "
                   "0 and 30 deg; anterior tibial shear peaks near full extension, so limit the "
@@ -227,7 +232,8 @@ lying_leg_curl = ExerciseDefinition(
     ),
     muscles=(mu("hamstrings", P, 0.95), mu("gastrocnemius", S, 0.45),
              mu("gluteus_maximus", ST, 0.3), mu("erector_spinae", ST, 0.25)),
-    equipment=(eq("bench", attach="static", length=190.0),),
+    equipment=(eq("leg_curl_machine", attach="static"),
+               eq("shin_pad", attach="ankles")),
     errors=("Hips lifting off the bench.", "Dropping the weight on the eccentric."),
     physio_notes=("Biases the biceps femoris; the kettlebell swing and Nordic curl bias "
                   "semitendinosus (Zebis 2013).",),

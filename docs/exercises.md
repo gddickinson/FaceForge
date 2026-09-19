@@ -792,7 +792,7 @@ An isometric squat hold with the back against a wall, thighs parallel and knees 
 
 ### Seated leg extension (machine)
 
-`leg_extension` · Lower body · orientation: seated · anchor: none · rep: 3.7 s · equipment: bench
+`leg_extension` · Lower body · orientation: seated · anchor: none · rep: 3.7 s · equipment: leg extension machine, shin pad
 
 Seated with the thighs supported, the knees extend against a pad on the shins.
 
@@ -826,7 +826,7 @@ Seated with the thighs supported, the knees extend against a pad on the shins.
 
 ### Lying leg curl (machine)
 
-`lying_leg_curl` · Lower body · orientation: prone · anchor: none · rep: 3.4 s · equipment: bench
+`lying_leg_curl` · Lower body · orientation: prone · anchor: none · rep: 3.4 s · equipment: leg curl machine, shin pad
 
 Prone on the bench, the knees flex against a pad at the heels.
 
