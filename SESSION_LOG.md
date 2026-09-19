@@ -2963,3 +2963,52 @@ answer different questions, and the one I trusted was answering neither for a
 bar: *how far is the body inside the implement* is not *how far is the
 implement inside the body*, and for a thin implement the first is bounded by
 its own thickness.
+
+### All 126 sheets reviewed
+
+Finished 2026-09-18.  What the pass found, beyond the fixes already recorded
+above (the mat, the tilted benches, the feet, the Bulgarian bench, the bike,
+the snatch, the pulldown, the slam, the plank, the leg machines, the rack
+pull):
+
+**Still open, measured**
+
+* `tree_pose` -- the lifted foot never crosses the midline.  Its own
+  description says it "presses into the inner thigh of the standing leg", and
+  the knee IS turned out correctly (x 49.2 against a hip at 12.0), but the
+  ankle sits at x 12.7 -- its own side of the body, with the standing leg's
+  thigh at about x -12.  It needs hip adduction with the external rotation.
+* `muscle_up`'s "Support" does not clear the bar: bar at 275, shoulder 303.8,
+  but the **hip at 238, below it**.  That is a half-transition, not a support.
+* `cat_cow` shows no visible difference between "Cat", "Cow" and "Neutral".
+  It is a purely spinal movement and the spine DOFs move no pivot, which is
+  the limitation `catalog/yoga.py` already records for cobra and triangle.
+* `overhead_side_bend` tips the whole body about 40 degrees about the feet,
+  which reads as toppling rather than a side bend -- the same whole-body-roll
+  substitute, and the same cause.
+* `parallel_bar_dip`'s range looks shallow (about 30 units of shoulder
+  travel); not yet measured against a target.
+
+**Tool limits found while reviewing**
+
+* `calf_stretch`'s front and three-quarter views render the back of its own
+  wall: the camera sits beyond the `make_wall` panel at z 104.  `_inside_room`
+  keeps the camera inside the STUDIO, but it knows nothing about an
+  exercise's own furniture.  Its side view -- the exercise's own camera -- is
+  fine, so the sheet is still usable.
+* `audit_exercise_placement` reports "nothing is touching down" for
+  `leg_extension` and `lying_leg_curl` now that they have machines to sit and
+  lie on.  Both are correct: the athlete is supported by equipment, which the
+  audit does not model.  Its other 5 flags are the recorded side-lying hands
+  (`clamshell` 3.4 and `side_plank` 7.4 of finger through the floor).
+
+**On reading renders.**  Seven of my visual flags this pass were wrong, every
+one of them in the same direction -- calling a fault that measurement then
+cleared: `box_jump` (there is a "Land on box" phase; `pick_phases` sampled the
+three floor ones), `overhead_squat` (0 of 126 breach the ceiling),
+`barbell_back_squat` (the skull sphere finds no bar), `conventional_deadlift`
+(plates at 8.9, not through the floor), `sit_up` (the mat is dark slate blue
+and reads as grey under the body), `rowing_machine` and `kettlebell_windmill`
+(trunk 22.7 and 22.8 degrees from vertical, both normal).  A front-on view has
+no depth and the wide-FOV cameras from the in-room clamp exaggerate the near
+end.  Every flag from here was measured before it was called.
