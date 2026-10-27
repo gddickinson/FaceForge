@@ -1,0 +1,422 @@
+{
+ "source": {
+  "model": "Wu_Shoulder_Model_via_points.osim",
+  "obtained_from": "github.com/pyomeca/biobuddy (examples/models), repository licence MIT",
+  "licence_note": "Chosen over the Delft Shoulder and Elbow Model, whose GitHub host is GPL-3.0 and therefore incompatible with FaceForge's MIT licence. The REPOSITORY licence is MIT; the model itself derives from published work, so upstream provenance and citation should be confirmed before any derived data is redistributed. Not a legal assessment."
+ },
+ "why": "An attachment POINT states where a muscle attaches. Contact distance cannot: these muscles wrap the humerus, so every vertex within contact range of the humeral surface forms a broad band rather than the small insertion -- which is why the Euclidean, surface and geodesic routes all handed 45-100% of each muscle to the humerus.",
+ "bodies_referenced": {
+  "humerus": 12,
+  "thorax": 8,
+  "clavicle": 4,
+  "scapula": 4,
+  "ulna": 1
+ },
+ "joint_landmarks": {
+  "ground_thorax": [
+   {
+    "parent": "ground",
+    "translation_m": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   {
+    "parent": "thorax",
+    "translation_m": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   }
+  ],
+  "SCJ": [
+   {
+    "parent": "thorax",
+    "translation_m": [
+     0.006325,
+     0.00693,
+     0.025465
+    ]
+   },
+   {
+    "parent": "clavicle",
+    "translation_m": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   }
+  ],
+  "ACJ": [
+   {
+    "parent": "clavicle",
+    "translation_m": [
+     -0.01433,
+     0.02007,
+     0.135535
+    ]
+   },
+   {
+    "parent": "scapula",
+    "translation_m": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   }
+  ],
+  "GHJ": [
+   {
+    "parent": "scapula",
+    "translation_m": [
+     -0.00955,
+     -0.034,
+     0.009
+    ]
+   },
+   {
+    "parent": "humerus",
+    "translation_m": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   }
+  ],
+  "elbow": [
+   {
+    "parent": "humerus",
+    "translation_m": [
+     0.0061,
+     -0.2904,
+     -0.0123
+    ]
+   },
+   {
+    "parent": "ulna",
+    "translation_m": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   }
+  ],
+  "radioulnar": [
+   {
+    "parent": "ulna",
+    "translation_m": [
+     0.0004,
+     -0.011503,
+     0.019999
+    ]
+   },
+   {
+    "parent": "radius",
+    "translation_m": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   }
+  ],
+  "radius_hand_r": [
+   {
+    "parent": "radius",
+    "translation_m": [
+     0.0171149,
+     -0.2301,
+     0.0237707
+    ]
+   },
+   {
+    "parent": "hand_r",
+    "translation_m": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   }
+  ]
+ },
+ "muscles": {
+  "DELT1": [
+   {
+    "name": "DELT1-P1",
+    "body": "humerus",
+    "location_m": [
+     0.00455911,
+     -0.103949,
+     0.00775516
+    ]
+   },
+   {
+    "name": "DELT1-P3",
+    "body": "clavicle",
+    "location_m": [
+     0.006531300202906003,
+     -0.009477919312077084,
+     0.13982975906663883
+    ]
+   },
+   {
+    "name": "DELT1-P4",
+    "body": "clavicle",
+    "location_m": [
+     -0.0241685,
+     0.0192842,
+     0.099015
+    ]
+   }
+  ],
+  "DELT2": [
+   {
+    "name": "DELT2-P1",
+    "body": "humerus",
+    "location_m": [
+     0.00455911,
+     -0.103949,
+     0.00775516
+    ]
+   },
+   {
+    "name": "default",
+    "body": "humerus",
+    "location_m": [
+     0.005695741554852166,
+     -0.05256140996560139,
+     0.023553919935946514
+    ]
+   },
+   {
+    "name": "DELT2-P3",
+    "body": "scapula",
+    "location_m": [
+     -0.00793909949919543,
+     -0.0005051698026222659,
+     0.024323946091160252
+    ]
+   },
+   {
+    "name": "DELT2-P3_0",
+    "body": "scapula",
+    "location_m": [
+     -0.0275294,
+     -0.0032022,
+     0.00142634
+    ]
+   }
+  ],
+  "DELT3": [
+   {
+    "name": "DELT3-P1",
+    "body": "scapula",
+    "location_m": [
+     -0.0590625,
+     -0.00156871,
+     -0.0384606
+    ]
+   },
+   {
+    "name": "DELT3-P2",
+    "body": "scapula",
+    "location_m": [
+     -0.06289864718790236,
+     -0.030163357415442696,
+     0.005977280139923095
+    ]
+   },
+   {
+    "name": "DELT3-P2_0",
+    "body": "humerus",
+    "location_m": [
+     -0.01858449942332752,
+     -0.049701999661954994,
+     0.012320282465481228
+    ]
+   },
+   {
+    "name": "DELT3-P3",
+    "body": "humerus",
+    "location_m": [
+     0.005,
+     -0.103949,
+     0.00775516
+    ]
+   }
+  ],
+  "PECM1": [
+   {
+    "name": "PECM1-P1",
+    "body": "humerus",
+    "location_m": [
+     0.016,
+     -0.0404957,
+     0.005
+    ]
+   },
+   {
+    "name": "PECM1-P2",
+    "body": "clavicle",
+    "location_m": [
+     0.006423277542529796,
+     -0.009389091206852324,
+     0.0779580026113736
+    ]
+   },
+   {
+    "name": "PECM1-P3",
+    "body": "clavicle",
+    "location_m": [
+     0.00110542,
+     0.00608334,
+     0.0513213
+    ]
+   }
+  ],
+  "PECM2": [
+   {
+    "name": "PECM2-P1",
+    "body": "humerus",
+    "location_m": [
+     0.016,
+     -0.0354957,
+     0.005
+    ]
+   },
+   {
+    "name": "PECM2-P2",
+    "body": "thorax",
+    "location_m": [
+     0.0423172,
+     -0.0434712,
+     0.0808125
+    ]
+   },
+   {
+    "name": "PECM2-P3",
+    "body": "thorax",
+    "location_m": [
+     0.0248658,
+     -0.0475832,
+     0.0174664
+    ]
+   }
+  ],
+  "PECM3": [
+   {
+    "name": "PECM3-P1",
+    "body": "humerus",
+    "location_m": [
+     0.016,
+     -0.03,
+     0.005
+    ]
+   },
+   {
+    "name": "PECM3-P2",
+    "body": "thorax",
+    "location_m": [
+     0.0432682,
+     -0.093061,
+     0.082833
+    ]
+   },
+   {
+    "name": "PECM3-P2_0",
+    "body": "thorax",
+    "location_m": [
+     0.0626543,
+     -0.147759,
+     0.0220602
+    ]
+   }
+  ],
+  "tric_lat": [
+   {
+    "name": "tric_lat-P1",
+    "body": "humerus",
+    "location_m": [
+     -0.00651919,
+     -0.137632,
+     0.00465811
+    ]
+   },
+   {
+    "name": "tric_lat-P2",
+    "body": "humerus",
+    "location_m": [
+     -0.026578067725514146,
+     -0.26743797534140834,
+     -0.01143850040577338
+    ]
+   },
+   {
+    "name": "tric_lat-P3",
+    "body": "ulna",
+    "location_m": [
+     -0.0220302,
+     0.0105221,
+     -0.000784636
+    ]
+   }
+  ],
+  "LAT": [
+   {
+    "name": "LAT2-P1",
+    "body": "humerus",
+    "location_m": [
+     0.00991752,
+     -0.0223337,
+     -0.008822
+    ]
+   },
+   {
+    "name": "LAT-P2",
+    "body": "humerus",
+    "location_m": [
+     0.00202133,
+     -0.0188908,
+     -0.0214651
+    ]
+   },
+   {
+    "name": "LAT-P3",
+    "body": "thorax",
+    "location_m": [
+     -0.06278407669067383,
+     -0.07877273239949231,
+     0.1234119873046875
+    ]
+   },
+   {
+    "name": "LAT-P4",
+    "body": "thorax",
+    "location_m": [
+     -0.09117333984375,
+     -0.10185205078125,
+     0.10641907132019995
+    ]
+   },
+   {
+    "name": "LAT-P4_0",
+    "body": "thorax",
+    "location_m": [
+     -0.10410835266113282,
+     -0.13705435868358962,
+     0.05562646865844727
+    ]
+   },
+   {
+    "name": "LAT2-P2",
+    "body": "thorax",
+    "location_m": [
+     -0.094702,
+     -0.160998,
+     0.000512144
+    ]
+   }
+  ]
+ }
+}
